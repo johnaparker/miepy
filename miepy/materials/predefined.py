@@ -1,3 +1,4 @@
+import miepy
 from miepy.materials.load import load_material
 
 def Ag(author='Johnson'):
@@ -8,3 +9,6 @@ def Ag(author='Johnson'):
 def Au(author='Johnson'):
     """Return gold material from MiePy data"""
     return load_material("Au", author)
+
+def water():
+    return miepy.constant_material(1.33**2)
