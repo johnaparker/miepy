@@ -7,6 +7,7 @@ from my_pytools.my_numpy.integrate import simps_2d
 from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
 from collections import namedtuple
+from scipy import constants
 
 levi = levi_civita()
 
@@ -266,6 +267,7 @@ class gmt:
                     + mu_b*np.einsum('ixy,jxy->ijxy', H, np.conj(H)) \
                     - 0.5*np.einsum('ij,xy->ijxy', np.identity(3), eps_b*np.sum(np.abs(E)**2, axis=0)) \
                     - 0.5*np.einsum('ij,xy->ijxy', np.identity(3), mu_b*np.sum(np.abs(H)**2, axis=0))
+            sigma *= constants.epsilon_0/2
 
             # compute F
             dA = r**2
