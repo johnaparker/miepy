@@ -314,7 +314,7 @@ class gmt:
             Arguments
                 position[N,3]       new particle positions
         """
-        self.spheres.position = position
+        self.spheres.position = np.asarray(np.atleast_2d(position), dtype=float)
 
         if (self.interactions):
             self._solve_interactions()
