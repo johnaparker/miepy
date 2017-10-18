@@ -50,39 +50,41 @@ def rhc_polarized_plane_wave(amplitude=1):
 def lhc_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,-1j], amplitude=amplitude)
 
-class azimuthal(source):
-    def __init__(self, amplitude=1):
+class azimuthal_beam(source):
+    def __init__(self, radius, amplitude=1):
         super().__init__(amplitude)
+        self.radius = radius
 
     def E(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-(rho/100)**2)
+        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
         return pol*amp 
 
     def H(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-(rho/100)**2)
+        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
         return pol*amp 
 
 
-class radial(source):
-    def __init__(self, amplitude=1):
+class radial_beam(source):
+    def __init__(self, radius, amplitude=1):
         super().__init__(amplitude)
+        self.radius = radius
 
     def E(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-(rho/100)**2)
+        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
         return pol*amp 
 
     def H(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-(rho/100)**2)
+        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
         return pol*amp 
