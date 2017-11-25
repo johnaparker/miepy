@@ -42,6 +42,7 @@ class single_mie_sphere:
         self.material_data['n_b']        = np.sqrt(self.material_data['eps_b']*self.material_data['mu_b'])
         self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
                
+        #TODO (performance) swap an/bn shape for Lmax by Nfreq, remove transpose
         self.an = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
         self.bn = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
         self.cn = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
@@ -57,17 +58,14 @@ class single_mie_sphere:
         xvals = self.material_data['k']*self.radius
         m = (self.material_data['eps']/self.material_data['eps_b'])**.5
         mt = m*self.material_data['mu_b']/self.material_data['mu']
-        for i,x in enumerate(xvals):
-            jn,jn_p = riccati_1(self.Lmax,x)
-            jnm,jnm_p = riccati_1(self.Lmax,m[i]*x)
-            yn,yn_p = riccati_2(self.Lmax,x)
-            a = (mt[i]*jnm*jn_p - jn*jnm_p)/(mt[i]*jnm*yn_p - yn*jnm_p)
-            b = (jnm*jn_p - mt[i]*jn*jnm_p)/(jnm*yn_p - mt[i]*yn*jnm_p)
-            self.an[i] = a[1:]
-            self.bn[i] = b[1:]
-        
-        self.an = np.nan_to_num(self.an)
-        self.bn = np.nan_to_num(self.bn)
+
+        jn = riccati_1(self.Lmax,xvals)
+        jnm = riccati_1(self.Lmax,m*xvals)
+        yn = riccati_2(self.Lmax,xvals)
+        a = (mt*jnm[0]*jn[1] - jn[0]*jnm[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+        b = (jnm[0]*jn[1] - mt*jn[0]*jnm[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+        self.an[...] = np.nan_to_num(a.T)
+        self.bn[...] = np.nan_to_num(b.T)
 
         self.exterior_computed = True
         return self.an, self.bn
@@ -77,18 +75,14 @@ class single_mie_sphere:
         xvals = self.material_data['k']
         m = (self.material_data['eps']/self.material_data['eps_b'])**.5
         mt = m*self.material_data['mu_b']/self.material_data['mu']
-        for i,x in enumerate(xvals):
-            jn,jn_p = riccati_1(self.Lmax,x)
-            jnm,jnm_p = riccati_1(self.Lmax,m[i]*x)
-            yn,yn_p = riccati_2(self.Lmax,x)
 
-            c = (m[i]*jn*yn_p - m[i]*yn*jn_p)/(jnm*yn_p - mt[i]*yn*jnm_p)
-            d = (m[i]*jn*yn_p - m[i]*yn*jn_p)/(mt[i]*jnm*yn_p - yn*jnm_p)
-            self.cn[i] = c[1:]
-            self.dn[i] = d[1:]
-        
-        self.cn = np.nan_to_num(self.cn)
-        self.dn = np.nan_to_num(self.dn)
+        jn = riccati_1(self.Lmax,xvals)
+        jnm = riccati_1(self.Lmax,m*xvals)
+        yn = riccati_2(self.Lmax,xvals)
+        c = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+        d = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+        self.cn[...] = np.nan_to_num(c.T)
+        self.dn[...] = np.nan_to_num(d.T)
 
         self.interior_computed = True
         return self.cn, self.dn

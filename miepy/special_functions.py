@@ -13,35 +13,39 @@ def riccati_1(nmax,x):
 
        returns (r1, r1'), n=0,1,...,nmax"""
 
-    jn,jnp = special.sph_jn(nmax,x)
+    x = np.asarray(x)
+    result = np.zeros((2,nmax) + x.shape, dtype=np.complex)
 
-    r0 = x*jn
-    r1 = jn + x*jnp
-    return np.array([r0,r1])
+    for n in range(nmax):
+        jn = special.spherical_jn(n+1,x)
+        jnp = special.spherical_jn(n+1,x, derivative=True)
+        result[0,n] = x*jn
+        result[1,n] = jn + x*jnp
 
-def riccati_2(nmax,x):
-    """Riccati bessel function of the 2nd kind
-
-       returns (r2, r2'), n=0,1,...,nmax"""
-
-    jn,jnp,yn,ynp = special.sph_jnyn(nmax,x)
-    hn = jn + 1j*yn
-    hnp = jnp + 1j*ynp
-
-    r0 = x*hn
-    r1 = hn + x*hnp
-    return np.array([r0,r1])
+    return result
 
 def riccati_3(nmax,x):
     """Riccati bessel function of the 3rd kind
 
        returns (r3, r3'), n=0,1,...,nmax"""
 
-    yn,ynp = special.sph_yn(nmax,x)
+    x = np.asarray(x)
+    result = np.zeros((2,nmax) + x.shape, dtype=np.complex)
 
-    r0 = x*yn
-    r1 = yn + x*ynp
-    return np.array([r0,r1])
+    for n in range(nmax):
+        yn = special.spherical_yn(n+1,x)
+        ynp = special.spherical_yn(n+1,x, derivative=True)
+        result[0,n] = x*yn
+        result[1,n] = yn + x*ynp
+
+    return result
+
+def riccati_2(nmax,x):
+    """Riccati bessel function of the 2nd kind
+
+       returns (r2, r2'), n=0,1,...,nmax"""
+
+    return riccati_1(nmax,x) + 1j*riccati_3(nmax,x)
 
 def pi_tau_func(n):
     # if np.sin(theta) == 0: return 0
