@@ -6,6 +6,7 @@ import miepy
 from my_pytools.my_numpy.integrate import simps_2d
 from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
+from my_pytools.my_numpy.special import A_translation,B_translation
 from collections import namedtuple
 from scipy import constants
 
@@ -99,6 +100,7 @@ class gmt:
         self.source = source
         self.wavelength = np.asarray(np.atleast_1d(wavelength), dtype=float)
         self.Lmax = Lmax
+        self.rmax = Lmax*(Lmax + 2)
         self.interactions = interactions
 
         self.Ntheta = Ntheta
@@ -125,10 +127,13 @@ class gmt:
         self.material_data['n_b']        = np.sqrt(self.material_data['eps_b']*self.material_data['mu_b'])
         self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
 
-        self.a = np.zeros([self.Nparticles,self.Nfreq,self.Lmax], dtype=complex)
-        self.b = np.zeros([self.Nparticles,self.Nfreq,self.Lmax], dtype=complex)
-        self.p = np.zeros([2,self.Nparticles,self.Nfreq], dtype=complex)
-        self.q = np.zeros([2,self.Nparticles,self.Nfreq], dtype=complex)
+        self.a = np.zeros([self.Nfreq,self.Nparticles,self.Lmax], dtype=complex)
+        self.b = np.zeros([self.Nfreq,self.Nparticles,self.Lmax], dtype=complex)
+
+        self.p = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.p_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
 
         for i in range(self.Nparticles):
             sphere = miepy.single_mie_sphere(self.spheres.radius[i], self.spheres.material[i],
@@ -136,7 +141,17 @@ class gmt:
             self.material_data['eps'][i] = sphere.material_data['eps']
             self.material_data['mu'][i] = sphere.material_data['mu']
             self.material_data['n'][i] = sphere.material_data['n']
-            self.a[i], self.b[i] = sphere.solve_exterior()
+            self.a[:,i], self.b[:,i] = sphere.solve_exterior()
+
+        self.n_indices = np.zeros(self.rmax, dtype=int)
+        self.m_indices = np.zeros(self.rmax, dtype=int)
+
+        counter = 0
+        for n in range(1,self.Lmax+1):
+            for m in range(-n,n+1):
+                self.n_indices[counter] = n
+                self.m_indices[counter] = m
+                counter += 1
 
         if (self.interactions):
             self._solve_interactions()
@@ -323,54 +338,62 @@ class gmt:
         else:
             self._set_without_interactions()
 
-    def _set_without_interactions(self):
+    def _solve_source_decomposition(self):
         pos = self.spheres.position.T
         for k in range(self.Nfreq):
-            Einc = self.source.E(pos,self.material_data['k'][k])
-            self.p[...,k] = Einc[:2,:]
+            for r in range(self.rmax):
+                self.p_src[k,:,r], self.q_src[k,:,r] = \
+                        self.source.structure(self.n_indices[r], self.m_indices[r], pos, self.material_data['k'][k])
+
+    def _set_without_interactions(self):
+        self._solve_source_decomposition()
+        self.p[...] = self.p_src
+        self.q[...] = self.q_src
 
     #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
     def _solve_interactions(self):
-        pos = self.spheres.position.T
-        
-        identity = np.zeros(shape = (2, self.Nparticles, 2, self.Nparticles), dtype=np.complex)
-        np.einsum('xixi->xi', identity)[...] = 1
+        self._solve_source_decomposition()
+        identity = np.zeros(shape = (2, self.Nparticles, self.rmax, 2, self.Nparticles, self.rmax), dtype=np.complex)
+        np.einsum('airair->air', identity)[...] = 1
         
         for k in range(self.Nfreq):
-            MieMatrix = np.zeros(shape = (2, self.Nparticles, 2, self.Nparticles), dtype=np.complex)
-            Einc = self.source.E(pos,self.material_data['k'][k])
-            Einc = Einc[:2,:]
+            interaction_matrix = np.zeros(shape = (2, self.Nparticles, self.rmax, 2, self.Nparticles, self.rmax), dtype=np.complex)
 
             for i in range(self.Nparticles):
                 for j in range(self.Nparticles):
                     if i == j: continue
+
                     pi = self.spheres.position[i]
                     pj = self.spheres.position[j]
                     dji = pi -  pj
                     r_ji = np.linalg.norm(dji)
                     theta_ji = np.arccos(dji[2]/r_ji)
                     phi_ji = np.arctan2(dji[1], dji[0])
-                    
-                    rhat = np.array([np.sin(theta_ji)*np.cos(phi_ji), np.sin(theta_ji)*np.sin(phi_ji), np.cos(theta_ji)])
-                    that = np.array([np.cos(theta_ji)*np.cos(phi_ji), np.cos(theta_ji)*np.sin(phi_ji), -np.sin(theta_ji)])
-                    phat = np.array([-np.sin(phi_ji), np.cos(phi_ji), np.zeros_like(theta_ji)])
-                    
-                    E_func = miepy.scattering.scattered_E(self.a[j,k], self.b[j,k], self.material_data['k'][k])
-                    xsol = E_func(r_ji, theta_ji, phi_ji)
-                    ysol = E_func(r_ji, theta_ji, phi_ji - np.pi/2)
-                    xsol = xsol[0]*rhat + xsol[1]*that + xsol[2]*phat
-                    ysol = ysol[0]*rhat + ysol[1]*that + ysol[2]*phat
-                    
-                    MieMatrix[:,i,0,j] = xsol[:2]
-                    MieMatrix[:,i,1,j] = ysol[:2]
 
-            A = identity - MieMatrix
-            sol = np.linalg.tensorsolve(A, Einc)
-            self.p[...,k] = sol
+                    for r in range(self.rmax):
+                        n = self.n_indices[r]
+                        m = self.m_indices[r]
+                        for s in range(self.rmax):
+                            v = self.n_indices[s]
+                            u = self.m_indices[s]
+
+                            A_transfer = A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
+                            B_transfer = B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
+
+                            interaction_matrix[0,i,r,0,j,s] = A_transfer*self.a[k,j,v-1]
+                            interaction_matrix[0,i,r,1,j,s] = B_transfer*self.b[k,j,v-1]
+                            interaction_matrix[1,i,r,0,j,s] = B_transfer*self.a[k,j,v-1]
+                            interaction_matrix[1,i,r,1,j,s] = A_transfer*self.b[k,j,v-1]
+
+            A = identity + interaction_matrix
+            b = np.array([self.p_src[k],self.q_src[k]])
+            sol = np.linalg.tensorsolve(A, b)
+            self.p[k] = sol[0]
+            self.q[k] = sol[1]
         
 if __name__ == "__main__":
-    system = gmt(spheres([[0,-50e-9,0],[0,50e-9,0]], 20e-9, miepy.constant_material(2)), 
+    system = gmt(spheres([[0,-50e-9,0],[0,50e-9,0]], 40e-9, miepy.constant_material(5)), 
                   miepy.sources.x_polarized_plane_wave(),
-                  600e-9, 2)
+                  600e-9, 1, interactions=True)
     from IPython import embed
     embed()

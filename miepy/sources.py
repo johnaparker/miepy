@@ -17,8 +17,10 @@ class source:
     def E(self, r, k): pass
 
     @abstractmethod
-    def mu(self, r, k): pass
+    def H(self, r, k): pass
 
+    @abstractmethod
+    def structure(self, n, m, r, k): pass
 
 class plane_wave(source):
     def __init__(self, polarization, amplitude=1):
@@ -37,6 +39,15 @@ class plane_wave(source):
         H0_x, H0_y = -self.polarization[1], self.polarization[0]
         pol = np.array([H0_x, H0_y, 0])
         return np.einsum('i...,...->i...', pol, amp)
+
+    def structure(self, n, m, r, k):
+        phase = np.exp(1j*k*r[2])
+        if m == 1:
+            return (phase*1/2, phase*1/2)
+        elif m == -1:
+            return (-phase*1/(2*n*(n+1)), phase*1/(2*n*(n+1)))
+        else:
+            return (0,0)
 
 def x_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,0], amplitude=amplitude)
@@ -58,14 +69,14 @@ class azimuthal_beam(source):
     def E(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
+        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
         return pol*amp 
 
     def H(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
+        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
         return pol*amp 
 
@@ -78,13 +89,13 @@ class radial_beam(source):
     def E(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
+        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
         return pol*amp 
 
     def H(self, r, k):
         rho = (r[0]**2 + r[1]**2)**0.5
         theta = np.arctan2(r[1], r[0])
-        amp = np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
+        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
         pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
         return pol*amp 
