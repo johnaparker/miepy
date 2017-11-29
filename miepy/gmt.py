@@ -6,7 +6,7 @@ import miepy
 from my_pytools.my_numpy.integrate import simps_2d
 from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
-from my_pytools.my_numpy.special import A_translation,B_translation
+from my_pytools.my_numpy.special import A_translation,B_translation,VSH,Emn
 from collections import namedtuple
 from scipy import constants
 
@@ -179,9 +179,14 @@ class gmt:
             rhat, that, phat = sph_unit_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
-                Ax, Ay = self.p[:,i,k]
-                E_func = miepy.scattering.scattered_E(self.a[i,k], self.b[i,k], self.material_data['k'][k])
-                E_sph = Ax*E_func(R,THETA,PHI) + Ay*E_func(R,THETA,PHI-np.pi/2)
+                E_sph = np.zeros((3,) + x.shape, dtype=complex)
+                for n in range(1,self.Lmax+1):
+                    for m in range(-n,n+1):
+                        factor = 1j*Emn(m,n,self.source.amplitude)
+                        N,M = VSH(n,m)
+                        r = 2*(n**2 - n + 1) + m - 1
+                        E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                        E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
                 E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
 
         if inc:
@@ -392,8 +397,42 @@ class gmt:
             self.q[k] = sol[1]
         
 if __name__ == "__main__":
-    system = gmt(spheres([[0,-50e-9,0],[0,50e-9,0]], 40e-9, miepy.constant_material(5)), 
-                  miepy.sources.x_polarized_plane_wave(),
-                  600e-9, 1, interactions=True)
-    from IPython import embed
-    embed()
+    import matplotlib.pyplot as plt
+    from my_pytools.my_matplotlib.colors import cmap
+
+    nm = 1e-9
+    sep = 50*nm
+    r = 20*nm
+
+    fig,axes = plt.subplots(ncols=2, figsize=plt.figaspect(1/2))
+
+    Nx = 480
+    Ny = 481
+    y = np.linspace(-sep/2 - 2*r, sep/2 + 2*r, Ny)
+    x = np.linspace(-2*r, 2*r, Nx)
+    z = 0
+    X,Y,Z = np.meshgrid(x,y,z, indexing='ij') 
+
+    for i,sim in enumerate([True,False]):
+        system = gmt(spheres([[0,-sep/2,0],[0,sep/2,0]], r, miepy.materials.predefined.Ag()), 
+                    miepy.sources.x_polarized_plane_wave(),
+                    600*nm, 2, interactions=sim)
+        E = np.squeeze(system.E_field(X,Y,Z,True))
+        I = np.sum(np.abs(E)**2, axis=0)
+        print(I.shape)
+
+        mask = np.zeros((Nx,Ny), dtype=bool)
+        mask[(np.squeeze(Y)-sep/2)**2 + np.squeeze(X)**2 < r**2] = True
+        mask[(np.squeeze(Y)+sep/2)**2 + np.squeeze(X)**2 < r**2] = True
+        I[mask] = 0
+
+        im = axes[i].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', cmap=cmap['parula'], rasterized=True)
+        plt.colorbar(im, ax=axes[i], label='Intensity')
+        axes[i].set(aspect='equal', xlabel='x (nm)', ylabel='y (nm)')
+
+
+    plt.savefig('test.pdf', dpi=400)
+    plt.show()
+
+    # from IPython import embed
+    # embed()

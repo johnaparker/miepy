@@ -47,7 +47,7 @@ class plane_wave(source):
         elif m == -1:
             return (-phase*1/(2*n*(n+1)), phase*1/(2*n*(n+1)))
         else:
-            return (0,0)
+            return (np.zeros_like(r[0]), np.zeros_like(r[0]))
 
 def x_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,0], amplitude=amplitude)
