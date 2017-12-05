@@ -5,6 +5,7 @@ Pre-defined sources that can be used with particle_system
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
+from my_pytools.my_numpy.special import pi_func, tau_func
 
 class source:
     """source interface base class"""
@@ -42,12 +43,20 @@ class plane_wave(source):
 
     def structure(self, n, m, r, k):
         phase = np.exp(1j*k*r[2])
-        if m == 1:
-            return (phase*1/2, phase*1/2)
-        elif m == -1:
-            return (-phase*1/(2*n*(n+1)), phase*1/(2*n*(n+1)))
-        else:
-            return (np.zeros_like(r[0]), np.zeros_like(r[0]))
+
+        eps = 1e-3
+        pi_value = pi_func(n,m)(eps)
+        tau_value = tau_func(n,m)(eps)
+
+        p = phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+
+        return (p,p)
+        # if m == 1:
+        #     return (phase*1/2, phase*1/2)
+        # elif m == -1:
+        #     return (-phase*1/(2*n*(n+1)), phase*1/(2*n*(n+1)))
+        # else:
+        #     return (np.zeros_like(r[0]), np.zeros_like(r[0]))
 
 def x_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,0], amplitude=amplitude)

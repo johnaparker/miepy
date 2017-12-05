@@ -39,9 +39,10 @@ def discrete_sphere(radius, Ntheta, Nphi, center=None):
         center = np.zeros(3)
 
     r = np.array([radius])
-    tau = np.linspace(-1,1, Ntheta) 
+    eps = 1e-3
+    tau = np.linspace(-1+eps,1-eps, Ntheta) 
     theta = np.pi - np.arccos(tau)
-    phi = np.linspace(0, 2*np.pi, Nphi)
+    phi = np.linspace(0+eps, 2*np.pi-eps, Nphi)
     R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
 
     X = center[0] + R*np.sin(THETA)*np.cos(PHI)
@@ -180,15 +181,17 @@ class gmt:
 
             for k in range(self.Nfreq):
                 E_sph = np.zeros((3,) + x.shape, dtype=complex)
-                for n in range(1,self.Lmax+1):
-                    for m in range(-n,n+1):
-                        factor = 1j*Emn(m,n,self.source.amplitude)
-                        N,M = VSH(n,m)
-                        r = 2*(n**2 - n + 1) + m - 1
-                        E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                        E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                for r in range(self.rmax):
+                    n = self.n_indices[r]
+                    m = self.m_indices[r]
+                    factor = 1j*Emn(m,n,self.source.amplitude)
+                    N,M = VSH(n,m)
+                    E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                    E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+
                 E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
 
+        E *= -1       # TODO: why is this here...
         if inc:
             for k in range(self.Nfreq):
                 E[:,k] += self.source.E(np.array([x,y,z]), self.material_data['k'][k])
@@ -206,6 +209,7 @@ class gmt:
 
             Returns: H[3,M], M = number of wavelengths
         """
+
         x = np.asarray(x, dtype=float)
         y = np.asarray(y, dtype=float)
         z = np.asarray(z, dtype=float)
@@ -216,17 +220,23 @@ class gmt:
             rhat, that, phat = sph_unit_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
-                Ax, Ay = self.p[:,i,k]
-                H_func = miepy.scattering.scattered_H(self.a[i,k], self.b[i,k], self.material_data['k'][k],
-                              self.material_data['n_b'][k], self.material_data['mu_b'][k])
-                H_sph = Ax*H_func(R,THETA,PHI) + Ay*H_func(R,THETA,PHI-np.pi/2)
+                H_sph = np.zeros((3,) + x.shape, dtype=complex)
+                for r in range(self.rmax):
+                    n = self.n_indices[r]
+                    m = self.m_indices[r]
+                    factor = Emn(m,n,self.source.amplitude)
+                    N,M = VSH(n,m)
+                    H_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                    H_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+
                 H[:,k] += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
 
+        H *= -1       # TODO: why is this here...
         if inc:
             for k in range(self.Nfreq):
-                H[:,k] += self.source.H(np.array([x,y,z]), self.material_data['k'][k]) \
-                            * (self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
-        return H
+                H[:,k] += self.source.H(np.array([x,y,z]), self.material_data['k'][k])
+
+        return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
 
     def flux_from_particle(self, i, inc=False):
         """Determine the scattered flux from a single particle

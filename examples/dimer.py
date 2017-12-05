@@ -8,9 +8,9 @@ import miepy
 from tqdm import tqdm
 
 Ag = miepy.materials.predefined.Ag()
-radius = 15e-9
-source = miepy.sources.rhc_polarized_plane_wave(amplitude=1)
-separations = np.linspace(2*radius+150e-9,2*radius+1500e-9, 50)
+radius = 75e-9
+source = miepy.sources.x_polarized_plane_wave(amplitude=1)
+separations = np.linspace(2*radius+10e-9,2*radius+700e-9, 50)
 
 force1 = []
 force2 = []
@@ -19,7 +19,7 @@ torque1 = []
 torque2 = []
 
 spheres = miepy.spheres([[separations[0]/2,0,0], [-separations[0]/2,0,0]], radius, Ag)
-sol1 = miepy.gmt(spheres, source, 600e-9, 1, interactions=False)
+sol1 = miepy.gmt(spheres, source, 600e-9, 3, interactions=False)
 sol2 = miepy.gmt(spheres, source, 600e-9, 1, interactions=True)
 
 for separation in tqdm(separations):
