@@ -49,8 +49,9 @@ class plane_wave(source):
         tau_value = tau_func(n,m)(eps)
 
         p = phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+        q = m*phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+        return (p,q)
 
-        return (p,p)
         # if m == 1:
         #     return (phase*1/2, phase*1/2)
         # elif m == -1:
