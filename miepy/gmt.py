@@ -191,7 +191,6 @@ class gmt:
 
                 E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
 
-        E *= -1       # TODO: why is this here...
         if inc:
             for k in range(self.Nfreq):
                 E[:,k] += self.source.E(np.array([x,y,z]), self.material_data['k'][k])
@@ -231,7 +230,6 @@ class gmt:
 
                 H[:,k] += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
 
-        H *= -1       # TODO: why is this here...
         if inc:
             for k in range(self.Nfreq):
                 H[:,k] += self.source.H(np.array([x,y,z]), self.material_data['k'][k])

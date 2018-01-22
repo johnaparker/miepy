@@ -7,7 +7,7 @@ source = miepy.sources.x_polarized_plane_wave()
 
 x = np.linspace(-.3,.3,30)
 y = np.linspace(-.3,.3,30)
-z = 1.5
+z = 0 
 X,Y,Z = np.meshgrid(x,y,z, indexing='ij')
 k = 2*np.pi/1
 coords = np.array([X,Y,Z])
@@ -57,7 +57,7 @@ for n in range(1,Nmax+1):
 fig,ax = plt.subplots()
 I = np.sum(np.abs(expanded_E)**2, axis=0)
 # im = ax.pcolormesh(X.squeeze(),Y.squeeze(),I, vmin=0.9, vmax=1.1)
-im = ax.pcolormesh(X.squeeze(),Y.squeeze(),I, vmin=0.9, vmax=1.1)
+im = ax.pcolormesh(X.squeeze(),Y.squeeze(),I)
 plt.colorbar(im)
 ax.quiver(X.squeeze(),Y.squeeze(),expanded_E[0].real, expanded_E[1].real)
 
