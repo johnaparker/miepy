@@ -39,10 +39,9 @@ def discrete_sphere(radius, Ntheta, Nphi, center=None):
         center = np.zeros(3)
 
     r = np.array([radius])
-    eps = 1e-3
-    tau = np.linspace(-1+eps,1-eps, Ntheta) 
+    tau = np.linspace(-1,1, Ntheta) 
     theta = np.pi - np.arccos(tau)
-    phi = np.linspace(0+eps, 2*np.pi-eps, Nphi)
+    phi = np.linspace(0, 2*np.pi, Nphi)
     R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
 
     X = center[0] + R*np.sin(THETA)*np.cos(PHI)

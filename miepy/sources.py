@@ -44,9 +44,9 @@ class plane_wave(source):
     def structure(self, n, m, r, k):
         phase = np.exp(1j*k*r[2])
 
-        eps = 1e-3
-        pi_value = pi_func(n,m)(eps)
-        tau_value = tau_func(n,m)(eps)
+        alpha = 0
+        pi_value = pi_func(n,m)(alpha)
+        tau_value = tau_func(n,m)(alpha)
 
         p = phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
         q = m*phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])

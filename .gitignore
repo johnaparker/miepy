@@ -2,6 +2,8 @@
 *.sw*
 __pycache__
 todo.txt
+*.h5
+*.pdf
 
 #setup files
 build

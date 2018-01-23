@@ -144,9 +144,8 @@ if __name__ == "__main__":
     VCS = vector_spherical_harmonics(3, superscript=3)
     dipole = VCS.N_e1n(1)
 
-    eps = 0.01
-    theta = np.linspace(eps, np.pi-eps,60)
-    phi = np.linspace(eps, 2*np.pi-eps,90)
+    theta = np.linspace(0, np.pi,60)
+    phi = np.linspace(0, 2*np.pi,90)
     r = np.array([500])
 
     R, THETA, PHI = np.meshgrid(r, theta, phi, indexing='xy')
