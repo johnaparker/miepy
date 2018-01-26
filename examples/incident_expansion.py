@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import miepy
-import my_pytools.my_numpy.special as special
 
 source = miepy.sources.x_polarized_plane_wave()
 
@@ -33,9 +32,9 @@ phat = np.array([-np.sin(PHI), np.cos(PHI), np.zeros_like(THETA)])
 
 for n in range(1,Nmax+1):
     for m in range(-n, n+1):
-        Nfunc,Mfunc = special.VSH(n,m, mode=special.VSH_mode.incident)
+        Nfunc,Mfunc = miepy.vsh.VSH(n,m, mode=miepy.vsh.VSH_mode.incident)
 
-        Emn = special.Emn(m,n,source.amplitude)
+        Emn = miepy.vsh.Emn(m,n,source.amplitude)
         p,q = source.structure(n,m,[0,0,0],k)
 
         # phase = np.exp(1j*k*Z)

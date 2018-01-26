@@ -273,6 +273,37 @@ class vector_spherical_harmonics:
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
+def project_onto_VSH(E, Nmax, r, THETA, PHI, tau, phi, k, index):
+    """Project fields on to VSH's
+
+    Arguments:
+        E             electric field at the specified k-value
+        Nmax          maximum number of multipoles
+        r             radius
+        THETA[mesh]   theta coordinates
+        PHI[mesh]     phi coordinates
+        k             wavenumber
+        index         frequency index                  
+    """
+
+    a = np.zeros((2,Nmax,2*Nmax+1), dtype=np.complex)
+    for n in range(1, Nmax+1):
+        for m in range(-n, n+1):
+            N,M = VSH(n,m)
+            N = N(r,THETA,PHI,k).squeeze()
+            M = M(r,THETA,PHI,k).squeeze()
+
+            Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
+            factor = 1/(k**2*Enm)
+            norm = n*(n+1)/np.abs(Enm)**2/k**2/r**2
+
+            for type_index,F in enumerate([N,M]):
+                proj_data = np.sum(E*np.conj(F), axis=0)
+                proj = integrate.simps_2d(tau, phi, proj_data)
+
+                a[type_index,n-1,m+n] = proj/norm*factor
+    return a
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
