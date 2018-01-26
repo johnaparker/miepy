@@ -5,7 +5,7 @@ Pre-defined sources that can be used with particle_system
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
-from my_pytools.my_numpy.special import pi_func, tau_func
+from miepy.vsh import pi_func, tau_func
 
 class source:
     """source interface base class"""

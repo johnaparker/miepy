@@ -6,7 +6,6 @@ import miepy
 from my_pytools.my_numpy.integrate import simps_2d
 from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
-from my_pytools.my_numpy.special import A_translation,B_translation,VSH,Emn
 from collections import namedtuple
 from scipy import constants
 
@@ -183,8 +182,8 @@ class gmt:
                 for r in range(self.rmax):
                     n = self.n_indices[r]
                     m = self.m_indices[r]
-                    factor = 1j*Emn(m,n,self.source.amplitude)
-                    N,M = VSH(n,m)
+                    factor = 1j*miepy.vsh.Emn(m,n,self.source.amplitude)
+                    N,M = miepy.vsh.VSH(n,m)
                     E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
                     E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
@@ -222,8 +221,8 @@ class gmt:
                 for r in range(self.rmax):
                     n = self.n_indices[r]
                     m = self.m_indices[r]
-                    factor = Emn(m,n,self.source.amplitude)
-                    N,M = VSH(n,m)
+                    factor = miepy.vsh.Emn(m,n,self.source.amplitude)
+                    N,M = miepy.vsh.VSH(n,m)
                     H_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
                     H_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
@@ -389,8 +388,8 @@ class gmt:
                             v = self.n_indices[s]
                             u = self.m_indices[s]
 
-                            A_transfer = A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
-                            B_transfer = B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
+                            A_transfer = miepy.vsh.A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
+                            B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
 
                             interaction_matrix[0,i,r,0,j,s] = A_transfer*self.a[k,j,v-1]
                             interaction_matrix[0,i,r,1,j,s] = B_transfer*self.b[k,j,v-1]
