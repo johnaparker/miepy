@@ -273,8 +273,12 @@ class vector_spherical_harmonics:
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
-def project_onto_VSH(E, Nmax, r, THETA, PHI, tau, phi, k, index):
-    """Project fields on to VSH's
+def project_onto():
+    """Project fields on to a given mode"""
+    pass
+
+def decompose(E, Nmax, r, THETA, PHI, tau, phi, k, index):
+    """Decompose fields into the VSHs
 
     Arguments:
         E             electric field at the specified k-value
@@ -303,6 +307,10 @@ def project_onto_VSH(E, Nmax, r, THETA, PHI, tau, phi, k, index):
 
                 a[type_index,n-1,m+n] = proj/norm*factor
     return a
+
+def decompose_source(src, Nmax, position, k, sampling=30):
+    """Decompose a source object into VSHs"""
+    pass
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

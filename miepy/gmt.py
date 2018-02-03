@@ -269,7 +269,7 @@ class gmt:
 
             Arguments:
                 i         Particle index
-                inc       Include the incident field (bool, default=False)
+                inc       Include the incident field (bool, default=True)
             
             Returns: (F[3,M],T[3,M]), M = number of wavelengths
         """
