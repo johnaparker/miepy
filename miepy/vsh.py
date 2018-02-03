@@ -273,43 +273,103 @@ class vector_spherical_harmonics:
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
-def project_onto():
-    """Project fields on to a given mode"""
-    pass
-
-def decompose(E, Nmax, r, THETA, PHI, tau, phi, k, index):
-    """Decompose fields into the VSHs
+def sphere_mesh(sampling):
+    """
+    Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
+    with the format required by the project and decompose functions
+    Returns (THETA,PHI) meshgrids
 
     Arguments:
-        E             electric field at the specified k-value
-        Nmax          maximum number of multipoles
-        r             radius
-        THETA[mesh]   theta coordinates
-        PHI[mesh]     phi coordinates
-        k             wavenumber
-        index         frequency index                  
+        sampling   number of points to sample between 0 and pi
+    """
+
+    phi = np.linspace(0, 2*np.pi, 2*sampling)
+    tau = np.linspace(0, 1, sampling)
+    theta = np.cos(tau)
+
+    THETA,PHI = np.meshgrid(theta, phi, indexing='ij')
+    return THETA, PHI
+
+
+def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing):
+    """Project fields onto a given mode
+
+    Arguments:
+        E[Ntheta,Nphi,3]     electric field values on the surface of a sphere
+        r                    radius
+        k                    wavenumber
+        ftype                'electric' or 'magnetic'
+        n                    vsh order (1, 2, ...)
+        m                    vsh orientation (-n, -n+1, ..., n)
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+    """
+    Ntheta, Nphi, _ = E.shape
+    sampling = Ntheta
+    THETA, PHI = sphere_mesh(sampling)
+
+    N,M = VSH(n, m, mode)
+    if ftype == 'electric':
+        vsh_data = N(r,THETA,PHI,k).squeeze()
+    elif ftype == 'magnetic':
+        vsh_data = M(r,THETA,PHI,k).squeeze()
+
+    # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
+    Emn_val = Emn(m,n)
+    factor = 1/(k**2*Emn_val)
+    norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
+
+    proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
+    integrated = integrate.simps_2d(tau, phi, proj_data)
+
+    return factor*integrated/norm
+
+def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=VSH_mode.outgoing):
+    """Project source object onto a given mode
+    Returns a[2,Nmax,2*Nmax+1]
+
+    Arguments:
+        src        source object
+        k          wavenumber
+        ftype      'electric' or 'magnetic'
+        n          vsh order (1, 2, ...)
+        m          vsh orientation (-n, -n+1, ..., n)
+        origin     origin around which to perform the expansion (default: [0,0,0])
+        sampling   number of points to sample between 0 and pi (default: 30)
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+    """
+    pass
+
+def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing):
+    """Decompose fields into the VSHs
+    Returns a[2,Nmax,2*Nmax+1]
+
+    Arguments:
+        E[Ntheta,Nphi,3]   electric field values on the surface of a sphere
+        r                  radius
+        k                  wavenumber
+        Nmax               maximum number of multipoles
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
     """
 
     a = np.zeros((2,Nmax,2*Nmax+1), dtype=np.complex)
     for n in range(1, Nmax+1):
         for m in range(-n, n+1):
-            N,M = VSH(n,m)
-            N = N(r,THETA,PHI,k).squeeze()
-            M = M(r,THETA,PHI,k).squeeze()
-
-            Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
-            factor = 1/(k**2*Enm)
-            norm = n*(n+1)/np.abs(Enm)**2/k**2/r**2
-
-            for type_index,F in enumerate([N,M]):
-                proj_data = np.sum(E*np.conj(F), axis=0)
-                proj = integrate.simps_2d(tau, phi, proj_data)
-
-                a[type_index,n-1,m+n] = proj/norm*factor
+            for ftype_idx, ftype in enumerate(['electric', 'magnetic']):
+                a[ftype_idx,n-1,m+n] = project_fields_onto(E, r, k, ftype, n, m, mode)
     return a
 
-def decompose_source(src, Nmax, position, k, sampling=30):
-    """Decompose a source object into VSHs"""
+def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.outgoing):
+    """Decompose a source object into VSHs
+    Returns a[2,Nmax,2*Nmax+1]
+
+    Arguments:
+        src        source object
+        k          wavenumber
+        Nmax       maximum number of multipoles
+        origin     origin around which to perform the expansion (default: [0,0,0])
+        sampling   number of points to sample between 0 and pi (default: 30)
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+    """
     pass
 
 if __name__ == "__main__":
