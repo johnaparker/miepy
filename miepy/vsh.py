@@ -6,6 +6,7 @@ import numpy as np
 import sympy
 import scipy
 from scipy import special, integrate, misc
+from my_pytools.my_numpy.integrate import simps_2d
 import enum
 from functools import lru_cache
 from math import factorial
@@ -284,8 +285,8 @@ def sphere_mesh(sampling):
     """
 
     phi = np.linspace(0, 2*np.pi, 2*sampling)
-    tau = np.linspace(0, 1, sampling)
-    theta = np.cos(tau)
+    tau = np.linspace(-1, 1, sampling)
+    theta = np.arccos(tau)
 
     THETA,PHI = np.meshgrid(theta, phi, indexing='ij')
     return THETA, PHI
@@ -303,9 +304,12 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing):
         m                    vsh orientation (-n, -n+1, ..., n)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
     """
-    Ntheta, Nphi, _ = E.shape
+    Ntheta, Nphi = E.shape[1:]
     sampling = Ntheta
     THETA, PHI = sphere_mesh(sampling)
+
+    tau = np.linspace(-1, 1, sampling)
+    phi = np.linspace(0, 2*np.pi, 2*sampling)
 
     N,M = VSH(n, m, mode)
     if ftype == 'electric':
@@ -314,16 +318,20 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing):
         vsh_data = M(r,THETA,PHI,k).squeeze()
 
     # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
-    Emn_val = Emn(m,n)
-    factor = 1/(k**2*Emn_val)
+    Emn_val = Emn(m, n, E0=1)
+    if mode == VSH_mode.outgoing:
+        factor = 1/(1j*Emn_val)
+    elif mode == VSH_mode.incident:
+        factor = -1/(1j*Emn_val)
+
     norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
-    integrated = integrate.simps_2d(tau, phi, proj_data)
+    integrated = simps_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 
-def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=VSH_mode.outgoing):
+def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Project source object onto a given mode
     Returns a[2,Nmax,2*Nmax+1]
 
@@ -335,7 +343,7 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
         m          vsh orientation (-n, -n+1, ..., n)
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 30)
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
     pass
 
@@ -358,7 +366,7 @@ def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing):
                 a[ftype_idx,n-1,m+n] = project_fields_onto(E, r, k, ftype, n, m, mode)
     return a
 
-def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.outgoing):
+def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Decompose a source object into VSHs
     Returns a[2,Nmax,2*Nmax+1]
 
@@ -368,7 +376,7 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.ou
         Nmax       maximum number of multipoles
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 30)
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+        mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
     pass
 
