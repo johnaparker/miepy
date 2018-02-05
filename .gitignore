@@ -2,13 +2,34 @@
 *.sw*
 __pycache__
 todo.txt
-*.h5
 *.pdf
+*.png
+*.html
 
-#setup files
+# data files
+*.h5
+*.dat
+*.npy
+
+# setup files
 build
 dist
 *.egg-info
 
-#material database
+# material database
 miepy/materials/database
+
+# misc example folders
+examples/fdtd_compare
+examples/temp
+examples/old
+
+# misc tests folders
+examples/tests/fdtd_compare
+examples/tests/monitor_radius
+examples/tests/zero
+examples/tests/absorption
+
+# vscode
+settings.json
+tags
