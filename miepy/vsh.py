@@ -292,7 +292,8 @@ def sphere_mesh(sampling):
     return THETA, PHI
 
 
-def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing):
+#TODO: specify if E input is cartesian or spherical coordinates
+def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, coordinates='cartesian'):
     """Project fields onto a given mode
 
     Arguments:
@@ -331,6 +332,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing):
 
     return factor*integrated/norm
 
+# TODO: implement convert functions
 def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Project source object onto a given mode
     Returns a[2,Nmax,2*Nmax+1]
@@ -347,6 +349,20 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
     """
     pass
 
+    r = 2*np.pi/k   # choose radius to be a wavelength of the light
+
+    THETA, PHI = sphere_mesh(sampling)
+    X = origin[0] + r*np.sin(THETA)*np.cos(PHI)
+    Y = origin[1] + r*np.sin(THETA)*np.sin(PHI)
+    Z = origin[2] + r*np.cos(THETA)
+    # X,Y,Z = sph_to_cart(r, THETA, PHI, orgin=origin)
+
+    E = src.E([X,Y,Z], k)
+    # E = vec_cart_to_sph(E, THETA, PHI)
+
+    return project_fields_onto(E, r, k, ftype, n, m, mode)
+
+#TODO: return p,q instead of a (consisten with soruce structure)
 def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing):
     """Decompose fields into the VSHs
     Returns a[2,Nmax,2*Nmax+1]
@@ -378,7 +394,13 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
-    pass
+
+    a = np.zeros((2,Nmax,2*Nmax+1), dtype=np.complex)
+    for n in range(1, Nmax+1):
+        for m in range(-n, n+1):
+            for ftype_idx, ftype in enumerate(['electric', 'magnetic']):
+                a[ftype_idx,n-1,m+n] = project_source_onto(src, k, ftype, n, m, origin, sampling)
+    return a
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
