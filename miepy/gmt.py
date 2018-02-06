@@ -354,7 +354,7 @@ class gmt:
         for k in range(self.Nfreq):
             for r in range(self.rmax):
                 self.p_src[k,:,r], self.q_src[k,:,r] = \
-                        self.source.structure(self.n_indices[r], self.m_indices[r], pos, self.material_data['k'][k])
+                        self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data['k'][k])
 
     def _set_without_interactions(self):
         self._solve_source_decomposition()

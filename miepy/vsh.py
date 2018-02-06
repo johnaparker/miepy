@@ -393,6 +393,11 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
         E = base_function(r, theta, phi, k)
         return np.real(np.vdot(E, E))*np.sin(theta)
     norm, err = integrate.dblquad(integrand, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
+
+    # E_base = base_function(r, THETA, PHI, k)
+    # integrand  = np.sum(E_base*np.conj(E_base), axis=0)
+    # norm   = simps_2d(tau, phi, integrand).real
+
     # norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
@@ -464,7 +469,20 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
             q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
     return p,q
 
+# TODO: implement origin
+# TODO: E0 = 1 issue... absorb into p,q or pass it in
+# TODO: implement correct factor for each mode
 def expand(p, q, k, mode, origin=[0,0,0]):
+    """Expand VSH coefficients to obtain an electric field function
+    Returns E(x,y,z) function
+    
+    Arguments:
+        p[Nmax,2*Nmax+1]   p coefficients 
+        q[Nmax,2*Nmax+1]   q coefficients 
+        k                  wavenumber
+        mode: VSH_mode     type of VSH (outgoing, incident)
+        origin             origin around which to perform the expansion (default: [0,0,0])
+    """
     Nmax = p.shape[0]
 
     def f(x, y, z):
@@ -489,44 +507,3 @@ def expand(p, q, k, mode, origin=[0,0,0]):
         return expanded_E
     
     return f
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    plt.figure(1)
-
-    x = np.linspace(-1,1,1000)
-    
-    f = associated_legendre(2, 0)
-    plt.plot(x, f(x), label = r'$P_2^0$')
-
-    f = associated_legendre(2, 1)
-    plt.plot(x, f(x), label = r'$P_2^1$')
-
-    f = associated_legendre(2, 2)
-    plt.plot(x, f(x), label = r'$P_2^2$')
-
-    plt.legend()
-
-    plt.figure(2)
-    theta = np.linspace(0, np.pi, 1000)
-    f = pi_func(2,1)
-    plt.plot(theta, f(theta), label = r'$\pi_{2,1}$')
-    f = tau_func(2,1)
-    plt.plot(theta, f(theta), label = r'$\tau_{2,1}$')
-
-    plt.legend()
-
-    f1,f2 = VSH(2,1, VSH_mode.incident)
-
-    r = np.array([10])
-    theta = np.linspace(1e-6, np.pi-1e-6, 30)
-    phi = np.linspace(0, 2*np.pi, 30)
-    k = np.linspace(1,10,10)
-
-    y = f1(*np.meshgrid(r,theta,phi,k, indexing='ij'))
-    print(y.shape)
-    y = f2(*np.meshgrid(r,theta,phi,k, indexing='ij'))
-    print(y.shape)
-
-    plt.show()

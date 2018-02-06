@@ -21,7 +21,16 @@ class source:
     def H(self, r, k): pass
 
     @abstractmethod
-    def structure(self, n, m, r, k): pass
+    def structure_of_mode(self, n, m, r, k): pass
+
+    def structure(self, position, k, Nmax):
+        p = np.zeros([Nmax, 2*Nmax+1], dtype=complex)
+        q = np.zeros([Nmax, 2*Nmax+1], dtype=complex)
+        for n in range(1, Nmax+1):
+            for m in range(-n,n+1):
+                p[n-1,m+n], q[n-1,m+n] = self.structure_of_mode(n, m, position, k)
+
+        return p,q
 
 class plane_wave(source):
     def __init__(self, polarization, amplitude=1):
@@ -41,7 +50,7 @@ class plane_wave(source):
         pol = np.array([H0_x, H0_y, 0])
         return np.einsum('i...,...->i...', pol, amp)
 
-    def structure(self, n, m, r, k):
+    def structure_of_mode(self, n, m, r, k):
         phase = np.exp(1j*k*r[2])
 
         alpha = 0
