@@ -10,6 +10,7 @@ todo.txt
 *.h5
 *.dat
 *.npy
+*.mp4
 
 # setup files
 build
@@ -21,8 +22,10 @@ miepy/materials/database
 
 # misc example folders
 examples/fdtd_compare
+examples/compare
 examples/temp
 examples/old
+examples/time
 
 # misc tests folders
 examples/tests/fdtd_compare

@@ -11,6 +11,38 @@ import enum
 from functools import lru_cache
 from math import factorial
 
+def sph_to_cart(r, theta, phi, origin=[0,0,0]):
+    """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+    x = origin[0] + r*np.sin(theta)*np.cos(phi)
+    y = origin[1] + r*np.sin(theta)*np.sin(phi)
+    z = origin[2] + r*np.cos(theta)
+
+    return x,y,z
+
+def sph_basis_vectors(theta, phi):
+    """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
+    r_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
+    theta_hat = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -1*np.sin(theta)])
+    phi_hat = np.array([-1*np.sin(phi), np.cos(phi), np.zeros_like(phi)])
+
+    return r_hat, theta_hat, phi_hat
+
+def vec_cart_to_sph(F, theta, phi):
+    """convert a vector field F from cartesian to spherical coordinates
+
+    Arguments:
+        F[3,...]     vector field values
+        theta        theta coordinates
+        phi          phi coordinates
+    """
+    Fsph = np.zeros_like(F)
+    r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
+    Fsph[0] = np.sum(F_sph*r_hat, axis=0)
+    Fsph[1] = np.sum(F_sph*theta_hat, axis=0)
+    Fsph[2] = np.sum(F_sph*phi_hat, axis=0)
+
+    return Fsph
+
 def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
 
@@ -292,18 +324,18 @@ def sphere_mesh(sampling):
     return THETA, PHI
 
 
-#TODO: specify if E input is cartesian or spherical coordinates
-def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, coordinates='cartesian'):
+def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=False):
     """Project fields onto a given mode
 
     Arguments:
-        E[Ntheta,Nphi,3]     electric field values on the surface of a sphere
+        E[3,Ntheta,Nphi]     electric field values on the surface of a sphere
         r                    radius
         k                    wavenumber
         ftype                'electric' or 'magnetic'
         n                    vsh order (1, 2, ...)
         m                    vsh orientation (-n, -n+1, ..., n)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+        spherical            If true, E should be in spherical coordinates (default: False (cartesian))
     """
     Ntheta, Nphi = E.shape[1:]
     sampling = Ntheta
@@ -318,6 +350,9 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, coordinate
     elif ftype == 'magnetic':
         vsh_data = M(r,THETA,PHI,k).squeeze()
 
+    if not spherical:
+        E = vec_cart_to_sph(E, THETA, PHI)
+
     # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
     Emn_val = Emn(m, n, E0=1)
     if mode == VSH_mode.outgoing:
@@ -325,17 +360,16 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, coordinate
     elif mode == VSH_mode.incident:
         factor = -1/(1j*Emn_val)
 
-    norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
+    norm = 
+    # norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
     integrated = simps_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 
-# TODO: implement convert functions
 def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Project source object onto a given mode
-    Returns a[2,Nmax,2*Nmax+1]
 
     Arguments:
         src        source object
@@ -347,44 +381,39 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
-    pass
 
     r = 2*np.pi/k   # choose radius to be a wavelength of the light
 
     THETA, PHI = sphere_mesh(sampling)
-    X = origin[0] + r*np.sin(THETA)*np.cos(PHI)
-    Y = origin[1] + r*np.sin(THETA)*np.sin(PHI)
-    Z = origin[2] + r*np.cos(THETA)
-    # X,Y,Z = sph_to_cart(r, THETA, PHI, orgin=origin)
-
+    X,Y,Z = sph_to_cart(r, THETA, PHI, origin=origin)
     E = src.E([X,Y,Z], k)
-    # E = vec_cart_to_sph(E, THETA, PHI)
 
-    return project_fields_onto(E, r, k, ftype, n, m, mode)
+    return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
-#TODO: return p,q instead of a (consisten with soruce structure)
-def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing):
+def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs
-    Returns a[2,Nmax,2*Nmax+1]
+    Returns p[Nmax,2*Nmax+1], q[Nmax,2*Nmax+1]
 
     Arguments:
-        E[Ntheta,Nphi,3]   electric field values on the surface of a sphere
+        E[3,Ntheta,Nphi]   electric field values on the surface of a sphere
         r                  radius
         k                  wavenumber
         Nmax               maximum number of multipoles
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+        mode: VSH_mode     type of VSH (outgoing, incident) (default: outgoing)
+        spherical          If true, E should be in spherical coordinates (default: False (cartesian))
     """
 
-    a = np.zeros((2,Nmax,2*Nmax+1), dtype=np.complex)
+    p = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
+    q = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
     for n in range(1, Nmax+1):
         for m in range(-n, n+1):
-            for ftype_idx, ftype in enumerate(['electric', 'magnetic']):
-                a[ftype_idx,n-1,m+n] = project_fields_onto(E, r, k, ftype, n, m, mode)
-    return a
+            p[n-1,m+n] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
+            q[n-1,m+n] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
+    return p,q
 
 def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Decompose a source object into VSHs
-    Returns a[2,Nmax,2*Nmax+1]
+    Returns p[Nmax,2*Nmax+1], q[Nmax,2*Nmax+1]
 
     Arguments:
         src        source object
@@ -395,12 +424,13 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
         mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
 
-    a = np.zeros((2,Nmax,2*Nmax+1), dtype=np.complex)
+    p = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
+    q = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
     for n in range(1, Nmax+1):
         for m in range(-n, n+1):
-            for ftype_idx, ftype in enumerate(['electric', 'magnetic']):
-                a[ftype_idx,n-1,m+n] = project_source_onto(src, k, ftype, n, m, origin, sampling)
-    return a
+            p[n-1,m+n] = project_source_onto(src, k, 'electric', n, m, origin, sampling)
+            q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling)
+    return p,q
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
