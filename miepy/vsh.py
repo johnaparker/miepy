@@ -19,6 +19,15 @@ def sph_to_cart(r, theta, phi, origin=[0,0,0]):
 
     return x,y,z
 
+def cart_to_sph(x, y, z, origin=[0,0,0]):
+    """convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
+    x0,y0,z0 = origin
+    r = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2)**0.5
+    theta = np.arccos((z - z0)/r)
+    phi = np.arctan2(y - y0, x - x0)
+
+    return r, theta, phi
+
 def sph_basis_vectors(theta, phi):
     """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
     r_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
@@ -37,13 +46,28 @@ def vec_cart_to_sph(F, theta, phi):
     """
     Fsph = np.zeros_like(F)
     r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
-    Fsph[0] = np.sum(F_sph*r_hat, axis=0)
-    Fsph[1] = np.sum(F_sph*theta_hat, axis=0)
-    Fsph[2] = np.sum(F_sph*phi_hat, axis=0)
+    Fsph[0] = np.sum(F*r_hat, axis=0)
+    Fsph[1] = np.sum(F*theta_hat, axis=0)
+    Fsph[2] = np.sum(F*phi_hat, axis=0)
 
     return Fsph
 
-def spherical_hn(n, z, derivative=False):
+def vec_sph_to_cart(F, theta, phi):
+    """convert a vector field F from spherical to cartesian coordinates
+
+    Arguments:
+        F[3,...]     vector field values
+        theta        theta coordinates
+        phi          phi coordinates
+    """
+    Fcart = np.zeros_like(F)
+    r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
+    for i in range(3):
+        Fcart[i] = F[0]*r_hat[i] + F[1]*theta_hat[i] + F[2]*phi_hat[i]
+
+    return Fcart
+
+def spherican(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
 
             n: int,array-like        order of the bessel function
@@ -346,21 +370,29 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
 
     N,M = VSH(n, m, mode)
     if ftype == 'electric':
-        vsh_data = N(r,THETA,PHI,k).squeeze()
+        base_function = N
     elif ftype == 'magnetic':
-        vsh_data = M(r,THETA,PHI,k).squeeze()
+        base_function = M
+
+    vsh_data = base_function(r,THETA,PHI,k).squeeze()
 
     if not spherical:
         E = vec_cart_to_sph(E, THETA, PHI)
 
-    # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
     Emn_val = Emn(m, n, E0=1)
+    # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
+
     if mode == VSH_mode.outgoing:
         factor = 1/(1j*Emn_val)
     elif mode == VSH_mode.incident:
         factor = -1/(1j*Emn_val)
+    else:
+        raise ValueError(f'{mode} is not a valid type of mode')
 
-    norm = 
+    def integrand(theta, phi):
+        E = base_function(r, theta, phi, k)
+        return np.real(np.vdot(E, E))*np.sin(theta)
+    norm, err = integrate.dblquad(integrand, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
     # norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
@@ -428,9 +460,35 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
     q = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
     for n in range(1, Nmax+1):
         for m in range(-n, n+1):
-            p[n-1,m+n] = project_source_onto(src, k, 'electric', n, m, origin, sampling)
-            q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling)
+            p[n-1,m+n] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
+            q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
     return p,q
+
+def expand(p, q, k, mode, origin=[0,0,0]):
+    Nmax = p.shape[0]
+
+    def f(x, y, z):
+        r, theta, phi = cart_to_sph(x,y,z)
+        rhat,that,phat = sph_basis_vectors(theta,phi)
+
+        expanded_E = np.zeros(shape=(3,)+x.shape, dtype=complex)
+        for n in range(1,Nmax+1):
+            for m in range(-n, n+1):
+                Nfunc,Mfunc = VSH(n, m, mode=mode)
+
+                Emn_val = Emn(m, n, E0=1)
+
+                N = Nfunc(r, theta, phi, k)
+                M = Mfunc(r, theta, phi, k)
+
+                N = vec_sph_to_cart(N, theta, phi)
+                M = vec_sph_to_cart(M, theta, phi)
+
+                expanded_E += -1j*Emn_val*(p[n-1,n+m]*N + q[n-1,n+m]*M)
+
+        return expanded_E
+    
+    return f
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
