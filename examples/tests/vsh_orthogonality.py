@@ -34,12 +34,12 @@ def r_dependence():
     plt.plot(rvals, np.max(y)/(rvals/np.min(rvals))**2)
     plt.show()
 
-r_dependence()
+# r_dependence()
 
 for n in range(1,6):
-    m = 0
+    m = n
     N, M = miepy.vsh.VSH(n,m)
-    r = 6000*nm
+    r = 600*nm
     E = N(r, THETA, PHI, k)
 
     integrand  = np.sum(E*np.conj(E), axis=0)
@@ -48,17 +48,25 @@ for n in range(1,6):
 
     def newF(theta, phi):
         E = N(r, theta, phi, k)
-        return np.vdot(E, E)*np.sin(theta)
+        return np.real(np.vdot(E, E))*np.sin(theta)
 
-    # integral,err = dblquad(newF, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
+    integral,err = dblquad(newF, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
 
     Emn = miepy.vsh.Emn(m, n, 1)
-    Emn = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
 
+    # exact norm for M dot M
+    zn = miepy.vsh.spherical_hn(n, k*r)
+    radial_term = np.abs(zn)**2
+    angular_term = 4*np.pi*n*(n+1)/np.abs(Emn)
+    exact = angular_term*radial_term
 
-    # exact = 4*np.pi*n*(n+1)/(np.abs(Emn)*k**2*r**2)
-    # exact = 1/(np.abs(Emn)**2*k**2*r**2)
-    exact = n*(n+1)/(np.abs(Emn)**2*k**2*r**2)
+    # exact norm for N dot N
+    zn = miepy.vsh.spherical_hn(n, k*r)
+    znp = miepy.vsh.spherical_hn(n, k*r, derivative=True)
+
+    radial_term = (np.abs(zn + k*r*znp)**2 + n*(n+1)*np.abs(zn)**2)/(k*r)**2
+    exact = angular_term*radial_term
+
     print(f'n = {n}:  {integral:.5f} +/- {err:.5f} ({exact:.5f})')
 
 # result = miepy.vsh.project_fields_onto(E, r, k, 'electric', 1, 0)

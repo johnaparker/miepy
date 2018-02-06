@@ -67,7 +67,7 @@ def vec_sph_to_cart(F, theta, phi):
 
     return Fcart
 
-def spherican(n, z, derivative=False):
+def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
 
             n: int,array-like        order of the bessel function
@@ -239,6 +239,34 @@ def VSH(n, m, mode=VSH_mode.outgoing):
 
     return N,M
 
+def vsh_normalization_values(mode, ftype, n, m, r, k):
+    """Determine the norm of a given vsh mode
+    
+    Arguments:
+        mode: VSH_mode    type of VSH (outgoing, incident)
+        ftype             'electric' or 'magnetic'
+        n                 vsh order (1, 2, ...)
+        m                 vsh orientation (-n, -n+1, ..., n)
+        r                 radius
+        k                 wavenumber
+    """
+    if mode == VSH_mode.outgoing:
+        zn = spherical_hn
+    elif mode == VSH_mode.incident:
+        zn = special.spherical_jn
+
+    Emn_val = Emn(m, n, E0=1)
+    zn_val = zn(n, k*r)
+    angular_term = 4*np.pi*n*(n+1)/np.abs(Emn_val)
+
+    if ftype == 'magnetic':
+        radial_term = np.abs(zn_val)**2
+        return angular_term*radial_term
+
+    elif ftype == 'electric':
+        znp_val = zn(n, k*r, derivative=True)
+        radial_term = (np.abs(zn_val + k*r*znp_val)**2 + n*(n+1)*np.abs(zn_val)**2)/(k*r)**2
+        return angular_term*radial_term
 
 ##### riccati needs to be verified with miepy #####
 
@@ -359,7 +387,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
         n                    vsh order (1, 2, ...)
         m                    vsh orientation (-n, -n+1, ..., n)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
-        spherical            If true, E should be in spherical coordinates (default: False (cartesian))
+        spherical            If true, E should be in spherical components (default: False (cartesian))
     """
     Ntheta, Nphi = E.shape[1:]
     sampling = Ntheta
@@ -380,7 +408,6 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
         E = vec_cart_to_sph(E, THETA, PHI)
 
     Emn_val = Emn(m, n, E0=1)
-    # Enm = 1j**(n+2*m-1)/(2*np.pi**.5)*((2*n+1)*factorial(n-m)/factorial(n+m))**.5
 
     if mode == VSH_mode.outgoing:
         factor = 1/(1j*Emn_val)
@@ -389,16 +416,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
     else:
         raise ValueError(f'{mode} is not a valid type of mode')
 
-    def integrand(theta, phi):
-        E = base_function(r, theta, phi, k)
-        return np.real(np.vdot(E, E))*np.sin(theta)
-    norm, err = integrate.dblquad(integrand, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
-
-    # E_base = base_function(r, THETA, PHI, k)
-    # integrand  = np.sum(E_base*np.conj(E_base), axis=0)
-    # norm   = simps_2d(tau, phi, integrand).real
-
-    # norm = n*(n+1)/np.abs(Emn_val)**2/k**2/r**2
+    norm = vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
     integrated = simps_2d(tau, phi, proj_data)
@@ -437,7 +455,7 @@ def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing, spherical=False):
         k                  wavenumber
         Nmax               maximum number of multipoles
         mode: VSH_mode     type of VSH (outgoing, incident) (default: outgoing)
-        spherical          If true, E should be in spherical coordinates (default: False (cartesian))
+        spherical          If true, E should be in spherical components (default: False (cartesian))
     """
 
     p = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
