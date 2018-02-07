@@ -86,7 +86,7 @@ def associated_legendre(n,m, deriv=0):
         returns lpmv(x) function     """
 
     x = sympy.symbols('x')
-    legfun_sym = sympy.functions.special.polynomials.assoc_legendre(n,m,x)
+    legfun_sym = (-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
     legfunc_sym_deriv = sympy.diff(legfun_sym, x, deriv)
 
     legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
@@ -101,9 +101,10 @@ def pi_func(n, m):
        returns pi(theta)                                                           """
 
     x = sympy.symbols('x')
-    legfunc_sym = m*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
+    legfunc_sym = m*(-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
     legfunc_sym /= sympy.sqrt(1 - x**2)
     legfunc_sym = sympy.simplify(legfunc_sym)
+    # print(legfunc_sym)
     legfunc_sym = legfunc_sym.subs(x, sympy.cos(x))
 
     legfun_num = np.vectorize(sympy.lambdify(x,legfunc_sym, modules='numpy'))
@@ -118,7 +119,7 @@ def tau_func(n, m):
        returns tau(theta)                                                           """
 
     x = sympy.symbols('x')
-    legfun_sym = sympy.functions.special.polynomials.assoc_legendre(n,m,x)
+    legfun_sym = (-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
     legfunc_sym_deriv = sympy.diff(legfun_sym, x, 1)
     legfunc_sym_deriv *= -1*sympy.sqrt(1 - x**2)
     legfunc_sym_deriv = sympy.expand(legfunc_sym_deriv)
