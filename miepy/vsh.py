@@ -130,7 +130,32 @@ def tau_func(n, m):
     legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
     return legfun_num_deriv
 
+def wigner_3j(j1, j2, j3, m1, m2, m3):
+    """wigner3j coefficients"""
+    kmin = max(0, j2-j3-m1, j1-j3+m2)
+    kmax = max(j1+j2-j3, j1-m1, j2+m2)
 
+    if m1 + m2 + m3 != 0:
+        return 0
+
+    j3min = max(abs(j1-j2), abs(m1+m2))
+    if not j3min <= j3 <= j1 + j2:
+        return 0
+
+    f = lambda n: special.gamma(n+1)
+    binomial = special.binom
+    numerator = f(j1-m1)*f(j1+m1)*f(j2-m2)*f(j2+m2)*f(j3-m3)*f(j3+m3)
+    denominator = f(j1+j2-j3)*f(j1-j2+j3)*f(-j1+j2+j3)*f(j1+j2+j3+1)
+    factor = (-1)**(j1+j2+m3)*(numerator/denominator)**0.5
+
+    sum_term = 0
+    for k in range(kmin, kmax+1):
+        b1 = binomial(j1+j2-j3, k)
+        b2 = binomial(j1-j2+j3, j1-m1-k)
+        b3 = binomial(-j1+j2+j3, j2+m2-k)
+        sum_term += (-1)**k * b1 * b2 * b3
+    
+    return factor*sum_term
 
 @lru_cache(maxsize=None)
 def a_func(m, n, u, v, p):
