@@ -76,6 +76,7 @@ def spherical_hn(n, z, derivative=False):
 
     return special.spherical_jn(n,z,derivative) + 1j*special.spherical_yn(n,z,derivative)
 
+@lru_cache(maxsize=None)
 def associated_legendre(n,m, deriv=0):
     """associated legendre function of integer order and degree
 
@@ -92,6 +93,7 @@ def associated_legendre(n,m, deriv=0):
     legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
     return legfun_num_deriv
 
+@lru_cache(maxsize=None)
 def pi_func(n, m):
     """pi special function that appears in the vector spherical harmonics (VSH)
 
@@ -104,12 +106,12 @@ def pi_func(n, m):
     legfunc_sym = m*(-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
     legfunc_sym /= sympy.sqrt(1 - x**2)
     legfunc_sym = sympy.simplify(legfunc_sym)
-    # print(legfunc_sym)
     legfunc_sym = legfunc_sym.subs(x, sympy.cos(x))
 
-    legfun_num = np.vectorize(sympy.lambdify(x,legfunc_sym, modules='numpy'))
+    legfun_num = sympy.lambdify(x,legfunc_sym, modules='numpy')
     return legfun_num
 
+@lru_cache(maxsize=None)
 def tau_func(n, m):
     """pi special function that appears in the vector spherical harmonics (VSH)
 
@@ -125,7 +127,7 @@ def tau_func(n, m):
     legfunc_sym_deriv = sympy.expand(legfunc_sym_deriv)
     legfunc_sym_deriv = legfunc_sym_deriv.subs(x, sympy.cos(x))
 
-    legfun_num_deriv = np.vectorize(sympy.lambdify(x,legfunc_sym_deriv, modules='numpy'))
+    legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
     return legfun_num_deriv
 
 
