@@ -23,6 +23,19 @@ def gaunt(m,n,u,v,p):
 
     return factor*w1*w2
 
+def b_func(m,n,u,v,p):
+    """b function"""
+
+    f = lambda n: special.gamma(n+1)
+    numerator = f(n+m)*f(v+u)*f(p-m-u+1)
+    denominator = f(n-m)*f(v-u)*f(p+m+u+1)
+    factor = (-1)**(m+u)*(2*p+3)*(numerator/denominator)**0.5
+
+    w1 = miepy.vsh.wigner_3j(n,v,p,0,0,0)
+    w2 = miepy.vsh.wigner_3j(n,v,p+1,m,u,-m-u)
+
+    return factor*w1*w2
+
 # g = gaunt(1,2,0,1,1)
 # print(g)
 # g = miepy.vsh.a_func(1,2,0,1,1)
@@ -30,13 +43,14 @@ def gaunt(m,n,u,v,p):
 # from IPython import embed; embed()
 
 def A_translation(m, n, u, v, r, theta, phi, k):
+    m *= -1
     f = lambda n: special.gamma(n+1)
     numerator = (2*v+1)*f(n-m)*f(v-u)
     denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
     factor = (-1)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
 
-    qmax = min(n, v, math.floor((n+v - abs(m+u))/2))
+    qmax = min(n, v, (n+v - abs(m+u))//2)
     sum_term = 0
     for q in range(0, qmax+1):
         p = n + v - 2*q
@@ -48,9 +62,43 @@ def A_translation(m, n, u, v, r, theta, phi, k):
 
     return factor*sum_term 
 
+def B_translation(m, n, u, v, r, theta, phi, k):
+    m *= -1
+    f = lambda n: special.gamma(n+1)
+    numerator = (2*v+1)*f(n-m)*f(v-u)
+    denominator = 2*n*(n+1)*f(n+m)*f(v+u)
+
+    factor = (-1)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
+
+    qmax = min(n, v, (n+v+1 - abs(m+u))//2)
+    sum_term = 0
+    for q in range(1, qmax+1):
+        p = n + v - 2*q
+        bq = b_func(m,n,u,v,p)
+        A = 1j**(p+1)*(((p+1)**2 - (n-v)**2)*((n+v+1)**2 - (p+1)**2))**0.5*bq
+
+        Pnm = miepy.vsh.associated_legendre(p+1,u+m)
+        sum_term += A*miepy.vsh.spherical_hn(p+1, k*r)*Pnm(np.cos(theta))
+
+    return factor*sum_term 
+
+A = A_translation(8,10,-9,12, 2, 0.5, 0.5, 1)
+B = B_translation(8,10,-9,12, 2, 0.5, 0.5, 1)
+print(f'A: {A:.10e}' , f'B: {B:.10e}', '', sep='\n')
+
 A = A_translation(0,10,0,10, 2, 0.5, 0.5, 1)
-A = A_translation(2, 6, -2, 10, 2, 0.5, 0.5, 1)
-A = A_translation(0, 1, 1, 1, 2, 0.5, 0.5, 1)
-print(A)
-A = miepy.vsh.A_translation(0, 1, 1, 1, 2, 0.5, 0.5, 1)
-print(A)
+B = B_translation(0,10,0,10, 2, 0.5, 0.5, 1)
+print(f'A: {A:.10e}' , f'B: {B:.10e}', '', sep='\n')
+
+A = A_translation(-2, 11, 3, 9, 2, 0.5, 0.5, 1)
+B = B_translation(-2, 11, 3, 9, 2, 0.5, 0.5, 1)
+print(f'A: {A:.10e}' , f'B: {B:.10e}', '', sep='\n')
+
+A = A_translation(-2, 6, -2, 10, 2, 0.5, 0.5, 1)
+B = B_translation(-2, 6, -2, 10, 2, 0.5, 0.5, 1)
+print(f'A: {A:.10e}' , f'B: {B:.10e}', '', sep='\n')
+
+# A = A_translation(0, 1, 1, 1, 2, 0.5, 0.5, 1)
+# print(A)
+# A = miepy.vsh.A_translation(0, 1, 1, 1, 2, 0.5, 0.5, 1)
+# print(A)
