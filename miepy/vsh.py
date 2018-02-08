@@ -206,8 +206,7 @@ def A_translation(m, n, u, v, r, theta, phi, k):
         Pnm = associated_legendre(p,u+m)
         sum_term += A*spherical_hn(p, k*r)*Pnm(np.cos(theta))
 
-    normalization = Emn(u,v,1)/Emn(m,n,1)
-    return factor*sum_term * normalization
+    return factor*sum_term
 
 def B_translation(m, n, u, v, r, theta, phi, k):
     m *= -1
@@ -227,8 +226,7 @@ def B_translation(m, n, u, v, r, theta, phi, k):
         Pnm = associated_legendre(p+1,u+m)
         sum_term += A*spherical_hn(p+1, k*r)*Pnm(np.cos(theta))
 
-    normalization = Emn(u,v,1)/Emn(m,n,1)
-    return factor*sum_term * normalization
+    return factor*sum_term
 
 class VSH_mode(enum.Enum):
     outgoing = enum.auto()
