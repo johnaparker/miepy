@@ -3,6 +3,7 @@ import miepy
 from sympy.physics.wigner import wigner_3j, gaunt
 from scipy import special
 import math
+from functools import lru_cache
 
 # w = miepy.vsh.wigner_3j(1,1,1, 1,-1,0)
 # print(w)
@@ -10,6 +11,7 @@ import math
 # print(w)
 # from IPython import embed; embed()
 
+@lru_cache(None)
 def gaunt(m,n,u,v,p):
     """gaunt coefficient"""
 
@@ -23,6 +25,7 @@ def gaunt(m,n,u,v,p):
 
     return factor*w1*w2
 
+@lru_cache(None)
 def b_func(m,n,u,v,p):
     """b function"""
 
@@ -102,3 +105,6 @@ print(f'A: {A:.10e}' , f'B: {B:.10e}', '', sep='\n')
 # print(A)
 # A = miepy.vsh.A_translation(0, 1, 1, 1, 2, 0.5, 0.5, 1)
 # print(A)
+
+
+from IPython import embed; embed()

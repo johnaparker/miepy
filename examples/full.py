@@ -18,7 +18,7 @@ X,Y,Z = np.meshgrid(x,y,z, indexing='ij')
 
 for i,sim in enumerate([True,False]):
     system = miepy.gmt(miepy.spheres([[-sep/2,0,0],[sep/2,0,0]], r, miepy.materials.predefined.Ag()), 
-                miepy.sources.y_polarized_plane_wave(),
+                miepy.sources.x_polarized_plane_wave(),
                 600*nm, 2, interactions=sim)
     E = np.squeeze(system.E_field(X,Y,Z,True))
     I = np.sum(np.abs(E)**2, axis=0)

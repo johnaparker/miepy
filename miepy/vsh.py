@@ -157,64 +157,78 @@ def wigner_3j(j1, j2, j3, m1, m2, m3):
     
     return factor*sum_term
 
-@lru_cache(maxsize=None)
-def a_func(m, n, u, v, p):
-    """a function that appears in the VSH translation coefficients"""
+@lru_cache(None)
+def a_func(m,n,u,v,p):
+    """gaunt coefficient"""
 
-    if np.abs(m) > n or np.abs(u) > v or np.abs(m+u) > p:
-        return 0
+    f = lambda n: special.gamma(n+1)
+    numerator = f(n+m)*f(v+u)*f(p-m-u)
+    denominator = f(n-m)*f(v-u)*f(p+m+u)
+    factor = (-1.)**(m+u)*(2*p+1)*(numerator/denominator)**0.5
 
-    factor = (2*p+1)/2*factorial(p-m-u)/factorial(p+m+u)
+    w1 = wigner_3j(n,v,p,0,0,0)
+    w2 = wigner_3j(n,v,p,m,u,-m-u)
 
-    Pnm = associated_legendre(n,m)
-    Pvu = associated_legendre(v,u)
-    Ppmu = associated_legendre(p,m+u)
-    integrand = lambda x: Pnm(x)*Pvu(x)*Ppmu(x)
-    integral = integrate.quad(integrand, -1, 1)[0]
+    return factor*w1*w2
 
-    return factor*integral
+@lru_cache(None)
+def b_func(m,n,u,v,p):
+    """b function"""
 
-@lru_cache(maxsize=None)
-def b_func(m, n, u, v, p):
-    """b function that appears in the VSH translation coefficients"""
+    f = lambda n: special.gamma(n+1)
+    numerator = f(n+m)*f(v+u)*f(p-m-u+1)
+    denominator = f(n-m)*f(v-u)*f(p+m+u+1)
+    factor = (-1.)**(m+u)*(2*p+3)*(numerator/denominator)**0.5
 
-    b1 = (2*p+1)/(2*p-1)
-    b2 = (v-u)*(v+u+1)*a_func(m,n,-u-1,v,p-1)
-    b3 = -(p-m+u)*(p-m+u-1)*a_func(m,n,-u+1,v,p-1)
-    b4 = 2*u*(p-m+u)*a_func(m,n,-u,v,p-1)
+    w1 = wigner_3j(n,v,p,0,0,0)
+    w2 = wigner_3j(n,v,p+1,m,u,-m-u)
 
-    return b1*(b2+b3+b4)
+    return factor*w1*w2
 
 def Emn(m, n, E0):
     return E0*1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
 
 def A_translation(m, n, u, v, r, theta, phi, k):
-    factor = (-1.)**u *1.j**(v-n)*(2*v+1)/(2*v*(v+1))
-    normalization = Emn(u,v,1)/Emn(m,n,1)
+    m *= -1
+    f = lambda n: special.gamma(n+1)
+    numerator = (2*v+1)*f(n-m)*f(v-u)
+    denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
+    factor = (-1.)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
+
+    qmax = min(n, v, (n+v - abs(m+u))//2)
     sum_term = 0
-    for p in range(np.abs(n-v), n+v+1):
-        if np.abs(m-u) > p:
-            continue
-        else:
-            Pnm = associated_legendre(p,m-u)
-            sum_term += (-1j)**p *(n*(n+1) + v*(v+1) - p*(p+1))*a_func(m,n,-u,v,p)*spherical_hn(p, k*r)*Pnm(np.cos(theta))*np.exp(1j*(m-u)*phi)
-    
-    return normalization*factor*sum_term
+    for q in range(0, qmax+1):
+        p = n + v - 2*q
+        aq = a_func(m,n,u,v,p)
+        A = 1j**p*(n*(n+1) + v*(v+1) - p*(p+1))*aq
+
+        Pnm = associated_legendre(p,u+m)
+        sum_term += A*spherical_hn(p, k*r)*Pnm(np.cos(theta))
+
+    normalization = Emn(u,v,1)/Emn(m,n,1)
+    return factor*sum_term * normalization
 
 def B_translation(m, n, u, v, r, theta, phi, k):
-    factor = (-1.)**u *1.j**(v-n)*(2*v+1)/(2*v*(v+1))
-    normalization = Emn(u,v,1)/Emn(m,n,1)
+    m *= -1
+    f = lambda n: special.gamma(n+1)
+    numerator = (2*v+1)*f(n-m)*f(v-u)
+    denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
+    factor = (-1.)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
+
+    qmax = min(n, v, (n+v+1 - abs(m+u))//2)
     sum_term = 0
-    for p in range(np.abs(n-v), n+v+1):
-        if np.abs(m-u) > p:
-            continue
-        else:
-            Pnm = associated_legendre(p,m-u)
-            sum_term += (-1j)**p *b_func(m,n,u,v,p)*spherical_hn(p, k*r)*Pnm(np.cos(theta))*np.exp(1j*(m-u)*phi)
-    
-    return normalization*factor*sum_term
+    for q in range(1, qmax+1):
+        p = n + v - 2*q
+        bq = b_func(m,n,u,v,p)
+        A = 1j**(p+1)*(((p+1)**2 - (n-v)**2)*((n+v+1)**2 - (p+1)**2))**0.5*bq
+
+        Pnm = associated_legendre(p+1,u+m)
+        sum_term += A*spherical_hn(p+1, k*r)*Pnm(np.cos(theta))
+
+    normalization = Emn(u,v,1)/Emn(m,n,1)
+    return factor*sum_term * normalization
 
 class VSH_mode(enum.Enum):
     outgoing = enum.auto()
