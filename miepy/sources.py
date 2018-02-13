@@ -5,7 +5,8 @@ Pre-defined sources that can be used with particle_system
 import numpy as np
 
 from abc import ABCMeta, abstractmethod
-from miepy.vsh import pi_func, tau_func
+from miepy.vsh import pi_func, tau_func, project_source_onto
+from math import factorial
 
 class source:
     """source interface base class"""
@@ -80,41 +81,96 @@ def rhc_polarized_plane_wave(amplitude=1):
 def lhc_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,-1j], amplitude=amplitude)
 
-class azimuthal_beam(source):
-    def __init__(self, radius, amplitude=1):
-        super().__init__(amplitude)
-        self.radius = radius
 
+
+def zr(w0, wav):
+    return np.pi*w0**2/wav
+
+def w(z, w0, wav):
+    return w0*np.sqrt(1 + (z/zr(w0,wav))**2)
+    
+def Rinv(z, w0, wav):
+    return z/(z**2 + zr(w0,wav)**2)
+
+def gouy(z, w0, wav):
+    return np.arctan2(z, zr(w0,wav))
+
+class gaussian_beam(source):
+    def __init__(self, width, polarization, amplitude=1):
+        super().__init__(amplitude)
+        self.width = width
+        polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization = polarization
+        self.polarization /= np.linalg.norm(polarization)
+    
     def E(self, r, k):
-        rho = (r[0]**2 + r[1]**2)**0.5
-        theta = np.arctan2(r[1], r[0])
-        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
-        pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
-        return pol*amp 
+        rho_sq = r[0]**2 + r[1]**2
+        wav = 2*np.pi/k
+        amp = self.amplitude*self.width/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2)
+        phase = k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - gouy(r[2],self.width,wav)
+        pol = np.array([*self.polarization, 0])
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
 
     def H(self, r, k):
-        rho = (r[0]**2 + r[1]**2)**0.5
-        theta = np.arctan2(r[1], r[0])
-        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
-        pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
-        return pol*amp 
+        rho_sq = r[0]**2 + r[1]**2
+        wav = 2*np.pi/k
+        amp = self.amplitude*self.width/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2)
+        phase = k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - gouy(r[2],self.width,wav)
+        H0_x, H0_y = -self.polarization[1], self.polarization[0]
+        pol = np.array([H0_x, H0_y, 0])
+
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+    def structure_of_mode(self, n, m, r, k):
+        p = project_source_onto(self, k, 'electric', n, m, r)
+        q = project_source_onto(self, k, 'magnetic', n, m, r)
+
+        return (p,q)
 
 
-class radial_beam(source):
-    def __init__(self, radius, amplitude=1):
+
+class laguerre_gaussian_beam(source):
+    def __init__(self, l, width, polarization, amplitude=1):
         super().__init__(amplitude)
-        self.radius = radius
-
+        self.l = l
+        self.p = 1
+        self.width = width
+        polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization = polarization
+        self.polarization /= np.linalg.norm(polarization)
+    
     def E(self, r, k):
-        rho = (r[0]**2 + r[1]**2)**0.5
-        theta = np.arctan2(r[1], r[0])
-        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
-        pol = np.array([np.cos(theta), np.sin(theta), np.zeros_like(theta)])
-        return pol*amp 
+        rho_sq = r[0]**2 + r[1]**2
+        phi = np.arctan2(r[1], r[0])
+        wav = 2*np.pi/k
+        C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
+        N = abs(self.l) + 2*self.p
+
+        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l) * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
+
+        pol = np.array([*self.polarization, 0])
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
 
     def H(self, r, k):
-        rho = (r[0]**2 + r[1]**2)**0.5
-        theta = np.arctan2(r[1], r[0])
-        amp = self.amplitude*np.exp(1j*k*r[2])*rho*np.exp(-0.5*(rho/self.radius)**2)
-        pol = np.array([-np.sin(theta), np.cos(theta), np.zeros_like(theta)])
-        return pol*amp 
+        rho_sq = r[0]**2 + r[1]**2
+        phi = np.arctan2(r[1], r[0])
+        wav = 2*np.pi/k
+        C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
+        N = abs(self.l) + 2*self.p
+
+        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l) * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
+
+        H0_x, H0_y = -self.polarization[1], self.polarization[0]
+        pol = np.array([H0_x, H0_y, 0])
+
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+    def structure_of_mode(self, n, m, r, k):
+        p = project_source_onto(self, k, 'electric', n, m, r)
+        q = project_source_onto(self, k, 'magnetic', n, m, r)
+
+        return (p,q)

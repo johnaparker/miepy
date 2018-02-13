@@ -353,7 +353,9 @@ class gmt:
         pos = self.spheres.position.T
         for k in range(self.Nfreq):
             for r in range(self.rmax):
-                self.p_src[k,:,r], self.q_src[k,:,r] = \
+                for n in range(self.Nparticles):
+                    pos = self.spheres.position[n]
+                    self.p_src[k,n,r], self.q_src[k,n,r] = \
                         self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data['k'][k])
 
     def _set_without_interactions(self):
