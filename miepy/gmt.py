@@ -8,6 +8,7 @@ from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
 from collections import namedtuple
 from scipy import constants
+from math import factorial
 
 levi = levi_civita()
 
@@ -84,7 +85,7 @@ class spheres:
 class gmt:
     """Solve Generalized Mie Theory: N particles in an arbitray source profile"""
     def __init__(self, spheres, source, wavelength, Lmax, medium=None, interactions=True,
-                   Ntheta=51, Nphi=31):
+                   origin=None, Ntheta=51, Nphi=31):
         """Arguments:
                spheres          spheres object specifying the positions, radii, and materials
                source           source object specifying the incident E and H functions
@@ -92,6 +93,7 @@ class gmt:
                Lmax             maximum number of orders to use in angular momentum expansion (int)
                medium           (optional) material medium (must be non-absorbing; default=vacuum)
                interactions     (optional) If True, include particle interactions (bool, default=True) 
+               origin           (optional) system origin around which to compute cluster quantities (default = [0,0,0])
                Ntheta           (optional) number of points in theta to use in force/flux calculations (default = 51)
                Nphi             (optional) number of points in phi to use in force/flux calculations (default = 31)
         """
@@ -102,6 +104,7 @@ class gmt:
         self.rmax = Lmax*(Lmax + 2)
         self.interactions = interactions
 
+        self.origin = np.zeros(3) if origin is None else np.asarray(origin)
         self.Ntheta = Ntheta
         self.Nphi = Nphi
 
@@ -233,6 +236,46 @@ class gmt:
                 H[:,k] += self.source.H(np.array([x,y,z]), self.material_data['k'][k])
 
         return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
+
+    #TODO: implement Lmax
+    def scattering_cross_section(self, Lmax=None):
+        """Compute the scattering cross-section of the cluster
+
+        Arguments:
+            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
+        """
+
+        if Lmax is None:
+            Lmax = self.Lmax
+
+        amn = np.zeros([self.Nfreq, self.rmax], dtype=complex)
+        bmn = np.zeros([self.Nfreq, self.rmax], dtype=complex)
+        Cscat = np.zeros([self.Nfreq, self.rmax], dtype=float)
+
+        for i in range(self.Nparticles):
+            rij = self.origin - self.spheres.position[i]
+            rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
+            
+            for k in range(self.Nfreq):
+                for r in range(self.rmax):
+                    n = self.n_indices[r]
+                    m = self.m_indices[r]
+                    for rp in range(self.rmax):
+                        v = self.n_indices[rp]
+                        u = self.m_indices[rp]
+
+                        a = self.a[k,i,v-1]*self.p[k,i,rp]
+                        b = self.b[k,i,v-1]*self.q[k,i,rp]
+
+                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k])
+                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k])
+
+                        amn[k,r] += a*A + b*B
+                        bmn[k,r] += a*B + b*A
+
+                    Cscat[k,r] = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
+                            * factorial(n-m)/factorial(n+m) * (np.abs(amn[k,r])**2 + np.abs(bmn[k,r])**2)
+        return Cscat
 
     def flux_from_particle(self, i, inc=False):
         """Determine the scattered flux from a single particle
