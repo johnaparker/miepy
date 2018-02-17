@@ -483,7 +483,7 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
     X,Y,Z = sph_to_cart(r, THETA, PHI, origin=origin)
     E = src.E([X,Y,Z], k)
 
-    return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
+    return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)/src.amplitude
 
 def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs

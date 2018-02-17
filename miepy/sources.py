@@ -147,7 +147,7 @@ class laguerre_gaussian_beam(source):
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
         N = abs(self.l) + 2*self.p
 
-        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l) * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l)# * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
         phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
 
         pol = np.array([*self.polarization, 0])
@@ -161,7 +161,7 @@ class laguerre_gaussian_beam(source):
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
         N = abs(self.l) + 2*self.p
 
-        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l) * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l)# * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
         phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
 
         H0_x, H0_y = -self.polarization[1], self.polarization[0]
