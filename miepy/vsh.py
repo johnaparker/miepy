@@ -188,9 +188,10 @@ def b_func(m,n,u,v,p):
 def Emn(m, n, E0):
     return E0*1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
 
-def A_translation(m, n, u, v, r, theta, phi, k):
+def A_translation(m, n, u, v, r, theta, phi, k, mode):
     m *= -1
     f = lambda n: special.gamma(n+1)
+    zn = get_zn(mode)
     numerator = (2*v+1)*f(n-m)*f(v-u)
     denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
@@ -204,13 +205,14 @@ def A_translation(m, n, u, v, r, theta, phi, k):
         A = 1j**p*(n*(n+1) + v*(v+1) - p*(p+1))*aq
 
         Pnm = associated_legendre(p,u+m)
-        sum_term += A*spherical_hn(p, k*r)*Pnm(np.cos(theta))
+        sum_term += A*zn(p, k*r)*Pnm(np.cos(theta))
 
     return factor*sum_term
 
-def B_translation(m, n, u, v, r, theta, phi, k):
+def B_translation(m, n, u, v, r, theta, phi, k, mode):
     m *= -1
     f = lambda n: special.gamma(n+1)
+    zn = get_zn(mode)
     numerator = (2*v+1)*f(n-m)*f(v-u)
     denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
@@ -224,7 +226,7 @@ def B_translation(m, n, u, v, r, theta, phi, k):
         A = 1j**(p+1)*(((p+1)**2 - (n-v)**2)*((n+v+1)**2 - (p+1)**2))**0.5*bq
 
         Pnm = associated_legendre(p+1,u+m)
-        sum_term += A*spherical_hn(p+1, k*r)*Pnm(np.cos(theta))
+        sum_term += A*zn(p+1, k*r)*Pnm(np.cos(theta))
 
     return factor*sum_term
 
@@ -232,6 +234,15 @@ class VSH_mode(enum.Enum):
     outgoing = enum.auto()
     ingoing  = enum.auto()
     incident = enum.auto()
+
+def get_zn(mode):
+    """determine the zn function for a given mode"""
+    if mode is VSH_mode.outgoing:
+        return spherical_hn
+    elif mode is VSH_mode.incident:
+        return special.spherical_jn
+    else:
+        raise TypeError(f'{mode} is not a valid type of mode')
 
 def VSH(n, m, mode=VSH_mode.outgoing):
     """electric and magnetic vector spherical harmonic function
@@ -247,12 +258,7 @@ def VSH(n, m, mode=VSH_mode.outgoing):
     tau_f = tau_func(n,m)
     Pnm = associated_legendre(n,m)
 
-    if mode is VSH_mode.outgoing:
-        zn = spherical_hn
-    elif mode is VSH_mode.incident:
-        zn = special.spherical_jn
-    else:
-        raise TypeError('mode must be of enum type VSH_mode')
+    zn = get_zn(mode)
         
     def N(r, theta, phi, k):
         H = zn(n, k*r)
@@ -290,10 +296,7 @@ def vsh_normalization_values(mode, ftype, n, m, r, k):
         r                 radius
         k                 wavenumber
     """
-    if mode == VSH_mode.outgoing:
-        zn = spherical_hn
-    elif mode == VSH_mode.incident:
-        zn = special.spherical_jn
+    zn = get_zn(mode)
 
     Emn_val = Emn(m, n, E0=1)
     zn_val = zn(n, k*r)

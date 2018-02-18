@@ -267,8 +267,8 @@ class gmt:
                         a = self.a[k,i,v-1]*self.p[k,i,rp]
                         b = self.b[k,i,v-1]*self.q[k,i,rp]
 
-                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k])
-                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k])
+                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
+                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
 
                         amn[k,r] += a*A + b*B
                         bmn[k,r] += a*B + b*A
@@ -433,8 +433,8 @@ class gmt:
                             v = self.n_indices[s]
                             u = self.m_indices[s]
 
-                            A_transfer = miepy.vsh.A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
-                            B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k])
+                            A_transfer = miepy.vsh.A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k], miepy.vsh.VSH_mode.outgoing)
+                            B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data['k'][k], miepy.vsh.VSH_mode.outgoing)
 
                             interaction_matrix[0,i,r,0,j,s] = A_transfer*self.a[k,j,v-1]
                             interaction_matrix[0,i,r,1,j,s] = B_transfer*self.b[k,j,v-1]
