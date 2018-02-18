@@ -237,9 +237,8 @@ class gmt:
 
         return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
 
-    #TODO: implement Lmax
-    def scattering_cross_section(self, Lmax=None):
-        """Compute the scattering cross-section of the cluster
+    def cross_sections(self, Lmax=None):
+        """Compute the scattering, absorption, and extinction cross-section of the cluster
 
         Arguments:
             Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
@@ -248,18 +247,30 @@ class gmt:
         if Lmax is None:
             Lmax = self.Lmax
 
-        amn = np.zeros([self.Nfreq, self.rmax], dtype=complex)
-        bmn = np.zeros([self.Nfreq, self.rmax], dtype=complex)
-        Cscat = np.zeros([self.Nfreq, self.rmax], dtype=float)
+        rmax = Lmax*(Lmax + 2)
+        n_indices = np.zeros(rmax, dtype=int)
+        m_indices = np.zeros(rmax, dtype=int)
+
+        counter = 0
+        for n in range(1,Lmax+1):
+            for m in range(-n,n+1):
+                n_indices[counter] = n
+                m_indices[counter] = m
+                counter += 1
+
+        amn = np.zeros([self.Nfreq, rmax], dtype=complex)
+        bmn = np.zeros([self.Nfreq, rmax], dtype=complex)
+        Cscat = np.zeros([self.Nfreq, rmax], dtype=float)
+        Cext  = np.zeros([self.Nfreq, rmax], dtype=float)
 
         for i in range(self.Nparticles):
             rij = self.origin - self.spheres.position[i]
             rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
             
             for k in range(self.Nfreq):
-                for r in range(self.rmax):
-                    n = self.n_indices[r]
-                    m = self.m_indices[r]
+                for r in range(rmax):
+                    n = n_indices[r]
+                    m = m_indices[r]
                     for rp in range(self.rmax):
                         v = self.n_indices[rp]
                         u = self.m_indices[rp]
@@ -275,7 +286,13 @@ class gmt:
 
                     Cscat[k,r] = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
                             * factorial(n-m)/factorial(n+m) * (np.abs(amn[k,r])**2 + np.abs(bmn[k,r])**2)
-        return Cscat
+
+                    p, q = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
+                    Cext[k,r]  = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
+                            * factorial(n-m)/factorial(n+m) * np.real(np.conj(p)*amn[k,r] + np.conj(q)*bmn[k,r])
+
+        Cabs = Cext - Cscat
+        return Cscat, Cabs, Cext
 
     def flux_from_particle(self, i, inc=False):
         """Determine the scattered flux from a single particle
@@ -391,6 +408,10 @@ class gmt:
             self._solve_interactions()
         else:
             self._set_without_interactions()
+
+    # @lru_cache(max=None)
+    def solve_cluster_coefficients(self, Lmax):
+        pass
 
     def _solve_source_decomposition(self):
         pos = self.spheres.position.T
