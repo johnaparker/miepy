@@ -11,7 +11,7 @@ from tqdm import tqdm
 wavelength = np.linspace(400e-9,1000e-9,1000)
 
 # create a material with n = 3.7 (eps = n^2) at all wavelengths
-dielectric = miepy.material_functions.constant_material(3.7**2)
+dielectric = miepy.constant_material(3.7**2)
 
 # calculate scattering coefficients
 radius = 100e-9       # 100 nm radius

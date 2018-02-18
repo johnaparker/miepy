@@ -5,7 +5,6 @@ mie_core_shell calculates the scattering coefficients of a core-shell structure 
 import numpy as np
 import miepy
 from miepy.special_functions import riccati_1_single,riccati_2_single,riccati_3_single
-from miepy.material_functions import constant_material
 R1 = riccati_1_single
 R2 = riccati_2_single
 R3 = riccati_3_single
@@ -52,7 +51,7 @@ class single_mie_core_shell:
         self.wavelength = np.asarray(np.atleast_1d(wavelength), dtype=float)
         self.Lmax = Lmax
         if medium is None:
-            self.medium = constant_material(1.0, 1.0)
+            self.medium = miepy.constant_material(1.0, 1.0)
         else:
             self.medium = medium
             if (self.medium.eps(self.wavelength).imag != 0).any()  \

@@ -9,7 +9,6 @@ import os
 import itertools
 from matplotlib.markers import MarkerStyle
 import miepy
-from miepy.material_functions import data_material
 
 def get_filepath(name, author):
     """get the absolute filepath to the material data of name and author"""
@@ -40,7 +39,7 @@ def load_material(name, author):
         k = data[:,2]
         eps = (n + 1j*k)**2
 
-    return data_material(wav, eps)
+    return miepy.data_material(wav, eps)
 
 def get_authors(material_name):
     """Get a list of possible authors for a given material"""

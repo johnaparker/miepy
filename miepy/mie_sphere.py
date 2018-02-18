@@ -4,7 +4,6 @@ mie_sphere calculates the scattering coefficients of a sphere using Mie theory
 import numpy as np
 import miepy
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
-from miepy.material_functions import constant_material
 from miepy.scattering import scattered_E,scattered_H,interior_E,interior_H
 
 class single_mie_sphere:
@@ -23,7 +22,7 @@ class single_mie_sphere:
         self.wavelength = np.asarray(np.atleast_1d(wavelength), dtype=float)
         self.Lmax = Lmax
         if medium is None:
-            self.medium = constant_material(1.0, 1.0)
+            self.medium = miepy.constant_material(1.0, 1.0)
         else:
             self.medium = medium
             if (self.medium.eps(self.wavelength).imag != 0).any()  \
