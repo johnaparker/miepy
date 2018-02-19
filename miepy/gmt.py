@@ -237,8 +237,8 @@ class gmt:
 
         return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
 
-    def cross_sections(self, Lmax=None):
-        """Compute the scattering, absorption, and extinction cross-section of the cluster
+    def cross_sections_per_multipole(self, Lmax=None):
+        """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
 
         Arguments:
             Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
@@ -258,19 +258,21 @@ class gmt:
                 m_indices[counter] = m
                 counter += 1
 
-        amn = np.zeros([self.Nfreq, rmax], dtype=complex)
-        bmn = np.zeros([self.Nfreq, rmax], dtype=complex)
-        Cscat = np.zeros([self.Nfreq, rmax], dtype=float)
-        Cext  = np.zeros([self.Nfreq, rmax], dtype=float)
+        Cscat = np.zeros([2, Lmax, self.Nfreq], dtype=float)
+        Cext  = np.zeros([2, Lmax, self.Nfreq], dtype=float)
 
         for i in range(self.Nparticles):
             rij = self.origin - self.spheres.position[i]
             rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
             
             for k in range(self.Nfreq):
+                print(k)
                 for r in range(rmax):
                     n = n_indices[r]
                     m = m_indices[r]
+                    amn = 0
+                    bmn = 0
+
                     for rp in range(self.rmax):
                         v = self.n_indices[rp]
                         u = self.m_indices[rp]
@@ -281,18 +283,31 @@ class gmt:
                         A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
                         B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
 
-                        amn[k,r] += a*A + b*B
-                        bmn[k,r] += a*B + b*A
+                        amn += a*A + b*B
+                        bmn += a*B + b*A
 
-                    Cscat[k,r] = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
-                            * factorial(n-m)/factorial(n+m) * (np.abs(amn[k,r])**2 + np.abs(bmn[k,r])**2)
-
+                    factor = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
+                            * factorial(n-m)/factorial(n+m)
                     p, q = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
-                    Cext[k,r]  = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
-                            * factorial(n-m)/factorial(n+m) * np.real(np.conj(p)*amn[k,r] + np.conj(q)*bmn[k,r])
+
+                    Cscat[0,n-1,k] += factor*np.abs(amn)**2
+                    Cscat[1,n-1,k] += factor*np.abs(bmn)**2
+
+                    Cext[0,n-1,k] += factor*np.real(np.conj(p)*amn)
+                    Cext[1,n-1,k] += factor*np.real(np.conj(q)*bmn)
 
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
+
+    def cross_sections(self, Lmax=None):
+        """Compute the scattering, absorption, and extinction cross-section of the cluster
+
+        Arguments:
+            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
+        """
+
+        Cscat, Cabs, Cext = self.cross_sections_per_multipole(Lmax)
+        return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
 
     def flux_from_particle(self, i, inc=False):
         """Determine the scattered flux from a single particle

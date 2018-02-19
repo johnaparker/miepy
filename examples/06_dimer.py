@@ -22,7 +22,7 @@ separation = 83*nm
 spheres = miepy.spheres([[separation/2,0,0], [-separation/2,0,0]], radius, Au)
 sol = miepy.gmt(spheres, source, wavelengths, Lmax)
 
-scat, absorb, extinct = map(lambda C: np.sum(C, axis=1), sol.cross_sections())
+scat, absorb, extinct = sol.cross_sections()
 
 plt.figure(figsize=(8,6))
 plt.plot(wavelengths/nm, scat/um**2,    label='scattering (dimer)', color='C0')
