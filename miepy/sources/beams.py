@@ -6,7 +6,7 @@ import numpy as np
 from miepy.vsh import project_source_onto
 from miepy.sources.source_base import source, combined_source
 from math import factorial
-from scipy.special import eval_laguerre, eval_hermite
+from scipy.special import eval_genlaguerre, eval_hermite
 
 def zr(w0, wav):
     return np.pi*w0**2/wav
@@ -104,10 +104,10 @@ class hermite_gaussian_beam(source):
 
 
 class laguerre_gaussian_beam(source):
-    def __init__(self, l, width, polarization, amplitude=1):
+    def __init__(self, p, l, width, polarization, amplitude=1):
         super().__init__(amplitude)
+        self.p = p
         self.l = l
-        self.p = 1
         self.width = width
         polarization = np.asarray(polarization, dtype=np.complex)
         self.polarization = polarization
@@ -117,10 +117,14 @@ class laguerre_gaussian_beam(source):
         rho_sq = r[0]**2 + r[1]**2
         phi = np.arctan2(r[1], r[0])
         wav = 2*np.pi/k
+
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
+        wz = w(r[2], self.width, wav)
+
+        Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
         N = abs(self.l) + 2*self.p
 
-        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l)# * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        amp = self.amplitude*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
         phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
 
         pol = np.array([*self.polarization, 0])
@@ -131,10 +135,14 @@ class laguerre_gaussian_beam(source):
         rho_sq = r[0]**2 + r[1]**2
         phi = np.arctan2(r[1], r[0])
         wav = 2*np.pi/k
+
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
+        wz = w(r[2], self.width, wav)
+
+        Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
         N = abs(self.l) + 2*self.p
 
-        amp = self.amplitude*C/w(r[2], self.width, wav) * np.exp(-rho_sq/w(r[2],self.width,wav)**2) * ((2*rho_sq)**0.5/(w(r[2], self.width, wav)))**abs(self.l)# * (1 + self.l - 2*rho_sq/w(r[2],self.width,wav)**2)
+        amp = self.amplitude*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
         phase = self.l*phi + k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
 
         H0_x, H0_y = -self.polarization[1], self.polarization[0]
