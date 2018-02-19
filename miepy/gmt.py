@@ -261,6 +261,11 @@ class gmt:
         Cscat = np.zeros([2, Lmax, self.Nfreq], dtype=float)
         Cext  = np.zeros([2, Lmax, self.Nfreq], dtype=float)
 
+        anm = np.zeros([rmax, self.Nfreq], dtype=complex)
+        bnm = np.zeros([rmax, self.Nfreq], dtype=complex)
+        p0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
+        q0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
+
         for i in range(self.Nparticles):
             rij = self.origin - self.spheres.position[i]
             rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
@@ -269,8 +274,6 @@ class gmt:
                 for r in range(rmax):
                     n = n_indices[r]
                     m = m_indices[r]
-                    amn = 0
-                    bmn = 0
 
                     for rp in range(self.rmax):
                         v = self.n_indices[rp]
@@ -282,18 +285,25 @@ class gmt:
                         A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
                         B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
 
-                        amn += a*A + b*B
-                        bmn += a*B + b*A
+                        anm[r,k] += a*A + b*B
+                        bnm[r,k] += a*B + b*A
 
-                    factor = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
-                            * factorial(n-m)/factorial(n+m)
-                    p, q = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
 
-                    Cscat[0,n-1,k] += factor*np.abs(amn)**2
-                    Cscat[1,n-1,k] += factor*np.abs(bmn)**2
 
-                    Cext[0,n-1,k] += factor*np.real(np.conj(p)*amn)
-                    Cext[1,n-1,k] += factor*np.real(np.conj(q)*bmn)
+        for k in range(self.Nfreq):
+            for r in range(rmax):
+                n = n_indices[r]
+                m = m_indices[r]
+
+                factor = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
+                        * factorial(n-m)/factorial(n+m)
+                p0[r,k], q0[r,k] = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
+
+                Cscat[0,n-1,k] += factor*np.abs(anm[r,k])**2
+                Cscat[1,n-1,k] += factor*np.abs(bnm[r,k])**2
+
+                Cext[0,n-1,k] += factor*np.real(np.conj(p0[r,k])*anm[r,k])
+                Cext[1,n-1,k] += factor*np.real(np.conj(q0[r,k])*bnm[r,k])
 
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
