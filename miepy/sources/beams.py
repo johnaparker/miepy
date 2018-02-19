@@ -6,6 +6,7 @@ import numpy as np
 from miepy.vsh import project_source_onto
 from miepy.sources.source_base import source
 from math import factorial
+from scipy.special import eval_laguerre, eval_hermite
 
 def zr(w0, wav):
     return np.pi*w0**2/wav
@@ -52,6 +53,54 @@ class gaussian_beam(source):
 
         return (p,q)
 
+class hermite_gaussian_beam(source):
+    def __init__(self, l, m, width, polarization, amplitude=1):
+        super().__init__(amplitude)
+        self.l = l
+        self.m = m
+        self.width = width
+        polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization = polarization
+        self.polarization /= np.linalg.norm(polarization)
+    
+    def E(self, r, k):
+        rho_sq = r[0]**2 + r[1]**2
+        wav = 2*np.pi/k
+
+        wz = w(r[2], self.width, wav)
+        HG_l = eval_hermite(self.l, np.sqrt(2)*r[0]/wz)
+        HG_m = eval_hermite(self.m, np.sqrt(2)*r[1]/wz)
+        N = self.l + self.m
+
+        amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
+        phase = k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
+
+        pol = np.array([*self.polarization, 0])
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+
+    def H(self, r, k):
+        rho_sq = r[0]**2 + r[1]**2
+        wav = 2*np.pi/k
+
+        wz = w(r[2], self.width, wav)
+        HG_l = eval_hermite(self.l, np.sqrt(2)*r[0]/wz)
+        HG_m = eval_hermite(self.m, np.sqrt(2)*r[1]/wz)
+        N = self.l + self.m
+
+        amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
+        phase = k*r[2] + k*rho_sq*Rinv(r[2],self.width,wav)/2 - (N+1)*gouy(r[2],self.width,wav)
+
+        H0_x, H0_y = -self.polarization[1], self.polarization[0]
+        pol = np.array([H0_x, H0_y, 0])
+
+        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+    def structure_of_mode(self, n, m, r, k):
+        p = project_source_onto(self, k, 'electric', n, m, r)
+        q = project_source_onto(self, k, 'magnetic', n, m, r)
+
+        return (p,q)
 
 
 class laguerre_gaussian_beam(source):
