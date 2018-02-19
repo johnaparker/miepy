@@ -266,7 +266,6 @@ class gmt:
             rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
             
             for k in range(self.Nfreq):
-                print(k)
                 for r in range(rmax):
                     n = n_indices[r]
                     m = m_indices[r]
