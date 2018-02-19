@@ -4,7 +4,7 @@ beam sources
 
 import numpy as np
 from miepy.vsh import project_source_onto
-from miepy.sources.source_base import source
+from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_laguerre, eval_hermite
 
@@ -147,3 +147,15 @@ class laguerre_gaussian_beam(source):
         q = project_source_onto(self, k, 'magnetic', n, m, r)
 
         return (p,q)
+
+def azimuthal_beam(width, amplitude=1):
+    """azimuthally polarized beam"""
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], amplitude)
+    return HG_1 + HG_2
+
+def radial_beam(width, amplitude=1):
+    """radially polarized beam"""
+    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], amplitude)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], amplitude)
+    return HG_1 + HG_2

@@ -29,3 +29,26 @@ class source:
                 p[n-1,m+n], q[n-1,m+n] = self.structure_of_mode(n, m, position, k)
 
         return p,q
+
+    def __add__(self, other):
+        return combined_source(self, other)
+
+class combined_source(source):
+    """sources added together"""
+
+    def __init__(self, *sources):
+        self.sources = sources
+        self.amplitude = sources[0].amplitude
+
+    def E(self, r, k):
+        return sum(map(lambda source: source.E(r,k), self.sources))
+
+    def H(self, r, k):
+        return sum(map(lambda source: source.H(r,k), self.sources))
+    
+    def structure_of_mode(self, n, m, r, k):
+        structure = map(lambda source: source.structure_of_mode(n, m, r, k), self.sources)
+        p_all = sum([p for p,q in structure])
+        q_all = sum([q for p,q in structure])
+
+        return p_all, q_all
