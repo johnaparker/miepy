@@ -159,6 +159,96 @@ class gmt:
             self._solve_interactions()
         else:
             self._set_without_interactions()
+
+    def E_field_from_particle(self, i, x, y, z, inc=True):
+        """Compute the electric field around particle i
+             
+            Arguments:
+                i      particle number
+                x      x position (array-like) 
+                y      y position (array-like) 
+                z      z position (array-like) 
+                inc    Include the incident field (bool, default=True)
+
+            Returns: E[3,M], M = number of wavelengths
+        """
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
+        z = np.asarray(z, dtype=float)
+
+        E = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
+
+        R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = sph_unit_vectors(THETA, PHI)
+
+        for k in range(self.Nfreq):
+            E_sph = np.zeros((3,) + x.shape, dtype=complex)
+            for r in range(self.rmax):
+                n = self.n_indices[r]
+                m = self.m_indices[r]
+                factor = 1j*miepy.vsh.Emn(m,n,self.source.amplitude)
+                N,M = miepy.vsh.VSH(n,m)
+                E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+
+                N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
+                p = self.p[k,i,r]
+                q = self.q[k,i,r]
+                if not inc:
+                    p -= self.p_src[k,i,r]
+                    q -= self.q_src[k,i,r]
+
+                E_sph += -factor*p*N(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += -factor*q*M(R,THETA,PHI,self.material_data['k'][k])
+
+            E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
+        
+        return E
+
+    def H_field_from_particle(self, i, x, y, z, inc=True):
+        """Compute the magnetic field around particle i
+             
+            Arguments:
+                i      particle number
+                x      x position (array-like) 
+                y      y position (array-like) 
+                z      z position (array-like) 
+                inc    Include the incident field (bool, default=True)
+
+            Returns: H[3,M], M = number of wavelengths
+        """
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
+        z = np.asarray(z, dtype=float)
+
+        H = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
+
+        R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = sph_unit_vectors(THETA, PHI)
+
+        for k in range(self.Nfreq):
+            H_sph = np.zeros((3,) + x.shape, dtype=complex)
+            for r in range(self.rmax):
+                n = self.n_indices[r]
+                m = self.m_indices[r]
+                factor = miepy.vsh.Emn(m,n,self.source.amplitude)
+                N,M = miepy.vsh.VSH(n,m)
+                H_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+
+                N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
+                p = self.p[k,i,r]
+                q = self.q[k,i,r]
+                if inc == False:
+                    p -= self.p_src[k,i,r]
+                    q -= self.q_src[k,i,r]
+
+                H_sph += -factor*q*N(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += -factor*p*M(R,THETA,PHI,self.material_data['k'][k])
+
+            H[:,k] += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
+        
+        return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
     
     def E_field(self, x, y, z, inc=True):
         """Compute the electric field due to all particles
@@ -331,8 +421,8 @@ class gmt:
         X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
         rhat,*_ = sph_unit_vectors(THETA, PHI)
 
-        E_all = self.E_field(X, Y, Z, inc)
-        H_all = self.H_field(X, Y, Z, inc)
+        E_all = self.E_field_from_particle(i, X, Y, Z, inc)
+        H_all = self.H_field_from_particle(i, X, Y, Z, inc)
 
         flux = np.zeros(self.Nfreq, dtype=float)
 
@@ -361,8 +451,8 @@ class gmt:
         X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
         rhat,*_ = sph_unit_vectors(THETA, PHI)
 
-        E_all = self.E_field(X, Y, Z, inc)
-        H_all = self.H_field(X, Y, Z, inc)
+        E_all = self.E_field_from_particle(i, X, Y, Z, inc)
+        H_all = self.H_field_from_particle(i, X, Y, Z, inc)
 
         F = np.zeros([3, self.Nfreq], dtype=float)
         T = np.zeros([3, self.Nfreq], dtype=float)
