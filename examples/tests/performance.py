@@ -20,7 +20,7 @@ separation = 250*nm
 
 def force_func(N):
     spheres = miepy.spheres([[n*separation, 0, 0] for n in range(N)], radius, Ag)
-    mie = miepy.gmt(spheres, source, 600*nm, 3)
+    mie = miepy.gmt(spheres, source, 600*nm, 1)
     
     start = timer()
     mie.force()
@@ -54,4 +54,6 @@ def N_particle_test(func, Nmax = 20):
         time = func(N)
         print('  ', f'N = {N}: ', f'{time:.3f}s')
 
-N_particle_test(force_func)
+N_particle_test(interactions_func, 10)
+N_particle_test(force_func, 10)
+N_particle_test(flux_func, 10)

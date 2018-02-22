@@ -134,6 +134,8 @@ class gmt:
 
         self.p = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
         self.q = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.p_inc = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q_inc = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
         self.p_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
         self.q_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
 
@@ -160,15 +162,15 @@ class gmt:
         else:
             self._set_without_interactions()
 
-    def E_field_from_particle(self, i, x, y, z, inc=True):
+    def E_field_from_particle(self, i, x, y, z, source=True):
         """Compute the electric field around particle i
              
             Arguments:
-                i      particle number
-                x      x position (array-like) 
-                y      y position (array-like) 
-                z      z position (array-like) 
-                inc    Include the incident field (bool, default=True)
+                i        particle number
+                x        x position (array-like) 
+                y        y position (array-like) 
+                z        z position (array-like) 
+                source   Include the source field (bool, default=True)
 
             Returns: E[3,M], M = number of wavelengths
         """
@@ -187,14 +189,15 @@ class gmt:
                 n = self.n_indices[r]
                 m = self.m_indices[r]
                 factor = 1j*miepy.vsh.Emn(m,n,self.source.amplitude)
+
                 N,M = miepy.vsh.VSH(n,m)
-                E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += factor*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += factor*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
-                p = self.p[k,i,r]
-                q = self.q[k,i,r]
-                if not inc:
+                p = self.p_inc[k,i,r]
+                q = self.q_inc[k,i,r]
+                if not source:
                     p -= self.p_src[k,i,r]
                     q -= self.q_src[k,i,r]
 
@@ -205,15 +208,15 @@ class gmt:
         
         return E
 
-    def H_field_from_particle(self, i, x, y, z, inc=True):
+    def H_field_from_particle(self, i, x, y, z, source=True):
         """Compute the magnetic field around particle i
              
             Arguments:
-                i      particle number
-                x      x position (array-like) 
-                y      y position (array-like) 
-                z      z position (array-like) 
-                inc    Include the incident field (bool, default=True)
+                i        particle number
+                x        x position (array-like) 
+                y        y position (array-like) 
+                z        z position (array-like) 
+                source   Include the source field (bool, default=True)
 
             Returns: H[3,M], M = number of wavelengths
         """
@@ -233,13 +236,13 @@ class gmt:
                 m = self.m_indices[r]
                 factor = miepy.vsh.Emn(m,n,self.source.amplitude)
                 N,M = miepy.vsh.VSH(n,m)
-                H_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                H_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
-                p = self.p[k,i,r]
-                q = self.q[k,i,r]
-                if inc == False:
+                p = self.p_inc[k,i,r]
+                q = self.q_inc[k,i,r]
+                if not source:
                     p -= self.p_src[k,i,r]
                     q -= self.q_src[k,i,r]
 
@@ -250,14 +253,15 @@ class gmt:
         
         return H*(self.material_data['eps_b'][k]/self.material_data['mu_b'][k])**0.5
     
-    def E_field(self, x, y, z, inc=True):
+    #TODO: should source be computed through E func or through p/q src coefficients?
+    def E_field(self, x, y, z, source=True):
         """Compute the electric field due to all particles
              
             Arguments:
-                x      x position (array-like) 
-                y      y position (array-like) 
-                z      z position (array-like) 
-                inc    Include the incident field (bool, default=True)
+                x         x position (array-like) 
+                y         y position (array-like) 
+                z         z position (array-like) 
+                source    Include the source field (bool, default=True)
 
             Returns: E[3,M], M = number of wavelengths
         """
@@ -282,20 +286,20 @@ class gmt:
 
                 E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
 
-        if inc:
+        if source:
             for k in range(self.Nfreq):
                 E[:,k] += self.source.E(np.array([x,y,z]), self.material_data['k'][k])
         
         return E
 
-    def H_field(self, x, y, z, inc=True):
+    def H_field(self, x, y, z, source=True):
         """Compute the magnetic field due to all particles
              
             Arguments:
-                x      x position (array-like) 
-                y      y position (array-like) 
-                z      z position (array-like) 
-                inc    Include the incident field (bool, default=True)
+                x         x position (array-like) 
+                y         y position (array-like) 
+                z         z position (array-like) 
+                source    Include the source field (bool, default=True)
 
             Returns: H[3,M], M = number of wavelengths
         """
@@ -316,12 +320,12 @@ class gmt:
                     m = self.m_indices[r]
                     factor = miepy.vsh.Emn(m,n,self.source.amplitude)
                     N,M = miepy.vsh.VSH(n,m)
-                    H_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                    H_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                    H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                    H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 H[:,k] += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
 
-        if inc:
+        if source:
             for k in range(self.Nfreq):
                 H[:,k] += self.source.H(np.array([x,y,z]), self.material_data['k'][k])
 
@@ -369,8 +373,8 @@ class gmt:
                         v = self.n_indices[rp]
                         u = self.m_indices[rp]
 
-                        a = self.a[k,i,v-1]*self.p[k,i,rp]
-                        b = self.b[k,i,v-1]*self.q[k,i,rp]
+                        a = self.p[k,i,rp]
+                        b = self.q[k,i,rp]
 
                         A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
                         B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
@@ -408,12 +412,12 @@ class gmt:
         Cscat, Cabs, Cext = self.cross_sections_per_multipole(Lmax)
         return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
 
-    def flux_from_particle(self, i, inc=False):
+    def flux_from_particle(self, i, source=False):
         """Determine the scattered flux from a single particle
 
             Arguments:
                 i         Particle index
-                inc       Include the incident field (bool, default=False)
+                source    Include the source field (bool, default=False)
             
             Returns: flux[M], M = number of wavelengths
         """
@@ -421,8 +425,8 @@ class gmt:
         X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
         rhat,*_ = sph_unit_vectors(THETA, PHI)
 
-        E_all = self.E_field_from_particle(i, X, Y, Z, inc)
-        H_all = self.H_field_from_particle(i, X, Y, Z, inc)
+        E_all = self.E_field_from_particle(i, X, Y, Z, source)
+        H_all = self.H_field_from_particle(i, X, Y, Z, source)
 
         flux = np.zeros(self.Nfreq, dtype=float)
 
@@ -438,12 +442,12 @@ class gmt:
 
         return flux
 
-    def force_on_particle(self, i, inc=True):
+    def force_on_particle(self, i, source=True):
         """Determine the force on a single particle
 
             Arguments:
                 i         Particle index
-                inc       Include the incident field (bool, default=True)
+                source    Include the source field (bool, default=True)
             
             Returns: (F[3,M],T[3,M]), M = number of wavelengths
         """
@@ -451,8 +455,8 @@ class gmt:
         X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
         rhat,*_ = sph_unit_vectors(THETA, PHI)
 
-        E_all = self.E_field_from_particle(i, X, Y, Z, inc)
-        H_all = self.H_field_from_particle(i, X, Y, Z, inc)
+        E_all = self.E_field_from_particle(i, X, Y, Z, source)
+        H_all = self.H_field_from_particle(i, X, Y, Z, source)
 
         F = np.zeros([3, self.Nfreq], dtype=float)
         T = np.zeros([3, self.Nfreq], dtype=float)
@@ -480,25 +484,25 @@ class gmt:
 
         return F,T
 
-    def flux(self, inc=False):
+    def flux(self, source=False):
         """Determine the scattered flux from every particle
 
             Arguments:
-                inc       Include the incident field (bool, default=False)
+                source    Include the source field (bool, default=False)
             
             Returns: flux[M,N], N = number of particle, M = number of wavelengths
         """
         flux_data = np.zeros([self.Nfreq, self.Nparticles], dtype=float)
         for i in range(self.Nparticles):
-            flux_data[:,i] = self.flux_from_particle(i, inc=inc)
+            flux_data[:,i] = self.flux_from_particle(i, source=source)
 
         return flux_data
 
-    def force(self, inc=True):
+    def force(self, source=True):
         """Determine the force on every particle
 
             Arguments:
-                inc       Include the incident field (bool, default=False)
+                source    Include the source field (bool, default=False)
             
             Returns: (F[3,M,N],T[3,M,N]), 
                      N = number of particles, M = number of wavelengths
@@ -506,7 +510,7 @@ class gmt:
         force_data = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
         torque_data = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
         for i in range(self.Nparticles):
-            force_data[...,i], torque_data[...,i] = self.force_on_particle(i, inc=inc)
+            force_data[...,i], torque_data[...,i] = self.force_on_particle(i, source=source)
 
         return force_data, torque_data
 
@@ -538,8 +542,13 @@ class gmt:
 
     def _set_without_interactions(self):
         self._solve_source_decomposition()
-        self.p[...] = self.p_src
-        self.q[...] = self.q_src
+        self.p_inc[...] = self.p_src
+        self.q_inc[...] = self.q_src
+
+        for r in range(self.rmax):
+            n = self.n_indices[r]
+            self.p[...,r] = self.p_inc[...,r]*self.a[...,n-1]
+            self.q[...,r] = self.q_inc[...,r]*self.b[...,n-1]
 
     #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
     def _solve_interactions(self):
@@ -579,8 +588,13 @@ class gmt:
             A = identity + interaction_matrix
             b = np.array([self.p_src[k],self.q_src[k]])
             sol = np.linalg.tensorsolve(A, b)
-            self.p[k] = sol[0]
-            self.q[k] = sol[1]
+            self.p_inc[k] = sol[0]
+            self.q_inc[k] = sol[1]
+
+            for r in range(self.rmax):
+                n = self.n_indices[r]
+                self.p[k,:,r] = self.p_inc[k,:,r]*self.a[k,:,n-1]
+                self.q[k,:,r] = self.q_inc[k,:,r]*self.b[k,:,n-1]
         
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
