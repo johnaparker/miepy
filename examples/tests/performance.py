@@ -30,7 +30,7 @@ def force_func(N):
 
 def flux_func(N):
     spheres = miepy.spheres([[n*separation, 0, 0] for n in range(N)], radius, Ag)
-    mie = miepy.gmt(spheres, source, 600*nm, 1)
+    mie = miepy.gmt(spheres, source, 600*nm, 1, origin=[separation/2,0,0])
     
     start = timer()
     mie.cross_sections()

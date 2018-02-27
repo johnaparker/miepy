@@ -36,3 +36,10 @@ examples/tests/absorption
 # vscode
 settings.json
 tags
+
+# latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz

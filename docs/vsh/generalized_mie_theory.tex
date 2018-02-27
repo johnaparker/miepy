@@ -1,0 +1,194 @@
+\documentclass[11pt]{article}
+
+% standard header for all latex files
+\input{/home/john/.latex/standard_header.tex}
+
+\usepackage[margin=.9in]{geometry}
+\usepackage[labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage{indentfirst}
+\usepackage[affil-it]{authblk}
+\usepackage{enumitem}
+\usepackage{scrextend}
+\usepackage{cleveref}
+
+\usepackage[nottoc,notlot,notlof]{tocbibind}
+\renewcommand{\bibname}{References}
+
+\title{Generalized multiparticle Mie theory}
+\date{}
+\author{}
+
+\begin{document}
+\maketitle
+
+\section{Vector spherical harmonic functions}
+
+The vector spherical harmonic (VSH) functions are a complete basis set of the vector wave equations
+\begin{align}
+    \begin{split}
+        \nabla \times \nabla \times \boldsymbol{E} &= k^2 \boldsymbol{E} \\
+        \nabla \times \nabla \times \boldsymbol{H} &= k^2 \boldsymbol{H}
+    \end{split}
+\end{align}
+They are defined as
+\begin{align}
+    \boldsymbol{M}_{mn}^{(J)} &= 
+    \boldsymbol{\hat \theta} i\pi_{mn}(\cos\theta) 
+   -\boldsymbol{\hat \phi} \tau_{mn}(\cos\theta)z_n^{(J)}(kr) e^{im\phi} \\
+    \boldsymbol{N}_{mn}^{(J)} &= 
+    \boldsymbol{\hat r} n(n+1) P_n^m(\cos\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \\
+    &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\cos\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\cos\theta) \right]
+    \frac{d}{dr} \left[ rz_n^{(J)}(kr)e^{im\phi} \right] \nonumber
+\end{align}
+where $J= 1,2,3,4$. The radial functions $z_n^{(J)}$ are
+\begin{equation}
+\begin{align*}
+    z_n^{(1)}(x) &= j_n(x)  \qquad&  z_n^{(3)}(x) &= h_n^{(1)}(x) = j_n(x) + iy_n(x)   \\
+    z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
+\end{align*}
+\end{equation}
+where $j_n$, $y_n$ are the spherical Bessel functions of the first and second kind, and $h_n^{(1)}$, $h_n^{(2)}$ are the spherical Hankel functions of the first and second kind.
+The angular functions $\pi_{mn}$ and $\tau_{mn}$ are
+\begin{align}
+    \pi_{mn}(\cos\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
+    \tau_{mn}(\cos\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
+\end{align}
+The associated Legendre polynomials $P_n^m$ are defined without the Condon-Shortley phase, i.e.
+\begin{equation}
+    P_n^m(x) = (1 - x^2)^{m/2} \frac{d^m}{dx^m} P_n(x)
+\end{equation}
+
+\section{Field expansions}
+\textit{Electric field}
+\begin{align}
+    \boldsymbol{E}_\text{src}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    iE_{mn} \left[ p_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
+    \boldsymbol{E}_\text{inc}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    iE_{mn} \left[ p_{mn}^j \boldsymbol{N}_{mn}^{(1)} + q_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right] \\
+    \boldsymbol{E}_\text{scat}^j &= \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    iE_{mn} \left[a_{mn}^j \boldsymbol{N}_{mn}^{(3)} + b_{mn}^j \boldsymbol{M}_{mn}^{(3)} \right] \\
+    \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    iE_{mn} \left[ d_{mn}^j \boldsymbol{N}_{mn}^{(1)} + c_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
+\end{align}
+
+\textit{Magnetic field}
+\begin{align}
+    \boldsymbol{H}_\text{src}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \left[ q_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + p_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
+    \boldsymbol{H}_\text{inc}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \left[ q_{mn}^j \boldsymbol{N}_{mn}^{(1)} + p_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right] \\
+    \boldsymbol{H}_\text{scat}^j &= \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \left[b_{mn}^j \boldsymbol{N}_{mn}^{(3)} + a_{mn}^j \boldsymbol{M}_{mn}^{(3)} \right] \\
+    \boldsymbol{H}_\text{int}^j &= -\sqrt{\frac{\varepsilon^j}{\mu^j}}  \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \left[ c_{mn}^j \boldsymbol{N}_{mn}^{(1)} + d_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
+\end{align}
+where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
+\begin{equation}
+    E_{mn} = |E_0|i^n (2n+1) \frac{(n-m)!}{(n+m)!}
+\end{equation}
+where $|E_0|$ is the amplitude of the source field.
+
+\section{Interaction equations}
+\begin{align}
+    \begin{split}
+        p_{mn}^j &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
+    A_{mn}^{uv}(l \rightarrow j) a_v^l p_{uv}^{l}
+    +B_{mn}^{uv}(l \rightarrow j) b_v^l q_{uv}^{l} \\
+    q_{mn}^j &= q_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
+    B_{mn}^{uv}(l \rightarrow j) a_v^l p_{uv}^{l}
+    +A_{mn}^{uv}(l \rightarrow j) b_v^l q_{uv}^{l}
+    \label{eqn:gmt_system}
+    \end{split}
+\end{align}
+where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH translation coefficients from particle $i$ to particle $j$.
+
+\section{Force and torque}
+\begin{equation}
+    \langle \boldsymbol{T} \rangle = \frac{1}{2} \text{Re} \left[ \varepsilon  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu \boldsymbol{H} \otimes \boldsymbol{H^*}
+    - \frac{1}{2}(\varepsilon E^2 + \mu H^2)\boldsymbol{I} \right]
+\end{equation}
+
+\begin{equation}
+    \langle \boldsymbol{F} \rangle = \oint_\Omega \langle \boldsymbol{T} \rangle \cdot d \boldsymbol{\Omega}
+\end{equation}
+
+\begin{equation}
+    \langle \boldsymbol{\tau} \rangle = \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
+\end{equation}
+
+\section{Cluster coefficients}
+\section{Far-field expansions}
+\section{Scattering cross-sections}
+\section{Source decomposition}
+\section{Efficient numeric evaluation}
+\section{Recursion relations}
+\section{MiePy}
+
+\section{Other conventions}
+\textit{Electric field}
+\begin{align}
+\begin{split}
+    \boldsymbol{E}_\text{inc}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
+    \boldsymbol{\hat r}\frac{1}{r^2} &\bigg[ n(n+1) p_{mn}^j \psi_n(kr) Y_{nm}(\theta,\phi) \bigg] \\
+    +\; \boldsymbol{\hat \theta}\frac{k}{r} &\left[ p_{mn}^j \psi_n^\prime(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi)
+    - \frac{m}{\sqrt{\varepsilon_b}} q_{mn}^j \psi_n(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta} \right] \\
+    +\; \boldsymbol{\hat \phi}\frac{k}{r} &\left[ im p_{mn}^j \psi_n^\prime(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta}
+    - \frac{i}{\sqrt{\varepsilon_b}} q_{mn}^j \psi_n(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
+\end{split}
+\end{align}
+\begin{align}
+\begin{split}
+    \boldsymbol{E}_\text{scat}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
+    \boldsymbol{\hat r}\frac{1}{r^2} &\bigg[ n(n+1) a_{mn}^j \xi_n^{(1)}(kr) Y_{nm}(\theta,\phi) \bigg] \\
+    +\; \boldsymbol{\hat \theta}\frac{k}{r} &\left[ a_{mn}^j \xi_n^{(1)\prime}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi)
+    - \frac{m}{\sqrt{\varepsilon_b}} b_{mn}^j \xi_n^{(1)}(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta} \right] \\
+    +\; \boldsymbol{\hat \phi}\frac{k}{r} &\left[ im a_{mn}^j \xi_n^{(1)\prime}(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta}
+    - \frac{i}{\sqrt{\varepsilon_b}} b_{mn}^j \xi_n^{(1)}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
+\end{split}
+\end{align}
+
+\textit{Magnetic field}
+\begin{align}
+\begin{split}
+    \boldsymbol{H}_\text{inc}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
+    \boldsymbol{\hat r}\frac{1}{r^2} &\bigg[ n(n+1) q_{mn}^j \psi_n(kr) Y_{nm}(\theta,\phi) \bigg] \\
+    +\; \boldsymbol{\hat \theta}\frac{k}{r} &\left[ q_{mn}^j \psi_n^\prime(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi)
+    + m\sqrt{\varepsilon_b} p_{mn}^j \psi_n(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta} \right] \\
+    +\; \boldsymbol{\hat \phi}\frac{k}{r} &\left[ im q_{mn}^j \psi_n^\prime(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta}
+    + i\sqrt{\varepsilon_b} p_{mn}^j \psi_n(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
+\end{split}
+\end{align}
+\begin{align}
+\begin{split}
+    \boldsymbol{H}_\text{scat}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
+    \boldsymbol{\hat r}\frac{1}{r^2} &\bigg[ n(n+1) b_{mn}^j \xi_n^{(1)}(kr) Y_{nm}(\theta,\phi) \bigg] \\
+    +\; \boldsymbol{\hat \theta}\frac{k}{r} &\left[ n_{mn}^j \xi^{(1)\prime}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi)
+    + m\sqrt{\varepsilon_b} a_{mn}^j \xi_n^{(1)}(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta} \right] \\
+    +\; \boldsymbol{\hat \phi}\frac{k}{r} &\left[ im b_{mn}^j \xi_n^{(1)\prime}(kr) \frac{Y_{nm}(\theta,\phi)}{\sin\theta}
+    + i\sqrt{\varepsilon_b} a_{mn}^j \xi_n^{(1)}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
+\end{split}
+\end{align}
+where $\xi_n^{(1)} = \psi_n - i \chi_n$, and $\psi_n$, $\chi_n$ are the Riccati-Bessel function of the first and second kind
+\begin{align}
+\begin{split}
+    \psi_n(x) &= xj_n(x) \\
+    \chi_n(x) &= -xy_n(x) \\
+    \xi_n^{(1)}(x) &= x[j_n(x) + iy_n(x)] = xh_n^{(1)}(x)
+\end{split}
+\end{align}
+
+Denoting the coefficients of our convention $\bar p_{mn}$, $\bar q_{mn}$, $\bar a_{mn}$, $\bar b_{mn}$, the two conventions are related by
+\begin{align}
+\begin{split}
+    \bar p_{mn} &= ? p_{mn} \\
+    \bar q_{mn} &= ? q_{mn} \\
+    \bar a_{mn} &= ? a_{mn} \\
+    \bar b_{mn} &= ? b_{mn}
+\end{split}
+\end{align}
+%\bibliographystyle{unsrt}
+%\bibliography{vsh.bib}{}
+
+
+\end{document}
