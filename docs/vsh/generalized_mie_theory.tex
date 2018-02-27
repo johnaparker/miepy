@@ -33,9 +33,9 @@ The vector spherical harmonic (VSH) functions are a complete basis set of the ve
 \end{align}
 They are defined as
 \begin{align}
-    \boldsymbol{M}_{mn}^{(J)} &= 
+    \boldsymbol{M}_{mn}^{(J)} &= \big[
     \boldsymbol{\hat \theta} i\pi_{mn}(\cos\theta) 
-   -\boldsymbol{\hat \phi} \tau_{mn}(\cos\theta)z_n^{(J)}(kr) e^{im\phi} \\
+   -\boldsymbol{\hat \phi} \tau_{mn}(\cos\theta) \big] z_n^{(J)}(kr) e^{im\phi} \\
     \boldsymbol{N}_{mn}^{(J)} &= 
     \boldsymbol{\hat r} n(n+1) P_n^m(\cos\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \\
     &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\cos\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\cos\theta) \right]
@@ -169,22 +169,25 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
     + i\sqrt{\varepsilon_b} a_{mn}^j \xi_n^{(1)}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
 \end{split}
 \end{align}
-where $\xi_n^{(1)} = \psi_n - i \chi_n$, and $\psi_n$, $\chi_n$ are the Riccati-Bessel function of the first and second kind
+where $\xi_n^{(1)} = \psi_n - i \chi_n$, $\psi_n$, $\chi_n$ are the Riccati-Bessel function of the first and second kind, and $Y_{nm}$ are the spherical harmonics
 \begin{align}
 \begin{split}
     \psi_n(x) &= xj_n(x) \\
     \chi_n(x) &= -xy_n(x) \\
-    \xi_n^{(1)}(x) &= x[j_n(x) + iy_n(x)] = xh_n^{(1)}(x)
+    \xi_n^{(1)}(x) &= x[j_n(x) + iy_n(x)] = xh_n^{(1)}(x) \\
+    Y_{nm}(\theta, \phi) &= \sqrt{\frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} P_n^m(\cos \theta) e^{im\phi}
 \end{split}
 \end{align}
 
-Denoting the coefficients of our convention $\bar p_{mn}$, $\bar q_{mn}$, $\bar a_{mn}$, $\bar b_{mn}$, the two conventions are related by
+Denoting the coefficients of our convention $\bar a_n$, $\bar b_n$, $\bar p_{mn}$, $\bar q_{mn}$, $\bar a_{mn}$, $\bar b_{mn}$, the two conventions are related by
 \begin{align}
 \begin{split}
-    \bar p_{mn} &= ? p_{mn} \\
-    \bar q_{mn} &= ? q_{mn} \\
-    \bar a_{mn} &= ? a_{mn} \\
-    \bar b_{mn} &= ? b_{mn}
+    \bar a_{n} &= - a_{n} \\
+    \bar b_{n} &= - b_{n} \\
+    \bar p_{mn} &= \frac{ik^2}{E_{mn}}\sqrt{\frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} p_{mn} \\
+    \bar q_{mn} &= -\frac{k^2}{E_{mn}}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} q_{mn} \\
+    \bar a_{mn} &= -\frac{ik^2}{E_{mn}}\sqrt{\frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} a_{mn} \\
+    \bar b_{mn} &= \frac{k^2}{E_{mn}}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} b_{mn}
 \end{split}
 \end{align}
 %\bibliographystyle{unsrt}
