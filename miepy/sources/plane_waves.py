@@ -31,16 +31,9 @@ class plane_wave(source):
         pi_value = pi_func(n,m)(alpha)
         tau_value = tau_func(n,m)(alpha)
 
-        p = phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
-        q = m*phase/(n*(n+1))*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+        p = phase/(n*(n+1))*tau_value*(self.polarization[0] - 1j*m*self.polarization[1])
+        q = phase/(n*(n+1))*pi_value*(self.polarization[0] - 1j*m*self.polarization[1])
         return (p,q)
-
-        # if m == 1:
-        #     return (phase*1/2, phase*1/2)
-        # elif m == -1:
-        #     return (-phase*1/(2*n*(n+1)), phase*1/(2*n*(n+1)))
-        # else:
-        #     return (np.zeros_like(r[0]), np.zeros_like(r[0]))
 
 def x_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,0], amplitude=amplitude)
