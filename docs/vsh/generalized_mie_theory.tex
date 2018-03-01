@@ -118,9 +118,38 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
     \langle \boldsymbol{\tau} \rangle = \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
 \end{equation}
 
+\begin{align}
+\begin{split}
+    F_x + iF_y = ?
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+    F_z =& \frac{-2\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \text{Re}\bigg\{
+          \frac{m}{n(n+1)} \frac{\varepsilon_b}{\mu_b}
+          \bigg[ 2a_{mn}b_{mn}^* + a_{mn}q_{mn}^* + p_{mn}b_{mn}^* \bigg] \\
+        & + \frac{1}{n+1} \sqrt{\frac{(n-m+1)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
+        \bigg[ 2 \varepsilon_b a_{mn+1}a_{mn}^* - \varepsilon_b a_{mn+1}p_{mn}^* - \varepsilon_b p_{mn+1}a_{mn}^* \\
+        & + 2 \frac{\varepsilon_b}{\mu_b} b_{mn+1}b_{mn}^* - \frac{\varepsilon_b}{\mu_b} b_{mn+1}q_{mn}^* - \varepsilon_b q_{mn+1}b_{mn}^*
+        \bigg] \bigg\}
+\end{split}
+\end{align}
+
 \section{Cluster coefficients}
 \section{Far-field expansions}
-\section{Scattering cross-sections}
+
+\section{Cross-sections}
+
+\begin{align}
+    C_\text{scat} &= \frac{4\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    |a_{mn}|^2 + |b_{mn}|^2 \\
+    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    \text{Re} \bigg\{ p_{mn}^{\text{src}*}(\boldsymbol{p_0}) a_{mn} 
+    + q_{mn}^{\text{src}*}(\boldsymbol{p_0})b_{mn} \bigg\} \\
+    C_\text{abs} &= C_\text{ext} - C_\text{scat}
+\end{align}
+
 \section{Source decomposition}
 \section{Efficient numeric evaluation}
 \section{Recursion relations}
@@ -186,10 +215,10 @@ Denoting the coefficients of our convention $\bar a_n$, $\bar b_n$, $\bar p_{mn}
 \begin{split}
     \bar a_{n} &= - a_{n} \\
     \bar b_{n} &= - b_{n} \\
-    \bar p_{mn} &= \frac{ik^2}{E_{mn}}\sqrt{\frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} p_{mn} \\
-    \bar q_{mn} &= -\frac{k^2}{E_{mn}}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} q_{mn} \\
-    \bar a_{mn} &= -\frac{ik^2}{E_{mn}}\sqrt{\frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} a_{mn} \\
-    \bar b_{mn} &= \frac{k^2}{E_{mn}}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{2n+1}{4\pi}\frac{(n-m)!}{(n+m)!}} b_{mn}
+    \bar p_{mn} &= \frac{k^2}{i^{n-1}}\sqrt{\frac{n(n+1)}{4\pi}} p_{mn} \\
+    \bar q_{mn} &= -\frac{k^2}{i^n}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{n(n+1)}{4\pi}} q_{mn} \\
+    \bar a_{mn} &= -\frac{k^2}{i^{n-1}}\sqrt{\frac{n(n+1)}{4\pi}} a_{mn} \\
+    \bar b_{mn} &= \frac{k^2}{i^n}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{n(n+1)}{4\pi}} b_{mn}
 \end{split}
 \end{align}
 

@@ -33,46 +33,29 @@ def get_fz(self,i):
 
 
     Fz = 0
-    A = -k**2*E0**2/(8*np.pi)
-
-
-    p = np.zeros_like(self.p)
-    q = np.zeros_like(self.q)
-    p_inc = np.zeros_like(self.p_inc)
-    q_inc = np.zeros_like(self.q_inc)
-
-    for n in range(1,self.Lmax+1):
-        for m in range(-n,n+1):
-            Emn = miepy.vsh.Emn(m,n,1)
-            alpha = np.sqrt(4*np.pi*factorial(n+m)/(2*n+1)/factorial(n-m))
-            r = n**2 + n - 1 + m
-
-            p_inc[...,r] = Emn/(1j*k**2)*alpha*self.p_inc[...,r]
-            q_inc[...,r] = -Emn/(k**2)*alpha*np.sqrt(eps_b/mu_b)*self.q_inc[...,r]
-            p[...,r] = -Emn/(1j*k**2)*alpha*self.p[...,r]
-            q[...,r] = Emn/(k**2)*alpha*np.sqrt(eps_b/mu_b)*self.q[...,r]
+    A = -2*np.pi*E0**2/k**2
 
     for n in range(1,self.Lmax+1):
         for m in range(-n,n+1):
             r = n**2 + n - 1 + m
-            factor = A*m*eps_b**0.5
+            factor = A*m*(eps_b/mu_b)/(n*(n+1))
 
-            Fz += factor*(2*p[fid,i,r]*np.conj(q[fid,i,r]) \
-                    + p[fid,i,r]*np.conj(q_inc[fid,i,r]) \
-                    + p_inc[fid,i,r]*np.conj(q[fid,i,r]))
+            Fz += factor*(2*self.p[fid,i,r]*np.conj(self.q[fid,i,r]) \
+                    - self.p[fid,i,r]*np.conj(self.q_inc[fid,i,r]) \
+                    - self.p_inc[fid,i,r]*np.conj(self.q[fid,i,r]))
 
             if n < self.Lmax:
-                factor = A*n*(n+2)*np.sqrt((n-m+1)*(n+m+1)/(2*n+3)/(2*n+1))
+                factor = A/(n+1)*np.sqrt((n-m+1)*(n+m+1)*n*(n+2)/(2*n+3)/(2*n+1))
                 r1 = (n+1)**2 + (n+1) - 1 + m
 
-                Fz += factor*(2*eps_b*p[fid,i,r1]*np.conj(p[fid,i,r]) \
-                        + eps_b*p[fid,i,r1]*np.conj(p_inc[fid,i,r]) \
-                        + eps_b*p_inc[fid,i,r1]*np.conj(p[fid,i,r]) \
-                        + 2*q[fid,i,r1]*np.conj(q[fid,i,r]) \
-                        + q[fid,i,r1]*np.conj(q_inc[fid,i,r]) \
-                        + q_inc[fid,i,r1]*np.conj(q[fid,i,r]))
+                Fz += factor*(2*eps_b*self.p[fid,i,r1]*np.conj(self.p[fid,i,r]) \
+                        - eps_b*self.p[fid,i,r1]*np.conj(self.p_inc[fid,i,r]) \
+                        - eps_b*self.p_inc[fid,i,r1]*np.conj(self.p[fid,i,r]) \
+                        + eps_b/mu_b*2*self.q[fid,i,r1]*np.conj(self.q[fid,i,r]) \
+                        - eps_b/mu_b*self.q[fid,i,r1]*np.conj(self.q_inc[fid,i,r]) \
+                        - eps_b/mu_b*self.q_inc[fid,i,r1]*np.conj(self.q[fid,i,r]))
 
-    return 4*np.pi*np.imag(Fz)
+    return np.real(Fz)
 
 for i, separation in enumerate(tqdm(separations)):
     mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
