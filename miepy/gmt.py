@@ -385,12 +385,11 @@ class gmt:
 
 
         for k in range(self.Nfreq):
+            factor = 4*np.pi/self.material_data['k'][k]**2
             for r in range(rmax):
                 n = n_indices[r]
                 m = m_indices[r]
 
-                factor = 4*np.pi/self.material_data['k'][k]**2 * n*(n+1)*(2*n+1) \
-                        * factorial(n-m)/factorial(n+m)
                 p0[r,k], q0[r,k] = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
 
                 Cscat[0,n-1,k] += factor*np.abs(anm[r,k])**2

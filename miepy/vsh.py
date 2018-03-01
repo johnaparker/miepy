@@ -186,16 +186,21 @@ def b_func(m,n,u,v,p):
     return factor*w1*w2
 
 def Emn(m, n, E0):
-    return E0*1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
+    return E0*1j**n*np.sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)))
 
 def A_translation(m, n, u, v, r, theta, phi, k, mode):
     m *= -1
     f = lambda n: special.gamma(n+1)
     zn = get_zn(mode)
-    numerator = (2*v+1)*f(n-m)*f(v-u)
-    denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
-    factor = (-1.)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
+    # numerator = (2*v+1)*f(n-m)*f(v-u)
+    # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
+    # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
+    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v,1)/Emn(m,n,1)
+    # factor = norm*(-1.)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
+
+    factor = 0.5 * (-1.)**m * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
+            /(v*(v+1)*n*(n+1)*f(v+u)*f(n+m))) * np.exp(1j*(u+m)*phi)
 
     qmax = min(n, v, (n+v - abs(m+u))//2)
     sum_term = 0
@@ -213,10 +218,15 @@ def B_translation(m, n, u, v, r, theta, phi, k, mode):
     m *= -1
     f = lambda n: special.gamma(n+1)
     zn = get_zn(mode)
-    numerator = (2*v+1)*f(n-m)*f(v-u)
-    denominator = 2*n*(n+1)*f(n+m)*f(v+u)
 
-    factor = (-1.)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
+    # numerator = (2*v+1)*f(n-m)*f(v-u)
+    # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
+    # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
+    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v,1)/Emn(m,n,1)
+    # factor = norm*(-1.)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
+
+    factor = 0.5 * (-1.)**(m+1) * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
+            /(v*(v+1)*n*(n+1)*f(v+u)*f(n+m))) * np.exp(1j*(u+m)*phi)
 
     qmax = min(n, v, (n+v+1 - abs(m+u))//2)
     sum_term = 0
@@ -298,9 +308,9 @@ def vsh_normalization_values(mode, ftype, n, m, r, k):
     """
     zn = get_zn(mode)
 
-    Emn_val = Emn(m, n, E0=1)
+    norm = 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
     zn_val = zn(n, k*r)
-    angular_term = 4*np.pi*n*(n+1)/np.abs(Emn_val)
+    angular_term = 4*np.pi*n*(n+1)/np.abs(norm)
 
     if ftype == 'magnetic':
         radial_term = np.abs(zn_val)**2

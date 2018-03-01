@@ -19,7 +19,7 @@ X,Y = np.meshgrid(x, y, indexing='ij')
 
 R, THETA, PHI = miepy.vsh.cart_to_sph(X,Y,0)
 
-source = miepy.sources.laguerre_gaussian_beam(4, 4, 600*nm, [1,0])
+source = miepy.sources.azimuthal_beam(600*nm)
 Lmax = 7
 
 wavelength = 900*nm
