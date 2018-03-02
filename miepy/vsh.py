@@ -578,3 +578,19 @@ def expand(p, q, k, mode, origin=[0,0,0]):
         return expanded_E
     
     return f
+
+def cart_sphere_mesh(radius, origin, sampling):
+    """Given a radius, origin and sampling, return the
+    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere""" 
+
+    r = np.array([radius])
+    tau = np.linspace(-1,1, sampling) 
+    theta = np.pi - np.arccos(tau)
+    phi = np.linspace(0, 2*np.pi, 2*sampling)
+    R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
+
+    X = origin[0] + R*np.sin(THETA)*np.cos(PHI)
+    Y = origin[1] + R*np.sin(THETA)*np.sin(PHI) 
+    Z = origin[2] + R*np.cos(THETA)
+
+    return map(np.squeeze, (X,Y,Z,THETA,PHI,tau,phi))

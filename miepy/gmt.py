@@ -3,52 +3,8 @@ The Generalized Mie Theory (GMT) for a collection of spheres.
 """
 import numpy as np
 import miepy
-from my_pytools.my_numpy.integrate import simps_2d
-from my_pytools.my_numpy.indices import levi_civita
 from my_pytools.my_numpy.array import atleast
 from collections import namedtuple
-from scipy import constants
-from math import factorial
-
-levi = levi_civita()
-
-def cart_to_sph(x, y, z, center=None):
-    """convert the cartesian coordinates (x,y,z) to sphereical coordinats around center point"""
-    if center is None:
-        center = np.zeros(3)
-    Xs = x - center[0]
-    Ys = y - center[1]
-    Zs = z - center[2]
-
-    R = np.sqrt(Xs**2 + Ys**2 + Zs**2)
-    THETA = np.arccos(Zs/R)
-    PHI = np.arctan2(Ys,Xs)
-    return R, THETA, PHI
-
-def sph_unit_vectors(THETA, PHI):
-    """return the spherical coordinate unit vectors (rhat,that,phat) given angular coordinats"""
-    rhat = np.array([np.sin(THETA)*np.cos(PHI), np.sin(THETA)*np.sin(PHI), np.cos(THETA)])
-    that = np.array([np.cos(THETA)*np.cos(PHI), np.cos(THETA)*np.sin(PHI), -np.sin(THETA)])
-    phat = np.array([-np.sin(PHI), np.cos(PHI), np.zeros_like(THETA)])
-    return rhat, that, phat
-
-def discrete_sphere(radius, Ntheta, Nphi, center=None):
-    """Given a radius, center, and theta phi sampling, return the 
-    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere""" 
-    if center is None:
-        center = np.zeros(3)
-
-    r = np.array([radius])
-    tau = np.linspace(-1,1, Ntheta) 
-    theta = np.pi - np.arccos(tau)
-    phi = np.linspace(0, 2*np.pi, Nphi)
-    R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
-
-    X = center[0] + R*np.sin(THETA)*np.cos(PHI)
-    Y = center[1] + R*np.sin(THETA)*np.sin(PHI) 
-    Z = center[2] + R*np.cos(THETA)
-
-    return map(np.squeeze, (X,Y,Z,THETA,PHI,tau,phi))
 
 #TODO swap all indices, so that [N,3] => [3,N]
 #TODO make position a property so that it can be set properly (if input is a list)
@@ -180,8 +136,8 @@ class gmt:
 
         E = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
 
-        R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
-        rhat, that, phat = sph_unit_vectors(THETA, PHI)
+        R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
 
         for k in range(self.Nfreq):
             E_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -226,8 +182,8 @@ class gmt:
 
         H = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
 
-        R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
-        rhat, that, phat = sph_unit_vectors(THETA, PHI)
+        R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
 
         for k in range(self.Nfreq):
             H_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -271,8 +227,8 @@ class gmt:
 
         E = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
         for i in range(self.Nparticles):
-            R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
-            rhat, that, phat = sph_unit_vectors(THETA, PHI)
+            R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
+            rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
                 E_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -310,8 +266,8 @@ class gmt:
 
         H = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
         for i in range(self.Nparticles):
-            R, THETA, PHI = cart_to_sph(x, y, z, self.spheres.position[i])
-            rhat, that, phat = sph_unit_vectors(THETA, PHI)
+            R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
+            rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
                 H_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -418,52 +374,6 @@ class gmt:
     #TODO implement
     def cross_sections_of_particle(self, i):
         pass
-
-    #TODO move elsewhere
-    def flux_from_particle(self, i, source=False):
-        """Determine the scattered flux from a single particle
-
-            Arguments:
-                i         Particle index
-                source    Include the source field (bool, default=False)
-            
-            Returns: flux[M], M = number of wavelengths
-        """
-        r = self.spheres.radius[i]
-        X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
-        rhat,*_ = sph_unit_vectors(THETA, PHI)
-
-        E_all = self.E_field_from_particle(i, X, Y, Z, source)
-        H_all = self.H_field_from_particle(i, X, Y, Z, source)
-
-        flux = np.zeros(self.Nfreq, dtype=float)
-
-        for k in range(self.Nfreq):
-            E = E_all[:,k]
-            H = H_all[:,k]
-
-            S = np.real(np.einsum('ijk,jxy,kxy->ixy', levi, E, np.conj(H)))
-            dA = r**2
-
-            integrand = np.einsum('ixy,ixy->xy', S, rhat)*dA
-            flux[k] = simps_2d(tau, phi, integrand)
-
-        return flux
-
-    #TODO move elsewhere
-    def flux(self, source=False):
-        """Determine the scattered flux from every particle
-
-            Arguments:
-                source    Include the source field (bool, default=False)
-            
-            Returns: flux[M,N], N = number of particle, M = number of wavelengths
-        """
-        flux_data = np.zeros([self.Nfreq, self.Nparticles], dtype=float)
-        for i in range(self.Nparticles):
-            flux_data[:,i] = self.flux_from_particle(i, source=source)
-
-        return flux_data
 
     def force_on_particle(self, i, source=True):
         """Determine the force on a single particle
