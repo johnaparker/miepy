@@ -40,8 +40,8 @@ class spheres:
 
 class gmt:
     """Solve Generalized Mie Theory: N particles in an arbitray source profile"""
-    def __init__(self, spheres, source, wavelength, Lmax, medium=None, interactions=True,
-                   origin=None, Ntheta=51, Nphi=31):
+    def __init__(self, spheres, source, wavelength, Lmax, 
+                 medium=None, interactions=True, origin=None):
         """Arguments:
                spheres          spheres object specifying the positions, radii, and materials
                source           source object specifying the incident E and H functions
@@ -50,8 +50,6 @@ class gmt:
                medium           (optional) material medium (must be non-absorbing; default=vacuum)
                interactions     (optional) If True, include particle interactions (bool, default=True) 
                origin           (optional) system origin around which to compute cluster quantities (default = [0,0,0])
-               Ntheta           (optional) number of points in theta to use in force/flux calculations (default = 51)
-               Nphi             (optional) number of points in phi to use in force/flux calculations (default = 31)
         """
         self.spheres = spheres
         self.source = source
@@ -61,8 +59,6 @@ class gmt:
         self.interactions = interactions
 
         self.origin = np.zeros(3) if origin is None else np.asarray(origin)
-        self.Ntheta = Ntheta
-        self.Nphi = Nphi
 
         if medium is None:
             self.medium = miepy.constant_material(1.0, 1.0)
