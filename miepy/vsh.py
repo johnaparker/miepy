@@ -585,7 +585,7 @@ def cart_sphere_mesh(radius, origin, sampling):
 
     r = np.array([radius])
     tau = np.linspace(-1,1, sampling) 
-    theta = np.pi - np.arccos(tau)
+    theta = np.arccos(tau)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
     R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
 

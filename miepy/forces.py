@@ -31,8 +31,8 @@ def force(p, q, p_inc, q_inc, k, E0, eps_b, mu_b, Lmax):
     """
     Fxy = 0
     Fz = 0
-    Axy = np.pi*E0**2/k**2
-    Az = -2*np.pi*E0**2/k**2
+    Axy = np.pi*E0**2/k**2*constants.epsilon_0
+    Az = -2*np.pi*E0**2/k**2*constants.epsilon_0
 
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):

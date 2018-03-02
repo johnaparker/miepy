@@ -13,6 +13,7 @@ from scipy import constants
 nm = 1e-9
 
 Ag = miepy.materials.predefined.Ag()
+# Ag = miepy.constant_material(4**2 + 0.01j)
 radius = 75*nm
 source = miepy.sources.rhc_polarized_plane_wave(amplitude=1)
 separations = np.linspace(2*radius + 10*nm, 2*radius + 700*nm, 50)
@@ -39,8 +40,8 @@ fig, axes = plt.subplots(nrows=2, ncols=3, figsize=plt.figaspect(2/3)*2)
 for i in range(3):
     comp = ['x', 'y', 'z'][i]
 
-    axes[0,i].plot(separations/nm, 2.66*1e11*mst_force[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
-    axes[1,i].plot(separations/nm, 2.66*1e11*mst_torque[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
+    axes[0,i].plot(separations/nm, mst_force[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
+    axes[1,i].plot(separations/nm, mst_torque[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
 
     axes[0,i].plot(separations/nm, analytic_force[i], color=f'C{i}', label='Analytic Equation')
     axes[1,i].plot(separations/nm, analytic_torque[i], color=f'C{i}', label='Analytic Equation')
