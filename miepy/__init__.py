@@ -9,6 +9,7 @@ from . import sources
 from . import scattering
 from . import materials
 from . import vsh
+from . import forces
 
 from .mie_sphere import single_mie_sphere
 from .mie_core_shell import single_mie_core_shell

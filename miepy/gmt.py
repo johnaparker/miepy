@@ -411,6 +411,15 @@ class gmt:
         Cscat, Cabs, Cext = self.cross_sections_per_multipole(Lmax)
         return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
 
+    #TODO implement
+    def cross_sections_per_multipole_of_particle(self, i):
+        pass
+
+    #TODO implement
+    def cross_sections_of_particle(self, i):
+        pass
+
+    #TODO move elsewhere
     def flux_from_particle(self, i, source=False):
         """Determine the scattered flux from a single particle
 
@@ -441,48 +450,7 @@ class gmt:
 
         return flux
 
-    def force_on_particle(self, i, source=True):
-        """Determine the force on a single particle
-
-            Arguments:
-                i         Particle index
-                source    Include the source field (bool, default=True)
-            
-            Returns: (F[3,M],T[3,M]), M = number of wavelengths
-        """
-        r = self.spheres.radius[i]
-        X,Y,Z,THETA,PHI,tau,phi = discrete_sphere(r, self.Ntheta, self.Nphi, self.spheres.position[i])
-        rhat,*_ = sph_unit_vectors(THETA, PHI)
-
-        E_all = self.E_field_from_particle(i, X, Y, Z, source)
-        H_all = self.H_field_from_particle(i, X, Y, Z, source)
-
-        F = np.zeros([3, self.Nfreq], dtype=float)
-        T = np.zeros([3, self.Nfreq], dtype=float)
-
-        for k in range(self.Nfreq):
-            E = E_all[:,k]
-            H = H_all[:,k]
-
-            eps_b = self.material_data['eps_b'][k]
-            mu_b = self.material_data['mu_b'][k]
-            sigma = eps_b*np.einsum('ixy,jxy->ijxy', E, np.conj(E)) \
-                    + mu_b*np.einsum('ixy,jxy->ijxy', H, np.conj(H)) \
-                    - 0.5*np.einsum('ij,xy->ijxy', np.identity(3), eps_b*np.sum(np.abs(E)**2, axis=0)) \
-                    - 0.5*np.einsum('ij,xy->ijxy', np.identity(3), mu_b*np.sum(np.abs(H)**2, axis=0))
-            sigma *= constants.epsilon_0/2
-
-            # compute F
-            dA = r**2
-            integrand = np.einsum('ijxy,jxy->ixy', sigma, rhat)*dA
-            F[:,k] = np.array([simps_2d(tau, phi, integrand[x].real) for x in range(3)])
-
-            # compute T
-            integrand = np.einsum('imn,mxy,njxy,jxy->ixy', levi, r*rhat, sigma, rhat)*dA
-            T[:,k] = np.array([simps_2d(tau, phi, integrand[x].real) for x in range(3)])
-
-        return F,T
-
+    #TODO move elsewhere
     def flux(self, source=False):
         """Determine the scattered flux from every particle
 
@@ -497,21 +465,87 @@ class gmt:
 
         return flux_data
 
+    def force_on_particle(self, i, source=True):
+        """Determine the force on a single particle
+
+            Arguments:
+                i         Particle index
+                source    Include the source field (bool, default=True)
+            
+            Returns: F[3,M], M = number of wavelengths
+        """
+
+        F = np.zeros((3,self.Nfreq))
+
+        if source:
+            p_inc = self.p_inc
+            q_inc = self.q_inc
+        else:
+            p_inc = self.p_inc - self.p_src
+            q_inc = self.q_inc - self.q_src
+
+        for k in range(self.Nfreq):
+            F[:,k] = miepy.forces.force(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
+                        self.material_data['k'][k], self.source.amplitude, self.material_data['eps_b'][k],
+                        self.material_data['mu_b'][k], self.Lmax)
+
+        return F
+
+    def torque_on_particle(self, i, source=True):
+        """Determine the torque on a single particle
+
+            Arguments:
+                i         Particle index
+                source    Include the source field (bool, default=True)
+            
+            Returns: T[3,M], M = number of wavelengths
+        """
+
+        T = np.zeros((3,self.Nfreq))
+
+        if source:
+            p_inc = self.p_inc
+            q_inc = self.q_inc
+        else:
+            p_inc = self.p_inc - self.p_src
+            q_inc = self.q_inc - self.q_src
+
+        for k in range(self.Nfreq):
+            T[:,k] = miepy.forces.torque(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
+                        self.material_data['k'][k], self.source.amplitude, self.material_data['eps_b'][k],
+                        self.material_data['mu_b'][k], self.Lmax)
+
+        return T
+
     def force(self, source=True):
         """Determine the force on every particle
 
             Arguments:
                 source    Include the source field (bool, default=False)
             
-            Returns: (F[3,M,N],T[3,M,N]), 
+            Returns: F[3,M,N]
                      N = number of particles, M = number of wavelengths
         """
-        force_data = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
-        torque_data = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
+        F = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
         for i in range(self.Nparticles):
-            force_data[...,i], torque_data[...,i] = self.force_on_particle(i, source=source)
+            F[...,i] = self.force_on_particle(i, source=source)
 
-        return force_data, torque_data
+        return F
+
+    def torque(self, source=True):
+        """Determine the torque on every particle
+
+            Arguments:
+                source    Include the source field (bool, default=False)
+            
+            Returns: T[3,M,N]
+                     N = number of particles, M = number of wavelengths
+        """
+        T = np.zeros([3, self.Nfreq, self.Nparticles], dtype=float)
+        for i in range(self.Nparticles):
+            T[...,i] = self.torque_on_particle(i, source=source)
+
+        return T
 
     def update_position(self, position):
         """Update the positions of the spheres
@@ -594,44 +628,3 @@ class gmt:
                 n = self.n_indices[r]
                 self.p[k,:,r] = self.p_inc[k,:,r]*self.a[k,:,n-1]
                 self.q[k,:,r] = self.q_inc[k,:,r]*self.b[k,:,n-1]
-        
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from my_pytools.my_matplotlib.colors import cmap
-
-    nm = 1e-9
-    sep = 50*nm
-    r = 20*nm
-
-    fig,axes = plt.subplots(ncols=2, figsize=plt.figaspect(1/2))
-
-    Nx = 480
-    Ny = 481
-    y = np.linspace(-sep/2 - 2*r, sep/2 + 2*r, Ny)
-    x = np.linspace(-2*r, 2*r, Nx)
-    z = 0
-    X,Y,Z = np.meshgrid(x,y,z, indexing='ij') 
-
-    for i,sim in enumerate([True,False]):
-        system = gmt(spheres([[0,-sep/2,0],[0,sep/2,0]], r, miepy.materials.predefined.Ag()), 
-                    miepy.sources.x_polarized_plane_wave(),
-                    600*nm, 2, interactions=sim)
-        E = np.squeeze(system.E_field(X,Y,Z,True))
-        I = np.sum(np.abs(E)**2, axis=0)
-        print(I.shape)
-
-        mask = np.zeros((Nx,Ny), dtype=bool)
-        mask[(np.squeeze(Y)-sep/2)**2 + np.squeeze(X)**2 < r**2] = True
-        mask[(np.squeeze(Y)+sep/2)**2 + np.squeeze(X)**2 < r**2] = True
-        I[mask] = 0
-
-        im = axes[i].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', cmap=cmap['parula'], rasterized=True)
-        plt.colorbar(im, ax=axes[i], label='Intensity')
-        axes[i].set(aspect='equal', xlabel='x (nm)', ylabel='y (nm)')
-
-
-    plt.savefig('test.pdf', dpi=400)
-    plt.show()
-
-    # from IPython import embed
-    # embed()

@@ -22,9 +22,8 @@ torque = np.zeros_like(force)
 
 for i, separation in enumerate(tqdm(separations)):
     mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
-    F,T = map(np.squeeze, mie.force_on_particle(0))
-    force[:,i] = F
-    torque[:,i] = T
+    force[:,i] = mie.force_on_particle(0).squeeze()
+    torque[:,i] = mie.torque_on_particle(0).squeeze()
 
 fig, axes = plt.subplots(nrows=2, ncols=3, figsize=plt.figaspect(2/3))
 
