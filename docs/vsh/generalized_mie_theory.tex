@@ -105,6 +105,7 @@ where $|E_0|$ is the amplitude of the source field.
 where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH translation coefficients from particle $i$ to particle $j$.
 
 \section{Force and torque}
+\emph{Maxwell stress tensor equations}
 \begin{equation}
     \langle \boldsymbol{T} \rangle = \frac{1}{2} \text{Re} \left[ \varepsilon  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu \boldsymbol{H} \otimes \boldsymbol{H^*}
     - \frac{1}{2}(\varepsilon E^2 + \mu H^2)\boldsymbol{I} \right]
@@ -118,21 +119,59 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
     \langle \boldsymbol{\tau} \rangle = \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
 \end{equation}
 
+\emph{Force equations}
 \begin{align}
 \begin{split}
-    F_x + iF_y = ?
+    F_x + iF_y =& -\frac{\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\bigg\{
+          \sqrt{(n+m+1)(n-m)}\frac{\varepsilon_b}{\mu_b}
+          \bigg[2a_{mn}b_{m+1n}^*  - a_{mn}q_{m+1n}^* \\ 
+        & - p_{mn} b_{m+1n}^* + 2b_{mn}a_{m+1n}^* - b_{mn}p_{m+1n}^* - q_{mn}a_{m+1n}^*  \bigg] \\
+        & - \sqrt{\frac{(n+m+2)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
+        \bigg[ 2 \varepsilon_b a_{mn}a_{m+1n+1}^* - \varepsilon_b a_{mn}p_{m+1n+1}^* \\
+        & - \varepsilon_b p_{mn}a_{m+1n+1}^* + 2 \frac{\varepsilon_b}{\mu_b} b_{mn}b_{m+1n+1}^* - \frac{\varepsilon_b}{\mu_b} b_{mn}q_{m+1n+1}^* - \frac{\varepsilon_b}{\mu_b} q_{mn}b_{m+1n+1}^*\bigg] \\
+        & + \sqrt{\frac{(n-m+1)(n-m+2)n(n+2)}{(2n+3)(2n+1)}}
+        \bigg[ 2 \varepsilon_b a_{m-1n+1}a_{mn}^* - \varepsilon_b a_{m-1n+1}p_{mn}^* \\
+        & - \varepsilon_b p_{m-1n+1}a_{mn}^* + 2 \frac{\varepsilon_b}{\mu_b} b_{m-1n+1}b_{mn}^* - \frac{\varepsilon_b}{\mu_b} b_{m-1n+1}q_{mn}^* - \frac{\varepsilon_b}{\mu_b} q_{m-1n+1}b_{mn}^*\bigg]
+        \bigg\}
 \end{split}
 \end{align}
 
 \begin{align}
 \begin{split}
-    F_z =& \frac{-2\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \text{Re}\bigg\{
-          \frac{m}{n(n+1)} \frac{\varepsilon_b}{\mu_b}
-          \bigg[ 2a_{mn}b_{mn}^* + a_{mn}q_{mn}^* + p_{mn}b_{mn}^* \bigg] \\
-        & + \frac{1}{n+1} \sqrt{\frac{(n-m+1)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
+    F_z =& -\frac{2\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\text{Re}\bigg\{
+          \frac{m}{n} \frac{\varepsilon_b}{\mu_b}
+          \bigg[ 2a_{mn}b_{mn}^* - a_{mn}q_{mn}^* - p_{mn}b_{mn}^* \bigg] \\
+        & + \sqrt{\frac{(n-m+1)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
         \bigg[ 2 \varepsilon_b a_{mn+1}a_{mn}^* - \varepsilon_b a_{mn+1}p_{mn}^* - \varepsilon_b p_{mn+1}a_{mn}^* \\
-        & + 2 \frac{\varepsilon_b}{\mu_b} b_{mn+1}b_{mn}^* - \frac{\varepsilon_b}{\mu_b} b_{mn+1}q_{mn}^* - \varepsilon_b q_{mn+1}b_{mn}^*
+        & + 2 \frac{\varepsilon_b}{\mu_b} b_{mn+1}b_{mn}^* - \frac{\varepsilon_b}{\mu_b} b_{mn+1}q_{mn}^* - \frac{\varepsilon_b}{\mu_b} q_{mn+1}b_{mn}^*
         \bigg] \bigg\}
+\end{split}
+\end{align}
+
+\emph{Torque equations}
+\begin{align}
+\begin{split}
+    \tau_x =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Re} \bigg\{
+            \varepsilon_b a_{mn}a_{m+1n}^* + b_{mn}b_{m+1n}^* \\
+            & - \frac{1}{2} \bigg[ \varepsilon_b a_{m+1n}p_{mn}^* + \varepsilon_b a_{mn}p_{m+1n}^*
+            + \mu_b b_{m+1n}q_{mn}^* + \mu_b b_{mn}q_{m+1n}^*\bigg] \bigg\}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+    \tau_y =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Im} \bigg\{
+            \varepsilon_b a_{mn}a_{m+1n}^* + b_{mn}b_{m+1n}^* \\
+            & + \frac{1}{2} \bigg[ \varepsilon_b a_{m+1n}p_{mn}^* - \varepsilon_b a_{mn}p_{m+1n}^*
+            + \mu_b b_{m+1n}q_{mn}^* - \mu_b b_{mn}q_{m+1n}^*\bigg] \bigg\}
+\end{split}
+\end{align}
+
+\begin{align}
+\begin{split}
+    \tau_z =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n} \bigg\{
+          \varepsilon_b |a_{mn}|^2 + \mu_b |b_{mn}|^2 - \text{Re} \bigg[
+              \varepsilon_b a_{mn}p_{mn}^* + \mu_b b_{mn}q_{mn}^*\bigg] \bigg\}
 \end{split}
 \end{align}
 
@@ -157,6 +196,8 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \section{Other conventions}
 A different convention for the field expansions used in other work \cite{barton1989theoretical} is presented here.
+\newline
+
 \textit{Electric field}
 \begin{align}
 \begin{split}
