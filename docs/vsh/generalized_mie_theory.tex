@@ -46,19 +46,34 @@ where $J= 1,2,3,4$. The radial functions $z_n^{(J)}$ are
 \begin{equation}
 \begin{align*}
     z_n^{(1)}(x) &= j_n(x)  \qquad&  z_n^{(3)}(x) &= h_n^{(1)}(x) = j_n(x) + iy_n(x)   \\
-    z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
+z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
 \end{align*}
 \end{equation}
 where $j_n$, $y_n$ are the spherical Bessel functions of the first and second kind, and $h_n^{(1)}$, $h_n^{(2)}$ are the spherical Hankel functions of the first and second kind.
 The angular functions $\pi_{mn}$ and $\tau_{mn}$ are
 \begin{align}
-    \pi_{mn}(\cos\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
-    \tau_{mn}(\cos\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
+\pi_{mn}(\cos\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
+\tau_{mn}(\cos\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
 \end{align}
 The associated Legendre polynomials $P_n^m$ are defined without the Condon-Shortley phase, i.e.
 \begin{equation}
-    P_n^m(x) = (1 - x^2)^{m/2} \frac{d^m}{dx^m} P_n(x)
+P_n^m(x) = (1 - x^2)^{m/2} \frac{d^m}{dx^m} P_n(x)
 \end{equation}
+The VSHs are an orthogonal set when integated over a closed surface $\Omega$
+\begin{align}
+\begin{split}
+    \langle \boldsymbol{N}_{mn}^{(J)}, \boldsymbol{N}_{m^\prime n^\prime}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{N}_{mn}^{(J)} \cdot \boldsymbol{N}_{m^\prime n^\prime}^{(J)*} \;d\Omega \\
+    &= \delta_{mm^\prime}\delta_{nn^\prime}4\pi \frac{n(n+1)(n+m)!}{(2n+1)(n-m)!}
+      \left[ \frac{\left|z_n^{(J)}(kr) + krz_n^{(J)\prime}(kr)\right|^2 + n(n+1) \left|z_n^{(J)}(kr)\right|^2 }{(kr)^2} \right] \\
+    \langle \boldsymbol{M}_{mn}^{(J)}, \boldsymbol{M}_{m^\prime n^\prime}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{M}_{mn}^{(J)} \cdot \boldsymbol{M}_{m^\prime n^\prime}^{(J)*} \;d\Omega
+    = \delta_{mm^\prime}\delta_{nn^\prime}4\pi \frac{n(n+1)(n+m)!}{(2n+1)(n-m)!} |z_n^{(J)}(kr)|^2 \\
+    \langle \boldsymbol{N}_{mn}^{(J)}, \boldsymbol{M}_{m^\prime n^\prime}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{N}_{mn}^{(J)} \cdot \boldsymbol{M}_{m^\prime n^\prime}^{(J)*} \;d\Omega = 0
+\end{split}
+\end{align}
+
 
 \section{Field expansions}
 \textit{Electric field}
@@ -90,6 +105,7 @@ where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^
 \end{equation}
 where $|E_0|$ is the amplitude of the source field.
 
+\section{VSH translation addition coefficients}
 \section{Interaction equations}
 \begin{align}
     \begin{split}
@@ -176,7 +192,27 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \end{align}
 
 \section{Cluster coefficients}
+\begin{align}
+\begin{split}
+    a_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
+    A_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
+    +B_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l} \\
+    b_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
+    B_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
+    +A_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l}
+\end{split}
+\end{align}
+
 \section{Far-field expansions}
+
+\begin{align}
+\begin{split}
+    E_{\text{scat},\theta}(\theta,\phi) &= \frac{e^{ikr}}{-ikr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \big[a_{mn}\tau_{mn}(\cos\theta) + b_{mn}\pi_{mn}(\cos\theta)\big] e^{im\phi} \\
+    E_{\text{scat},\phi}(\theta,\phi) &= i\frac{e^{ikr}}{-ikr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    E_{mn} \big[a_{mn}\pi_{mn}(\cos\theta) + b_{mn}\tau_{mn}(\cos\theta)\big] e^{im\phi}
+\end{split}
+\end{align}
 
 \section{Cross-sections}
 
@@ -190,12 +226,23 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \end{align}
 
 \section{Source decomposition}
+Given the fields of the incident source $\boldsymbol{E}_\text{src}(\boldsymbol{r})$, $\boldsymbol{H}_\text{src}(\boldsymbol{r})$, the source can be decomposed by integration
+\begin{align}
+\begin{split}
+    p_{mn}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}_\text{src} \cdot \boldsymbol{N}_{mn}^{(1)*} \; d\Omega}
+    {E_{mn} \langle \boldsymbol{N}_{mn}^{(1)},\boldsymbol{N}_{mn}^{(1)} \rangle} \\
+    q_{mn}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}_\text{src} \cdot \boldsymbol{M}_{mn}^{(1)*} \; d\Omega}
+    {E_{mn} \langle \boldsymbol{M}_{mn}^{(1)},\boldsymbol{M}_{mn}^{(1)} \rangle}
+\end{split}
+\end{align}
+where $\Omega$ is a closed surface around particle $j$.
+
 \section{Efficient numeric evaluation}
 \section{Recursion relations}
-\section{MiePy}
 
 \section{Other conventions}
 A different convention for the field expansions used in other work \cite{barton1989theoretical} is presented here.
+These field expansions were used to evaluate analytic expressions for the force and torque.
 \newline
 
 \textit{Electric field}
@@ -262,9 +309,36 @@ Denoting the coefficients of our convention $\bar a_n$, $\bar b_n$, $\bar p_{mn}
     \bar b_{mn} &= \frac{k^2}{i^n}\sqrt{\frac{\mu_b}{\varepsilon_b} \frac{n(n+1)}{4\pi}} b_{mn}
 \end{split}
 \end{align}
+Another convention uses a different value for the $E_{mn}$ normalization values \cite{xu1995electromagnetic}
+\begin{equation}
+    E_{mn} = |E_0|i^n \frac{2n+1}{n(n+1)}
+\end{equation}
+
+\section{MiePy}
+
+Example Python code using MiePy
+\begin{lstlisting}
+    import miepy
+    nm = 1e-9
+
+    # define material and source
+    Ag = miepy.materials.predefined.Ag()
+    source = miepy.sources.x_polarized_plane_wave()
+
+    # build an Ag dimer with radii 50nm separated by 600nm
+    spheres = miepy.spheres([[300*nm,0,0], [-300*nm,0,0]], radius=50*nm, material=Ag)
+    solution = miepy.gmt(spheres, source, wavelength=800*nm, Lmax=2)
+
+    # obtain the cross-sections
+    scat, absorb, extinct = solution.cross_sections()
+
+    # obtain the force and torque on particle 1
+    F = solution.force_on_particle(0)
+    T = solution.torque_on_particle(0)
+\end{lstlisting}
+
 
 \bibliographystyle{unsrt}
 \bibliography{generalized_mie_theory.bib}{}
-
 
 \end{document}
