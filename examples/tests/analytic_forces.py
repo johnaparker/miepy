@@ -1,5 +1,5 @@
 """
-GMT for dimer, varying the separation distance between the dimer pair
+Comapre analytic force and torque expressions to integrated Maxwell stress tensor
 """
 
 import numpy as np
@@ -26,7 +26,6 @@ torque = np.zeros_like(force)
 def get_force(self,i):
     fid = 0
     k = self.material_data['k'][fid]
-    radius = self.spheres.radius[fid]
     E0 = self.source.amplitude
     eps_b = self.material_data['eps_b'][fid]*constants.epsilon_0
     mu_b = self.material_data['mu_b'][fid]
@@ -94,10 +93,53 @@ def get_force(self,i):
 
     return np.array([np.real(Fxy), np.imag(Fxy), np.real(Fz)])
 
+def get_torque(self,i):
+    fid = 0
+    k = self.material_data['k'][fid]
+    E0 = self.source.amplitude
+    eps_b = self.material_data['eps_b'][fid]
+    mu_b = self.material_data['mu_b'][fid]
+
+    Tx = 0
+    Ty = 0
+    Tz = 0
+    A = -2*np.pi*E0**2/k**3
+
+    for n in range(1,self.Lmax+1):
+        for m in range(-n,n+1):
+            r = n**2 + n - 1 + m
+
+            if m != n:
+                # Tx
+                factor = -A*np.sqrt((n-m)*(n+m+1))
+                r1 = n**2 + n - 1 + m + 1
+                Tx += factor*np.real(eps_b*self.p[fid,i,r]*np.conj(self.p[fid,i,r1]) \
+                        + mu_b*self.q[fid,i,r]*np.conj(self.q[fid,i,r1]) \
+                        -0.5*(eps_b*self.p[fid,i,r1]*np.conj(self.p_inc[fid,i,r]) \
+                        + eps_b*self.p[fid,i,r]*np.conj(self.p_inc[fid,i,r1]) \
+                        + mu_b*self.q[fid,i,r1]*np.conj(self.q_inc[fid,i,r]) \
+                        + mu_b*self.q[fid,i,r]*np.conj(self.q_inc[fid,i,r1])))
+
+                # Ty
+                Ty += factor*np.imag(eps_b*self.p[fid,i,r]*np.conj(self.p[fid,i,r1]) \
+                        + mu_b*self.q[fid,i,r]*np.conj(self.q[fid,i,r1]) \
+                        +0.5*(eps_b*self.p[fid,i,r1]*np.conj(self.p_inc[fid,i,r]) \
+                        - eps_b*self.p[fid,i,r]*np.conj(self.p_inc[fid,i,r1]) \
+                        + mu_b*self.q[fid,i,r1]*np.conj(self.q_inc[fid,i,r]) \
+                        - mu_b*self.q[fid,i,r]*np.conj(self.q_inc[fid,i,r1])))
+
+            # Tz
+            factor = A*m/n
+            Tz += factor* (eps_b*np.abs(self.p[fid,i,r])**2 + mu_b*np.abs(self.q[fid,i,r])**2 \
+                    - np.real(eps_b*self.p[fid,i,r]*np.conj(self.p_inc[fid,i,r]) \
+                    + mu_b*self.q[fid,i,r]*np.conj(self.q_inc[fid,i,r])))
+
+    return np.array([Tx, Ty, Tz])*constants.epsilon_0
+
 for i, separation in enumerate(tqdm(separations)):
     mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
     force[:,i] = get_force(mie, 0)
-
+    torque[:,i] = get_torque(mie, 0)
 
 fig, axes = plt.subplots(nrows=2, ncols=3, figsize=plt.figaspect(2/3)*2)
 
@@ -115,8 +157,8 @@ for i in range(3):
     axes[0,i].plot(separations/nm, force[i], color=f'C{i}', label='Analytic Equation')
     axes[0,i].set_title(label=f'F{comp}', weight='bold')
 
-    # axes[1,i].plot(separations/nm, torque[i], color=f'C{i}')
-    # axes[1,i].set_title(label=f'T{comp}', weight='bold')
+    axes[1,i].plot(separations/nm, torque[i], color=f'C{i}', label='Analytic Equation')
+    axes[1,i].set_title(label=f'T{comp}', weight='bold')
 
 for ax in axes.flatten():
     ax.axhline(y=0, color='black', linestyle='--')
