@@ -52,7 +52,7 @@ for n in range(1,6):
 
     integral,err = dblquad(newF, 0, 2*np.pi, lambda x: 0, lambda x: np.pi)
 
-    Emn = miepy.vsh.Emn(m, n, 1)
+    Emn = miepy.vsh.Emn(m, n)
 
     # exact norm for M dot M
     zn = miepy.vsh.spherical_hn(n, k*r)

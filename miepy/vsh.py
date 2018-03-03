@@ -185,8 +185,8 @@ def b_func(m,n,u,v,p):
 
     return factor*w1*w2
 
-def Emn(m, n, E0):
-    return E0*1j**n*np.sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)))
+def Emn(m, n):
+    return 1j**n*np.sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)))
 
 def A_translation(m, n, u, v, r, theta, phi, k, mode):
     m *= -1
@@ -196,7 +196,7 @@ def A_translation(m, n, u, v, r, theta, phi, k, mode):
     # numerator = (2*v+1)*f(n-m)*f(v-u)
     # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
     # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
-    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v,1)/Emn(m,n,1)
+    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v)/Emn(m,n)
     # factor = norm*(-1.)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
 
     factor = 0.5 * (-1.)**m * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
@@ -222,7 +222,7 @@ def B_translation(m, n, u, v, r, theta, phi, k, mode):
     # numerator = (2*v+1)*f(n-m)*f(v-u)
     # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
     # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
-    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v,1)/Emn(m,n,1)
+    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v)/Emn(m,n)
     # factor = norm*(-1.)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
 
     factor = 0.5 * (-1.)**(m+1) * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
@@ -460,7 +460,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
     if not spherical:
         E = vec_cart_to_sph(E, THETA, PHI)
 
-    Emn_val = Emn(m, n, E0=1)
+    Emn_val = Emn(m, n)
 
     if mode == VSH_mode.outgoing:
         factor = 1/(1j*Emn_val)
@@ -496,7 +496,7 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
     X,Y,Z = sph_to_cart(r, THETA, PHI, origin=origin)
     E = src.E([X,Y,Z], k)
 
-    return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)/src.amplitude
+    return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
 def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs
@@ -565,7 +565,7 @@ def expand(p, q, k, mode, origin=[0,0,0]):
             for m in range(-n, n+1):
                 Nfunc,Mfunc = VSH(n, m, mode=mode)
 
-                Emn_val = Emn(m, n, E0=1)
+                Emn_val = Emn(m, n)
 
                 N = Nfunc(r, theta, phi, k)
                 M = Mfunc(r, theta, phi, k)

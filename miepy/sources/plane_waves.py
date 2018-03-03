@@ -25,14 +25,14 @@ class plane_wave(source):
         return np.einsum('i...,...->i...', pol, amp)
 
     def structure_of_mode(self, n, m, r, k):
-        phase = np.exp(1j*k*r[2])
+        phase = 1j*k*r[2]
 
         alpha = 0
         pi_value = pi_func(n,m)(alpha)
         tau_value = tau_func(n,m)(alpha)
 
-        p = phase*np.sqrt(2*n+1)*tau_value*(self.polarization[0] - 1j*m*self.polarization[1])
-        q = phase*np.sqrt(2*n+1)*pi_value*(self.polarization[0] - 1j*m*self.polarization[1])
+        p = self.amplitude*np.exp(phase)*np.sqrt(2*n+1)*tau_value*(self.polarization[0] - 1j*m*self.polarization[1])
+        q = self.amplitude*np.exp(phase)*np.sqrt(2*n+1)*pi_value*(self.polarization[0] - 1j*m*self.polarization[1])
 
         if m == 1:
             p /= (n*(n+1))

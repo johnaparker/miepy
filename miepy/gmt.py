@@ -140,7 +140,7 @@ class gmt:
             for r in range(self.rmax):
                 n = self.n_indices[r]
                 m = self.m_indices[r]
-                factor = 1j*miepy.vsh.Emn(m,n,self.source.amplitude)
+                factor = 1j*miepy.vsh.Emn(m, n)
 
                 N,M = miepy.vsh.VSH(n,m)
                 E_sph += factor*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
@@ -186,7 +186,7 @@ class gmt:
             for r in range(self.rmax):
                 n = self.n_indices[r]
                 m = self.m_indices[r]
-                factor = miepy.vsh.Emn(m,n,self.source.amplitude)
+                factor = miepy.vsh.Emn(m, n)
                 N,M = miepy.vsh.VSH(n,m)
                 H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
                 H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
@@ -231,7 +231,7 @@ class gmt:
                 for r in range(self.rmax):
                     n = self.n_indices[r]
                     m = self.m_indices[r]
-                    factor = 1j*miepy.vsh.Emn(m,n,self.source.amplitude)
+                    factor = 1j*miepy.vsh.Emn(m, n)
                     N,M = miepy.vsh.VSH(n,m)
                     E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
                     E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
@@ -270,7 +270,7 @@ class gmt:
                 for r in range(self.rmax):
                     n = self.n_indices[r]
                     m = self.m_indices[r]
-                    factor = miepy.vsh.Emn(m,n,self.source.amplitude)
+                    factor = miepy.vsh.Emn(m, n)
                     N,M = miepy.vsh.VSH(n,m)
                     H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
                     H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
@@ -392,7 +392,7 @@ class gmt:
 
         for k in range(self.Nfreq):
             F[:,k] = miepy.forces.force(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
-                        self.material_data['k'][k], self.source.amplitude, self.material_data['eps_b'][k],
+                        self.material_data['k'][k], self.material_data['eps_b'][k],
                         self.material_data['mu_b'][k], self.Lmax)
 
         return F
@@ -418,7 +418,7 @@ class gmt:
 
         for k in range(self.Nfreq):
             T[:,k] = miepy.forces.torque(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
-                        self.material_data['k'][k], self.source.amplitude, self.material_data['eps_b'][k],
+                        self.material_data['k'][k], self.material_data['eps_b'][k],
                         self.material_data['mu_b'][k], self.Lmax)
 
         return T

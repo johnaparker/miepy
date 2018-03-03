@@ -101,9 +101,8 @@ The VSHs are an orthogonal set when integated over a closed surface $\Omega$
 \end{align}
 where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
 \begin{equation}
-    E_{mn} = |E_0|i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
+    E_{mn} = i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
 \end{equation}
-where $|E_0|$ is the amplitude of the source field.
 
 \section{VSH translation addition coefficients}
 \section{Interaction equations}
@@ -138,7 +137,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \emph{Force equations}
 \begin{align}
 \begin{split}
-    F_x + iF_y =& \frac{\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\bigg\{
+    F_x + iF_y =& \frac{\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\bigg\{
           \frac{\sqrt{(n+m+1)(n-m)}}{n}\frac{\varepsilon_b}{\mu_b}
           \bigg[2a_{mn}b_{m+1n}^*  - a_{mn}q_{m+1n}^* \\ 
         & - p_{mn} b_{m+1n}^* + 2b_{mn}a_{m+1n}^* - b_{mn}p_{m+1n}^* - q_{mn}a_{m+1n}^*  \bigg] \\
@@ -154,7 +153,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \begin{align}
 \begin{split}
-    F_z =& -\frac{2\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\text{Re}\bigg\{
+    F_z =& -\frac{2\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\text{Re}\bigg\{
           \frac{m}{n} \frac{\varepsilon_b}{\mu_b}
           \bigg[ 2a_{mn}b_{mn}^* - a_{mn}q_{mn}^* - p_{mn}b_{mn}^* \bigg] \\
         & + \sqrt{\frac{(n-m+1)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
@@ -167,7 +166,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \emph{Torque equations}
 \begin{align}
 \begin{split}
-    \tau_x =& \frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Re} \bigg\{
+    \tau_x =& \frac{2\pi}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Re} \bigg\{
             \varepsilon_b a_{mn}a_{m+1n}^* + \mu_b b_{mn}b_{m+1n}^* \\
             & - \frac{1}{2} \bigg[ \varepsilon_b a_{m+1n}p_{mn}^* + \varepsilon_b a_{mn}p_{m+1n}^*
             + \mu_b b_{m+1n}q_{mn}^* + \mu_b b_{mn}q_{m+1n}^*\bigg] \bigg\}
@@ -176,7 +175,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \begin{align}
 \begin{split}
-    \tau_y =& \frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Im} \bigg\{
+    \tau_y =& \frac{2\pi}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Im} \bigg\{
             \varepsilon_b a_{mn}a_{m+1n}^* + \mu_b b_{mn}b_{m+1n}^* \\
             & + \frac{1}{2} \bigg[ \varepsilon_b a_{m+1n}p_{mn}^* - \varepsilon_b a_{mn}p_{m+1n}^*
             + \mu_b b_{m+1n}q_{mn}^* - \mu_b b_{mn}q_{m+1n}^*\bigg] \bigg\}
@@ -185,7 +184,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \begin{align}
 \begin{split}
-    \tau_z =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} m \bigg\{
+    \tau_z =& -\frac{2\pi}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} m \bigg\{
           \varepsilon_b |a_{mn}|^2 + \mu_b |b_{mn}|^2 - \text{Re} \bigg[
               \varepsilon_b a_{mn}p_{mn}^* + \mu_b b_{mn}q_{mn}^*\bigg] \bigg\}
 \end{split}
@@ -224,6 +223,12 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
     + q_{mn}^{\text{src}*}(\boldsymbol{p_0})b_{mn} \bigg\} \\
     C_\text{abs} &= C_\text{ext} - C_\text{scat}
 \end{align}
+These cross-sections here have units of (area)$\times$(electric field)$^2$.
+If the source is a plane wave of amplitude $E_0$, then these cross-sections should be normalized by $E_0^2$.
+For non-plane wave sources, the cross-sections should be normalizd depending on the convention being used, typically an averaged intensity over some area:
+\begin{equation}
+    E_0^2 = \frac{1}{A} \int_A |\boldsymbol{E}(\boldsymbol{r})|^2 \;dA
+\end{equation}
 
 \section{Source decomposition}
 Given the fields of the incident source $\boldsymbol{E}_\text{src}(\boldsymbol{r})$, $\boldsymbol{H}_\text{src}(\boldsymbol{r})$, the source can be decomposed by integration
@@ -313,6 +318,8 @@ Another convention uses a different value for the $E_{mn}$ normalization values 
 \begin{equation}
     E_{mn} = |E_0|i^n \frac{2n+1}{n(n+1)}
 \end{equation}
+where $|E_0|$ is the amplitude of the source field.
+We have chosen to absorb this amplitude into the $a$, $b$, $p$, and $q$ coefficients.
 
 \section{MiePy}
 
