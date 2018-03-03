@@ -139,7 +139,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \begin{align}
 \begin{split}
     F_x + iF_y =& \frac{\pi E_0^2}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\bigg\{
-          \sqrt{(n+m+1)(n-m)}\frac{\varepsilon_b}{\mu_b}
+          \frac{\sqrt{(n+m+1)(n-m)}}{n}\frac{\varepsilon_b}{\mu_b}
           \bigg[2a_{mn}b_{m+1n}^*  - a_{mn}q_{m+1n}^* \\ 
         & - p_{mn} b_{m+1n}^* + 2b_{mn}a_{m+1n}^* - b_{mn}p_{m+1n}^* - q_{mn}a_{m+1n}^*  \bigg] \\
         & - \sqrt{\frac{(n+m+2)(n+m+1)n(n+2)}{(2n+3)(2n+1)}}
@@ -185,7 +185,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \begin{align}
 \begin{split}
-    \tau_z =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{m}{n} \bigg\{
+    \tau_z =& -\frac{2\pi E_0^2}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} m \bigg\{
           \varepsilon_b |a_{mn}|^2 + \mu_b |b_{mn}|^2 - \text{Re} \bigg[
               \varepsilon_b a_{mn}p_{mn}^* + \mu_b b_{mn}q_{mn}^*\bigg] \bigg\}
 \end{split}

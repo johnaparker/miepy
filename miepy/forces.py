@@ -40,7 +40,7 @@ def force(p, q, p_inc, q_inc, k, E0, eps_b, mu_b, Lmax):
 
             # Fxy, term 1/3
             if m != n:
-                factor = Axy*np.sqrt((n+m+1)*(n-m))*(eps_b/mu_b)/(n+1)
+                factor = Axy*np.sqrt((n+m+1)*(n-m))*(eps_b/mu_b)/(n*(n+1))
                 r1 = n**2 + n - 1 + m + 1
                 Fxy += factor*(2*p[r]*np.conj(q[r1]) \
                          - p[r]*np.conj(q_inc[r1]) \
@@ -130,7 +130,7 @@ def torque(p, q, p_inc, q_inc, k, E0, eps_b, mu_b, Lmax):
                         - mu_b*q[r]*np.conj(q_inc[r1])))
 
             # Tz
-            factor = A*m/n
+            factor = A*m
             T[2] += factor* (eps_b*np.abs(p[r])**2 + mu_b*np.abs(q[r])**2 \
                     - np.real(eps_b*p[r]*np.conj(p_inc[r]) \
                     + mu_b*q[r]*np.conj(q_inc[r])))
