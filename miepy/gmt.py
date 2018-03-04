@@ -49,7 +49,7 @@ class gmt:
                Lmax             maximum number of orders to use in angular momentum expansion (int)
                medium           (optional) material medium (must be non-absorbing; default=vacuum)
                interactions     (optional) If True, include particle interactions (bool, default=True) 
-               origin           (optional) system origin around which to compute cluster quantities (default = [0,0,0])
+               origin           (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to be automatically choose origin as center of geometry.
         """
         self.spheres = spheres
         self.source = source
@@ -58,7 +58,14 @@ class gmt:
         self.rmax = Lmax*(Lmax + 2)
         self.interactions = interactions
 
-        self.origin = np.zeros(3) if origin is None else np.asarray(origin)
+        self.auto_origin = False    
+        if origin is None:
+            self.origin = np.zeros(3)
+        elif origin is 'auto':
+            self.auto_origin = True
+            self.origin = np.average(self.spheres.position, axis=0)
+        else:
+            self.origin = np.asarray(origin)
 
         if medium is None:
             self.medium = miepy.constant_material(1.0, 1.0)
@@ -313,6 +320,11 @@ class gmt:
         q0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
 
         for i in range(self.Nparticles):
+            if np.all(self.spheres.position[i] == self.origin):
+                anm[...] = self.p[:,i].T
+                bnm[...] = self.q[:,i].T
+                continue
+
             rij = self.origin - self.spheres.position[i]
             rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
             
@@ -460,6 +472,9 @@ class gmt:
                 position[N,3]       new particle positions
         """
         self.spheres.position = np.asarray(np.atleast_2d(position), dtype=float)
+
+        if self.auto_origin:
+            self.origin = np.average(self.spheres.position, axis=0)
 
         if (self.interactions):
             self._solve_interactions()
