@@ -36,7 +36,20 @@ class spheres:
         return self.sphere_type(position=self.position[i], radius=self.radius[i],
                             material=self.material[i])
 
+def get_indices(Lmax):
+    """return n_indices, m_indices arrays for a given Lmax"""
+    rmax = Lmax*(Lmax + 2)
+    n_indices = np.zeros(rmax, dtype=int)
+    m_indices = np.zeros(rmax, dtype=int)
 
+    counter = 0
+    for n in range(1,Lmax+1):
+        for m in range(-n,n+1):
+            n_indices[counter] = n
+            m_indices[counter] = m
+            counter += 1
+
+    return n_indices, m_indices
 
 class gmt:
     """Solve Generalized Mie Theory: N particles in an arbitray source profile"""
@@ -98,6 +111,9 @@ class gmt:
         self.p_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
         self.q_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
 
+        self.p_cluster = None
+        self.q_cluster = None
+
         for i in range(self.Nparticles):
             sphere = miepy.single_mie_sphere(self.spheres.radius[i], self.spheres.material[i],
                         self.wavelength, self.Lmax, self.medium)
@@ -106,15 +122,7 @@ class gmt:
             self.material_data['n'][i] = sphere.material_data['n']
             self.a[:,i], self.b[:,i] = sphere.solve_exterior()
 
-        self.n_indices = np.zeros(self.rmax, dtype=int)
-        self.m_indices = np.zeros(self.rmax, dtype=int)
-
-        counter = 0
-        for n in range(1,self.Lmax+1):
-            for m in range(-n,n+1):
-                self.n_indices[counter] = n
-                self.m_indices[counter] = m
-                counter += 1
+        self.n_indices, self.m_indices = get_indices(self.Lmax)
 
         if (self.interactions):
             self._solve_interactions()
@@ -300,53 +308,15 @@ class gmt:
         if Lmax is None:
             Lmax = self.Lmax
 
-        rmax = Lmax*(Lmax + 2)
-        n_indices = np.zeros(rmax, dtype=int)
-        m_indices = np.zeros(rmax, dtype=int)
+        n_indices, m_indices = get_indices(Lmax)
+        rmax = n_indices.shape[0]
 
-        counter = 0
-        for n in range(1,Lmax+1):
-            for m in range(-n,n+1):
-                n_indices[counter] = n
-                m_indices[counter] = m
-                counter += 1
+        p0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
+        q0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
+        self.solve_cluster_coefficients(Lmax)
 
         Cscat = np.zeros([2, Lmax, self.Nfreq], dtype=float)
         Cext  = np.zeros([2, Lmax, self.Nfreq], dtype=float)
-
-        anm = np.zeros([rmax, self.Nfreq], dtype=complex)
-        bnm = np.zeros([rmax, self.Nfreq], dtype=complex)
-        p0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
-        q0 =  np.zeros([rmax, self.Nfreq], dtype=complex)
-
-        for i in range(self.Nparticles):
-            if np.all(self.spheres.position[i] == self.origin):
-                anm[...] = self.p[:,i].T
-                bnm[...] = self.q[:,i].T
-                continue
-
-            rij = self.origin - self.spheres.position[i]
-            rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
-            
-            for k in range(self.Nfreq):
-                for r in range(rmax):
-                    n = n_indices[r]
-                    m = m_indices[r]
-
-                    for rp in range(self.rmax):
-                        v = self.n_indices[rp]
-                        u = self.m_indices[rp]
-
-                        a = self.p[k,i,rp]
-                        b = self.q[k,i,rp]
-
-                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
-                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
-
-                        anm[r,k] += a*A + b*B
-                        bnm[r,k] += a*B + b*A
-
-
 
         for k in range(self.Nfreq):
             factor = 4*np.pi/self.material_data['k'][k]**2
@@ -356,11 +326,11 @@ class gmt:
 
                 p0[r,k], q0[r,k] = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
 
-                Cscat[0,n-1,k] += factor*np.abs(anm[r,k])**2
-                Cscat[1,n-1,k] += factor*np.abs(bnm[r,k])**2
+                Cscat[0,n-1,k] += factor*np.abs(self.p_cluster[r,k])**2
+                Cscat[1,n-1,k] += factor*np.abs(self.q_cluster[r,k])**2
 
-                Cext[0,n-1,k] += factor*np.real(np.conj(p0[r,k])*anm[r,k])
-                Cext[1,n-1,k] += factor*np.real(np.conj(q0[r,k])*bnm[r,k])
+                Cext[0,n-1,k] += factor*np.real(np.conj(p0[r,k])*self.p_cluster[r,k])
+                Cext[1,n-1,k] += factor*np.real(np.conj(q0[r,k])*self.q_cluster[r,k])
 
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
@@ -472,6 +442,7 @@ class gmt:
                 position[N,3]       new particle positions
         """
         self.spheres.position = np.asarray(np.atleast_2d(position), dtype=float)
+        self._reset_cluster_coefficients()
 
         if self.auto_origin:
             self.origin = np.average(self.spheres.position, axis=0)
@@ -482,8 +453,52 @@ class gmt:
             self._set_without_interactions()
 
     # @lru_cache(max=None)
-    def solve_cluster_coefficients(self, Lmax):
-        pass
+    def solve_cluster_coefficients(self, Lmax=None):
+        """Solve for the p,q coefficients of the entire cluster around the origin
+
+        Arguments:
+            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
+        """
+
+        if Lmax is None:
+            Lmax = self.Lmax
+
+        n_indices, m_indices = get_indices(Lmax)
+        rmax = n_indices.shape[0]
+
+        self.p_cluster = np.zeros([rmax, self.Nfreq], dtype=complex)
+        self.q_cluster = np.zeros([rmax, self.Nfreq], dtype=complex)
+
+        for i in range(self.Nparticles):
+            if np.all(self.spheres.position[i] == self.origin):
+                self.p_cluster[...] = self.p[:,i].T
+                self.q_cluster[...] = self.q[:,i].T
+                continue
+
+            rij = self.origin - self.spheres.position[i]
+            rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
+            
+            for k in range(self.Nfreq):
+                for r in range(rmax):
+                    n = n_indices[r]
+                    m = m_indices[r]
+
+                    for rp in range(self.rmax):
+                        v = self.n_indices[rp]
+                        u = self.m_indices[rp]
+
+                        a = self.p[k,i,rp]
+                        b = self.q[k,i,rp]
+
+                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
+                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
+
+                        self.p_cluster[r,k] += a*A + b*B
+                        self.q_cluster[r,k] += a*B + b*A
+
+    def _reset_cluster_coefficients(self):
+        self.p_cluster = None
+        self.q_cluster = None
 
     def _solve_source_decomposition(self):
         pos = self.spheres.position.T
