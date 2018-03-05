@@ -12,9 +12,8 @@ from scipy import constants
 nm = 1e-9
 
 Ag = miepy.materials.predefined.Ag()
-# Ag = miepy.constant_material(4**2 + 0.01j)
 radius = 75*nm
-source = miepy.sources.rhc_polarized_plane_wave(amplitude=2)
+source = miepy.sources.rhc_polarized_plane_wave()
 separations = np.linspace(2*radius + 10*nm, 2*radius + 700*nm, 10)
 
 spheres = miepy.spheres([[separations[0]/2,0,0], [-separations[0]/2,0,0]], radius, Ag)

@@ -345,13 +345,39 @@ class gmt:
         Cscat, Cabs, Cext = self.cross_sections_per_multipole(Lmax)
         return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
 
-    #TODO implement
     def cross_sections_per_multipole_of_particle(self, i):
-        pass
+        """Compute the scattering, absorption, and extinction cross-section per multipole of a single particle
 
-    #TODO implement
+        Arguments:
+            i    particle index
+        """
+
+        Cscat = np.zeros([2, self.Lmax, self.Nfreq], dtype=float)
+        Cext  = np.zeros([2, self.Lmax, self.Nfreq], dtype=float)
+
+        for k in range(self.Nfreq):
+            factor = 4*np.pi/self.material_data['k'][k]**2
+            for r in range(self.rmax):
+                n = self.n_indices[r]
+
+                Cscat[0,n-1,k] += factor*np.abs(self.p[k,i,r])**2
+                Cscat[1,n-1,k] += factor*np.abs(self.q[k,i,r])**2
+
+                Cext[0,n-1,k] += factor*np.real(np.conj(self.p_src[k,i,r])*self.p[k,i,r])
+                Cext[1,n-1,k] += factor*np.real(np.conj(self.q_src[k,i,r])*self.q[k,i,r])
+
+        Cabs = Cext - Cscat
+        return Cscat, Cabs, Cext
+
     def cross_sections_of_particle(self, i):
-        pass
+        """Compute the scattering, absorption, and extinction cross-section of a single particle
+
+        Arguments:
+            i    particle index
+        """
+
+        Cscat, Cabs, Cext = self.cross_sections_per_multipole_of_particle(i)
+        return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
 
     def force_on_particle(self, i, source=True):
         """Determine the force on a single particle
