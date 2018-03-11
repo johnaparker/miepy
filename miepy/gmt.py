@@ -124,10 +124,7 @@ class gmt:
 
         self.n_indices, self.m_indices = get_indices(self.Lmax)
 
-        if (self.interactions):
-            self._solve_interactions()
-        else:
-            self._set_without_interactions()
+        self.solve()
 
     def E_field_from_particle(self, i, x, y, z, source=True):
         """Compute the electric field around particle i
@@ -473,10 +470,7 @@ class gmt:
         if self.auto_origin:
             self.origin = np.average(self.spheres.position, axis=0)
 
-        if (self.interactions):
-            self._solve_interactions()
-        else:
-            self._set_without_interactions()
+        self.solve()
 
     # @lru_cache(max=None)
     def solve_cluster_coefficients(self, Lmax=None):
@@ -522,6 +516,13 @@ class gmt:
                         self.p_cluster[k,r] += a*A + b*B
                         self.q_cluster[k,r] += a*B + b*A
 
+    def solve(self):
+        """solve for the p,q incident and scattering coefficients"""
+        if self.interactions:
+            self._solve_interactions()
+        else:
+            self._solve_without_interactions()
+
     def _reset_cluster_coefficients(self):
         self.p_cluster = None
         self.q_cluster = None
@@ -535,7 +536,7 @@ class gmt:
                     self.p_src[k,n,r], self.q_src[k,n,r] = \
                         self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data['k'][k])
 
-    def _set_without_interactions(self):
+    def _solve_without_interactions(self):
         self._solve_source_decomposition()
         self.p_inc[...] = self.p_src
         self.q_inc[...] = self.q_src
