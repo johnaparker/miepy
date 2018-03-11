@@ -104,12 +104,12 @@ class gmt:
         self.a = np.zeros([self.Nfreq,self.Nparticles,self.Lmax], dtype=complex)
         self.b = np.zeros([self.Nfreq,self.Nparticles,self.Lmax], dtype=complex)
 
-        self.p = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
-        self.q = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
-        self.p_inc = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
-        self.q_inc = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
-        self.p_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
-        self.q_src = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.p_scat = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q_scat = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.p_inc  = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q_inc  = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.p_src  = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
+        self.q_src  = np.zeros([self.Nfreq,self.Nparticles,self.rmax], dtype=complex)
 
         self.p_cluster = None
         self.q_cluster = None
@@ -158,8 +158,8 @@ class gmt:
                 factor = 1j*miepy.vsh.Emn(m, n)
 
                 N,M = miepy.vsh.VSH(n,m)
-                E_sph += factor*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                E_sph += factor*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += factor*self.p_scat[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                E_sph += factor*self.q_scat[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
                 p = self.p_inc[k,i,r]
@@ -203,8 +203,8 @@ class gmt:
                 m = self.m_indices[r]
                 factor = miepy.vsh.Emn(m, n)
                 N,M = miepy.vsh.VSH(n,m)
-                H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += factor*self.q_scat[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                H_sph += factor*self.p_scat[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
                 p = self.p_inc[k,i,r]
@@ -248,8 +248,8 @@ class gmt:
                     m = self.m_indices[r]
                     factor = 1j*miepy.vsh.Emn(m, n)
                     N,M = miepy.vsh.VSH(n,m)
-                    E_sph += factor*self.a[k,i,n-1]*self.p[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                    E_sph += factor*self.b[k,i,n-1]*self.q[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                    E_sph += factor*self.p_scat[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                    E_sph += factor*self.q_scat[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 E[:,k] += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
 
@@ -287,8 +287,8 @@ class gmt:
                     m = self.m_indices[r]
                     factor = miepy.vsh.Emn(m, n)
                     N,M = miepy.vsh.VSH(n,m)
-                    H_sph += factor*self.q[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
-                    H_sph += factor*self.p[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
+                    H_sph += factor*self.q_scat[k,i,r]*N(R,THETA,PHI,self.material_data['k'][k])
+                    H_sph += factor*self.p_scat[k,i,r]*M(R,THETA,PHI,self.material_data['k'][k])
 
                 H[:,k] += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
 
@@ -360,11 +360,11 @@ class gmt:
             for r in range(self.rmax):
                 n = self.n_indices[r]
 
-                Cscat[0,n-1,k] += factor*np.abs(self.p[k,i,r])**2
-                Cscat[1,n-1,k] += factor*np.abs(self.q[k,i,r])**2
+                Cscat[0,n-1,k] += factor*np.abs(self.p_scat[k,i,r])**2
+                Cscat[1,n-1,k] += factor*np.abs(self.q_scat[k,i,r])**2
 
-                Cext[0,n-1,k] += factor*np.real(np.conj(self.p_src[k,i,r])*self.p[k,i,r])
-                Cext[1,n-1,k] += factor*np.real(np.conj(self.q_src[k,i,r])*self.q[k,i,r])
+                Cext[0,n-1,k] += factor*np.real(np.conj(self.p_src[k,i,r])*self.p_scat[k,i,r])
+                Cext[1,n-1,k] += factor*np.real(np.conj(self.q_src[k,i,r])*self.q_scat[k,i,r])
 
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
@@ -399,7 +399,7 @@ class gmt:
             q_inc = self.q_inc - self.q_src
 
         for k in range(self.Nfreq):
-            F[:,k] = miepy.forces.force(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
+            F[:,k] = miepy.forces.force(self.p_scat[k,i], self.q_scat[k,i], p_inc[k,i], q_inc[k,i],
                         self.material_data['k'][k], self.material_data['eps_b'][k],
                         self.material_data['mu_b'][k], self.Lmax)
 
@@ -425,7 +425,7 @@ class gmt:
             q_inc = self.q_inc - self.q_src
 
         for k in range(self.Nfreq):
-            T[:,k] = miepy.forces.torque(self.p[k,i], self.q[k,i], p_inc[k,i], q_inc[k,i],
+            T[:,k] = miepy.forces.torque(self.p_scat[k,i], self.q_scat[k,i], p_inc[k,i], q_inc[k,i],
                         self.material_data['k'][k], self.material_data['eps_b'][k],
                         self.material_data['mu_b'][k], self.Lmax)
 
@@ -497,8 +497,8 @@ class gmt:
 
         for i in range(self.Nparticles):
             if np.all(self.spheres.position[i] == self.origin):
-                self.p_cluster[...] = self.p[:,i].T
-                self.q_cluster[...] = self.q[:,i].T
+                self.p_cluster[...] = self.p_scat[:,i].T
+                self.q_cluster[...] = self.q_scat[:,i].T
                 continue
 
             rij = self.origin - self.spheres.position[i]
@@ -513,8 +513,8 @@ class gmt:
                         v = self.n_indices[rp]
                         u = self.m_indices[rp]
 
-                        a = self.p[k,i,rp]
-                        b = self.q[k,i,rp]
+                        a = self.p_scat[k,i,rp]
+                        b = self.q_scat[k,i,rp]
 
                         A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
                         B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
@@ -542,8 +542,8 @@ class gmt:
 
         for r in range(self.rmax):
             n = self.n_indices[r]
-            self.p[...,r] = self.p_inc[...,r]*self.a[...,n-1]
-            self.q[...,r] = self.q_inc[...,r]*self.b[...,n-1]
+            self.p_scat[...,r] = self.p_inc[...,r]*self.a[...,n-1]
+            self.q_scat[...,r] = self.q_inc[...,r]*self.b[...,n-1]
 
     #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
     def _solve_interactions(self):
@@ -588,5 +588,5 @@ class gmt:
 
             for r in range(self.rmax):
                 n = self.n_indices[r]
-                self.p[k,:,r] = self.p_inc[k,:,r]*self.a[k,:,n-1]
-                self.q[k,:,r] = self.q_inc[k,:,r]*self.b[k,:,n-1]
+                self.p_scat[k,:,r] = self.p_inc[k,:,r]*self.a[k,:,n-1]
+                self.q_scat[k,:,r] = self.q_inc[k,:,r]*self.b[k,:,n-1]
