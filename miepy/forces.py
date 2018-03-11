@@ -171,8 +171,8 @@ def force_and_torque_from_mst(E, H, radius, eps=1, mu=1):
     dA = radius**2
 
     Ntheta, Nphi = E.shape[1:]
-    THETA, PHI = miepy.vsh.sphere_mesh(Ntheta)
-    rhat,*_ = miepy.vsh.sph_basis_vectors(THETA, PHI)
+    THETA, PHI = miepy.coordinates.sphere_mesh(Ntheta)
+    rhat,*_ = miepy.coordinates.sph_basis_vectors(THETA, PHI)
 
     tau = np.linspace(-1, 1, Ntheta)
     phi = np.linspace(0, 2*np.pi, Nphi)
@@ -190,7 +190,7 @@ def _gmt_force_and_torque_from_mst(gmt, i, sampling=30):
     Given GMT object and particle number i, return F,T using MST
     """
     radius = gmt.spheres.radius[i]
-    X,Y,Z,THETA,PHI,tau,phi = miepy.vsh.cart_sphere_mesh(radius, gmt.spheres.position[i], sampling)
+    X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.spheres.position[i], sampling)
 
     E = gmt.E_field_from_particle(i, X, Y, Z)
     H = gmt.H_field_from_particle(i, X, Y, Z)

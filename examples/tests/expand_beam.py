@@ -17,7 +17,7 @@ x = np.linspace(-1500*nm, 1500*nm, Nx)
 y = np.linspace(-1500*nm, 1500*nm, Ny)
 X,Y = np.meshgrid(x, y, indexing='ij')
 
-R, THETA, PHI = miepy.vsh.cart_to_sph(X,Y,0)
+R, THETA, PHI = miepy.coordinates.cart_to_sph(X,Y,0)
 
 source = miepy.sources.azimuthal_beam(600*nm)
 Lmax = 7

@@ -10,62 +10,7 @@ from my_pytools.my_numpy.integrate import simps_2d
 import enum
 from functools import lru_cache
 from math import factorial
-
-def sph_to_cart(r, theta, phi, origin=[0,0,0]):
-    """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
-    x = origin[0] + r*np.sin(theta)*np.cos(phi)
-    y = origin[1] + r*np.sin(theta)*np.sin(phi)
-    z = origin[2] + r*np.cos(theta)
-
-    return x,y,z
-
-def cart_to_sph(x, y, z, origin=[0,0,0]):
-    """convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
-    x0,y0,z0 = origin
-    r = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2)**0.5
-    theta = np.arccos((z - z0)/r)
-    phi = np.arctan2(y - y0, x - x0)
-
-    return r, theta, phi
-
-def sph_basis_vectors(theta, phi):
-    """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
-    r_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
-    theta_hat = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -1*np.sin(theta)])
-    phi_hat = np.array([-1*np.sin(phi), np.cos(phi), np.zeros_like(phi)])
-
-    return r_hat, theta_hat, phi_hat
-
-def vec_cart_to_sph(F, theta, phi):
-    """convert a vector field F from cartesian to spherical coordinates
-
-    Arguments:
-        F[3,...]     vector field values
-        theta        theta coordinates
-        phi          phi coordinates
-    """
-    Fsph = np.zeros_like(F)
-    r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
-    Fsph[0] = np.sum(F*r_hat, axis=0)
-    Fsph[1] = np.sum(F*theta_hat, axis=0)
-    Fsph[2] = np.sum(F*phi_hat, axis=0)
-
-    return Fsph
-
-def vec_sph_to_cart(F, theta, phi):
-    """convert a vector field F from spherical to cartesian coordinates
-
-    Arguments:
-        F[3,...]     vector field values
-        theta        theta coordinates
-        phi          phi coordinates
-    """
-    Fcart = np.zeros_like(F)
-    r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
-    for i in range(3):
-        Fcart[i] = F[0]*r_hat[i] + F[1]*theta_hat[i] + F[2]*phi_hat[i]
-
-    return Fcart
+import miepy.coordinates as coordinates
 
 def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
@@ -411,24 +356,6 @@ class vector_spherical_harmonics:
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
-def sphere_mesh(sampling):
-    """
-    Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
-    with the format required by the project and decompose functions
-    Returns (THETA,PHI) meshgrids
-
-    Arguments:
-        sampling   number of points to sample between 0 and pi
-    """
-
-    phi = np.linspace(0, 2*np.pi, 2*sampling)
-    tau = np.linspace(-1, 1, sampling)
-    theta = np.arccos(tau)
-
-    THETA,PHI = np.meshgrid(theta, phi, indexing='ij')
-    return THETA, PHI
-
-
 def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=False):
     """Project fields onto a given mode
 
@@ -444,7 +371,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
     """
     Ntheta, Nphi = E.shape[1:]
     sampling = Ntheta
-    THETA, PHI = sphere_mesh(sampling)
+    THETA, PHI = coordinates.sphere_mesh(sampling)
 
     tau = np.linspace(-1, 1, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
@@ -458,7 +385,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
     vsh_data = base_function(r,THETA,PHI,k).squeeze()
 
     if not spherical:
-        E = vec_cart_to_sph(E, THETA, PHI)
+        E = coordinates.vec_cart_to_sph(E, THETA, PHI)
 
     Emn_val = Emn(m, n)
 
@@ -492,8 +419,8 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
 
     r = 2*np.pi/k   # choose radius to be a wavelength of the light
 
-    THETA, PHI = sphere_mesh(sampling)
-    X,Y,Z = sph_to_cart(r, THETA, PHI, origin=origin)
+    THETA, PHI = coordinates.sphere_mesh(sampling)
+    X,Y,Z = coordinates.sph_to_cart(r, THETA, PHI, origin=origin)
     E = src.E([X,Y,Z], k)
 
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
@@ -557,7 +484,7 @@ def expand(p, q, k, mode, origin=[0,0,0]):
     Nmax = p.shape[0]
 
     def f(x, y, z):
-        r, theta, phi = cart_to_sph(x,y,z)
+        r, theta, phi = coordinates.cart_to_sph(x,y,z)
         rhat,that,phat = sph_basis_vectors(theta,phi)
 
         expanded_E = np.zeros(shape=(3,)+x.shape, dtype=complex)
@@ -570,27 +497,11 @@ def expand(p, q, k, mode, origin=[0,0,0]):
                 N = Nfunc(r, theta, phi, k)
                 M = Mfunc(r, theta, phi, k)
 
-                N = vec_sph_to_cart(N, theta, phi)
-                M = vec_sph_to_cart(M, theta, phi)
+                N = coordinates.vec_sph_to_cart(N, theta, phi)
+                M = coordinates.vec_sph_to_cart(M, theta, phi)
 
                 expanded_E += -1j*Emn_val*(p[n-1,n+m]*N + q[n-1,n+m]*M)
 
         return expanded_E
     
     return f
-
-def cart_sphere_mesh(radius, origin, sampling):
-    """Given a radius, origin and sampling, return the
-    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere""" 
-
-    r = np.array([radius])
-    tau = np.linspace(-1,1, sampling) 
-    theta = np.arccos(tau)
-    phi = np.linspace(0, 2*np.pi, 2*sampling)
-    R, THETA, PHI = np.meshgrid(r,theta,phi, indexing='ij')
-
-    X = origin[0] + R*np.sin(THETA)*np.cos(PHI)
-    Y = origin[1] + R*np.sin(THETA)*np.sin(PHI) 
-    Z = origin[2] + R*np.cos(THETA)
-
-    return map(np.squeeze, (X,Y,Z,THETA,PHI,tau,phi))

@@ -147,8 +147,8 @@ class gmt:
 
         E = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
 
-        R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
-        rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
+        R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
 
         for k in range(self.Nfreq):
             E_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -193,8 +193,8 @@ class gmt:
 
         H = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
 
-        R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
-        rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
+        R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.spheres.position[i])
+        rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
 
         for k in range(self.Nfreq):
             H_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -238,8 +238,8 @@ class gmt:
 
         E = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
         for i in range(self.Nparticles):
-            R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
-            rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
+            R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.spheres.position[i])
+            rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
                 E_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -277,8 +277,8 @@ class gmt:
 
         H = np.zeros((3,self.Nfreq) + x.shape, dtype=complex)
         for i in range(self.Nparticles):
-            R, THETA, PHI = miepy.vsh.cart_to_sph(x, y, z, self.spheres.position[i])
-            rhat, that, phat = miepy.vsh.sph_basis_vectors(THETA, PHI)
+            R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.spheres.position[i])
+            rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
 
             for k in range(self.Nfreq):
                 H_sph = np.zeros((3,) + x.shape, dtype=complex)
@@ -502,7 +502,7 @@ class gmt:
                 continue
 
             rij = self.origin - self.spheres.position[i]
-            rad, theta, phi = miepy.vsh.cart_to_sph(*rij)
+            rad, theta, phi = miepy.coordinates.cart_to_sph(*rij)
             
             for k in range(self.Nfreq):
                 for r in range(rmax):
