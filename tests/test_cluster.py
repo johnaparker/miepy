@@ -12,7 +12,7 @@ nm = 1e-9
 Ag = miepy.materials.predefined.Ag()
 radius = 75*nm
 source = miepy.sources.y_polarized_plane_wave()
-Lmax = 8
+Lmax = 2
 
 sep = 600*nm
 wavelength = np.linspace(400*nm, 1000*nm, 10)

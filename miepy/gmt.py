@@ -326,11 +326,11 @@ class gmt:
 
                 p0[r,k], q0[r,k] = self.source.structure_of_mode(n, m, self.origin, self.material_data['k'][k])
 
-                Cscat[0,n-1,k] += factor*np.abs(self.p_cluster[r,k])**2
-                Cscat[1,n-1,k] += factor*np.abs(self.q_cluster[r,k])**2
+                Cscat[0,n-1,k] += factor*np.abs(self.p_cluster[k,r])**2
+                Cscat[1,n-1,k] += factor*np.abs(self.q_cluster[k,r])**2
 
-                Cext[0,n-1,k] += factor*np.real(np.conj(p0[r,k])*self.p_cluster[r,k])
-                Cext[1,n-1,k] += factor*np.real(np.conj(q0[r,k])*self.q_cluster[r,k])
+                Cext[0,n-1,k] += factor*np.real(np.conj(p0[r,k])*self.p_cluster[k,r])
+                Cext[1,n-1,k] += factor*np.real(np.conj(q0[r,k])*self.q_cluster[k,r])
 
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
@@ -492,13 +492,13 @@ class gmt:
         n_indices, m_indices = get_indices(Lmax)
         rmax = n_indices.shape[0]
 
-        self.p_cluster = np.zeros([rmax, self.Nfreq], dtype=complex)
-        self.q_cluster = np.zeros([rmax, self.Nfreq], dtype=complex)
+        self.p_cluster = np.zeros([self.Nfreq, rmax], dtype=complex)
+        self.q_cluster = np.zeros([self.Nfreq, rmax], dtype=complex)
 
         for i in range(self.Nparticles):
             if np.all(self.spheres.position[i] == self.origin):
-                self.p_cluster[...] = self.p_scat[:,i].T
-                self.q_cluster[...] = self.q_scat[:,i].T
+                self.p_cluster[...] = self.p_scat[:,i]
+                self.q_cluster[...] = self.q_scat[:,i]
                 continue
 
             rij = self.origin - self.spheres.position[i]
@@ -519,8 +519,8 @@ class gmt:
                         A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
                         B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data['k'][k], miepy.vsh.VSH_mode.incident)
 
-                        self.p_cluster[r,k] += a*A + b*B
-                        self.q_cluster[r,k] += a*B + b*A
+                        self.p_cluster[k,r] += a*A + b*B
+                        self.q_cluster[k,r] += a*B + b*A
 
     def _reset_cluster_coefficients(self):
         self.p_cluster = None
