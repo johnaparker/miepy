@@ -8,6 +8,7 @@ import miepy
 from my_pytools.my_numpy.integrate import simps_2d
 
 #TODO eps/mu role here (related to our definition of the H field, eps/mu factor)
+#TODO factor of 1/2 for complex fields not present???
 def poynting_vector(E, H, eps=1, mu=1):
     """Compute the Poynting vector
     
@@ -20,9 +21,10 @@ def poynting_vector(E, H, eps=1, mu=1):
        Returns S[3,...]
     """
 
-    S = 0.5*np.cross(E, np.conj(H), axis=0)
+    S = np.cross(E, np.conj(H), axis=0)
     return np.real(S)
 
+#TODO is this right, can it be more useful?
 def flux_from_poynting(E, H, Ahat, eps=1, mu=1):
     """Compute the flux from the E and H field over some area using the Poynting vector
 
@@ -67,21 +69,25 @@ def flux_from_poynting_sphere(E, H, radius, eps=1, mu=1):
 
     return flux
 
-def _gmt_flux_from_poynting(gmt, i, sampling=30):
+def _gmt_cross_sections_from_poynting(gmt, radius, sampling=30):
     """FOR TESTING ONLY!
-    Given GMT object and particle number i, return flux from poynting vector
+    Given GMT object and particle number i, return cross-sections (C,A,E) from poynting vector
     """
-    radius = gmt.spheres.radius[i]
-    X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.spheres.position[i], sampling)
+    X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.origin, sampling)
 
-    E = gmt.E_field_from_particle(i, X, Y, Z)
-    H = gmt.H_field_from_particle(i, X, Y, Z)
+    E_tot = gmt.E_field(X, Y, Z)
+    H_tot = gmt.H_field(X, Y, Z)
 
-    flux = np.zeros(gmt.Nfreq)
+    E_scat = gmt.E_field(X, Y, Z, source=False)
+    H_scat = gmt.H_field(X, Y, Z, source=False)
+
+    C = np.zeros(gmt.Nfreq)
+    A = np.zeros(gmt.Nfreq)
 
     for k in range(gmt.Nfreq):
         eps_b = gmt.material_data['eps_b'][k]
         mu_b = gmt.material_data['mu_b'][k]
-        flux[k] = flux_from_poynting_sphere(E[:,k], H[:,k], radius, eps_b, mu_b)
+        C[k] = flux_from_poynting_sphere(E_scat[:,k], H_scat[:,k], radius, eps_b, mu_b)
+        A[k] = -flux_from_poynting_sphere(E_tot[:,k], H_tot[:,k], radius, eps_b, mu_b)
 
-    return F,T
+    return C, A, C+A

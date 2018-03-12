@@ -10,6 +10,7 @@ from . import scattering
 from . import materials
 from . import vsh
 from . import forces
+from . import flux
 from . import coordinates
 
 from .mie_sphere import single_mie_sphere

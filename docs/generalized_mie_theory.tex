@@ -117,7 +117,7 @@ where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^
     \label{eqn:gmt_system}
     \end{split}
 \end{align}
-where $A_{mn}^{uv}(l \rightarrow j)$ and $A_{mn}^{uv}(l \rightarrow j)$ are VSH translation coefficients from particle $i$ to particle $j$.
+where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH translation coefficients from particle $i$ to particle $j$.
 
 \section{Force and torque}
 \emph{Maxwell stress tensor equations}
@@ -332,16 +332,16 @@ Example Python code using MiePy
     Ag = miepy.materials.predefined.Ag()
     source = miepy.sources.x_polarized_plane_wave()
 
-    # build an Ag dimer with radii 50nm separated by 600nm
+    # build an Ag dimer with radii 50nm separated by 600nm in the x-direction
     spheres = miepy.spheres([[300*nm,0,0], [-300*nm,0,0]], radius=50*nm, material=Ag)
-    solution = miepy.gmt(spheres, source, wavelength=800*nm, Lmax=2)
+    cluster = miepy.gmt(spheres, source, wavelength=800*nm, Lmax=2)
 
     # obtain the cross-sections
-    scat, absorb, extinct = solution.cross_sections()
+    scat, absorb, extinct = cluster.cross_sections()
 
-    # obtain the force and torque on particle 1
-    F = solution.force_on_particle(0)
-    T = solution.torque_on_particle(0)
+    # obtain the force and torque on the right particle
+    F = cluster.force_on_particle(0)
+    T = cluster.torque_on_particle(0)
 \end{lstlisting}
 
 

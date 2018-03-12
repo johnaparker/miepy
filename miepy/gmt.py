@@ -360,6 +360,7 @@ class gmt:
                 Cscat[0,n-1,k] += factor*np.abs(self.p_scat[k,i,r])**2
                 Cscat[1,n-1,k] += factor*np.abs(self.q_scat[k,i,r])**2
 
+                #TODO should this be p_src or p_inc?
                 Cext[0,n-1,k] += factor*np.real(np.conj(self.p_src[k,i,r])*self.p_scat[k,i,r])
                 Cext[1,n-1,k] += factor*np.real(np.conj(self.q_src[k,i,r])*self.q_scat[k,i,r])
 
