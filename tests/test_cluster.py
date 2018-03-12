@@ -27,12 +27,13 @@ def test_off_center_particle(plot=False):
 
     # displaced sphere
     mie.update_position([40*nm,50*nm,60*nm])
-    C2,A2,E2 = mie.cross_sections(4)
+    C2,A2,E2 = mie.cross_sections()
 
     if not plot:
-        for a,b,tol in [(C1,C2,1e-5), (A1,A2,1e-1), (E1,E2,1e-3)]:
+        for a,b,tol in [(C1,C2,1e-15), (A1,A2,1e-15), (E1,E2,1e-15)]:
             L2 = np.linalg.norm(a - b)/a.shape[0]
             avg = np.average(a + b)/2
+            print(L2, avg)
             assert L2 < tol*avg
 
     else:
@@ -57,16 +58,17 @@ def test_interactions_off(plot=False):
     # cluster
     spheres = miepy.spheres([[sep/2,0,0], [-sep/2,0,0]], radius, Ag)
     cluster = miepy.gmt(spheres, source, wavelength, Lmax, interactions=False)
-    C1,A1,E1 = cluster.cross_sections(4)
+    C1,A1,E1 = cluster.cross_sections()
 
     # single
     sphere = miepy.single_mie_sphere(radius, Ag, wavelength, Lmax)
     Cs,As,Es = sphere.cross_sections()
 
     if not plot:
-        for a,b,tol in [(E1,2*Es,1e-3)]:
+        for a,b,tol in [(E1,2*Es,1e-15)]:
             L2 = np.linalg.norm(a - b)/a.shape[0]
             avg = np.average(a + b)/2
+            print(L2, avg)
             assert L2 < tol*avg
 
     else:

@@ -71,6 +71,7 @@ class single_mie_sphere:
 
     def solve_interior(self):
         """solve for the interior of the sphere, the cn and dn coefficients"""
+        #TODO shouldn't this be multiplied by self.radius?
         xvals = self.material_data['k']
         m = (self.material_data['eps']/self.material_data['eps_b'])**.5
         mt = m*self.material_data['mu_b']/self.material_data['mu']

@@ -1,5 +1,5 @@
 """
-Compare analytic cross-sections to integrated Poynting vector
+Compare analytic cross-sections to integrated Poynting vector for an Ag dimer in x-polarized light
 """
 
 import numpy as np
@@ -28,7 +28,7 @@ for i, separation in enumerate(tqdm(separations)):
     mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
 
     analytic_scattering[i], analytic_absorption[i], _ = map(np.squeeze, 
-            mie.cross_sections(5))
+            mie.cross_sections())
 
     poynting_scattering[i], poynting_absorption[i], _ = map(np.squeeze, 
             miepy.flux._gmt_cross_sections_from_poynting(mie, radius=separation+radius, sampling=60))
@@ -38,14 +38,14 @@ def test_scattering():
     L2 = np.linalg.norm(analytic_scattering - poynting_scattering)/poynting_scattering.shape[0]
     avg = np.average(np.abs(analytic_scattering) + np.abs(poynting_scattering))/2
 
-    assert L2 < 1e-3*avg
+    assert L2 < 1e-5*avg
 
 def test_absorption():
     """comapre analytic absorption to numerical Poynting vector approach"""
     L2 = np.linalg.norm(analytic_absorption - poynting_absorption)/poynting_absorption.shape[0]
     avg = np.average(np.abs(analytic_absorption) + np.abs(poynting_absorption))/2
 
-    assert L2 < 1e-2*avg
+    assert L2 < 2e-3*avg
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

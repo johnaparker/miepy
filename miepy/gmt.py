@@ -5,6 +5,7 @@ import numpy as np
 import miepy
 from my_pytools.my_numpy.array import atleast
 from collections import namedtuple
+from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
 
 #TODO swap all indices, so that [N,3] => [3,N]
 #TODO make position a property so that it can be set properly (if input is a list)
@@ -91,6 +92,7 @@ class gmt:
         self.Nfreq = len(self.wavelength)
         self.Nparticles = len(spheres)
 
+        #TODO this should not be a dictionary -- a struct is better since the number of items is known
         self.material_data = {}
         self.material_data['wavelength'] = self.wavelength
         self.material_data['eps']        = np.zeros([self.Nparticles, self.Nfreq], dtype=complex) 
@@ -332,15 +334,20 @@ class gmt:
         Cabs = Cext - Cscat
         return Cscat, Cabs, Cext
 
-    def cross_sections(self, Lmax=None):
-        """Compute the scattering, absorption, and extinction cross-section of the cluster
+    def cross_sections(self):
+        """Compute the scattering, absorption, and extinction cross-section of the cluster"""
 
-        Arguments:
-            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
-        """
+        Cscat = np.zeros(self.Nfreq, dtype=float)
+        Cabs = np.zeros(self.Nfreq, dtype=float)
+        Cext = np.zeros(self.Nfreq, dtype=float)
 
-        Cscat, Cabs, Cext = self.cross_sections_per_multipole(Lmax)
-        return map(lambda C: np.sum(C, axis=(0,1)), [Cscat, Cabs, Cext])
+        for i in range(self.Nparticles):
+            C,A,E = self.cross_sections_of_particle(i)
+            Cscat += C
+            Cabs += A
+            Cext += E
+
+        return Cscat, Cabs, Cext
 
     def cross_sections_per_multipole_of_particle(self, i):
         """Compute the scattering, absorption, and extinction cross-section per multipole of a single particle
@@ -351,20 +358,42 @@ class gmt:
 
         Cscat = np.zeros([2, self.Lmax, self.Nfreq], dtype=float)
         Cext  = np.zeros([2, self.Lmax, self.Nfreq], dtype=float)
+        Cabs  = np.zeros([2, self.Lmax, self.Nfreq], dtype=float)
+
+        riccati = miepy.special_functions.riccati_1_single
 
         for k in range(self.Nfreq):
             factor = 4*np.pi/self.material_data['k'][k]**2
+
+            xj = 2*np.pi/self.wavelength[k]*self.spheres.radius[i]
+            mj = self.material_data['n'][i,k]
+            yj = xj*mj
+            mu_b = self.material_data['mu_b'][k]
+            mu = self.material_data['mu'][i,k]
+
             for r in range(self.rmax):
                 n = self.n_indices[r]
 
-                Cscat[0,n-1,k] += factor*np.abs(self.p_scat[k,i,r])**2
-                Cscat[1,n-1,k] += factor*np.abs(self.q_scat[k,i,r])**2
+                # Cscat[0,n-1,k] += factor*np.abs(self.p_scat[k,i,r])**2
+                # Cscat[1,n-1,k] += factor*np.abs(self.q_scat[k,i,r])**2
+
+                psi_x, psi_xp = riccati(n, xj)
+                psi_y, psi_yp = riccati(n, yj)
+
+                
+                Dn = -np.divide(np.real(1j*mj*mu_b*mu*psi_y*np.conj(psi_yp)),
+                                np.abs(mu_b*mj*psi_y*psi_xp - mu*psi_x*psi_yp)**2)
+                Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
+                                np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
+
+                Cabs[0,n-1,k] += Dn*factor*np.abs(self.p_scat[k,i,r])**2
+                Cabs[1,n-1,k] += Cn*factor*np.abs(self.q_scat[k,i,r])**2
 
                 #TODO should this be p_src or p_inc?
                 Cext[0,n-1,k] += factor*np.real(np.conj(self.p_src[k,i,r])*self.p_scat[k,i,r])
                 Cext[1,n-1,k] += factor*np.real(np.conj(self.q_src[k,i,r])*self.q_scat[k,i,r])
 
-        Cabs = Cext - Cscat
+        Cscat[...] = Cext - Cabs
         return Cscat, Cabs, Cext
 
     def cross_sections_of_particle(self, i):

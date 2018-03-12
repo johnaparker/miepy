@@ -18,32 +18,31 @@ dielectric = miepy.constant_material(3.7**2 + .1j)
 radius = 100*nm       # 100 nm radius
 
 # Single Mie Theory
-Lmax = 10       # Use up to 10 multipoles
+Lmax = 5       # Use up to 5 multipoles
 sphere = miepy.single_mie_sphere(radius, dielectric, wavelength, Lmax)
-S,A,_ = sphere.cross_sections()
+S,A,E = sphere.cross_sections()
 
 # Generalized Mie Theory (GMT)
 particles = miepy.spheres(position=[[0,0,0]], radius=radius, material=dielectric)
 source = miepy.sources.x_polarized_plane_wave()
 
-system = miepy.gmt(particles, source, wavelength, 2)
-scat,absorb,_ = system.cross_sections()
+system = miepy.gmt(particles, source, wavelength, Lmax)
+scat,absorb,extinct = system.cross_sections()
 
 def test_scattering():
     """compare scattering cross-section of GMT and single Mie theory"""
     L2 = np.linalg.norm(scat - S)/scat.shape[0]
     avg = np.average(np.abs(S) + np.abs(scat))/2
 
-    assert np.all(L2 < 2e-3*avg)
+    assert np.all(L2 < 1e-15*avg)
 
 def test_absoprtion():
     """compare absoprtion cross-section of GMT and single Mie theory"""
     L2 = np.linalg.norm(absorb - A)/scat.shape[0]
     avg = np.average(np.abs(A) + np.abs(absorb))/2
 
-    assert np.all(L2 < 2e-2*avg)
+    assert np.all(L2 < 1e-15*avg)
 
-test_scattering()
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
@@ -52,6 +51,9 @@ if __name__ == '__main__':
 
     plt.plot(wavelength/nm, absorb, color='C1', label='GMT absorption')
     plt.plot(wavelength/nm, A, 'o', color='C1', label="Single Mie theory", linewidth=2)
+
+    plt.plot(wavelength/nm, extinct, color='C2', label='GMT extinction')
+    plt.plot(wavelength/nm, E, 'o', color='C2', label="Single Mie theory", linewidth=2)
 
     plt.xlabel("wavelength (nm)")
     plt.ylabel("Scattering cross-section")

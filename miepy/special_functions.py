@@ -114,21 +114,23 @@ class vector_spherical_harmonics:
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
+#TODO clean these up, compare to old for core-shell theory
 def riccati_1_single(n,x):
     """Riccati_1, but only a single n value"""
-    pre = (np.pi*x/2)**.5
-    jn = pre*special.jv(n+0.5,x)
-    jnp = jn/(2*x) + pre*special.jvp(n+0.5,x)
+    jn = special.spherical_jn(n, x)
+    jnp = special.spherical_jn(n, x, derivative=True)
 
-    return np.array([jn,jnp])
+    return np.array([x*jn, jn + x*jnp])
 
 def riccati_2_single(n,x):
     """Riccati_2, but only a single n value"""
-    pre = (np.pi*x/2)**.5
-    hn = pre*special.hankel1(n+0.5,x)
-    hnp = hn/(2*x) + pre*special.h1vp(n+0.5,x)
+    # pre = (np.pi*x/2)**.5
+    # hn = pre*special.hankel1(n+0.5,x)
+    # hnp = hn/(2*x) + pre*special.h1vp(n+0.5,x)
+    yn = special.spherical_yn(n, x)
+    ynp = special.spherical_yn(n, x, derivative=True)
 
-    return np.array([hn,hnp])
+    return np.array([x*yn, yn + x*ynp])
 
 def riccati_3_single(n,x):
     """Riccati_3, but only a single n value"""
