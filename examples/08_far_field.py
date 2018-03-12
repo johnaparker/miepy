@@ -1,3 +1,7 @@
+"""
+Far-field analysis with the GMT
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from my_pytools.my_matplotlib.colors import cmap

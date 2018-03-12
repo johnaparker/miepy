@@ -49,14 +49,14 @@ def test_off_center_particle(plot=False):
         ax.legend()
 
 def test_interactions_off(plot=False):
-    """compare scattering of cluster to single Mie scattering with interactions disabled
-            expect: C(cluster) = N*C(single) 
+    """compare extinction of cluster to single Mie extinction with interactions disabled
+            expect: E(cluster) = N*E(single) 
     """
     sep = 200*nm
 
     # cluster
     spheres = miepy.spheres([[sep/2,0,0], [-sep/2,0,0]], radius, Ag)
-    cluster = miepy.gmt(spheres, source, wavelength, Lmax, interactions=True)
+    cluster = miepy.gmt(spheres, source, wavelength, Lmax, interactions=False)
     C1,A1,E1 = cluster.cross_sections(4)
 
     # single
@@ -64,7 +64,7 @@ def test_interactions_off(plot=False):
     Cs,As,Es = sphere.cross_sections()
 
     if not plot:
-        for a,b,tol in [(C1,Cs,1e-1), (A1,As,1e-1), (E1,Es,1e-1)]:
+        for a,b,tol in [(E1,2*Es,1e-3)]:
             L2 = np.linalg.norm(a - b)/a.shape[0]
             avg = np.average(a + b)/2
             assert L2 < tol*avg
