@@ -77,6 +77,7 @@ The VSHs are an orthogonal set when integated over a closed surface $\Omega$
 
 \section{Field expansions}
 \textit{Electric field}
+\begin{subequations}
 \begin{align}
     \boldsymbol{E}_\text{src}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     iE_{mn} \left[ p_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
@@ -87,8 +88,10 @@ The VSHs are an orthogonal set when integated over a closed surface $\Omega$
     \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     iE_{mn} \left[ d_{mn}^j \boldsymbol{N}_{mn}^{(1)} + c_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
 \end{align}
+\end{subequations}
 
 \textit{Magnetic field}
+\begin{subequations}
 \begin{align}
     \boldsymbol{H}_\text{src}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     E_{mn} \left[ q_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + p_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
@@ -99,6 +102,7 @@ The VSHs are an orthogonal set when integated over a closed surface $\Omega$
     \boldsymbol{H}_\text{int}^j &= -\sqrt{\frac{\varepsilon^j}{\mu^j}}  \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     E_{mn} \left[ c_{mn}^j \boldsymbol{N}_{mn}^{(1)} + d_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
 \end{align}
+\end{subequations}
 where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
 \begin{equation}
     E_{mn} = i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
@@ -135,6 +139,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \end{equation}
 
 \emph{Force equations}
+\begin{subequations}
 \begin{align}
 \begin{split}
     F_x + iF_y =& \frac{\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \frac{1}{n+1}\bigg\{
@@ -162,8 +167,10 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
         \bigg] \bigg\}
 \end{split}
 \end{align}
+\end{subequations}
 
 \emph{Torque equations}
+\begin{subequations}
 \begin{align}
 \begin{split}
     \tau_x =& \frac{2\pi}{k^3} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sqrt{(n-m)(n+m+1)} \; \text{Re} \bigg\{
@@ -189,6 +196,7 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
               \varepsilon_b a_{mn}p_{mn}^* + \mu_b b_{mn}q_{mn}^*\bigg] \bigg\}
 \end{split}
 \end{align}
+\end{subequations}
 
 \section{Cluster coefficients}
 \begin{align}
@@ -215,6 +223,38 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
 
 \section{Cross-sections}
 
+The cross-sections can be computed via two methods: one that uses the cluster coefficients $a_{mn}$, $b_{mn}$ and one that uses the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$.
+
+\hfill
+
+\textit{Cross-sections via individual particle coefficients} \cite{xu1997electromagnetic}
+\begin{subequations}
+\begin{align}
+    C_\text{abs} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    D_n^j|a_{mn}^j|^2 + C_n^j|b_{mn}^j|^2 \\
+    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    \text{Re} \bigg\{ p_{mn}^{j,\text{src}*} a_{mn}^j 
+    + q_{mn}^{j,\text{src}*}b_{mn}^j \bigg\} \\
+    C_\text{scat} &= C_\text{ext} - C_\text{abs}
+\end{align}
+\end{subequations}
+where
+\begin{subequations}
+\begin{align}
+    D_n^j &= \frac{\text{Re}\{ in^j \mu_b \mu^j \psi_n(y^j)\psi_n^{\prime *}(y^j)\}}
+    {|\mu_b m^j \psi_n(y^j)\psi_n^\prime(x^j) - \mu^j \psi_n(x^j)\psi_n^\prime(y^j)|^2} \\
+    C_n^j &= \frac{\text{Re}\{ in^{j*} \mu_b \mu^j \psi_n(y^j)\psi_n^{\prime *}(y^j)\}}
+    {|\mu^j \psi_n(y^j)\psi_n^\prime(x^j) - \mu_b m^j \psi_n(x^j)\psi_n^\prime(y^j)|^2}
+\end{align}
+\end{subequations}
+and $x^j = 2\pi r^j/\lambda_0$, $y^j = n^jx^j$ and $\psi_n$ is the Riccati-Bessel function of the first kind.
+This approach is the most efficient way to compute the total cross-sections.
+Each term in the absorption/extinction cross-section sum can be interpreted as the absorption/extinction of that individual particle due to a given mode $(n,m)$
+
+\hfill
+
+\textit{Cross-sections via cluster coefficients} \cite{xu1995electromagnetic}
+\begin{subequations}
 \begin{align}
     C_\text{scat} &= \frac{4\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     |a_{mn}|^2 + |b_{mn}|^2 \\
@@ -223,9 +263,14 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
     + q_{mn}^{\text{src}*}(\boldsymbol{p_0})b_{mn} \bigg\} \\
     C_\text{abs} &= C_\text{ext} - C_\text{scat}
 \end{align}
-These cross-sections here have units of (area)$\times$(electric field)$^2$.
+\end{subequations}
+This approach has a benefit in its interpretation.
+Each term in the scattering sum corresponds to the multipolar scattering of order $(n,m)$, so that the scattering from the entire cluster can be identified as electric or magnetic in nature, dipole, quadrupole, etc.
+These equations should typically be avoided in calculating total cross-sections since there is a loss of information in using the cluster coefficients and they may not converge.
+
+All of these cross-sections have units of (area)$\times$(electric field)$^2$.
 If the source is a plane wave of amplitude $E_0$, then these cross-sections should be normalized by $E_0^2$.
-For non-plane wave sources, the cross-sections should be normalizd depending on the convention being used, typically an averaged intensity over some area:
+For non-plane wave sources, the cross-sections should be normalized depending on the convention being used, typically an averaged intensity over some area:
 \begin{equation}
     E_0^2 = \frac{1}{A} \int_A |\boldsymbol{E}(\boldsymbol{r})|^2 \;dA
 \end{equation}
@@ -251,6 +296,7 @@ These field expansions were used to evaluate analytic expressions for the force 
 \newline
 
 \textit{Electric field}
+\begin{subequations}
 \begin{align}
 \begin{split}
     \boldsymbol{E}_\text{inc}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
@@ -271,8 +317,10 @@ These field expansions were used to evaluate analytic expressions for the force 
     - \frac{i}{\sqrt{\varepsilon_b}} b_{mn}^j \xi_n^{(1)}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
 \end{split}
 \end{align}
+\end{subequations}
 
 \textit{Magnetic field}
+\begin{subequations}
 \begin{align}
 \begin{split}
     \boldsymbol{H}_\text{inc}^j = \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \bigg\{
@@ -293,6 +341,7 @@ These field expansions were used to evaluate analytic expressions for the force 
     + i\sqrt{\varepsilon_b} a_{mn}^j \xi_n^{(1)}(kr) \frac{\partial}{\partial \theta} Y_{nm}(\theta,\phi) \right] \bigg\}
 \end{split}
 \end{align}
+\end{subequations}
 where $\xi_n^{(1)} = \psi_n - i \chi_n$, $\psi_n$, $\chi_n$ are the Riccati-Bessel function of the first and second kind, and $Y_{nm}$ are the spherical harmonics
 \begin{align}
 \begin{split}
