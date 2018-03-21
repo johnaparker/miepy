@@ -365,8 +365,8 @@ class gmt:
         for k in range(self.Nfreq):
             factor = 4*np.pi/self.material_data['k'][k]**2
 
-            xj = 2*np.pi/self.wavelength[k]*self.spheres.radius[i]
-            mj = self.material_data['n'][i,k]
+            xj = self.material_data['k'][k]*self.spheres.radius[i]
+            mj = self.material_data['n'][i,k]/self.material_data['n_b'][k]
             yj = xj*mj
             mu_b = self.material_data['mu_b'][k]
             mu = self.material_data['mu'][i,k]

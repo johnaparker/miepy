@@ -22,7 +22,9 @@ def poynting_vector(E, H, eps=1, mu=1):
     """
 
     S = np.cross(E, np.conj(H), axis=0)
-    return np.real(S)
+    n_b = np.sqrt(eps*mu)
+
+    return np.real(S)/n_b
 
 #TODO is this right, can it be more useful?
 def flux_from_poynting(E, H, Ahat, eps=1, mu=1):
