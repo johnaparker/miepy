@@ -507,7 +507,7 @@ class gmt:
         """Solve for the p,q coefficients of the entire cluster around the origin
 
         Arguments:
-            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
+            Lmax    (optional) compute scattering for up to Lmax terms (default: self.Lmax)
         """
 
         if Lmax is None:

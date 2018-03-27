@@ -5,6 +5,7 @@ import numpy as np
 import miepy
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
 from miepy.scattering import scattered_E,scattered_H,interior_E,interior_H
+from scipy import constants
 
 class single_mie_sphere:
     def __init__(self, radius, material, wavelength, Lmax, medium=None):
@@ -99,6 +100,28 @@ class single_mie_sphere:
                 miepy.absorbption_per_multipole(*self.scattering_properties),
                 miepy.extinction_per_multipole(*self.scattering_properties))
 
+    def radiation_force(self):
+        """Return the radiation force (Fz)"""
+
+        Fz = np.zeros(self.Nfreq)
+        nvals = np.arange(1, self.Lmax+1)
+
+        k = self.material_data['k']
+        for i in range(self.Lmax):
+            n = 1 + i
+
+            factor = 2*np.pi*(2*n+1)/k**2
+            Fz += factor*np.real(self.an[:,i] + self.bn[:,i])
+
+            factor = 4*np.pi*(2*n+1)/(n*(n+1))/k**2
+            Fz -= factor*np.real(self.an[:,i]*np.conj(self.bn[:,i]))
+
+            if n < self.Lmax:
+                factor = 4*np.pi*(n*(n+2))/(n+1)/k**2
+                Fz -= factor*np.real(self.an[:,i]*np.conj(self.an[:,i+1])
+                                   + self.bn[:,i]*np.conj(self.bn[:,i+1]))
+
+        return Fz * constants.epsilon_0*self.material_data['n_b']/2
 
     def E_field(self, index=None, Lmax=None):
         """Return an electric field function E(r,theta,phi) for a given wavenumber index"""
