@@ -176,3 +176,9 @@ def radial_beam(width, amplitude=1, center=np.zeros(3)):
     HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], amplitude, center)
     HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], amplitude, center)
     return HG_1 + HG_2
+
+def shear_beam(width, amplitude=1, center=np.zeros(3)):
+    """radially polarized beam"""
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude, center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], amplitude, center)
+    return HG_1 + HG_2
