@@ -100,18 +100,23 @@ def get_indices(Lmax):
 
     return n_indices, m_indices
 
+#TODO: make several properties... such as wavelength, source, position, etc.
+#TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
 class gmt:
     """Solve Generalized Mie Theory: N particles in an arbitray source profile"""
-    def __init__(self, spheres, source, wavelength, Lmax, 
-                 medium=None, interactions=True, origin=None):
+    def __init__(self, position, radius, material, Lmax,
+                 source=None, wavelength=None, medium=None, origin=None,
+                 interactions=True):
         """Arguments:
-               spheres          spheres object specifying the positions, radii, and materials
-               source           source object specifying the incident E and H functions
-               wavelength       wavelength to solve the system at
-               Lmax             maximum number of orders to use in angular momentum expansion (int)
-               medium           (optional) material medium (must be non-absorbing; default=vacuum)
-               interactions     (optional) If True, include particle interactions (bool, default=True) 
-               origin           (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to be automatically choose origin as center of geometry.
+               position[N,3] or [3]    sphere positions
+               radius[N] or scalar     sphere radii
+               material[N] or scalar   sphere materials
+               Lmax          maximum number of orders to use in angular momentum expansion (int)
+               source        (optional) source object specifying the incident E and H functions (deault: defer source until later)
+               wavelength    (optional) wavelength to solve the system at (default: defer wavelength until later)
+               medium        (optional) material medium (must be non-absorbing; default=vacuum)
+               origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
+               interactions  (optional) If True, include particle interactions (bool, default=True) 
         """
         self.spheres = spheres
         self.source = source
@@ -550,7 +555,6 @@ class gmt:
 
         self.solve()
 
-    # @lru_cache(max=None)
     def solve_cluster_coefficients(self, Lmax=None):
         """Solve for the p,q coefficients of the entire cluster around the origin
 
@@ -594,8 +598,13 @@ class gmt:
                         self.p_cluster[k,r] += a*A + b*B
                         self.q_cluster[k,r] += a*B + b*A
 
-    def solve(self):
-        """solve for the p,q incident and scattering coefficients"""
+    def solve(self, wavelength=None, source=None):
+        """solve for the p,q incident and scattering coefficients
+
+           Arguments:
+               wavelength   wavelength to solve at (default: current wavelength)
+               source       source to use (default: current source). If current source is also None, solve the particle's T-matrix instead
+        """
         if self.interactions:
             self._solve_interactions()
         else:
