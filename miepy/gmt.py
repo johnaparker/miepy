@@ -70,8 +70,8 @@ class material_struct:
 #TODO: make several properties... such as wavelength, source, position, etc.
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
 #TODO: swap position indices, so that [N,3] => [3,N]
-class gmt:
-    """Solve Generalized Mie Theory: N particles in an arbitray source profile"""
+class cluster:
+    """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
     def __init__(self, position, radius, material, Lmax,
                  source=None, wavelength=None, medium=None, origin=None,
                  interactions=True):
@@ -92,6 +92,7 @@ class gmt:
         self.material = atleast(material, dim=1, length=self.position.shape[0], dtype=np.object)
         if (self.position.shape[0] != self.radius.shape[0] != self.material.shape[0]):
             raise ValueError("The shapes of position, radius, and material do not match")
+        self.Nparticles = self.radius.shape[0]
 
         ### system properties
         self.source = source
@@ -130,7 +131,7 @@ class gmt:
         for i in range(self.Nparticles):
             sphere = miepy.single_mie_sphere(self.radius[i], self.material[i],
                         self.wavelength, self.Lmax, self.medium)
-            self.a[:,i], self.b[:,i] = sphere.solve_exterior()
+            self.a[i], self.b[i] = sphere.solve_exterior()
 
         ### modified coefficients
         self.p_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
@@ -146,6 +147,9 @@ class gmt:
 
         ### n and m indices for iteration
         self.n_indices, self.m_indices = get_indices(self.Lmax)
+
+        ### solve the interactions
+        self.solve()
 
     def E_field_from_particle(self, i, x, y, z, source=True):
         """Compute the electric field around particle i

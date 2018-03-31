@@ -16,6 +16,6 @@ from . import coordinates
 from .mie_sphere import single_mie_sphere
 from .mie_core_shell import single_mie_core_shell
 from .materials.create import constant_material, function_material, data_material
-from .gmt import spheres, gmt
+from .gmt import cluster
 from .scattering import scattering_per_multipole, absorbption_per_multipole, \
                         extinction_per_multipole, cross_sections

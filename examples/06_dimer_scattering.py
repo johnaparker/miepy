@@ -19,10 +19,18 @@ Lmax = 3
 wavelengths = np.linspace(300*nm, 800*nm, Nwav)
 separation = 83*nm
 
-spheres = miepy.spheres([[separation/2,0,0], [-separation/2,0,0]], radius, Au)
-sol = miepy.gmt(spheres, source, wavelengths, Lmax)
+scat    = np.zeros_like(wavelengths)
+absorb  = np.zeros_like(wavelengths)
+extinct = np.zeros_like(wavelengths)
 
-scat, absorb, extinct = sol.cross_sections()
+for i,wavelength in enumerate(wavelengths):
+    sol = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                        radius=radius,
+                        material=Au,
+                        source=source,
+                        wavelength=wavelength,
+                        Lmax=Lmax)
+    scat[i], absorb[i], extinct[i] = sol.cross_sections()
 
 plt.figure(figsize=(8,6))
 plt.plot(wavelengths/nm, scat/um**2,    label='scattering (dimer)', color='C0')

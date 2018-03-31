@@ -14,16 +14,18 @@ radius = 75*nm
 source = miepy.sources.rhc_polarized_plane_wave(amplitude=1)
 separations = np.linspace(2*radius + 10*nm, 2*radius + 700*nm, 50)
 
-spheres = miepy.spheres([[separations[0]/2,0,0], [-separations[0]/2,0,0]], radius, Ag)
-mie = miepy.gmt(spheres, source, 600*nm, 2)
-
 force = np.zeros((3,) + separations.shape)
 torque = np.zeros_like(force)
 
 for i, separation in enumerate(tqdm(separations)):
-    mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
-    force[:,i] = mie.force_on_particle(0).squeeze()
-    torque[:,i] = mie.torque_on_particle(0).squeeze()
+    sol = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                        radius=radius,
+                        material=Ag,
+                        source=source,
+                        wavelength=600*nm,
+                        Lmax=2)
+    force[:,i] = sol.force_on_particle(0)
+    torque[:,i] = sol.torque_on_particle(0)
 
 fig, axes = plt.subplots(nrows=2, ncols=3, figsize=plt.figaspect(2/3))
 
