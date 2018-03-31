@@ -189,18 +189,14 @@ def _gmt_force_and_torque_from_mst(gmt, i, sampling=30):
     """FOR TESTING ONLY!
     Given GMT object and particle number i, return F,T using MST
     """
-    radius = gmt.spheres.radius[i]
-    X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.spheres.position[i], sampling)
+    radius = gmt.radius[i]
+    X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.position[i], sampling)
 
     E = gmt.E_field_from_particle(i, X, Y, Z)
     H = gmt.H_field_from_particle(i, X, Y, Z)
 
-    F = np.zeros([3, gmt.Nfreq])
-    T = np.zeros([3, gmt.Nfreq])
-
-    for k in range(gmt.Nfreq):
-        eps_b = gmt.material_data['eps_b'][k]
-        mu_b = gmt.material_data['mu_b'][k]
-        F[:,k], T[:,k] = force_and_torque_from_mst(E[:,k], H[:,k], radius, eps_b, mu_b)
+    eps_b = gmt.material_data.eps_b
+    mu_b = gmt.material_data.mu_b
+    F, T = force_and_torque_from_mst(E, H, radius, eps_b, mu_b)
 
     return F,T

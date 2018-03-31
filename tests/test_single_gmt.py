@@ -9,7 +9,7 @@ from tqdm import tqdm
 nm = 1e-9
 
 # wavelength from 400nm to 1000nm
-wavelength = np.linspace(400*nm,1000*nm,10)
+wavelengths = np.linspace(400*nm,1000*nm,10)
 
 # create a material with n = 3.7 (eps = n^2) at all wavelengths
 dielectric = miepy.constant_material(3.7**2 + .1j)
@@ -22,17 +22,29 @@ medium = miepy.materials.predefined.water()
 
 # Single Mie Theory
 Lmax = 5       # Use up to 5 multipoles
-sphere = miepy.single_mie_sphere(radius, dielectric, wavelength, Lmax, medium=medium)
+sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax, medium=medium)
 S,A,E = sphere.cross_sections()
 Fz = sphere.radiation_force()
 
 # Generalized Mie Theory (GMT)
-particles = miepy.spheres(position=[[0,0,0]], radius=radius, material=dielectric)
 source = miepy.sources.x_polarized_plane_wave()
 
-system = miepy.gmt(particles, source, wavelength, Lmax, medium=medium)
-scat,absorb,extinct = system.cross_sections()
-force = system.force().squeeze()
+scat    = np.zeros_like(wavelengths)
+absorb  = np.zeros_like(wavelengths)
+extinct = np.zeros_like(wavelengths)
+force   = np.zeros((3,) + wavelengths.shape)
+
+for i,wavelength in enumerate(wavelengths):
+    system = miepy.cluster(position=[0,0,0],
+                           radius=radius,
+                           material=dielectric,
+                           source=source,
+                           wavelength=wavelength,
+                           Lmax=Lmax,
+                           medium=medium)
+
+    scat[i],absorb[i],extinct[i] = system.cross_sections()
+    force[:,i] = system.force_on_particle(0)
 
 def test_scattering():
     """compare scattering cross-section of GMT and single Mie theory"""
@@ -59,14 +71,14 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     plt.figure()
-    plt.plot(wavelength/nm, scat, color='C0', label='GMT scattering')
-    plt.plot(wavelength/nm, S, 'o', color='C0', label="Single Mie theory", linewidth=2)
+    plt.plot(wavelengths/nm, scat, color='C0', label='GMT scattering')
+    plt.plot(wavelengths/nm, S, 'o', color='C0', label="Single Mie theory", linewidth=2)
 
-    plt.plot(wavelength/nm, absorb, color='C1', label='GMT absorption')
-    plt.plot(wavelength/nm, A, 'o', color='C1', label="Single Mie theory", linewidth=2)
+    plt.plot(wavelengths/nm, absorb, color='C1', label='GMT absorption')
+    plt.plot(wavelengths/nm, A, 'o', color='C1', label="Single Mie theory", linewidth=2)
 
-    plt.plot(wavelength/nm, extinct, color='C2', label='GMT extinction')
-    plt.plot(wavelength/nm, E, 'o', color='C2', label="Single Mie theory", linewidth=2)
+    plt.plot(wavelengths/nm, extinct, color='C2', label='GMT extinction')
+    plt.plot(wavelengths/nm, E, 'o', color='C2', label="Single Mie theory", linewidth=2)
 
     plt.xlabel("wavelength (nm)")
     plt.ylabel("Scattering cross-section")
@@ -74,7 +86,7 @@ if __name__ == '__main__':
     plt.legend()
 
     plt.figure()
-    plt.plot(wavelength/nm, force[2], color='C1', label='GMT force')
-    plt.plot(wavelength/nm, Fz, 'o', color='C1', label="Single Mie theory", linewidth=2)
+    plt.plot(wavelengths/nm, force[2], color='C1', label='GMT force')
+    plt.plot(wavelengths/nm, Fz, 'o', color='C1', label="Single Mie theory", linewidth=2)
 
     plt.show()

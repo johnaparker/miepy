@@ -23,7 +23,7 @@ sol = miepy.cluster(position=[0,0,0],
                     material=miepy.constant_material(1.3),
                     source=miepy.sources.y_polarized_plane_wave(),
                     wavelength=600*nm,
-                    Lmax=1)
+                    Lmax=2)
 
 # E = sol.E_field(x,y,z,False)
 # I = np.sum(np.abs(E)**2, axis=0)

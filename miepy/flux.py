@@ -83,13 +83,9 @@ def _gmt_cross_sections_from_poynting(gmt, radius, sampling=30):
     E_scat = gmt.E_field(X, Y, Z, source=False)
     H_scat = gmt.H_field(X, Y, Z, source=False)
 
-    C = np.zeros(gmt.Nfreq)
-    A = np.zeros(gmt.Nfreq)
-
-    for k in range(gmt.Nfreq):
-        eps_b = gmt.material_data['eps_b'][k]
-        mu_b = gmt.material_data['mu_b'][k]
-        C[k] = flux_from_poynting_sphere(E_scat[:,k], H_scat[:,k], radius, eps_b, mu_b)
-        A[k] = -flux_from_poynting_sphere(E_tot[:,k], H_tot[:,k], radius, eps_b, mu_b)
+    eps_b = gmt.material_data.eps_b
+    mu_b = gmt.material_data.mu_b
+    C = flux_from_poynting_sphere(E_scat, H_scat, radius, eps_b, mu_b)
+    A = -flux_from_poynting_sphere(E_tot, H_tot, radius, eps_b, mu_b)
 
     return C, A, C+A

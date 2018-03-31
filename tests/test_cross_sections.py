@@ -15,9 +15,6 @@ radius = 75*nm
 source = miepy.sources.x_polarized_plane_wave()
 separations = np.linspace(2*radius + 10*nm, 2*radius + 200*nm, 5)
 
-spheres = miepy.spheres([[separations[0]/2,0,0], [-separations[0]/2,0,0]], radius, Ag)
-mie = miepy.gmt(spheres, source, 800*nm, 1)
-
 analytic_scattering = np.zeros(separations.shape)
 analytic_absorption = np.zeros(separations.shape)
 
@@ -25,13 +22,16 @@ poynting_scattering = np.zeros(separations.shape)
 poynting_absorption = np.zeros(separations.shape)
 
 for i, separation in enumerate(tqdm(separations)):
-    mie.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
+    mie = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                        radius=radius,
+                        material=Ag,
+                        source=source,
+                        wavelength=800*nm,
+                        Lmax=1)
 
-    analytic_scattering[i], analytic_absorption[i], _ = map(np.squeeze, 
-            mie.cross_sections())
+    analytic_scattering[i], analytic_absorption[i], _ = mie.cross_sections()
 
-    poynting_scattering[i], poynting_absorption[i], _ = map(np.squeeze, 
-            miepy.flux._gmt_cross_sections_from_poynting(mie, radius=separation+radius, sampling=60))
+    poynting_scattering[i], poynting_absorption[i], _ = miepy.flux._gmt_cross_sections_from_poynting(mie, radius=separation+radius, sampling=60)
 
 def test_scattering():
     """comapre analytic scattering to numerical Poynting vector approach"""

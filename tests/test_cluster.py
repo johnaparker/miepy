@@ -14,20 +14,27 @@ radius = 75*nm
 source = miepy.sources.y_polarized_plane_wave()
 Lmax = 1
 
-wavelength = np.linspace(600*nm, 1000*nm, 5)
+wavelengths = np.linspace(600*nm, 1000*nm, 5)
 
 
 def test_off_center_particle(plot=False):
     """make sure scattering by a sphere away from the origin is equal to scattering of a particle at the origin"""
 
     # at the origin
-    sphere = miepy.spheres([0,0,0], radius, Ag)
-    mie = miepy.gmt(sphere, source, wavelength, Lmax)
-    C1,A1,E1 = mie.cross_sections()
+    C1,A1,E1,C2,A2,E2 = [np.zeros_like(wavelengths, dtype=float) for i in range(6)]
+    for i,wavelength in enumerate(wavelengths):
+        sol = miepy.cluster(position=[0,0,0],
+                            radius=radius,
+                            material=Ag,
+                            source=source,
+                            wavelength=wavelength,
+                            Lmax=Lmax)
 
-    # displaced sphere
-    mie.update_position([40*nm,50*nm,60*nm])
-    C2,A2,E2 = mie.cross_sections()
+        C1[i], A1[i], E1[i] = sol.cross_sections()
+
+        # displace sphere
+        sol.update_position([40*nm,50*nm,60*nm])
+        C2[i], A2[i], E2[i] = sol.cross_sections()
 
     if not plot:
         for a,b,tol in [(C1,C2,1e-15), (A1,A2,1e-15), (E1,E2,1e-15)]:
@@ -38,13 +45,13 @@ def test_off_center_particle(plot=False):
 
     else:
         fig, ax = plt.subplots()
-        ax.plot(wavelength/nm, C1, color='C0', label='scattering (origin)')
-        ax.plot(wavelength/nm, A1, color='C1', label='absorption (origin)')
-        ax.plot(wavelength/nm, E1, color='C2', label='extinction (origin)')
+        ax.plot(wavelengths/nm, C1, color='C0', label='scattering (origin)')
+        ax.plot(wavelengths/nm, A1, color='C1', label='absorption (origin)')
+        ax.plot(wavelengths/nm, E1, color='C2', label='extinction (origin)')
 
-        ax.plot(wavelength/nm, C2, 'o', color='C0', label='scattering (displaced)')
-        ax.plot(wavelength/nm, A2, 'o', color='C1', label='absorption (displaced)')
-        ax.plot(wavelength/nm, E2, 'o', color='C2', label='extinction (displaced)')
+        ax.plot(wavelengths/nm, C2, 'o', color='C0', label='scattering (displaced)')
+        ax.plot(wavelengths/nm, A2, 'o', color='C1', label='absorption (displaced)')
+        ax.plot(wavelengths/nm, E2, 'o', color='C2', label='extinction (displaced)')
 
         ax.set(xlabel='wavelength (nm)', ylabel='cross-section', title='test_off_center_particle')
         ax.legend()
@@ -55,13 +62,20 @@ def test_interactions_off(plot=False):
     """
     sep = 200*nm
 
-    # cluster
-    spheres = miepy.spheres([[sep/2,0,0], [-sep/2,0,0]], radius, Ag)
-    cluster = miepy.gmt(spheres, source, wavelength, Lmax, interactions=False)
-    C1,A1,E1 = cluster.cross_sections()
+    C1,A1,E1 = [np.zeros_like(wavelengths, dtype=float) for i in range(3)]
+    for i,wavelength in enumerate(wavelengths):
+        sol = miepy.cluster(position=[[sep/2,0,0], [-sep/2,0,0]],
+                            radius=radius,
+                            material=Ag,
+                            source=source,
+                            wavelength=wavelength,
+                            Lmax=Lmax,
+                            interactions=False)
+
+        C1[i], A1[i], E1[i] = sol.cross_sections()
 
     # single
-    sphere = miepy.single_mie_sphere(radius, Ag, wavelength, Lmax)
+    sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, Lmax)
     Cs,As,Es = sphere.cross_sections()
 
     if not plot:
@@ -73,13 +87,13 @@ def test_interactions_off(plot=False):
 
     else:
         fig, ax = plt.subplots()
-        ax.plot(wavelength/nm, C1, color='C0', label='scattering (cluster)')
-        ax.plot(wavelength/nm, A1, color='C1', label='absorption (cluster)')
-        ax.plot(wavelength/nm, E1, color='C2', label='extinction (cluster)')
+        ax.plot(wavelengths/nm, C1, color='C0', label='scattering (cluster)')
+        ax.plot(wavelengths/nm, A1, color='C1', label='absorption (cluster)')
+        ax.plot(wavelengths/nm, E1, color='C2', label='extinction (cluster)')
 
-        ax.plot(wavelength/nm, 2*Cs, 'o', color='C0', label='scattering (N x single)')
-        ax.plot(wavelength/nm, 2*As, 'o', color='C1', label='absorption (N x single)')
-        ax.plot(wavelength/nm, 2*Es, 'o', color='C2', label='extinction (N x single)')
+        ax.plot(wavelengths/nm, 2*Cs, 'o', color='C0', label='scattering (N x single)')
+        ax.plot(wavelengths/nm, 2*As, 'o', color='C1', label='absorption (N x single)')
+        ax.plot(wavelengths/nm, 2*Es, 'o', color='C2', label='extinction (N x single)')
 
         ax.set(xlabel='wavelength (nm)', ylabel='cross-section', title='test_interactions_off')
         ax.legend()
