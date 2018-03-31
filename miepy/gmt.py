@@ -37,6 +37,54 @@ class spheres:
         return self.sphere_type(position=self.position[i], radius=self.radius[i],
                             material=self.material[i])
 
+class material_struct:
+    def __init__(self, materials, medium, wavelength=None):
+        """struct to hold material data, and update it with changing wavelength
+            
+           Arguments:
+               materials    list of materials
+               medium       medium material
+               wavelength   wavelength (default: None)
+        """
+
+        Nparticles = len(materials)
+
+        self.materials = materials
+        self.medium = medium
+        self._wavelength = wavelength
+
+        self.eps   = np.zeros(Nparticles, dtype=complex) 
+        self.mu    = np.zeros(Nparticles, dtype=complex) 
+        self.n     = np.zeros(Nparticles, dtype=complex) 
+        self.eps_b = None
+        self.mu_b  = None
+        self.n_b   = None
+        self.k     = None
+
+        self.wavelength = wavelength
+
+    @property
+    def wavelength(self):
+        """get the wavelength"""
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, value):
+        """set the wavelength to some value, changing all eps and mu data with it"""
+        self._wavelength = value
+
+        if value is not None:
+            self.eps_b = self.medium.eps(self._wavelength)
+            self.mu_b  = self.medium.mu(self._wavelength)
+            self.n_b = (self.eps_b*self.mu_b)**0.5
+            self.k = 2*np.pi*self.n_b/self._wavelength
+
+            for i,material in enumerate(self.materials):
+                self.eps[i] = material.eps(self._wavelength)
+                self.mu[i]  = material.mu(self._wavelength)
+
+            self.n[...]   = (self.eps*self.mu)**0.5
+
 def get_indices(Lmax):
     """return n_indices, m_indices arrays for a given Lmax"""
     rmax = Lmax*(Lmax + 2)
@@ -59,7 +107,7 @@ class gmt:
         """Arguments:
                spheres          spheres object specifying the positions, radii, and materials
                source           source object specifying the incident E and H functions
-               wavelength[M]    wavelength(s) to solve the system at
+               wavelength       wavelength to solve the system at
                Lmax             maximum number of orders to use in angular momentum expansion (int)
                medium           (optional) material medium (must be non-absorbing; default=vacuum)
                interactions     (optional) If True, include particle interactions (bool, default=True) 
