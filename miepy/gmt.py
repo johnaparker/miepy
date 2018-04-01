@@ -6,21 +6,6 @@ import miepy
 from my_pytools.my_numpy.array import atleast
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
 
-def get_indices(Lmax):
-    """return n_indices, m_indices arrays for a given Lmax"""
-    rmax = Lmax*(Lmax + 2)
-    n_indices = np.zeros(rmax, dtype=int)
-    m_indices = np.zeros(rmax, dtype=int)
-
-    counter = 0
-    for n in range(1,Lmax+1):
-        for m in range(-n,n+1):
-            n_indices[counter] = n
-            m_indices[counter] = m
-            counter += 1
-
-    return n_indices, m_indices
-
 class material_struct:
     """struct to hold material data, and update it with changing wavelength"""
     def __init__(self, materials, medium, wavelength=None):
@@ -146,7 +131,7 @@ class cluster:
         self.q_cluster = None
 
         ### n and m indices for iteration
-        self.n_indices, self.m_indices = get_indices(self.Lmax)
+        self.n_indices, self.m_indices = miepy.vsh.get_indices(self.Lmax)
 
         ### solve the interactions
         self.solve()
@@ -163,38 +148,19 @@ class cluster:
 
             Returns: E[3,...]
         """
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        z = np.asarray(z, dtype=float)
+        Escat = miepy.vsh.expand_E(self.p_scat[i], self.q_scat[i], self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
 
-        E = np.zeros((3,) + x.shape, dtype=complex)
+        p = self.p_inc[i]
+        q = self.q_inc[i]
+        if not source:
+            p -= self.p_src[i]
+            q -= self.q_src[i]
 
-        R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.position[i])
-        rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
+        Einc = miepy.vsh.expand_E(p, q, self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.ingoing, origin=self.position[i])(x,y,z)
 
-        E_sph = np.zeros((3,) + x.shape, dtype=complex)
-        for r in range(self.rmax):
-            n = self.n_indices[r]
-            m = self.m_indices[r]
-            factor = 1j*miepy.vsh.Emn(m, n)
-
-            N,M = miepy.vsh.VSH(n,m)
-            E_sph += factor*self.p_scat[i,r]*N(R, THETA, PHI, self.material_data.k)
-            E_sph += factor*self.q_scat[i,r]*M(R, THETA, PHI, self.material_data.k)
-
-            N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
-            p = self.p_inc[i,r]
-            q = self.q_inc[i,r]
-            if not source:
-                p -= self.p_src[i,r]
-                q -= self.q_src[i,r]
-
-            E_sph += -factor*p*N(R, THETA, PHI, self.material_data.k)
-            E_sph += -factor*q*M(R, THETA, PHI, self.material_data.k)
-
-        E += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
-        
-        return E
+        return Escat + Einc
 
     def H_field_from_particle(self, i, x, y, z, source=True):
         """Compute the magnetic field around particle i
@@ -208,39 +174,22 @@ class cluster:
 
             Returns: H[3,...]
         """
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        z = np.asarray(z, dtype=float)
+        Hscat = miepy.vsh.expand_H(self.p_scat[i], self.q_scat[i], self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
+                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
 
-        H = np.zeros((3,) + x.shape, dtype=complex)
+        p = self.p_inc[i]
+        q = self.q_inc[i]
+        if not source:
+            p -= self.p_src[i]
+            q -= self.q_src[i]
 
-        R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.position[i])
-        rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
+        Hinc = miepy.vsh.expand_H(p, q, self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.ingoing, eps_b=self.material_data.eps_b,
+                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
 
-        H_sph = np.zeros((3,) + x.shape, dtype=complex)
-        for r in range(self.rmax):
-            n = self.n_indices[r]
-            m = self.m_indices[r]
-            factor = miepy.vsh.Emn(m, n)
-            N,M = miepy.vsh.VSH(n,m)
-            H_sph += factor*self.q_scat[i,r]*N(R, THETA, PHI, self.material_data.k)
-            H_sph += factor*self.p_scat[i,r]*M(R, THETA, PHI, self.material_data.k)
-
-            N,M = miepy.vsh.VSH(n, m, miepy.vsh.VSH_mode.incident)
-            p = self.p_inc[i,r]
-            q = self.q_inc[i,r]
-            if not source:
-                p -= self.p_src[i,r]
-                q -= self.q_src[i,r]
-
-            H_sph += -factor*q*N(R,THETA,PHI,self.material_data.k)
-            H_sph += -factor*p*M(R,THETA,PHI,self.material_data.k)
-
-        H += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
-        
-        return H*(self.material_data.eps_b/self.material_data.mu_b)**0.5
+        return Hscat + Hinc
     
-    #TODO: should source be computed through E func or through p/q src coefficients?
     def E_field(self, x, y, z, source=True):
         """Compute the electric field due to all particles
              
@@ -252,25 +201,9 @@ class cluster:
 
             Returns: E[3,...]
         """
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        z = np.asarray(z, dtype=float)
-
-        E = np.zeros((3,) + x.shape, dtype=complex)
-        for i in range(self.Nparticles):
-            R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.position[i])
-            rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
-
-            E_sph = np.zeros((3,) + x.shape, dtype=complex)
-            for r in range(self.rmax):
-                n = self.n_indices[r]
-                m = self.m_indices[r]
-                factor = 1j*miepy.vsh.Emn(m, n)
-                N,M = miepy.vsh.VSH(n,m)
-                E_sph += factor*self.p_scat[i,r]*N(R, THETA, PHI, self.material_data.k)
-                E_sph += factor*self.q_scat[i,r]*M(R, THETA, PHI, self.material_data.k)
-
-            E += E_sph[0]*rhat + E_sph[1]*that + E_sph[2]*phat      # convert to cartesian
+        E = sum((miepy.vsh.expand_E(self.p_scat[i], self.q_scat[i], self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
+                for i in range(self.Nparticles)))
 
         if source:
             E += self.source.E(np.array([x,y,z]), self.material_data.k)
@@ -288,31 +221,16 @@ class cluster:
 
             Returns: H[3,...]
         """
-
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        z = np.asarray(z, dtype=float)
-
-        H = np.zeros((3,) + x.shape, dtype=complex)
-        for i in range(self.Nparticles):
-            R, THETA, PHI = miepy.coordinates.cart_to_sph(x, y, z, self.position[i])
-            rhat, that, phat = miepy.coordinates.sph_basis_vectors(THETA, PHI)
-
-            H_sph = np.zeros((3,) + x.shape, dtype=complex)
-            for r in range(self.rmax):
-                n = self.n_indices[r]
-                m = self.m_indices[r]
-                factor = miepy.vsh.Emn(m, n)
-                N,M = miepy.vsh.VSH(n,m)
-                H_sph += factor*self.q_scat[i,r]*N(R,THETA,PHI,self.material_data.k)
-                H_sph += factor*self.p_scat[i,r]*M(R,THETA,PHI,self.material_data.k)
-
-            H += H_sph[0]*rhat + H_sph[1]*that + H_sph[2]*phat      # convert to cartesian
+        H = sum((miepy.vsh.expand_H(self.p_scat[i], self.q_scat[i], self.material_data.k,
+                  mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
+                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
+                for i in range(self.Nparticles)))
 
         if source:
-            H += self.source.H(np.array([x,y,z]), self.material_data.k)
-
-        return H*(self.material_data.eps_b/self.material_data.mu_b)**0.5
+            factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
+            H += factor*self.source.H(np.array([x,y,z]), self.material_data.k)
+        
+        return H
 
     def cross_sections_per_multipole(self, Lmax=None):
         """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
@@ -324,7 +242,7 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        n_indices, m_indices = get_indices(Lmax)
+        n_indices, m_indices = miepy.vsh.get_indices(Lmax)
         rmax = n_indices.shape[0]
 
         p0 =  np.zeros(rmax, dtype=complex)
@@ -519,7 +437,7 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        n_indices, m_indices = get_indices(Lmax)
+        n_indices, m_indices = miepy.vsh.get_indices(Lmax)
         rmax = n_indices.shape[0]
 
         self.p_cluster = np.zeros(rmax, dtype=complex)

@@ -12,6 +12,22 @@ from functools import lru_cache
 from math import factorial
 import miepy.coordinates as coordinates
 
+def get_indices(Lmax):
+    """return n_indices, m_indices arrays for a given Lmax"""
+    rmax = Lmax*(Lmax + 2)
+    n_indices = np.zeros(rmax, dtype=int)
+    m_indices = np.zeros(rmax, dtype=int)
+
+    counter = 0
+    for n in range(1,Lmax+1):
+        for m in range(-n,n+1):
+            n_indices[counter] = n
+            m_indices[counter] = m
+            counter += 1
+
+    return n_indices, m_indices
+
+
 def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
 
@@ -194,7 +210,7 @@ def get_zn(mode):
     """determine the zn function for a given mode"""
     if mode is VSH_mode.outgoing:
         return spherical_hn
-    elif mode is VSH_mode.incident:
+    elif mode is VSH_mode.incident or mode is VSH_mode.ingoing:
         return special.spherical_jn
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
@@ -467,41 +483,64 @@ def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
             q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
     return p,q
 
-# TODO: implement origin
-# TODO: E0 = 1 issue... absorb into p,q or pass it in
-# TODO: implement correct factor for each mode
-def expand(p, q, k, mode, origin=[0,0,0]):
+def expand_E(p, q, k, mode, origin=None):
     """Expand VSH coefficients to obtain an electric field function
     Returns E(x,y,z) function
     
     Arguments:
-        p[Nmax,2*Nmax+1]   p coefficients 
-        q[Nmax,2*Nmax+1]   q coefficients 
-        k                  wavenumber
+        p[rmax]   p coefficients 
+        q[rmax]   q coefficients 
+        k         wavenumber
         mode: VSH_mode     type of VSH (outgoing, incident)
         origin             origin around which to perform the expansion (default: [0,0,0])
     """
-    Nmax = p.shape[0]
+    if origin is None:
+        origin = np.zeros(3)
+
+    rmax = len(p)
+    Lmax = int(-1 + (1+rmax)**0.5)
+    n_indices, m_indices = get_indices(Lmax)
+    factor = 1j if mode == VSH_mode.outgoing else -1j
 
     def f(x, y, z):
-        r, theta, phi = coordinates.cart_to_sph(x,y,z)
-        rhat,that,phat = sph_basis_vectors(theta,phi)
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
+        z = np.asarray(z, dtype=float)
 
-        expanded_E = np.zeros(shape=(3,)+x.shape, dtype=complex)
-        for n in range(1,Nmax+1):
-            for m in range(-n, n+1):
-                Nfunc,Mfunc = VSH(n, m, mode=mode)
+        rad, theta, phi = coordinates.cart_to_sph(x, y, z, origin)
+        E_sph = np.zeros(shape=(3,) + x.shape, dtype=complex)
 
-                Emn_val = Emn(m, n)
+        for r in range(rmax):
+            n = n_indices[r]
+            m = m_indices[r]
+            Nfunc,Mfunc = VSH(n, m, mode=mode)
 
-                N = Nfunc(r, theta, phi, k)
-                M = Mfunc(r, theta, phi, k)
+            Emn_val = Emn(m, n)
 
-                N = coordinates.vec_sph_to_cart(N, theta, phi)
-                M = coordinates.vec_sph_to_cart(M, theta, phi)
+            N = Nfunc(rad, theta, phi, k)
+            M = Mfunc(rad, theta, phi, k)
 
-                expanded_E += -1j*Emn_val*(p[n-1,n+m]*N + q[n-1,n+m]*M)
+            E_sph += factor*Emn_val*(p[r]*N + q[r]*M)
 
-        return expanded_E
+        E = coordinates.vec_sph_to_cart(E_sph, theta, phi)
+        return E
     
     return f
+
+def expand_H(p, q, k, mode, eps_b, mu_b, origin=None):
+    """Expand VSH coefficients to obtain a magnetic field function
+    Returns H(x,y,z) function
+    
+    Arguments:
+        p[rmax]   p coefficients 
+        q[rmax]   q coefficients 
+        k         wavenumber
+        mode: VSH_mode     type of VSH (outgoing, incident)
+        eps_b     background permitiviity
+        mu_b      background permeability
+        origin    origin around which to perform the expansion (default: [0,0,0])
+    """
+
+    factor = -1j*np.sqrt(eps_b//mu_b)
+    E_func = expand_E(q, p, k, mode, origin=origin)
+    return lambda *args: factor*E_func(*args)
