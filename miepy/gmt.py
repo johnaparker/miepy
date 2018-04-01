@@ -527,8 +527,8 @@ class cluster:
 
         for i in range(self.Nparticles):
             if np.all(self.position[i] == self.origin):
-                self.p_cluster[...] = self.p_scat[:,i]
-                self.q_cluster[...] = self.q_scat[:,i]
+                self.p_cluster[...] = self.p_scat[i]
+                self.q_cluster[...] = self.q_scat[i]
                 continue
 
             rij = self.origin - self.position[i]
