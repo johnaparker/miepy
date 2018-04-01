@@ -15,7 +15,7 @@ def levi_civita():
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
     return eijk
 
-def force(p, q, p_inc, q_inc, k, eps_b, mu_b, Lmax):
+def force(p, q, p_inc, q_inc, k, eps_b, mu_b):
     """force from the expansion coefficients
     
        Arguments:
@@ -26,12 +26,13 @@ def force(p, q, p_inc, q_inc, k, eps_b, mu_b, Lmax):
            k        wavenumber
            eps_b    background relative permitvitty
            mu_b     background relative permeability
-           Lmax     maximum number of terms
     """
     Fxy = 0
     Fz = 0
     Axy = np.pi/k**2*constants.epsilon_0*eps_b
     Az = -2*np.pi/k**2*constants.epsilon_0*eps_b
+
+    Lmax = int(-1 + (1+len(p))**0.5)
 
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):
@@ -88,7 +89,7 @@ def force(p, q, p_inc, q_inc, k, eps_b, mu_b, Lmax):
 
     return np.array([np.real(Fxy), np.imag(Fxy), np.real(Fz)])
 
-def torque(p, q, p_inc, q_inc, k, eps_b, mu_b, Lmax):
+def torque(p, q, p_inc, q_inc, k, eps_b, mu_b):
     """torque from the expansion coefficients
     
        Arguments:
@@ -99,10 +100,10 @@ def torque(p, q, p_inc, q_inc, k, eps_b, mu_b, Lmax):
            k        wavenumber
            eps_b    background relative permitvitty
            mu_b     background relative permeability
-           Lmax     maximum number of terms
     """
     T = np.zeros(3, dtype=float)
     A = -2*np.pi/k**3*constants.epsilon_0*eps_b
+    Lmax = int(-1 + (1+len(p))**0.5)
 
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):

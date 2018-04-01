@@ -241,32 +241,20 @@ class cluster:
 
         if Lmax is None:
             Lmax = self.Lmax
-
         n_indices, m_indices = miepy.vsh.get_indices(Lmax)
         rmax = n_indices.shape[0]
 
         p0 =  np.zeros(rmax, dtype=complex)
         q0 =  np.zeros(rmax, dtype=complex)
         self.solve_cluster_coefficients(Lmax)
-
-        Cscat = np.zeros([2, Lmax], dtype=float)
-        Cext  = np.zeros([2, Lmax], dtype=float)
-
-        factor = 4*np.pi/self.material_data.k**2
         for r in range(rmax):
             n = n_indices[r]
             m = m_indices[r]
-
             p0[r], q0[r] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
 
-            Cscat[0,n-1] += factor*np.abs(self.p_cluster[r])**2
-            Cscat[1,n-1] += factor*np.abs(self.q_cluster[r])**2
+        return miepy.flux.cluster_cross_sections(self.p_cluster, self.q_cluster,
+                  p0, q0, self.material_data.k)
 
-            Cext[0,n-1] += factor*np.real(np.conj(p0[r])*self.p_cluster[r])
-            Cext[1,n-1] += factor*np.real(np.conj(q0[r])*self.q_cluster[r])
-
-        Cabs = Cext - Cscat
-        return Cscat, Cabs, Cext
 
     def cross_sections(self):
         """Compute the scattering, absorption, and extinction cross-section of the cluster"""
@@ -290,44 +278,9 @@ class cluster:
             i    particle index
         """
 
-        Cscat = np.zeros([2, self.Lmax], dtype=float)
-        Cext  = np.zeros([2, self.Lmax], dtype=float)
-        Cabs  = np.zeros([2, self.Lmax], dtype=float)
-
-        riccati = miepy.special_functions.riccati_1_single
-
-        factor = 4*np.pi/self.material_data.k**2
-
-        xj = self.material_data.k*self.radius[i]
-        mj = self.material_data.n[i]/self.material_data.n_b
-        yj = xj*mj
-        mu_b = self.material_data.mu_b
-        mu = self.material_data.mu[i]
-
-        for r in range(self.rmax):
-            n = self.n_indices[r]
-
-            # Cscat[0,n-1] += factor*np.abs(self.p_scat[i,r])**2
-            # Cscat[1,n-1] += factor*np.abs(self.q_scat[i,r])**2
-
-            psi_x, psi_xp = riccati(n, xj)
-            psi_y, psi_yp = riccati(n, yj)
-
-            
-            Dn = -np.divide(np.real(1j*mj*mu_b*mu*psi_y*np.conj(psi_yp)),
-                            np.abs(mu_b*mj*psi_y*psi_xp - mu*psi_x*psi_yp)**2)
-            Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
-                            np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
-
-            Cabs[0,n-1] += Dn*factor*np.abs(self.p_scat[i,r])**2
-            Cabs[1,n-1] += Cn*factor*np.abs(self.q_scat[i,r])**2
-
-            #TODO should this be p_src or p_inc?
-            Cext[0,n-1] += factor*np.real(np.conj(self.p_src[i,r])*self.p_scat[i,r])
-            Cext[1,n-1] += factor*np.real(np.conj(self.q_src[i,r])*self.q_scat[i,r])
-
-        Cscat[...] = Cext - Cabs
-        return Cscat, Cabs, Cext
+        return miepy.flux.particle_cross_sections(self.p_scat[i], self.q_scat[i], self.p_src[i], self.q_src[i],
+                    self.radius[i], self.material_data.k, self.material_data.n[i], self.material_data.mu[i],
+                    self.material_data.n_b, self.material_data.mu_b)
 
     def cross_sections_of_particle(self, i):
         """Compute the scattering, absorption, and extinction cross-section of a single particle
@@ -358,7 +311,7 @@ class cluster:
 
         F = miepy.forces.force(self.p_scat[i], self.q_scat[i], p_inc[i], q_inc[i],
                 self.material_data.k, self.material_data.eps_b,
-                self.material_data.mu_b, self.Lmax)
+                self.material_data.mu_b)
 
         return F
 
@@ -381,7 +334,7 @@ class cluster:
 
         T = miepy.forces.torque(self.p_scat[i], self.q_scat[i], p_inc[i], q_inc[i],
                 self.material_data.k, self.material_data.eps_b,
-                self.material_data.mu_b, self.Lmax)
+                self.material_data.mu_b)
 
         return T
 

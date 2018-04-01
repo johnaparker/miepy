@@ -497,9 +497,7 @@ def expand_E(p, q, k, mode, origin=None):
     if origin is None:
         origin = np.zeros(3)
 
-    rmax = len(p)
-    Lmax = int(-1 + (1+rmax)**0.5)
-    n_indices, m_indices = get_indices(Lmax)
+    Lmax = int(-1 + (1+len(p))**0.5)
     factor = 1j if mode == VSH_mode.outgoing else -1j
 
     def f(x, y, z):
@@ -510,17 +508,17 @@ def expand_E(p, q, k, mode, origin=None):
         rad, theta, phi = coordinates.cart_to_sph(x, y, z, origin)
         E_sph = np.zeros(shape=(3,) + x.shape, dtype=complex)
 
-        for r in range(rmax):
-            n = n_indices[r]
-            m = m_indices[r]
-            Nfunc,Mfunc = VSH(n, m, mode=mode)
+        for n in range(1,Lmax+1):
+            for m in range(-n,n+1):
+                r = n**2 + n - 1 + m
+                Nfunc,Mfunc = VSH(n, m, mode=mode)
 
-            Emn_val = Emn(m, n)
+                Emn_val = Emn(m, n)
 
-            N = Nfunc(rad, theta, phi, k)
-            M = Mfunc(rad, theta, phi, k)
+                N = Nfunc(rad, theta, phi, k)
+                M = Mfunc(rad, theta, phi, k)
 
-            E_sph += factor*Emn_val*(p[r]*N + q[r]*M)
+                E_sph += factor*Emn_val*(p[r]*N + q[r]*M)
 
         E = coordinates.vec_sph_to_cart(E_sph, theta, phi)
         return E
