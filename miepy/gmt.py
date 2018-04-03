@@ -429,6 +429,7 @@ class cluster:
                wavelength   wavelength to solve at (default: current wavelength)
                source       source to use (default: current source). If current source is also None, solve the particle's T-matrix instead
         """
+        self._solve_source_decomposition()
         if self.interactions:
             self._solve_interactions()
         else:
@@ -447,7 +448,6 @@ class cluster:
                     self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data.k)
 
     def _solve_without_interactions(self):
-        self._solve_source_decomposition()
         self.p_inc[...] = self.p_src
         self.q_inc[...] = self.q_src
 
@@ -456,43 +456,9 @@ class cluster:
             self.p_scat[...,r] = self.p_inc[...,r]*self.a[...,n-1]
             self.q_scat[...,r] = self.q_inc[...,r]*self.b[...,n-1]
 
-    #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
     def _solve_interactions(self):
-        self._solve_source_decomposition()
-        identity = np.zeros(shape = (2, self.Nparticles, self.rmax, 2, self.Nparticles, self.rmax), dtype=np.complex)
-        np.einsum('airair->air', identity)[...] = 1
-        
-        interaction_matrix = np.zeros(shape = (2, self.Nparticles, self.rmax, 2, self.Nparticles, self.rmax), dtype=np.complex)
-
-        for i in range(self.Nparticles):
-            for j in range(self.Nparticles):
-                if i == j: continue
-
-                pi = self.position[i]
-                pj = self.position[j]
-                dji = pi -  pj
-                r_ji = np.linalg.norm(dji)
-                theta_ji = np.arccos(dji[2]/r_ji)
-                phi_ji = np.arctan2(dji[1], dji[0])
-
-                for r in range(self.rmax):
-                    n = self.n_indices[r]
-                    m = self.m_indices[r]
-                    for s in range(self.rmax):
-                        v = self.n_indices[s]
-                        u = self.m_indices[s]
-
-                        A_transfer = miepy.vsh.A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data.k, miepy.vsh.VSH_mode.outgoing)
-                        B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,self.material_data.k, miepy.vsh.VSH_mode.outgoing)
-
-                        interaction_matrix[0,i,r,0,j,s] = A_transfer*self.a[j,v-1]
-                        interaction_matrix[0,i,r,1,j,s] = B_transfer*self.b[j,v-1]
-                        interaction_matrix[1,i,r,0,j,s] = B_transfer*self.a[j,v-1]
-                        interaction_matrix[1,i,r,1,j,s] = A_transfer*self.b[j,v-1]
-
-        A = identity + interaction_matrix
-        b = np.array([self.p_src,self.q_src])
-        sol = np.linalg.tensorsolve(A, b)
+        sol = miepy.interactions.solve_sphere_cluster(self.position, self.a, self.b, 
+                self.p_src, self.q_src, self.material_data.k)
         self.p_inc[...] = sol[0]
         self.q_inc[...] = sol[1]
 

@@ -8,6 +8,7 @@ Python module to calcuate scattering coefficients of a plane wave incident on a 
 from . import sources
 from . import scattering
 from . import materials
+from . import interactions
 from . import vsh
 from . import forces
 from . import flux
