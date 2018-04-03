@@ -542,3 +542,54 @@ def expand_H(p, q, k, mode, eps_b, mu_b, origin=None):
     factor = -1j*np.sqrt(eps_b//mu_b)
     E_func = expand_E(q, p, k, mode, origin=origin)
     return lambda *args: factor*E_func(*args)
+
+#TODO: equations for rmax, r, Lmax (here and elsewhere) should be a function call
+#TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)
+def cluster_coefficients(positions, p_scat, q_scat, k, origin, Lmax=None):
+    """Solve for the cluster p,q coefficients of N particles around an origin
+
+    Arguments:
+        positions[N,3]   particle positions
+        p_scat[N,rmax]   p scattering coefficients 
+        q_scat[N,rmax]   q scattering coefficients 
+        k                medium wavenumber
+        origin           position around which to calculate the cluster coefficients
+        Lmax             (optional) compute scattering for up to Lmax terms (default: Lmax of input p/q)
+    """
+
+    Nparticles = positions.shape[0]
+    rmax_in = p_scat.shape[1]
+    Lmax_in = int(-1 + (1+rmax_in)**0.5)
+
+    if Lmax is None:
+        Lmax = Lmax_in
+
+    rmax = Lmax*(Lmax + 2)
+    p_cluster = np.zeros(rmax, dtype=complex)
+    q_cluster = np.zeros(rmax, dtype=complex)
+
+    for i in range(Nparticles):
+        if np.all(positions[i] == origin):
+            p_cluster[...] = p_scat[i]
+            q_cluster[...] = q_scat[i]
+            continue
+
+        rij = origin - positions[i]
+        rad, theta, phi = miepy.coordinates.cart_to_sph(*rij)
+        
+        for n in range(1, Lmax+1):
+            for m in range(-n, n+1):
+                r = n**2 + n - 1 + m
+
+                for v in range(1, Lmax_in+1):
+                    for u in range(-v, v+1):
+                        rp = v**2 + v - 1 + u
+
+                        a = p_scat[i,rp]
+                        b = q_scat[i,rp]
+
+                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+
+                        p_cluster[r] += a*A + b*B
+                        q_cluster[r] += a*B + b*A

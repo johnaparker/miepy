@@ -344,37 +344,8 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        n_indices, m_indices = miepy.vsh.get_indices(Lmax)
-        rmax = n_indices.shape[0]
-
-        self.p_cluster = np.zeros(rmax, dtype=complex)
-        self.q_cluster = np.zeros(rmax, dtype=complex)
-
-        for i in range(self.Nparticles):
-            if np.all(self.position[i] == self.origin):
-                self.p_cluster[...] = self.p_scat[i]
-                self.q_cluster[...] = self.q_scat[i]
-                continue
-
-            rij = self.origin - self.position[i]
-            rad, theta, phi = miepy.coordinates.cart_to_sph(*rij)
-            
-            for r in range(rmax):
-                n = n_indices[r]
-                m = m_indices[r]
-
-                for rp in range(self.rmax):
-                    v = self.n_indices[rp]
-                    u = self.m_indices[rp]
-
-                    a = self.p_scat[i,rp]
-                    b = self.q_scat[i,rp]
-
-                    A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, self.material_data.k, miepy.vsh.VSH_mode.incident)
-                    B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, self.material_data.k, miepy.vsh.VSH_mode.incident)
-
-                    self.p_cluster[r] += a*A + b*B
-                    self.q_cluster[r] += a*B + b*A
+        self.p_cluster, self.q_cluster = miepy.vsh.cluster_coefficients(self.position, 
+                self.p_scat, self.q_scat, self.material_data.k, origin=self.origin, Lmax=Lmax)
 
     def solve(self, wavelength=None, source=None):
         """solve for the p,q incident and scattering coefficients

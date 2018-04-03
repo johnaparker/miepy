@@ -73,6 +73,3 @@ def solve_sphere_cluster(positions, a, b, p_src, q_src, k):
     sol = np.linalg.tensorsolve(A, b)
 
     return sol
-
-def cluster_coefficients():
-    pass
