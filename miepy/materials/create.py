@@ -10,6 +10,14 @@ from scipy.interpolate import interp1d
 import pandas as pd
 from abc import ABCMeta, abstractmethod
 
+def wavelength_to_energy(wavelength):
+    """return the wavelength in energy units (eV)"""
+    return constants.h*constants.c/wavelength/constants.e
+
+def wavelength_to_wavenumber(wavelength):
+    """return the wavelength as a wavenumber"""
+    return 2*np.pi/wavelength
+
 class material:
     """material interface base class"""
     __metaclass__ = ABCMeta
@@ -77,14 +85,6 @@ class data_material(material):
     def mu(self, wavelength):
         f = interp1d(self.data['wavelength'], self.data['mu'], kind='cubic')
         return f(wavelength)
-
-def wavelength_to_energy(wavelength):
-    """return the wavelength in energy units (eV)"""
-    return constants.h*constants.c/wavelength/constants.e
-
-def wavelength_to_wavenumber(wavelength):
-    """return the wavelength as a wavenumber"""
-    return 2*np.pi/wavelength
 
 #TODO fix and test
 def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1):
