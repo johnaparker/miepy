@@ -215,6 +215,8 @@ def get_zn(mode):
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
 
+#TODO: this whole interface could probably be nicer...
+#TODO: specify spherical flag (either in VSH or the N/M functions themselves)
 def VSH(n, m, mode=VSH_mode.outgoing):
     """electric and magnetic vector spherical harmonic function
 
