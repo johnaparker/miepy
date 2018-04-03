@@ -4,7 +4,7 @@ mie_sphere calculates the scattering coefficients of a sphere using Mie theory
 import numpy as np
 import miepy
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
-from miepy.scattering import scattered_E,scattered_H,interior_E,interior_H
+from miepy.mie_single.scattering import scattered_E,scattered_H,interior_E,interior_H
 from scipy import constants
 
 class single_mie_sphere:

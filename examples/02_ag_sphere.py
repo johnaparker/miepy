@@ -31,7 +31,7 @@ S,*_ = sphere.cross_sections_per_multipole()
 
 for i in range(2):
     for j in range(2):
-        plt.plot(wavelengths*1e9, S[:,i,j], label=miepy.scattering.multipole_label(i,j))
+        plt.plot(wavelengths*1e9, S[:,i,j], label=miepy.multipole_label(i,j))
 
 # Set figure properties
 for ax in (ax1,ax2):

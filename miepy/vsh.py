@@ -590,8 +590,8 @@ def cluster_coefficients(positions, p_scat, q_scat, k, origin, Lmax=None):
                         a = p_scat[i,rp]
                         b = q_scat[i,rp]
 
-                        A = miepy.vsh.A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
-                        B = miepy.vsh.B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+                        A = A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+                        B = B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
 
                         p_cluster[r] += a*A + b*B
                         q_cluster[r] += a*B + b*A
