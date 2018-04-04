@@ -65,18 +65,28 @@ class cluster:
         ### mie coefficients
         self.a = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
         self.b = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
+        self.c = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
+        self.d = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
 
-        #TODO: a,b function calls instead of class
         for i in range(self.Nparticles):
-            sphere = miepy.single_mie_sphere(self.radius[i], self.material[i],
-                        self.wavelength, self.Lmax, self.medium)
-            self.a[i], self.b[i] = sphere.solve_exterior()
+            for n in range(1, self.Lmax+1):
+                self.a[i,n-1], self.b[i,n-1] = \
+                    miepy.mie_single.mie_sphere_scattering_coefficients(self.radius[i],
+                    n, self.material_data.eps[i], self.material_data.mu[i],
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
+
+                self.c[i,n-1], self.d[i,n-1] = \
+                    miepy.mie_single.mie_sphere_interior_coefficients(self.radius[i],
+                    n, self.material_data.eps[i], self.material_data.mu[i],
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
 
         ### modified coefficients
-        self.p_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.q_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
         self.p_inc  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
         self.q_inc  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
+        self.p_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
+        self.q_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
+        self.p_int  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
+        self.q_int  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
         self.p_src  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
         self.q_src  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
 

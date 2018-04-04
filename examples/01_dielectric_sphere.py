@@ -7,38 +7,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import miepy
 
+nm = 1e-9
 # wavelength from 400nm to 1000nm
-wavelengths = np.linspace(400e-9,1000e-9,1000)
+wavelengths = np.array([500*nm])
 
 # create a material with n = 3.7 (eps = n^2) at all wavelengths
 dielectric = miepy.constant_material(3.7**2)
 
 # Calculate scattering coefficients
 radius = 100e-9    # 100 nm radius
-Lmax = 10          # Use up to 10 multipoles
+Lmax = 2          # Use up to 10 multipoles
 sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax)
 
-# Figure 1: Scattering and Absorption
-fig, ax1 = plt.subplots()
-S,A,_ = sphere.cross_sections()
-plt.plot(wavelengths*1e9, S, label="Scattering", linewidth=2)
-plt.plot(wavelengths*1e9, A, label="Absorption", linewidth=2)
-
-# Figure 2: Scattering per multipole
-fig, ax2 = plt.subplots()
-plt.plot(wavelengths*1e9, S, label="Total", linewidth=2)
-S,*_ = sphere.cross_sections_per_multipole()
-
-for i in range(2):
-    for j in range(2):
-        plt.plot(wavelengths*1e9, S[:,i,j], label=miepy.multipole_label(i,j))
-
-# Set figure properties
-for ax in (ax1,ax2):
-    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    ax.legend()
-    ax.set(xlabel="wavelength (nm)", ylabel=r"cross section (m$^2$)")
-ax1.set_title("Total scattering")
-ax2.set_title("Scattering per multipole")
-
-plt.show()
+print(sphere.solve_exterior())
+a,b = miepy.mie_single.mie_sphere_scattering_coefficients(radius, 2, 3.7**2, 1, 1, 1, 2*np.pi/(500*nm))
+print(a,b)

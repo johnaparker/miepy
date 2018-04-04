@@ -139,7 +139,7 @@ def riccati_3_single(n,x):
     # ynp = yn/(2*x) + pre*special.yvp(n+0.5,x)
 
     # return np.array([yn,ynp])
-    return riccati_2_single(n,x) - riccati_1_single(n,x)
+    return riccati_1_single(n,x) + 1j*riccati_2_single(n,x)
 
 
 if __name__ == "__main__":
