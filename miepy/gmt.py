@@ -154,20 +154,40 @@ class cluster:
 
         return Hscat + Hinc
     
-    def E_field(self, x, y, z, source=True):
+    #TODO: implement far & spherical flags
+    def E_field(self, x, y, z, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the electric field due to all particles
              
             Arguments:
                 x         x position (array-like) 
                 y         y position (array-like) 
                 z         z position (array-like) 
-                source    Include the source field (bool, default=True)
+                interior  (optional) compute interior fields (bool, default=True)
+                source    (optional) include the source field (bool, default=True)
+                mask      (optional) set interior fields to 0 (bool, default=False)
+                far       (optional) use expressions for far-field (bool, default=False)
+                spherical (optional) input/output in spherical coordinates (bool, default=False)
 
             Returns: E[3,...]
         """
         E = sum((miepy.vsh.expand_E(self.p_scat[i], self.q_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
                 for i in range(self.Nparticles)))
+
+        if interior and not mask:
+            for i in range(self.Nparticles):
+                x0, y0, z0 = self.position[i]
+                k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                E[idx] = miepy.vsh.expand_E(self.p_int, self.q_int, k_int,
+                          mode=miepy.vsh.VSH_mode.interior, origin=self.position[i])(x[idx], y[idx], z[idx])
+
+        #TODO: what if x is scalar...
+        if mask:
+            for i in range(self.Nparticles):
+                x0, y0, z0 = self.position[i]
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                E[idx] = 0
 
         if source:
             E += self.source.E(np.array([x,y,z]), self.material_data.k)
@@ -401,3 +421,5 @@ class cluster:
             n = self.n_indices[r]
             self.p_scat[:,r] = self.p_inc[:,r]*self.a[:,n-1]
             self.q_scat[:,r] = self.q_inc[:,r]*self.b[:,n-1]
+            self.p_int[:,r] = self.p_inc[:,r]*self.d[:,n-1]
+            self.q_int[:,r] = self.q_inc[:,r]*self.c[:,n-1]
