@@ -205,12 +205,13 @@ class VSH_mode(enum.Enum):
     outgoing = enum.auto()
     ingoing  = enum.auto()
     incident = enum.auto()
+    interior = enum.auto()
 
 def get_zn(mode):
     """determine the zn function for a given mode"""
     if mode is VSH_mode.outgoing:
         return spherical_hn
-    elif mode is VSH_mode.incident or mode is VSH_mode.ingoing:
+    elif mode in (VSH_mode.incident, VSH_mode.ingoing, VSH_mode.interior):
         return special.spherical_jn
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
@@ -409,7 +410,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=VSH_mode.outgoing, spherical=
 
     if mode == VSH_mode.outgoing:
         factor = 1/(1j*Emn_val)
-    elif mode == VSH_mode.incident:
+    elif mode == VSH_mode.incident or mode == VSH_mode.ingoing:
         factor = -1/(1j*Emn_val)
     else:
         raise ValueError(f'{mode} is not a valid type of mode')

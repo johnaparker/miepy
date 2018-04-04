@@ -174,26 +174,27 @@ class cluster:
                   mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
                 for i in range(self.Nparticles)))
 
+        if source:
+            E += self.source.E(np.array([x,y,z]), self.material_data.k)
+
+        #TODO: what if x is scalar...
         if interior and not mask:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
                 idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
-                E[idx] = miepy.vsh.expand_E(self.p_int, self.q_int, k_int,
+                E[:,idx] = miepy.vsh.expand_E(self.p_int[i], self.q_int[i], k_int,
                           mode=miepy.vsh.VSH_mode.interior, origin=self.position[i])(x[idx], y[idx], z[idx])
 
-        #TODO: what if x is scalar...
         if mask:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
                 idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
-                E[idx] = 0
-
-        if source:
-            E += self.source.E(np.array([x,y,z]), self.material_data.k)
+                E[:,idx] = 0
         
         return E
 
+    #TODO: same interface as E_field
     def H_field(self, x, y, z, source=True):
         """Compute the magnetic field due to all particles
              
