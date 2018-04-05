@@ -108,20 +108,42 @@ where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^
     E_{mn} = i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
 \end{equation}
 
-\section{VSH translation addition coefficients}
+\section{VSH translation coefficients}
+The VSH functions computed in one coordinate system ($\bm{r}_j$) can be converted to a different coordinate system ($\bm{r}_l$) by use of the translation coefficients $\widetilde{A}_{mn}^{uv(J)}(l \rightarrow j)$ and $\widetilde{B}_{mn}^{uv(J)}(l \rightarrow j)$
+\begin{subequations}
+\begin{align}
+    \bm{M}_{uv}^{(J)}(k\bm{r}_l) &= \sum_{n=0}^\infty \sum_{m=-n}^{m=n}
+    \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \bm{M}_{mn}^{(1)}(k\bm{r}_j)
+    + \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j) \bm{N}_{mn}^{(1)}(k\bm{r}_j) \\
+    \bm{N}_{uv}^{(J)}(k\bm{r}_l) &= \sum_{n=0}^\infty \sum_{m=-n}^{m=n}
+    \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j) \bm{M}_{mn}^{(1)}(k\bm{r}_j)
+    + \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \bm{N}_{mn}^{(1)}(k\bm{r}_j)
+\end{align}
+\end{subequations}
+Explicit formula for the translation coefficients can be found elsewhere. \cite{Xu_1998}
+
+The normalized translation coefficients are defined as
+\begin{subequations}
+\begin{align}
+    A_{mn}^{uv(J)}(l \rightarrow j) &= \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \\
+    B_{mn}^{uv(J)}(l \rightarrow j) &= \frac{E_{uv}}{E_{mn}} \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j)
+\end{align}
+\end{subequations}
+
+
 \section{Interaction equations}
+The interaction equations among $N$ particles can be written as
 \begin{align}
     \begin{split}
         p_{mn}^j &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    A_{mn}^{uv}(l \rightarrow j) a_v^l p_{uv}^{l}
-    +B_{mn}^{uv}(l \rightarrow j) b_v^l q_{uv}^{l} \\
+    A_{mn}^{uv(3)}(l \rightarrow j) a_v^l p_{uv}^{l}
+    +B_{mn}^{uv(3)}(l \rightarrow j) b_v^l q_{uv}^{l} \\
     q_{mn}^j &= q_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    B_{mn}^{uv}(l \rightarrow j) a_v^l p_{uv}^{l}
-    +A_{mn}^{uv}(l \rightarrow j) b_v^l q_{uv}^{l}
+    B_{mn}^{uv(3)}(l \rightarrow j) a_v^l p_{uv}^{l}
+    +A_{mn}^{uv(3)}(l \rightarrow j) b_v^l q_{uv}^{l}
     \label{eqn:gmt_system}
     \end{split}
 \end{align}
-where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH translation coefficients from particle $l$ to particle $j$.
 
 \section{Force and torque}
 \emph{Maxwell stress tensor equations}
@@ -199,14 +221,15 @@ where $A_{mn}^{uv}(l \rightarrow j)$ and $B_{mn}^{uv}(l \rightarrow j)$ are VSH 
 \end{subequations}
 
 \section{Cluster coefficients}
+The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed by translating the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$ to the origin $\bm{p_0}$
 \begin{align}
 \begin{split}
     a_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    A_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
-    +B_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l} \\
+    A_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
+    +B_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l} \\
     b_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    B_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
-    +A_{mn}^{uv}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l}
+    B_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
+    +A_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l}
 \end{split}
 \end{align}
 
@@ -286,6 +309,15 @@ Given the fields of the incident source $\boldsymbol{E}_\text{src}(\boldsymbol{r
 \end{split}
 \end{align}
 where $\Omega$ is a closed surface around particle $j$.
+
+For a plane wave, the decomposition can be carried out analytically.
+For a TM mode with incident polar angle $\alpha$ and azimuthal angle $\beta$
+\begin{align}
+\begin{split}
+p_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \tau_{mn}(\cos \alpha) \exp(-im\beta) \exp(i\bm{k} \cdot \bm{r}_j) \\
+q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) \exp(i\bm{k} \cdot \bm{r}_j)
+\end{split}
+\end{align}
 
 \section{Efficient numeric evaluation}
 \section{Recursion relations}
@@ -382,8 +414,12 @@ Example Python code using MiePy
     source = miepy.sources.x_polarized_plane_wave()
 
     # build an Ag dimer with radii 50nm separated by 600nm in the x-direction
-    spheres = miepy.spheres([[300*nm,0,0], [-300*nm,0,0]], radius=50*nm, material=Ag)
-    cluster = miepy.gmt(spheres, source, wavelength=800*nm, Lmax=2)
+    dimer = miepy.cluster(position=[[300*nm,0,0], [-300*nm,0,0]],
+                            radius=50*nm,
+                            material=Ag,
+                            source=source,
+                            wavelength=800*nm,
+                            Lmax=2)
 
     # obtain the cross-sections
     scat, absorb, extinct = cluster.cross_sections()
