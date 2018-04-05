@@ -6,13 +6,13 @@ def read(fname):
 
 setup(
     name = "miepy",
-    version = "0.1.0",
+    version = "0.1",
     author = "John Parker",
     author_email = "japarker@uchicago.com",
-    description = ("Python module to calcuate scattering coefficients of a plane wave incident on a sphere or core-shell structure using Mie theory"),
+    description = ("Python module to solve Maxwell's equations for a cluster of spheres using the generalized multiparicle Mie theory"),
     license = "MIT",
-    keywords = "mie scattering bohren huffman core-shell",
-    url = "http://packages.python.org/an_example_pypi_project",
+    keywords = "electrodynamics mie scattering",
+    url = "",
     packages=['miepy'],
     long_description=read('README.md'),
     install_requires=['numpy', 'scipy', 'matplotlib'],
