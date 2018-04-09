@@ -12,9 +12,19 @@ from functools import lru_cache
 from math import factorial
 import miepy.coordinates as coordinates
 
+def rmax_to_Lmax(rmax):
+    """obtain Lmax from rmax"""
+    Lmax = int(-1 + (1+rmax)**0.5)
+    return Lmax
+
+def Lmax_to_rmax(Lmax):
+    """obtain rmax from Lmax"""
+    rmax = Lmax*(Lmax + 2)
+    return rmax
+
 def get_indices(Lmax):
     """return n_indices, m_indices arrays for a given Lmax"""
-    rmax = Lmax*(Lmax + 2)
+    rmax = Lmax_to_rmax(Lmax)
     n_indices = np.zeros(rmax, dtype=int)
     m_indices = np.zeros(rmax, dtype=int)
 
@@ -26,7 +36,6 @@ def get_indices(Lmax):
             counter += 1
 
     return n_indices, m_indices
-
 
 def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
@@ -444,63 +453,68 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
 
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
-def decompose_fields(E, r, k, Nmax, mode=VSH_mode.outgoing, spherical=False):
+def decompose_fields(E, r, k, Lmax, mode=VSH_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs
-    Returns p[Nmax,2*Nmax+1], q[Nmax,2*Nmax+1]
+    Returns p[2,rmax]
 
     Arguments:
         E[3,Ntheta,Nphi]   electric field values on the surface of a sphere
         r                  radius
         k                  wavenumber
-        Nmax               maximum number of multipoles
+        Lmax               maximum number of multipoles
         mode: VSH_mode     type of VSH (outgoing, incident) (default: outgoing)
         spherical          If true, E should be in spherical components (default: False (cartesian))
     """
 
-    p = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
-    q = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
-    for n in range(1, Nmax+1):
-        for m in range(-n, n+1):
-            p[n-1,m+n] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
-            q[n-1,m+n] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
-    return p,q
+    rmax = Lmax_to_rmax(Lmax)
+    p = np.zeros([2,rmax], dtype=complex)
 
-def decompose_source(src, k, Nmax, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
+    for n in range(1, Lmax+1):
+        for m in range(-n, n+1):
+            r = n**2 + n - 1 + m
+            p[0,r] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
+            p[1,r] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
+
+    return p
+
+def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=VSH_mode.incident):
     """Decompose a source object into VSHs
-    Returns p[Nmax,2*Nmax+1], q[Nmax,2*Nmax+1]
+    Returns p[2,rmax]
 
     Arguments:
         src        source object
         k          wavenumber
-        Nmax       maximum number of multipoles
+        Lmax       maximum number of multipoles
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
 
-    p = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
-    q = np.zeros((Nmax,2*Nmax+1), dtype=np.complex)
+    rmax = Lmax_to_rmax(Lmax)
+    p = np.zeros([2,rmax], dtype=complex)
+
     for n in range(1, Nmax+1):
         for m in range(-n, n+1):
-            p[n-1,m+n] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
-            q[n-1,m+n] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
-    return p,q
+            r = n**2 + n - 1 + m
+            p[0,r] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
+            p[1,r] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
 
-def expand_E(p, q, k, mode, origin=None):
+    return p
+
+def expand_E(p, k, mode, origin=None):
     """Expand VSH coefficients to obtain an electric field function
     Returns E(x,y,z) function
     
     Arguments:
-        p[rmax]   p coefficients 
-        q[rmax]   q coefficients 
-        k         wavenumber
-        mode: VSH_mode     type of VSH (outgoing, incident)
+        p[2,rmax]          expansion coefficients 
+        k                  wavenumber
+        mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
         origin             origin around which to perform the expansion (default: [0,0,0])
     """
     if origin is None:
         origin = np.zeros(3)
 
-    Lmax = int(-1 + (1+len(p))**0.5)
+    Lmax = rmax_to_Lmax(p.shape[1])
     factor = 1j if mode == VSH_mode.outgoing else -1j
 
     def f(x, y, z):
@@ -521,60 +535,55 @@ def expand_E(p, q, k, mode, origin=None):
                 N = Nfunc(rad, theta, phi, k)
                 M = Mfunc(rad, theta, phi, k)
 
-                E_sph += factor*Emn_val*(p[r]*N + q[r]*M)
+                E_sph += factor*Emn_val*(p[0,r]*N + p[1,r]*M)
 
         E = coordinates.vec_sph_to_cart(E_sph, theta, phi)
         return E
     
     return f
 
-def expand_H(p, q, k, mode, eps_b, mu_b, origin=None):
+def expand_H(p, k, mode, eps_b, mu_b, origin=None):
     """Expand VSH coefficients to obtain a magnetic field function
     Returns H(x,y,z) function
     
     Arguments:
-        p[rmax]   p coefficients 
-        q[rmax]   q coefficients 
-        k         wavenumber
-        mode: VSH_mode     type of VSH (outgoing, incident)
+        p[2,rmax]       expansion coefficients 
+        k               wavenumber
+        mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
         eps_b     background permitiviity
         mu_b      background permeability
         origin    origin around which to perform the expansion (default: [0,0,0])
     """
 
     factor = -1j*np.sqrt(eps_b//mu_b)
-    E_func = expand_E(q, p, k, mode, origin=origin)
+    E_func = expand_E(p[::-1], k, mode, origin=origin)
     return lambda *args: factor*E_func(*args)
 
 #TODO: equations for rmax, r, Lmax (here and elsewhere) should be a function call
 #TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)
-def cluster_coefficients(positions, p_scat, q_scat, k, origin, Lmax=None):
-    """Solve for the cluster p,q coefficients of N particles around an origin
+def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
+    """Solve for the cluster scattering coefficients of N particles around an origin
 
     Arguments:
         positions[N,3]   particle positions
-        p_scat[N,rmax]   p scattering coefficients 
-        q_scat[N,rmax]   q scattering coefficients 
+        p_scat[N,2,rmax]   scattering coefficients 
         k                medium wavenumber
         origin           position around which to calculate the cluster coefficients
         Lmax             (optional) compute scattering for up to Lmax terms (default: Lmax of input p/q)
     """
 
     Nparticles = positions.shape[0]
-    rmax_in = p_scat.shape[1]
-    Lmax_in = int(-1 + (1+rmax_in)**0.5)
+    Lmax_in = rmax_to_Lmax(p_scat.shape[-1])
 
     if Lmax is None:
         Lmax = Lmax_in
 
-    rmax = Lmax*(Lmax + 2)
-    p_cluster = np.zeros(rmax, dtype=complex)
-    q_cluster = np.zeros(rmax, dtype=complex)
+    rmax = Lmax_to_rmax(Lmax)
+    p_cluster = np.zeros([2,rmax], dtype=complex)
 
     for i in range(Nparticles):
         if np.all(positions[i] == origin):
             p_cluster[...] = p_scat[i]
-            q_cluster[...] = q_scat[i]
             continue
 
         rij = origin - positions[i]
@@ -588,11 +597,13 @@ def cluster_coefficients(positions, p_scat, q_scat, k, origin, Lmax=None):
                     for u in range(-v, v+1):
                         rp = v**2 + v - 1 + u
 
-                        a = p_scat[i,rp]
-                        b = q_scat[i,rp]
+                        a = p_scat[i,0,rp]
+                        b = p_scat[i,1,rp]
 
                         A = A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
                         B = B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
 
-                        p_cluster[r] += a*A + b*B
-                        q_cluster[r] += a*B + b*A
+                        p_cluster[0,r] += a*A + b*B
+                        p_cluster[1,r] += a*B + b*A
+
+    return p_cluster

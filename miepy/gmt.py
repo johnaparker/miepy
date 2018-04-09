@@ -63,36 +63,29 @@ class cluster:
         self.material_data = miepy.materials.material_struct(self.material, self.medium, wavelength=self.wavelength)
 
         ### mie coefficients
-        self.a = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
-        self.b = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
-        self.c = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
-        self.d = np.zeros([self.Nparticles, self.Lmax], dtype=complex)
+        self.mie_scat = np.zeros([self.Nparticles, 2, self.Lmax], dtype=complex)
+        self.mie_int = np.zeros([self.Nparticles, 2, self.Lmax], dtype=complex)
 
         for i in range(self.Nparticles):
             for n in range(1, self.Lmax+1):
-                self.a[i,n-1], self.b[i,n-1] = \
+                self.mie_scat[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_scattering_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
                     self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
 
-                self.c[i,n-1], self.d[i,n-1] = \
+                self.mie_int[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_interior_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
                     self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
 
         ### modified coefficients
-        self.p_inc  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.q_inc  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.p_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.q_scat = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.p_int  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.q_int  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.p_src  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
-        self.q_src  = np.zeros([self.Nparticles, self.rmax], dtype=complex)
+        self.p_inc  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
+        self.p_scat = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
+        self.p_int  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
+        self.p_src  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
 
         ### cluster coefficients
         self.p_cluster = None
-        self.q_cluster = None
 
         ### n and m indices for iteration
         self.n_indices, self.m_indices = miepy.vsh.get_indices(self.Lmax)
@@ -112,16 +105,14 @@ class cluster:
 
             Returns: E[3,...]
         """
-        Escat = miepy.vsh.expand_E(self.p_scat[i], self.q_scat[i], self.material_data.k,
+        Escat = miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
 
         p = self.p_inc[i]
-        q = self.q_inc[i]
         if not source:
             p -= self.p_src[i]
-            q -= self.q_src[i]
 
-        Einc = miepy.vsh.expand_E(p, q, self.material_data.k,
+        Einc = miepy.vsh.expand_E(p, self.material_data.k,
                   mode=miepy.vsh.VSH_mode.ingoing, origin=self.position[i])(x,y,z)
 
         return Escat + Einc
@@ -138,17 +129,15 @@ class cluster:
 
             Returns: H[3,...]
         """
-        Hscat = miepy.vsh.expand_H(self.p_scat[i], self.q_scat[i], self.material_data.k,
+        Hscat = miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
                   mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
 
         p = self.p_inc[i]
-        q = self.q_inc[i]
         if not source:
             p -= self.p_src[i]
-            q -= self.q_src[i]
 
-        Hinc = miepy.vsh.expand_H(p, q, self.material_data.k,
+        Hinc = miepy.vsh.expand_H(p, self.material_data.k,
                   mode=miepy.vsh.VSH_mode.ingoing, eps_b=self.material_data.eps_b,
                   mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
 
@@ -170,7 +159,7 @@ class cluster:
 
             Returns: E[3,...]
         """
-        E = sum((miepy.vsh.expand_E(self.p_scat[i], self.q_scat[i], self.material_data.k,
+        E = sum((miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
                 for i in range(self.Nparticles)))
 
@@ -183,7 +172,7 @@ class cluster:
                 x0, y0, z0 = self.position[i]
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
                 idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
-                E[:,idx] = miepy.vsh.expand_E(self.p_int[i], self.q_int[i], k_int,
+                E[:,idx] = miepy.vsh.expand_E(self.p_int[i], k_int,
                           mode=miepy.vsh.VSH_mode.interior, origin=self.position[i])(x[idx], y[idx], z[idx])
 
         if mask:
@@ -206,7 +195,7 @@ class cluster:
 
             Returns: H[3,...]
         """
-        H = sum((miepy.vsh.expand_H(self.p_scat[i], self.q_scat[i], self.material_data.k,
+        H = sum((miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
                   mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
                 for i in range(self.Nparticles)))
@@ -229,16 +218,14 @@ class cluster:
         n_indices, m_indices = miepy.vsh.get_indices(Lmax)
         rmax = n_indices.shape[0]
 
-        p0 =  np.zeros(rmax, dtype=complex)
-        q0 =  np.zeros(rmax, dtype=complex)
+        p0 =  np.zeros([2, rmax], dtype=complex)
         self.solve_cluster_coefficients(Lmax)
         for r in range(rmax):
             n = n_indices[r]
             m = m_indices[r]
-            p0[r], q0[r] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
+            p0[:,r] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
 
-        return miepy.flux.cluster_cross_sections(self.p_cluster, self.q_cluster,
-                  p0, q0, self.material_data.k)
+        return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
 
 
     def cross_sections(self):
@@ -263,8 +250,8 @@ class cluster:
             i    particle index
         """
 
-        return miepy.flux.particle_cross_sections(self.p_scat[i], self.q_scat[i], self.p_src[i], self.q_src[i],
-                    self.radius[i], self.material_data.k, self.material_data.n[i], self.material_data.mu[i],
+        return miepy.flux.particle_cross_sections(self.p_scat[i], self.p_src[i], self.radius[i], 
+                    self.material_data.k, self.material_data.n[i], self.material_data.mu[i],
                     self.material_data.n_b, self.material_data.mu_b)
 
     def cross_sections_of_particle(self, i):
@@ -289,14 +276,11 @@ class cluster:
 
         if source:
             p_inc = self.p_inc
-            q_inc = self.q_inc
         else:
             p_inc = self.p_inc - self.p_src
-            q_inc = self.q_inc - self.q_src
 
-        F = miepy.forces.force(self.p_scat[i], self.q_scat[i], p_inc[i], q_inc[i],
-                self.material_data.k, self.material_data.eps_b,
-                self.material_data.mu_b)
+        F = miepy.forces.force(self.p_scat[i], p_inc[i], self.material_data.k,
+                self.material_data.eps_b, self.material_data.mu_b)
 
         return F
 
@@ -312,14 +296,11 @@ class cluster:
 
         if source:
             p_inc = self.p_inc
-            q_inc = self.q_inc
         else:
             p_inc = self.p_inc - self.p_src
-            q_inc = self.q_inc - self.q_src
 
-        T = miepy.forces.torque(self.p_scat[i], self.q_scat[i], p_inc[i], q_inc[i],
-                self.material_data.k, self.material_data.eps_b,
-                self.material_data.mu_b)
+        T = miepy.forces.torque(self.p_scat[i], p_inc[i], self.material_data.k,
+                self.material_data.eps_b, self.material_data.mu_b)
 
         return T
 
@@ -375,8 +356,8 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        self.p_cluster, self.q_cluster = miepy.vsh.cluster_coefficients(self.position, 
-                self.p_scat, self.q_scat, self.material_data.k, origin=self.origin, Lmax=Lmax)
+        self.p_cluster = miepy.vsh.cluster_coefficients(self.position, 
+                self.p_scat, self.material_data.k, origin=self.origin, Lmax=Lmax)
 
     def solve(self, wavelength=None, source=None):
         """solve for the p,q incident and scattering coefficients
@@ -393,34 +374,28 @@ class cluster:
 
     def _reset_cluster_coefficients(self):
         self.p_cluster = None
-        self.q_cluster = None
 
     def _solve_source_decomposition(self):
         pos = self.position.T
-        for r in range(self.rmax):
-            for n in range(self.Nparticles):
-                pos = self.position[n]
-                self.p_src[n,r], self.q_src[n,r] = \
+        for n in range(self.Nparticles):
+            pos = self.position[n]
+            for r in range(self.rmax):
+                self.p_src[n,:,r] = \
                     self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data.k)
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
-        self.q_inc[...] = self.q_src
 
         for r in range(self.rmax):
             n = self.n_indices[r]
-            self.p_scat[...,r] = self.p_inc[...,r]*self.a[...,n-1]
-            self.q_scat[...,r] = self.q_inc[...,r]*self.b[...,n-1]
+            self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
+            self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
     def _solve_interactions(self):
-        sol = miepy.interactions.solve_sphere_cluster(self.position, self.a, self.b, 
-                self.p_src, self.q_src, self.material_data.k)
-        self.p_inc[...] = sol[0]
-        self.q_inc[...] = sol[1]
+        self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
+                self.p_src, self.material_data.k)
 
         for r in range(self.rmax):
             n = self.n_indices[r]
-            self.p_scat[:,r] = self.p_inc[:,r]*self.a[:,n-1]
-            self.q_scat[:,r] = self.q_inc[:,r]*self.b[:,n-1]
-            self.p_int[:,r] = self.p_inc[:,r]*self.d[:,n-1]
-            self.q_int[:,r] = self.q_inc[:,r]*self.c[:,n-1]
+            self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
+            self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]

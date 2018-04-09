@@ -21,6 +21,7 @@ class source:
     @abstractmethod
     def structure_of_mode(self, n, m, r, k): pass
 
+    #TODO: this is maybe useless
     def structure(self, position, k, Nmax):
         p = np.zeros([Nmax, 2*Nmax+1], dtype=complex)
         q = np.zeros([Nmax, 2*Nmax+1], dtype=complex)

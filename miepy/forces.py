@@ -15,25 +15,25 @@ def levi_civita():
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
     return eijk
 
-def force(p, q, p_inc, q_inc, k, eps_b, mu_b):
+def force(p_scat, p_inc, k, eps_b, mu_b):
     """force from the expansion coefficients
     
        Arguments:
-           p        p coefficients (scattered electric)
-           q        q coefficients (scattered magnetic)
-           p_inc    p_inc coefficients (incident electric)
-           q_inc    q_inc coefficients (incident magnetic)
-           k        wavenumber
-           eps_b    background relative permitvitty
-           mu_b     background relative permeability
+           p_scat[2,rmax]   scattering coefficients
+           p_inc[2,rmax]    incident coefficients
+           k                wavenumber
+           eps_b            background relative permitvitty
+           mu_b             background relative permeability
     """
     Fxy = 0
     Fz = 0
     Axy = np.pi/k**2*constants.epsilon_0*eps_b
     Az = -2*np.pi/k**2*constants.epsilon_0*eps_b
 
-    Lmax = int(-1 + (1+len(p))**0.5)
+    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
 
+    p, q = p_scat
+    p_inc, q_inc = p_inc
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):
             r = n**2 + n - 1 + m
@@ -89,22 +89,23 @@ def force(p, q, p_inc, q_inc, k, eps_b, mu_b):
 
     return np.array([np.real(Fxy), np.imag(Fxy), np.real(Fz)])
 
-def torque(p, q, p_inc, q_inc, k, eps_b, mu_b):
+def torque(p_scat, p_inc, k, eps_b, mu_b):
     """torque from the expansion coefficients
     
        Arguments:
-           p        p coefficients (scattered electric)
-           q        q coefficients (scattered magnetic)
-           p_inc    p_inc coefficients (incident electric)
-           q_inc    q_inc coefficients (incident magnetic)
+           p_scat[2,rmax]   scattering coefficients
+           p_inc[2,rmax]    incident coefficients
            k        wavenumber
            eps_b    background relative permitvitty
            mu_b     background relative permeability
     """
     T = np.zeros(3, dtype=float)
     A = -2*np.pi/k**3*constants.epsilon_0*eps_b
-    Lmax = int(-1 + (1+len(p))**0.5)
 
+    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
+
+    p, q = p_scat
+    p_inc, q_inc = p_inc
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):
             r = n**2 + n - 1 + m

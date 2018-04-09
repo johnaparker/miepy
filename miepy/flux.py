@@ -7,14 +7,12 @@ from scipy import constants
 import miepy
 from my_pytools.my_numpy.integrate import simps_2d
 
-def particle_cross_sections(p_scat, q_scat, p_src, q_src, radius, k, n, mu, n_b, mu_b):
+def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
     """Compute the scattering, absorption, and extinction cross-sections for a particle
        
        Arguments:
-           p_scat[rmax]    particel p coefficients
-           q_scat[rmax]    particel q coefficients
-           p_src[rmax]     source p coefficients at particle
-           q_src[rmax]     source q coefficients at particle
+           p_scat[2,rmax]  particle scattering coefficients
+           p_src[2,rmax]   source scattering coefficients at particle
            radius          particle radius
            k               wavenumber
            n               particle index of refraction
@@ -22,7 +20,7 @@ def particle_cross_sections(p_scat, q_scat, p_src, q_src, radius, k, n, mu, n_b,
            n_b             background index of refraction
            mu_b            background permeability
     """
-    Lmax = int(-1 + (1+len(p_scat))**0.5)
+    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
 
     Cext  = np.zeros([2, Lmax], dtype=float)
     Cabs  = np.zeros([2, Lmax], dtype=float)
@@ -50,27 +48,23 @@ def particle_cross_sections(p_scat, q_scat, p_src, q_src, radius, k, n, mu, n_b,
             Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
                             np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
 
-            Cabs[0,n-1] += Dn*factor*np.abs(p_scat[r])**2
-            Cabs[1,n-1] += Cn*factor*np.abs(q_scat[r])**2
+            Cabs[:,n-1] += np.array([Dn,Cn])*factor*np.abs(p_scat[:,r])**2
 
             #TODO should this be p_src or p_inc?
-            Cext[0,n-1] += factor*np.real(np.conj(p_src[r])*p_scat[r])
-            Cext[1,n-1] += factor*np.real(np.conj(q_src[r])*q_scat[r])
+            Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
 
     Cscat = Cext - Cabs
     return Cscat, Cabs, Cext
 
-def cluster_cross_sections(p_cluster, q_cluster, p_src, q_src, k):
+def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster
        
        Arguments:
-           p_cluster[rmax]    cluster p coefficients
-           q_cluster[rmax]    cluster q coefficients
-           p_src[rmax]        source p coefficients at origin
-           q_src[rmax]        source q coefficients at origin
+           p_cluster[2,rmax]  cluster scattering coefficients
+           p_src[2,rmax]      source scattering coefficients at origin
            k                  wavenumber
     """
-    Lmax = int(-1 + (1+len(p_cluster))**0.5)
+    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
 
     Cscat = np.zeros([2, Lmax], dtype=float)
     Cext  = np.zeros([2, Lmax], dtype=float)
@@ -81,11 +75,9 @@ def cluster_cross_sections(p_cluster, q_cluster, p_src, q_src, k):
         for m in range(-n,n+1):
             r = n**2 + n - 1 + m
 
-            Cscat[0,n-1] += factor*np.abs(p_cluster[r])**2
-            Cscat[1,n-1] += factor*np.abs(q_cluster[r])**2
+            Cscat[:,n-1] += factor*np.abs(p_cluster[:,r])**2
 
-            Cext[0,n-1] += factor*np.real(np.conj(p_src[r])*p_cluster[r])
-            Cext[1,n-1] += factor*np.real(np.conj(q_src[r])*q_cluster[r])
+            Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
 
     Cabs = Cext - Cscat
     return Cscat, Cabs, Cext

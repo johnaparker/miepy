@@ -6,23 +6,22 @@ import numpy as np
 import miepy
 
 #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
-def sphere_cluster_t_matrix(positions, a, b, k):
+def sphere_cluster_t_matrix(positions, a, k):
     """Obtain the T-matrix for a cluster of spheres.
        Returns T[2,N,rmax,2,N,rmax]
     
        Arguments:
            positions[N,3]      particles positions
-           a[N,Lmax]           an mie coefficients
-           b[N,Lmax]           bn mie coefficients
+           a[N,2,Lmax]         mie scattering coefficients
            k                   medium wavenumber
     """
     Nparticles = positions.shape[0]
-    Lmax = a.shape[1]
-    rmax = Lmax*(Lmax + 2)
-    identity = np.zeros(shape = (2, Nparticles, rmax, 2, Nparticles, rmax), dtype=complex)
+    Lmax = a.shape[-1]
+    rmax = miepy.vsh.Lmax_to_rmax(Lmax)
+    identity = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     np.einsum('airair->air', identity)[...] = 1
     
-    interaction_matrix = np.zeros(shape = (2, Nparticles, rmax, 2, Nparticles, rmax), dtype=complex)
+    interaction_matrix = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
     for i in range(Nparticles):
         for j in range(Nparticles):
@@ -47,29 +46,25 @@ def sphere_cluster_t_matrix(positions, a, b, k):
                             B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,
                                     k, miepy.vsh.VSH_mode.outgoing)
 
-                            interaction_matrix[0,i,r,0,j,s] = A_transfer*a[j,v-1]
-                            interaction_matrix[0,i,r,1,j,s] = B_transfer*b[j,v-1]
-                            interaction_matrix[1,i,r,0,j,s] = B_transfer*a[j,v-1]
-                            interaction_matrix[1,i,r,1,j,s] = A_transfer*b[j,v-1]
+                            interaction_matrix[i,0,r,j,0,s] = A_transfer*a[j,0,v-1]
+                            interaction_matrix[i,0,r,j,1,s] = B_transfer*a[j,1,v-1]
+                            interaction_matrix[i,1,r,j,0,s] = B_transfer*a[j,0,v-1]
+                            interaction_matrix[i,1,r,j,1,s] = A_transfer*a[j,1,v-1]
 
     t_matrix = identity + interaction_matrix
     return t_matrix
 
-def solve_sphere_cluster(positions, a, b, p_src, q_src, k):
+def solve_sphere_cluster(positions, a, p_src, k):
     """Solve interactions of a collection of spheres.
        Returns [p_inc, q_inc]
     
        Arguments:
            positions[N,3]      particles positions
-           a[N,Lmax]           an mie coefficients
-           b[N,Lmax]           bn mie coefficients
-           p_src[N,rmax]       p coefficients of the source
-           q_src[N,rmax]       q coefficients of the source
+           a[N,2,Lmax]         mie scattering coefficients
+           p_src[N,2,rmax]     source scattering coefficients
            k                   medium wavenumber
     """
-
-    A = sphere_cluster_t_matrix(positions, a, b, k)
-    b = np.array([p_src, q_src])
-    sol = np.linalg.tensorsolve(A, b)
+    A = sphere_cluster_t_matrix(positions, a,  k)
+    sol = np.linalg.tensorsolve(A, p_src)
 
     return sol
