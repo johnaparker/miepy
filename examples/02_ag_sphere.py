@@ -20,14 +20,14 @@ sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, Lmax)
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()
-S,A,_ = sphere.cross_sections()
-plt.plot(wavelengths*1e9, S, label="Scattering", linewidth=2)
-plt.plot(wavelengths*1e9, A, label="Absorption", linewidth=2)
+C = sphere.cross_sections()
+plt.plot(wavelengths*1e9, C.scattering, label="Scattering", linewidth=2)
+plt.plot(wavelengths*1e9, C.absorption, label="Absorption", linewidth=2)
 
 # Figure 2: Scattering per multipole
 fig, ax2 = plt.subplots()
-plt.plot(wavelengths*1e9, S, label="Total", linewidth=2)
-S,*_ = sphere.cross_sections_per_multipole()
+S = sphere.cross_sections_per_multipole().scattering
+plt.plot(wavelengths*1e9, C.scattering, label="Total", linewidth=2)
 
 for i in range(2):
     for j in range(2):

@@ -22,14 +22,14 @@ core_shell = miepy.single_mie_core_shell(radius_in, radius_out, dielectric, Ag, 
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()
-S,A,_ = core_shell.cross_sections()
-plt.plot(wavelengths*1e9, S, label="Scattering", linewidth=2)
-plt.plot(wavelengths*1e9, A, label="Absorption", linewidth=2)
+C = core_shell.cross_sections()
+plt.plot(wavelengths*1e9, C.scattering, label="Scattering", linewidth=2)
+plt.plot(wavelengths*1e9, C.absorption, label="Absorption", linewidth=2)
 
 # Figure 2: Scattering per multipole
 fig, ax2 = plt.subplots()
-plt.plot(wavelengths*1e9, S, label="Total", linewidth=2)
-S,*_ = core_shell.cross_sections_per_multipole()
+plt.plot(wavelengths*1e9, C.scattering, label="Total", linewidth=2)
+S = core_shell.cross_sections_per_multipole().scattering
 
 for i in range(2):
     for j in range(2):

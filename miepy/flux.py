@@ -5,14 +5,17 @@ Functions related to the flux: Poynting vector, cross-sections, etc.
 import numpy as np
 from scipy import constants
 import miepy
+from functools import namedtuple
 from my_pytools.my_numpy.integrate import simps_2d
+
+cross_sections = namedtuple('cross_sections', ['scattering', 'absorption', 'extinction'])
 
 def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
     """Compute the scattering, absorption, and extinction cross-sections for a particle
        
        Arguments:
            p_scat[2,rmax]  particle scattering coefficients
-           p_src[2,rmax]   source scattering coefficients at particle
+           p_src[2,rmax]   source coefficients at particle
            radius          particle radius
            k               wavenumber
            n               particle index of refraction
@@ -54,7 +57,7 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
             Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
 
     Cscat = Cext - Cabs
-    return Cscat, Cabs, Cext
+    return cross_sections(Cscat, Cabs, Cext)
 
 def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster
@@ -80,7 +83,7 @@ def cluster_cross_sections(p_cluster, p_src, k):
             Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
 
     Cabs = Cext - Cscat
-    return Cscat, Cabs, Cext
+    return cross_sections(Cscat, Cabs, Cext)
 
 #TODO eps/mu role here (related to our definition of the H field, eps/mu factor)
 #TODO factor of 1/2 for complex fields not present???
@@ -163,4 +166,4 @@ def _gmt_cross_sections_from_poynting(gmt, radius, sampling=30):
     C = flux_from_poynting_sphere(E_scat, H_scat, radius, eps_b, mu_b)
     A = -flux_from_poynting_sphere(E_tot, H_tot, radius, eps_b, mu_b)
 
-    return C, A, C+A
+    return cross_sections(C, A, C+A)

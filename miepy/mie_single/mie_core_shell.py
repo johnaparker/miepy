@@ -114,6 +114,6 @@ class single_mie_core_shell:
     def cross_sections_per_multipole(self):
         """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)"""
         if not self.computed: self.solve()
-        return (miepy.scattering_per_multipole(*self.scattering_properties),
+        return miepy.flux.cross_sections(miepy.scattering_per_multipole(*self.scattering_properties),
                 miepy.absorbption_per_multipole(*self.scattering_properties),
                 miepy.extinction_per_multipole(*self.scattering_properties))

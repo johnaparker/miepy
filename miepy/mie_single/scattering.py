@@ -56,7 +56,7 @@ def cross_sections(an, bn, k):
     extinct_flux = extinction_per_multipole(an, bn, k)
     abs_flux = extinct_flux - scat_flux
 
-    return map(lambda arr: np.sum(arr, axis=(1,2)), [scat_flux, abs_flux, extinct_flux])
+    return miepy.flux.cross_sections(*[np.sum(arr, axis=(1,2)) for arr in [scat_flux, abs_flux, extinct_flux]])
 
 def multipole_label(T,L):
     """Get multipole label.

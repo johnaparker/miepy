@@ -26,7 +26,7 @@ for i,index in enumerate(tqdm(indices)):
     sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax)
 
     sphere.solve_exterior()
-    S,*_ = sphere.cross_sections()
+    S = sphere.cross_sections().scattering
 
     data[i] = S
 

@@ -333,12 +333,12 @@ class cluster:
         Cext = 0
 
         for i in range(self.Nparticles):
-            C,A,E = self.cross_sections_of_particle(i)
-            Cscat += C
-            Cabs += A
-            Cext += E
+            C = self.cross_sections_of_particle(i)
+            Cscat += C.scattering
+            Cabs += C.absorption
+            Cext += C.extinction
 
-        return Cscat, Cabs, Cext
+        return miepy.flux.cross_sections(Cscat, Cabs, Cext)
 
     def cross_sections_per_multipole_of_particle(self, i):
         """Compute the scattering, absorption, and extinction cross-section per multipole of a single particle
@@ -358,8 +358,8 @@ class cluster:
             i    particle index
         """
 
-        Cscat, Cabs, Cext = self.cross_sections_per_multipole_of_particle(i)
-        return map(lambda C: np.sum(C), [Cscat, Cabs, Cext])
+        C = self.cross_sections_per_multipole_of_particle(i)
+        return miepy.flux.cross_sections(*[np.sum(A) for A in C])
 
     def force_on_particle(self, i, source=True):
         """Determine the force on a single particle
