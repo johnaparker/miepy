@@ -275,6 +275,34 @@ class cluster:
         
         return H
 
+    def E_angular(self, theta, phi, radius=None):
+        """Compute the electric field due to all particles in the far-field in spherical coordinates
+             
+            Arguments:
+                theta    theta position (array-like) 
+                phi      phi position (array-like) 
+                radius   r position (default: large value)
+        """
+        #TODO better expression far default far-radius
+        if radius is None:
+            radius = 1e10*self.wavelength
+
+        return self.E_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)
+
+    def H_angular(self, theta, phi, radius=None):
+        """Compute the magnetic field due to all particles in the far-field in spherical coordinates
+             
+            Arguments:
+                theta    theta position (array-like) 
+                phi      phi position (array-like) 
+                radius   r position (default: large value)
+        """
+        #TODO better expression far default far-radius
+        if radius is None:
+            radius = 1e10*self.wavelength
+
+        return self.H_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)
+
     def cross_sections_per_multipole(self, Lmax=None):
         """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
 
