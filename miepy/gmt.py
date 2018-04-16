@@ -11,7 +11,7 @@ from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmoni
 #TODO: swap position indices, so that [N,3] => [3,N]
 class cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
-    def __init__(self, position, radius, material, Lmax,
+    def __init__(self, *, position, radius, material, Lmax,
                  source=None, wavelength=None, medium=None, origin=None,
                  interactions=True):
         """Arguments:
