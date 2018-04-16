@@ -501,29 +501,22 @@ def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
 
     return p
 
-def expand_E(p, k, mode, origin=None):
+def expand_E(p, k, mode):
     """Expand VSH coefficients to obtain an electric field function
-    Returns E(x,y,z) function
+    Returns E(r,θ,φ) function
     
     Arguments:
         p[2,rmax]          expansion coefficients 
         k                  wavenumber
         mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
-        origin             origin around which to perform the expansion (default: [0,0,0])
     """
-    if origin is None:
-        origin = np.zeros(3)
-
     Lmax = rmax_to_Lmax(p.shape[1])
     factor = 1j if mode == VSH_mode.outgoing else -1j
 
-    def f(x, y, z):
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        z = np.asarray(z, dtype=float)
-
-        rad, theta, phi = coordinates.cart_to_sph(x, y, z, origin)
-        E_sph = np.zeros(shape=(3,) + x.shape, dtype=complex)
+    #TODO: depends on theta.shape
+    def f(rad, theta, phi):
+        (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
+        E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
 
         for n in range(1,Lmax+1):
             for m in range(-n,n+1):
@@ -537,14 +530,46 @@ def expand_E(p, k, mode, origin=None):
 
                 E_sph += factor*Emn_val*(p[0,r]*N + p[1,r]*M)
 
-        E = coordinates.vec_sph_to_cart(E_sph, theta, phi)
-        return E
+        return E_sph
     
     return f
 
-def expand_H(p, k, mode, eps_b, mu_b, origin=None):
+def expand_E_far(p_scat, k):
+    """Expand VSH scattering coefficients to obtain an electric field function for the far-field
+    Returns E(r,θ,φ) function
+    
+    Arguments:
+        p_scat[2,rmax]    scattering coefficients 
+        k                 wavenumber
+    """
+
+    Lmax = rmax_to_Lmax(p.shape[1])
+
+    #TODO: depends on theta.shape
+    def f(rad, theta, phi):
+        (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
+
+        E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
+        factor = np.exp(1j*k*r)/(-1j*k*r)
+
+        for n in range(1,Lmax+1):
+            for m in range(-n,n+1):
+                r = n**2 + n - 1 + m
+                Emn = Emn(m, n)
+
+                tau = tau_func(n,m)(theta)
+                pi = pi_func(n,m)(theta)
+
+                E_sph[1] += factor*Emn*(p_scat[0,r]*tau + p_scat[1,r]*pi)*np.exp(1j*m*phi)
+                E_sph[2] += 1j*factor*Emn*(p_scat[0,r]*pi + p_scat[1,r]*tau)*np.exp(1j*m*phi)
+
+        return E_sph
+
+    return f
+
+def expand_H(p, k, mode, eps_b, mu_b):
     """Expand VSH coefficients to obtain a magnetic field function
-    Returns H(x,y,z) function
+    Returns H(r,θ,φ) function
     
     Arguments:
         p[2,rmax]       expansion coefficients 
@@ -552,12 +577,22 @@ def expand_H(p, k, mode, eps_b, mu_b, origin=None):
         mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
         eps_b     background permitiviity
         mu_b      background permeability
-        origin    origin around which to perform the expansion (default: [0,0,0])
     """
 
     factor = -1j*np.sqrt(eps_b//mu_b)
-    E_func = expand_E(p[::-1], k, mode, origin=origin)
+    E_func = expand_E(p[::-1], k, mode)
     return lambda *args: factor*E_func(*args)
+
+#TODO: implement
+def expand_H_far(p_scat, k):
+    """Expand VSH scattering coefficients to obtain a magnetic field function for the far-field
+    Returns H(r,θ,φ) function
+    
+    Arguments:
+        p_scat[2,rmax]    scattering coefficients 
+        k                 wavenumber
+    """
+    pass
 
 #TODO: equations for rmax, r, Lmax (here and elsewhere) should be a function call
 #TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)

@@ -93,6 +93,7 @@ class cluster:
         ### solve the interactions
         self.solve()
 
+    #TODO: interface more like E_field
     def E_field_from_particle(self, i, x, y, z, source=True):
         """Compute the electric field around particle i
              
@@ -105,15 +106,18 @@ class cluster:
 
             Returns: E[3,...]
         """
-        Escat = miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
+        rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+
+        E_sph = miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
+                     mode=miepy.vsh.VSH_mode.outgoing)(rad,theta,phi)
+        Escat = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         p = self.p_inc[i]
         if not source:
             p -= self.p_src[i]
-
-        Einc = miepy.vsh.expand_E(p, self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.ingoing, origin=self.position[i])(x,y,z)
+        E_sph = miepy.vsh.expand_E(p, self.material_data.k,
+                     mode=miepy.vsh.VSH_mode.ingoing)(rad,theta,phi)
+        Einc = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         return Escat + Einc
 
@@ -129,80 +133,145 @@ class cluster:
 
             Returns: H[3,...]
         """
-        Hscat = miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
+        rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+
+        H_sph = miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
                   mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
-                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
+                  mu_b=self.material_data.mu_b)(rad,theta,phi)
+        Hscat = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         p = self.p_inc[i]
         if not source:
             p -= self.p_src[i]
 
-        Hinc = miepy.vsh.expand_H(p, self.material_data.k,
+        H_sph = miepy.vsh.expand_H(p, self.material_data.k,
                   mode=miepy.vsh.VSH_mode.ingoing, eps_b=self.material_data.eps_b,
-                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
+                  mu_b=self.material_data.mu_b)(rad,theta,phi)
+        Hinc = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         return Hscat + Hinc
     
-    #TODO: implement far & spherical flags
-    def E_field(self, x, y, z, interior=True, source=True, mask=False, far=False, spherical=False):
+    def E_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the electric field due to all particles
              
             Arguments:
-                x         x position (array-like) 
-                y         y position (array-like) 
-                z         z position (array-like) 
+                x1        x/r position (array-like) 
+                x2        y/theta position (array-like) 
+                x3        z/phi position (array-like) 
                 interior  (optional) compute interior fields (bool, default=True)
                 source    (optional) include the source field (bool, default=True)
                 mask      (optional) set interior fields to 0 (bool, default=False)
-                far       (optional) use expressions for far-field (bool, default=False)
+                far       (optional) use expressions valid only for far-field (bool, default=False)
                 spherical (optional) input/output in spherical coordinates (bool, default=False)
 
             Returns: E[3,...]
         """
-        E = sum((miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.outgoing, origin=self.position[i])(x,y,z)
-                for i in range(self.Nparticles)))
+        E = np.zeros((3,) + x1.shape, dtype=complex)
 
+        if spherical:
+            (x, y, z) = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=self.origin)
+        else:
+            (x, y, z) = (x1, x2, x3)
+
+        if far:
+            expand = miepy.vsh.expand_E_far
+        else:
+            expand = lambda p,k: miepy.vsh.expand_E(p, k, mode=miepy.vsh.VSH_mode.outgoing)
+
+        for i in range(self.Nparticles):
+            rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+            E_sph = expand(self.p_scat[i], self.material_data.k)(rad,theta,phi)
+            E += miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
+
+        #TODO: [x,y,z] to x,y,z
         if source:
             E += self.source.E(np.array([x,y,z]), self.material_data.k)
 
         #TODO: what if x is scalar...
-        if interior and not mask:
+        if interior and not mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
-                k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
                 idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
-                E[:,idx] = miepy.vsh.expand_E(self.p_int[i], k_int,
-                          mode=miepy.vsh.VSH_mode.interior, origin=self.position[i])(x[idx], y[idx], z[idx])
+                k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
 
-        if mask:
+                rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+                E_sph = miepy.vsh.expand_E(self.p_int[i], k_int, 
+                                mode=miepy.vsh.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
+                E[:,idx] = miepy.coordinates.vec_sph_to_cart(E_sph, theta[idx], phi[idx])
+
+        if mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
                 idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
                 E[:,idx] = 0
+
+        #TODO: does this depend on the origin?
+        if spherical:
+            E = miepy.coordinates.vec_cart_to_sph(E, theta=x2, phi=x3)
         
         return E
 
-    #TODO: same interface as E_field
-    def H_field(self, x, y, z, source=True):
+    def H_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the magnetic field due to all particles
              
             Arguments:
-                x         x position (array-like) 
-                y         y position (array-like) 
-                z         z position (array-like) 
-                source    Include the source field (bool, default=True)
+                x1        x/r position (array-like) 
+                x2        y/theta position (array-like) 
+                x3        z/phi position (array-like) 
+                interior  (optional) compute interior fields (bool, default=True)
+                source    (optional) include the source field (bool, default=True)
+                mask      (optional) set interior fields to 0 (bool, default=False)
+                far       (optional) use expressions valid only for far-field (bool, default=False)
+                spherical (optional) input/output in spherical coordinates (bool, default=False)
 
             Returns: H[3,...]
         """
-        H = sum((miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
-                  mu_b=self.material_data.mu_b, origin=self.position[i])(x,y,z)
-                for i in range(self.Nparticles)))
+        H = np.zeros((3,) + x1.shape, dtype=complex)
 
+        if spherical:
+            (x, y, z) = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=self.origin)
+        else:
+            (x, y, z) = (x1, x2, x3)
+
+        if far:
+            expand = miepy.vsh.expand_H_far
+        else:
+            expand = lambda p,k,eps_b,mu_b: miepy.vsh.expand_H(p, k, mode=miepy.vsh.VSH_mode.outgoing,
+                                               eps_b=eps_b, mu_b=mu_b)
+
+        for i in range(self.Nparticles):
+            rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+            H_sph = expand(self.p_scat[i], self.material_data.k, eps_b=self.material_data.eps_b,
+                               mu_b=self.material_data.mu_b)(rad,theta,phi)
+            H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
+
+        #TODO: [x,y,z] to x,y,z
         if source:
             factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
             H += factor*self.source.H(np.array([x,y,z]), self.material_data.k)
+
+        #TODO: what if x is scalar...
+        if interior and not mask and not far:
+            for i in range(self.Nparticles):
+                x0, y0, z0 = self.position[i]
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
+
+                rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
+                H_sph = miepy.vsh.expand_H(self.p_int[i], k_int, 
+                            eps_b=self.material_data.eps_b, mu_b=self.material_data.mu_b,
+                            mode=miepy.vsh.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
+                H[:,idx] = miepy.coordinates.vec_sph_to_cart(H_sph, theta[idx], phi[idx])
+
+        if mask and not far:
+            for i in range(self.Nparticles):
+                x0, y0, z0 = self.position[i]
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                H[:,idx] = 0
+
+        #TODO: does this depend on the origin?
+        if spherical:
+            H = miepy.coordinates.vec_cart_to_sph(H, theta=x2, phi=x3)
         
         return H
 

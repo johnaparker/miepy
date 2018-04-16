@@ -4,16 +4,22 @@ Defines functions used to construct basis vectors, convert between coordinate sy
 
 import numpy as np
 
-def sph_to_cart(r, theta, phi, origin=[0,0,0]):
+def sph_to_cart(r, theta, phi, origin=None):
     """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
     x = origin[0] + r*np.sin(theta)*np.cos(phi)
     y = origin[1] + r*np.sin(theta)*np.sin(phi)
     z = origin[2] + r*np.cos(theta)
 
     return x,y,z
 
-def cart_to_sph(x, y, z, origin=[0,0,0]):
+def cart_to_sph(x, y, z, origin=None):
     """convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
     x0,y0,z0 = origin
     r = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2)**0.5
     theta = np.arccos((z - z0)/r)
@@ -21,15 +27,20 @@ def cart_to_sph(x, y, z, origin=[0,0,0]):
 
     return r, theta, phi
 
-def sph_basis_vectors(theta, phi):
+#TODO: implement origin
+def sph_basis_vectors(theta, phi, origin=None):
     """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
     r_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
     theta_hat = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -1*np.sin(theta)])
     phi_hat = np.array([-1*np.sin(phi), np.cos(phi), np.zeros_like(phi)])
 
     return r_hat, theta_hat, phi_hat
 
-def vec_cart_to_sph(F, theta, phi):
+#TODO: implement origin
+def vec_cart_to_sph(F, theta, phi, origin=None):
     """convert a vector field F from cartesian to spherical coordinates
 
     Arguments:
@@ -37,6 +48,9 @@ def vec_cart_to_sph(F, theta, phi):
         theta        theta coordinates
         phi          phi coordinates
     """
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
     Fsph = np.zeros_like(F)
     r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
     Fsph[0] = np.sum(F*r_hat, axis=0)
@@ -45,7 +59,8 @@ def vec_cart_to_sph(F, theta, phi):
 
     return Fsph
 
-def vec_sph_to_cart(F, theta, phi):
+#TODO: implement origin
+def vec_sph_to_cart(F, theta, phi, origin=None):
     """convert a vector field F from spherical to cartesian coordinates
 
     Arguments:
@@ -53,6 +68,9 @@ def vec_sph_to_cart(F, theta, phi):
         theta        theta coordinates
         phi          phi coordinates
     """
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
     Fcart = np.zeros_like(F)
     r_hat, theta_hat, phi_hat = sph_basis_vectors(theta, phi)
     for i in range(3):
