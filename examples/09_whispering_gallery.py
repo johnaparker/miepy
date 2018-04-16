@@ -24,18 +24,19 @@ vmax = np.max(E[2].real)
 ax.pcolormesh(X/nm, Y/nm, E[2].real, cmap='bwr', shading='gouraud', vmax=vmax, vmin=-vmax)
 ax.set_aspect('equal')
 
-source = miepy.sources.x_polarized_plane_wave()
-# source = miepy.sources.point_dipole([0,0,-150*nm], polarization=[0,0,1])
+radius=250*nm
+source = miepy.sources.point_dipole([-radius -10*nm, 0, 0], polarization=[0,0,1])
+# source = miepy.sources.x_polarized_plane_wave()
 sphere = miepy.cluster(position=[0,0,0],
-                       radius=200*nm,
-                       material=miepy.constant_material(2**2),
+                       material=miepy.constant_material(4**2),
                        # material=miepy.materials.predefined.Au(),
+                       radius=radius,
                        source=source,
-                       Lmax=5,
-                       wavelength=200*nm)
+                       Lmax=8,
+                       wavelength=400*nm)
 
-x = np.linspace(-500*nm, 500*nm, 150)
-z = np.linspace(-500*nm, 500*nm, 150)
+x = np.linspace(-radius-50*nm, radius+50*nm, 150)
+z = np.linspace(-radius-50*nm, radius+50*nm, 150)
 X,Z = np.meshgrid(x, z, indexing='ij')
 Y = np.zeros_like(X)
 
