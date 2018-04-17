@@ -27,6 +27,7 @@ def cart_to_sph(x, y, z, origin=None):
 
     return r, theta, phi
 
+#TODO: if theta is scalar, or phi is scalar... same with other functions here
 #TODO: implement origin
 def sph_basis_vectors(theta, phi, origin=None):
     """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""

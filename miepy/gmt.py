@@ -166,7 +166,9 @@ class cluster:
 
             Returns: E[3,...]
         """
-        E = np.zeros((3,) + x3.shape, dtype=complex)
+        x1, x2, x3 = (np.asarray(x) for x in (x1, x2, x3))
+        shape = max(*[x.shape for x in (x1, x2, x3)], key=len)
+        E = np.zeros((3,) + shape, dtype=complex)
 
         if spherical:
             (x, y, z) = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=self.origin)
@@ -226,7 +228,9 @@ class cluster:
 
             Returns: H[3,...]
         """
-        H = np.zeros((3,) + x1.shape, dtype=complex)
+        x1, x2, x3 = (np.asarray(x) for x in (x1, x2, x3))
+        shape = max(*[x.shape for x in (x1, x2, x3)], key=len)
+        H = np.zeros((3,) + shape, dtype=complex)
 
         if spherical:
             (x, y, z) = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=self.origin)
