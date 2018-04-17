@@ -622,7 +622,7 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
             continue
 
         rij = origin - positions[i]
-        rad, theta, phi = miepy.coordinates.cart_to_sph(*rij)
+        rad, theta, phi = coordinates.cart_to_sph(*rij)
         
         for n in range(1, Lmax+1):
             for m in range(-n, n+1):

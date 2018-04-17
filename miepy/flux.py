@@ -61,13 +61,14 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
 
 def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster
+       Return (scat[2,Lmax], abs[2,Lmax], extinct[2,Lmax])
        
        Arguments:
            p_cluster[2,rmax]  cluster scattering coefficients
            p_src[2,rmax]      source scattering coefficients at origin
            k                  wavenumber
     """
-    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
+    Lmax = miepy.vsh.rmax_to_Lmax(p_cluster.shape[1])
 
     Cscat = np.zeros([2, Lmax], dtype=float)
     Cext  = np.zeros([2, Lmax], dtype=float)
