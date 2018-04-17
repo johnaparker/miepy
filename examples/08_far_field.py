@@ -5,51 +5,56 @@ Far-field analysis with the GMT
 import numpy as np
 import matplotlib.pyplot as plt
 from my_pytools.my_matplotlib.colors import cmap
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib as mpl
 import miepy
 
 nm = 1e-9
-radius = 20*nm
 
-r = 10000*nm
-phi = np.linspace(0,2*np.pi,100)
-theta = np.pi/2
-
-x = r*np.cos(phi)
-y = r*np.sin(phi)
-z = np.zeros_like(x)
-
-sol = miepy.cluster(position=[0,0,0],
-                    radius=radius,
-                    material=miepy.constant_material(1.3),
+sol = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
+                    radius=75*nm,
+                    material=miepy.constant_material(3.6**2),
                     source=miepy.sources.y_polarized_plane_wave(),
                     wavelength=600*nm,
                     Lmax=2)
 
-# E = sol.E_field(x,y,z,False)
-# I = np.sum(np.abs(E)**2, axis=0)
+### xy plane far-field
+fig, ax = plt.subplots(subplot_kw={'projection':'polar'})
 
-Etheta = np.zeros(len(phi), dtype=complex)
-Ephi = np.zeros(len(phi), dtype=complex)
+r = 10000*nm
+phi = np.linspace(0, 2*np.pi, 100)
+theta = np.pi/2
 
-k = sol.material_data.k
-factor = np.exp(1j*k*r)/(-1j*k*r)
+THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+E = sol.E_angular(THETA, PHI).squeeze()
+I = np.sum(np.abs(E)**2, axis=0)
 
-sol.solve_cluster_coefficients()
-for r in range(sol.rmax):
-    n = sol.n_indices[r]
-    m = sol.m_indices[r]
-    Emn = miepy.vsh.Emn(m, n)
-
-    tau = miepy.vsh.tau_func(n,m)(theta)
-    pi = miepy.vsh.pi_func(n,m)(theta)
-
-    Etheta += factor*Emn*(sol.p_cluster[r]*tau + sol.q_cluster[r]*pi)*np.exp(1j*m*phi)
-    Ephi += 1j*factor*Emn*(sol.p_cluster[r]*pi + sol.q_cluster[r]*tau)*np.exp(1j*m*phi)
-
-I = np.abs(Etheta)**2 + np.abs(Ephi)**2
-
-fig,ax = plt.subplots(subplot_kw={'projection':'polar'})
 ax.plot(phi,I)
+
+### 3D far-field
+fig, ax = plt.subplots(subplot_kw={'projection':'3d'})
+
+phi = np.linspace(0, 2*np.pi, 50)
+theta = np.linspace(0, np.pi, 50)
+THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+E = sol.E_angular(THETA, PHI).squeeze()
+I = np.sum(np.abs(E)**2, axis=0)
+I /= np.max(I)
+X, Y, Z = miepy.coordinates.sph_to_cart(I, THETA, PHI)
+colors = mpl.cm.viridis(I)
+
+surface = ax.plot_surface(X, Y, Z, facecolors=colors, cmap='viridis', edgecolors='#000000',
+        cstride=1, rstride=1, linewidth=.1, shade=False)
+surface.set_edgecolor('k')
+
+a = 1.5
+ax.set(xlim=[-a,a], ylim=[-a,a], zlim=[-a,a],
+        xlabel='x', ylabel='y', zlabel='z')
+ax.view_init(ax.elev, ax.azim+90)
+
+ax.contourf(X,Y,Z, zdir='x', offset=-a, cmap='viridis')
+ax.contourf(X,Y,Z, zdir='y', offset=-a, cmap='viridis')
+ax.contourf(X,Y,Z, zdir='z', offset=-a, cmap='viridis')
 
 plt.show()
 

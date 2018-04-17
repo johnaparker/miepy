@@ -166,7 +166,7 @@ class cluster:
 
             Returns: E[3,...]
         """
-        E = np.zeros((3,) + x1.shape, dtype=complex)
+        E = np.zeros((3,) + x3.shape, dtype=complex)
 
         if spherical:
             (x, y, z) = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=self.origin)
