@@ -579,7 +579,7 @@ def expand_H(p, k, mode, eps_b, mu_b):
         mu_b      background permeability
     """
 
-    factor = -1j*np.sqrt(eps_b//mu_b)
+    factor = -1j*np.sqrt(eps_b/mu_b)
     E_func = expand_E(p[::-1], k, mode)
     return lambda *args: factor*E_func(*args)
 
