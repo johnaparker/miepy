@@ -27,8 +27,8 @@ def force(p_scat, p_inc, k, eps_b, mu_b):
     """
     Fxy = 0
     Fz = 0
-    Axy = np.pi/k**2*constants.epsilon_0*eps_b
-    Az = -2*np.pi/k**2*constants.epsilon_0*eps_b
+    Axy = np.pi/k**2*constants.epsilon_0*eps_b**0.5
+    Az = -2*np.pi/k**2*constants.epsilon_0*eps_b**0.5
 
     Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
 
@@ -100,7 +100,7 @@ def torque(p_scat, p_inc, k, eps_b, mu_b):
            mu_b     background relative permeability
     """
     T = np.zeros(3, dtype=float)
-    A = -2*np.pi/k**3*constants.epsilon_0*eps_b
+    A = -2*np.pi/k**3*constants.epsilon_0*eps_b**0.5
 
     Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
 

@@ -65,7 +65,7 @@ def test_force():
     L2 = np.linalg.norm(force[2] - Fz)/Fz.shape[0]
     avg = np.average(np.abs(force[2]) + np.abs(Fz))/2
 
-    assert np.all(L2 < 2e-8*avg)
+    assert np.all(L2 < 1e-6*avg)
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -88,5 +88,10 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(wavelengths/nm, force[2], color='C1', label='GMT force')
     plt.plot(wavelengths/nm, Fz, 'o', color='C1', label="Single Mie theory", linewidth=2)
+
+    plt.xlabel("wavelength (nm)")
+    plt.ylabel("force")
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.legend()
 
     plt.show()
