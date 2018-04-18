@@ -550,7 +550,7 @@ def expand_E_far(p_scat, k):
         (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
 
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
-        factor = np.exp(1j*k*rad)/(-1j*k*rad)
+        factor = np.exp(1j*k*rad)/(k*rad)
 
         for n in range(1,Lmax+1):
             for m in range(-n,n+1):
@@ -560,8 +560,8 @@ def expand_E_far(p_scat, k):
                 tau = tau_func(n,m)(theta)
                 pi = pi_func(n,m)(theta)
 
-                E_sph[1] += factor*Emn_val*(p_scat[0,r]*tau + p_scat[1,r]*pi)*np.exp(1j*m*phi)
-                E_sph[2] += 1j*factor*Emn_val*(p_scat[0,r]*pi + p_scat[1,r]*tau)*np.exp(1j*m*phi)
+                E_sph[1] += 1j*factor*Emn_val*(-1j)**(n)*(p_scat[0,r]*tau + p_scat[1,r]*pi)*np.exp(1j*m*phi)
+                E_sph[2] += -factor*Emn_val*(-1j)**(n)*(p_scat[0,r]*pi + p_scat[1,r]*tau)*np.exp(1j*m*phi)
 
         return E_sph
 
