@@ -6,7 +6,6 @@ import miepy
 
 nm = 1e-9
 
-# dimer = miepy.cluster(position=[0,0,0],
 dimer = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                       radius=75*nm,
                       material=miepy.constant_material(3.6**2),
@@ -20,7 +19,6 @@ THETA, PHI = np.meshgrid(theta, phi)
 R = 1e6
 X, Y, Z = miepy.coordinates.sph_to_cart(R, THETA, PHI)
 E_exact = dimer.E_field(R, THETA, PHI, source=False, interior=False, spherical=True)
-# E_exact = dimer.E_field(X, Y, Z, source=False, interior=False)
 
 def test_far_field_convergence():
     """far-field E and H field should agree with exact field in the large radius limit"""
