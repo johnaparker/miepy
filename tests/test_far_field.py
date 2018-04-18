@@ -25,7 +25,7 @@ E_exact = dimer.E_field(R, THETA, PHI, source=False, interior=False, spherical=T
 def test_far_field_convergence():
     """far-field E and H field should agree with exact field in the large radius limit"""
     E_far = dimer.E_field(R, THETA, PHI, far=True, source=False, interior=False, spherical=True)
-    assert np.allclose(E_exact, E_far, rtol=0, atol=1e-25)
+    np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-25)
 
 def test_far_field_cluster_coefficient():
     """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
@@ -33,7 +33,7 @@ def test_far_field_cluster_coefficient():
     E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k)
     E_far = E_func(R, THETA, PHI)
 
-    assert np.allclose(E_exact, E_far, rtol=0, atol=1e-15)
+    np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-15)
 
 def test_far_field_directly():
     """far-field function compared directly to total field function for n=2, m=-1"""
@@ -53,9 +53,9 @@ def test_far_field_directly():
     E_theta_1 = 1j*N[1]
     factor = np.exp(1j*k*rad)/(k*rad)
     E_theta_2 = 1j*factor*(-1j)**n*tau*np.exp(1j*m*phi)
-    assert np.allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)
 
     E_theta_1 = 1j*M[1]
     factor = np.exp(1j*k*rad)/(k*rad)
     E_theta_2 = 1j*factor*(-1j)**n*pi*np.exp(1j*m*phi)
-    assert np.allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)

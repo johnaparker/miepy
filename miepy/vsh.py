@@ -583,16 +583,19 @@ def expand_H(p, k, mode, eps_b, mu_b):
     E_func = expand_E(p[::-1], k, mode)
     return lambda *args: factor*E_func(*args)
 
-#TODO: implement
-def expand_H_far(p_scat, k):
+def expand_H_far(p_scat, k, eps_b, mu_b):
     """Expand VSH scattering coefficients to obtain a magnetic field function for the far-field
     Returns H(r,θ,φ) function
     
     Arguments:
         p_scat[2,rmax]    scattering coefficients 
         k                 wavenumber
+        eps_b     background permitiviity
+        mu_b      background permeability
     """
-    pass
+    factor = -1j*np.sqrt(eps_b/mu_b)
+    E_func = expand_E_far(p[::-1], k)
+    return lambda *args: factor*E_func(*args)
 
 #TODO: equations for rmax, r, Lmax (here and elsewhere) should be a function call
 #TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)

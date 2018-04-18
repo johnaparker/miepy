@@ -237,10 +237,10 @@ The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed
 
 \begin{align}
 \begin{split}
-    E_{\text{scat},\theta}(\theta,\phi) &= \frac{e^{ikr}}{-ikr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \big[a_{mn}\tau_{mn}(\cos\theta) + b_{mn}\pi_{mn}(\cos\theta)\big] e^{im\phi} \\
-    E_{\text{scat},\phi}(\theta,\phi) &= i\frac{e^{ikr}}{-ikr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \big[a_{mn}\pi_{mn}(\cos\theta) + b_{mn}\tau_{mn}(\cos\theta)\big] e^{im\phi}
+    E_{\text{scat},\theta}(\theta,\phi) &= i\frac{e^{ikr}}{kr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    (-i)^nE_{mn} \big[a_{mn}\tau_{mn}(\cos\theta) + b_{mn}\pi_{mn}(\cos\theta)\big] e^{im\phi} \\
+    E_{\text{scat},\phi}(\theta,\phi) &= -\frac{e^{ikr}}{kr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
+    (-i)^nE_{mn} \big[a_{mn}\pi_{mn}(\cos\theta) + b_{mn}\tau_{mn}(\cos\theta)\big] e^{im\phi}
 \end{split}
 \end{align}
 
