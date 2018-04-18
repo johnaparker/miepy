@@ -6,8 +6,8 @@ import miepy
 
 nm = 1e-9
 
-# dimer = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
-dimer = miepy.cluster(position=[0,0,0],
+# dimer = miepy.cluster(position=[0,0,0],
+dimer = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                       radius=75*nm,
                       material=miepy.constant_material(3.6**2),
                       source=miepy.sources.y_polarized_plane_wave(),
@@ -25,14 +25,7 @@ E_exact = dimer.E_field(R, THETA, PHI, source=False, interior=False, spherical=T
 def test_far_field_convergence():
     """far-field E and H field should agree with exact field in the large radius limit"""
     E_far = dimer.E_field(R, THETA, PHI, far=True, source=False, interior=False, spherical=True)
-    # E_far = dimer.E_field(X, Y, Z, far=True, source=False, interior=False)
-
-    print(E_exact[:,1,3])
-    print(E_far[:,1,3])
-    print(E_exact[:,4,3])
-    print(E_far[:,4,3])
-
-    assert False
+    assert np.allclose(E_exact, E_far, rtol=0, atol=1e-25)
 
 def test_far_field_cluster_coefficient():
     """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
@@ -40,11 +33,29 @@ def test_far_field_cluster_coefficient():
     E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k)
     E_far = E_func(R, THETA, PHI)
 
-    print(np.abs(E_exact[:,2,3]))
-    print(np.abs(E_far[:,2,3]))
+    assert np.allclose(E_exact, E_far, rtol=0, atol=1e-15)
 
-    assert False
+def test_far_field_directly():
+    """far-field function compared directly to total field function for n=2, m=-1"""
+    x = 1e6
 
-if __name__ == "__main__":
-    test_far_field_convergence()
-    # test_far_field_cluster_coefficient()
+    n = 2
+    m = -1
+    Nfunc, Mfunc = miepy.vsh.VSH(n, m)
+
+    rad, theta, phi = 1e6, 0.9, -0.6
+    k = 1
+    N = Nfunc(rad, theta, phi, k)
+    M = Mfunc(rad, theta, phi, k)
+    tau = miepy.vsh.tau_func(n,m)(theta)
+    pi = miepy.vsh.pi_func(n,m)(theta)
+
+    E_theta_1 = 1j*N[1]
+    factor = np.exp(1j*k*rad)/(k*rad)
+    E_theta_2 = 1j*factor*(-1j)**n*tau*np.exp(1j*m*phi)
+    assert np.allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)
+
+    E_theta_1 = 1j*M[1]
+    factor = np.exp(1j*k*rad)/(k*rad)
+    E_theta_2 = 1j*factor*(-1j)**n*pi*np.exp(1j*m*phi)
+    assert np.allclose(E_theta_1, E_theta_2, rtol=0, atol=1e-12)
