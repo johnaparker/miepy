@@ -9,7 +9,7 @@ from tqdm import tqdm
 nm = 1e-9
 
 
-wavelengths = np.linspace(300*nm, 1000*nm, 100)
+wavelengths = np.linspace(300*nm, 1000*nm, 30)
 
 ### particle cross-sections
 C, A, E = (np.zeros_like(wavelengths) for _ in range(3))
@@ -20,32 +20,33 @@ Cp, Ap, Ep = (np.zeros_like(wavelengths) for _ in range(3))
 for i, wavelength in enumerate(tqdm(wavelengths)):
     dimer = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                           radius=75*nm,
-                          material=miepy.constant_material(3.6**2),
+                          material=miepy.constant_material(3.6**2 + 1j),
                           source=miepy.sources.y_polarized_plane_wave(),
                           wavelength=wavelength,
                           Lmax=2)
     C[i], A[i], E[i] = dimer.cross_sections()
 
     for j in range(dimer.Nparticles):
-        Cp[i] += np.sum(miepy.flux.cluster_cross_sections(dimer.p_scat[j],
-                        dimer.p_src[j], dimer.material_data.k).scattering)
+        ### absoprtion is calculated using p_inc
         Ap[i] += np.sum(miepy.flux.cluster_cross_sections(dimer.p_scat[j],
-                        dimer.p_src[j], dimer.material_data.k).absorption)
+                        dimer.p_inc[j], dimer.material_data.k).absorption)
+
+        ### extinction is calculated using p_src
         Ep[i] += np.sum(miepy.flux.cluster_cross_sections(dimer.p_scat[j],
                         dimer.p_src[j], dimer.material_data.k).extinction)
 
+        ### scattering is the difference
+        Cp[i] = Ep[i] - Ap[i]
+
 fig, axes = plt.subplots(ncols=3, figsize=(11,4))
 
-### apparently...., scattering is Cp + Ap
 axes[0].plot(wavelengths/nm, C)
-axes[0].plot(wavelengths/nm, Cp + Ap)
+axes[0].plot(wavelengths/nm, Cp, 'o')
 
-### apparently...., get absorption from (extinction - scattering)
 axes[1].plot(wavelengths/nm, A)
-axes[1].plot(wavelengths/nm, Ep - (Cp + Ap))
+axes[1].plot(wavelengths/nm, Ap, 'o')
 
-### apparently...., exctinction is correct
 axes[2].plot(wavelengths/nm, E)
-axes[2].plot(wavelengths/nm, Ep)
+axes[2].plot(wavelengths/nm, Ep, 'o')
 
 plt.show()
