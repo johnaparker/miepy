@@ -16,3 +16,7 @@ def Ag(author='Johnson'):
 def Au(author='Johnson'):
     """Return gold material from MiePy data"""
     return load_material("Au", author)
+
+def Al(author='Rakic'):
+    """Return aluminum material from MiePy data"""
+    return load_material("Al", author)
