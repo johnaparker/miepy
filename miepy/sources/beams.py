@@ -29,8 +29,8 @@ class gaussian_beam(source):
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
     
-    def E(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def E_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
         amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
@@ -39,8 +39,8 @@ class gaussian_beam(source):
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
 
 
-    def H(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def H_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
         amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
@@ -67,8 +67,8 @@ class hermite_gaussian_beam(source):
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
     
-    def E(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def E_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
 
@@ -84,8 +84,8 @@ class hermite_gaussian_beam(source):
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
 
 
-    def H(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def H_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
 
@@ -120,8 +120,8 @@ class laguerre_gaussian_beam(source):
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
     
-    def E(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def E_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         phi = np.arctan2(rp[1], rp[0])
         wav = 2*np.pi/k
@@ -139,8 +139,8 @@ class laguerre_gaussian_beam(source):
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
 
 
-    def H(self, r, k):
-        rp = np.array([r[0] - self.center[0], r[1] - self.center[1], r[2] - self.center[2]])
+    def H_field(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         phi = np.arctan2(rp[1], rp[0])
         wav = 2*np.pi/k

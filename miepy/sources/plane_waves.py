@@ -13,13 +13,13 @@ class plane_wave(source):
         self.polarization = polarization
         self.polarization /= np.linalg.norm(polarization)
     
-    def E(self, r, k):
-        amp = self.amplitude*np.exp(1j*k*r[2])
+    def E_field(self, x, y, z, k):
+        amp = self.amplitude*np.exp(1j*k*z)
         pol = np.array([*self.polarization, 0])
         return np.einsum('i...,...->i...', pol, amp)
 
-    def H(self, r, k):
-        amp = self.amplitude*np.exp(1j*k*r[2])
+    def H_field(self, x, y, z, k):
+        amp = self.amplitude*np.exp(1j*k*z)
         H0_x, H0_y = -self.polarization[1], self.polarization[0]
         pol = np.array([H0_x, H0_y, 0])
         return np.einsum('i...,...->i...', pol, amp)

@@ -13,10 +13,10 @@ class source:
         self.amplitude = amplitude
 
     @abstractmethod
-    def E(self, r, k): pass
+    def E_field(self, x, y, z, k): pass
 
     @abstractmethod
-    def H(self, r, k): pass
+    def H_field(self, x, y, z, k): pass
 
     @abstractmethod
     def structure_of_mode(self, n, m, r, k): pass
@@ -31,6 +31,7 @@ class source:
 
         return p,q
 
+
     def __add__(self, other):
         return combined_source(self, other)
 
@@ -41,11 +42,11 @@ class combined_source(source):
         self.sources = sources
         self.amplitude = sources[0].amplitude
 
-    def E(self, r, k):
-        return sum(map(lambda source: source.E(r,k), self.sources))
+    def E_field(self, x, y, z, k):
+        return sum(map(lambda source: source.E_field(x, y, z, k), self.sources))
 
-    def H(self, r, k):
-        return sum(map(lambda source: source.H(r,k), self.sources))
+    def H_field(self, x, y, z, k):
+        return sum(map(lambda source: source.H_field(x, y, z, k), self.sources))
     
     def structure_of_mode(self, n, m, r, k):
         structure = map(lambda source: source.structure_of_mode(n, m, r, k), self.sources)

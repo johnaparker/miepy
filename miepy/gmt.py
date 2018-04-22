@@ -184,7 +184,7 @@ class cluster:
 
         #TODO: [x,y,z] to x,y,z
         if source:
-            E += self.source.E(np.array([x,y,z]), self.material_data.k)
+            E += self.source.E_field(x, y, z, self.material_data.k)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -249,7 +249,7 @@ class cluster:
         #TODO: [x,y,z] to x,y,z
         if source:
             factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
-            H += factor*self.source.H(np.array([x,y,z]), self.material_data.k)
+            H += factor*self.source.H_field(x, y, z, self.material_data.k)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:

@@ -18,15 +18,15 @@ class point_dipole(source):
         self.polarization /= np.linalg.norm(polarization)
     
     #TODO: VSH should allow spherical=False or cartesian=True
-    def E(self, r, k):
+    def E_field(self, x, y, z, k):
         N, _ = miepy.vsh.VSH(1,0)
-        r, theta, phi = miepy.coordinates.cart_to_sph(*r, origin=self.location)
+        r, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.location)
         N_cart = miepy.coordinates.vec_sph_to_cart(N(r, theta, phi, k), theta, phi) 
         return self.amplitude*N_cart
 
-    def H(self, r, k):
+    def H_field(self, x, y, z, k):
         _, M = miepy.vsh.VSH(1,0)
-        r, theta, phi = miepy.coordinates.cart_to_sph(*r, origin=self.location)
+        r, theta, phi = miepy.coordinates.cart_to_sph(x, y , z, origin=self.location)
         M_cart = miepy.coordinates.vec_sph_to_cart(M(r, theta, phi, k), theta, phi) 
         return self.amplitude*M_cart
 
