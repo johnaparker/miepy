@@ -22,20 +22,14 @@ def Lmax_to_rmax(Lmax):
     rmax = Lmax*(Lmax + 2)
     return rmax
 
-def get_indices(Lmax):
-    """return n_indices, m_indices arrays for a given Lmax"""
-    rmax = Lmax_to_rmax(Lmax)
-    n_indices = np.zeros(rmax, dtype=int)
-    m_indices = np.zeros(rmax, dtype=int)
+def mode_indices(Lmax):
+    """generate (n,m) index pairs up to n=Lmax"""
+    n = 1
+    m = -1
 
-    counter = 0
     for n in range(1,Lmax+1):
         for m in range(-n,n+1):
-            n_indices[counter] = n
-            m_indices[counter] = m
-            counter += 1
-
-    return n_indices, m_indices
+            yield n, m
 
 def spherical_hn(n, z, derivative=False):
     """spherical hankel function of the first kind or its derivative
@@ -469,11 +463,9 @@ def decompose_fields(E, r, k, Lmax, mode=VSH_mode.outgoing, spherical=False):
     rmax = Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for n in range(1, Lmax+1):
-        for m in range(-n, n+1):
-            r = n**2 + n - 1 + m
-            p[0,r] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
-            p[1,r] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
+    for i,(n,m) in enumerate(mode_indices(Lmax)):
+        p[0,i] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
+        p[1,i] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
 
     return p
 
@@ -493,11 +485,9 @@ def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
     rmax = Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for n in range(1, Nmax+1):
-        for m in range(-n, n+1):
-            r = n**2 + n - 1 + m
-            p[0,r] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
-            p[1,r] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
+    for i,(n,m) in enumerate(mode_indices(Lmax)):
+        p[0,i] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
+        p[1,i] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
 
     return p
 
@@ -518,17 +508,15 @@ def expand_E(p, k, mode):
         (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
 
-        for n in range(1,Lmax+1):
-            for m in range(-n,n+1):
-                r = n**2 + n - 1 + m
-                Nfunc,Mfunc = VSH(n, m, mode=mode)
+        for i,(n,m) in enumerate(mode_indices(Lmax)):
+            Nfunc,Mfunc = VSH(n, m, mode=mode)
 
-                Emn_val = Emn(m, n)
+            Emn_val = Emn(m, n)
 
-                N = Nfunc(rad, theta, phi, k)
-                M = Mfunc(rad, theta, phi, k)
+            N = Nfunc(rad, theta, phi, k)
+            M = Mfunc(rad, theta, phi, k)
 
-                E_sph += factor*Emn_val*(p[0,r]*N + p[1,r]*M)
+            E_sph += factor*Emn_val*(p[0,i]*N + p[1,i]*M)
 
         return E_sph
     
@@ -542,7 +530,6 @@ def expand_E_far(p_scat, k):
         p_scat[2,rmax]    scattering coefficients 
         k                 wavenumber
     """
-
     Lmax = rmax_to_Lmax(p_scat.shape[1])
 
     #TODO: depends on theta.shape
@@ -552,16 +539,14 @@ def expand_E_far(p_scat, k):
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
         factor = np.exp(1j*k*rad)/(k*rad)
 
-        for n in range(1,Lmax+1):
-            for m in range(-n,n+1):
-                r = n**2 + n - 1 + m
-                Emn_val = Emn(m, n)
+        for i,(n,m) in enumerate(mode_indices(Lmax)):
+            Emn_val = Emn(m, n)
 
-                tau = tau_func(n,m)(theta)
-                pi = pi_func(n,m)(theta)
+            tau = tau_func(n,m)(theta)
+            pi = pi_func(n,m)(theta)
 
-                E_sph[1] += 1j*factor*Emn_val*(-1j)**(n)*(p_scat[0,r]*tau + p_scat[1,r]*pi)*np.exp(1j*m*phi)
-                E_sph[2] += -factor*Emn_val*(-1j)**(n)*(p_scat[0,r]*pi + p_scat[1,r]*tau)*np.exp(1j*m*phi)
+            E_sph[1] += 1j*factor*Emn_val*(-1j)**(n)*(p_scat[0,i]*tau + p_scat[1,i]*pi)*np.exp(1j*m*phi)
+            E_sph[2] += -factor*Emn_val*(-1j)**(n)*(p_scat[0,i]*pi + p_scat[1,i]*tau)*np.exp(1j*m*phi)
 
         return E_sph
 
@@ -627,21 +612,15 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
         rij = origin - positions[i]
         rad, theta, phi = coordinates.cart_to_sph(*rij)
         
-        for n in range(1, Lmax+1):
-            for m in range(-n, n+1):
-                r = n**2 + n - 1 + m
+        for r,(n,m) in enumerate(mode_indices(Lmax)):
+            for rp,(v,u) in enumerate(mode_indices(Lmax_in)):
+                a = p_scat[i,0,rp]
+                b = p_scat[i,1,rp]
 
-                for v in range(1, Lmax_in+1):
-                    for u in range(-v, v+1):
-                        rp = v**2 + v - 1 + u
+                A = A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+                B = B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
 
-                        a = p_scat[i,0,rp]
-                        b = p_scat[i,1,rp]
-
-                        A = A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
-                        B = B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
-
-                        p_cluster[0,r] += a*A + b*B
-                        p_cluster[1,r] += a*B + b*A
+                p_cluster[0,r] += a*A + b*B
+                p_cluster[1,r] += a*B + b*A
 
     return p_cluster

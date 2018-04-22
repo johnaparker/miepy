@@ -34,58 +34,55 @@ def force(p_scat, p_inc, k, eps_b, mu_b):
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for n in range(1,Lmax+1):
-        for m in range(-n,n+1):
-            r = n**2 + n - 1 + m
+    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+        # Fxy, term 1/3
+        if m != n:
+            factor = Axy*np.sqrt((n+m+1)*(n-m))/(n*(n+1))
+            r1 = n**2 + n - 1 + m + 1
+            Fxy += factor*(2*p[r]*np.conj(q[r1]) \
+                     - p[r]*np.conj(q_inc[r1]) \
+                     - p_inc[r]*np.conj(q[r1]) \
+                     + 2*q[r]*np.conj(p[r1]) \
+                     - q[r]*np.conj(p_inc[r1]) \
+                     - q_inc[r]*np.conj(p[r1]))
 
-            # Fxy, term 1/3
-            if m != n:
-                factor = Axy*np.sqrt((n+m+1)*(n-m))/(n*(n+1))
-                r1 = n**2 + n - 1 + m + 1
-                Fxy += factor*(2*p[r]*np.conj(q[r1]) \
-                         - p[r]*np.conj(q_inc[r1]) \
-                         - p_inc[r]*np.conj(q[r1]) \
-                         + 2*q[r]*np.conj(p[r1]) \
-                         - q[r]*np.conj(p_inc[r1]) \
-                         - q_inc[r]*np.conj(p[r1]))
-
-            # Fz, term 1/2
-            factor = Az*m/(n*(n+1))
-            Fz += factor*(2*p[r]*np.conj(q[r]) \
-                    - p[r]*np.conj(q_inc[r]) \
-                    - p_inc[r]*np.conj(q[r]))
+        # Fz, term 1/2
+        factor = Az*m/(n*(n+1))
+        Fz += factor*(2*p[r]*np.conj(q[r]) \
+                - p[r]*np.conj(q_inc[r]) \
+                - p_inc[r]*np.conj(q[r]))
 
 
-            if n < Lmax:
-                # Fxy, term 2/3
-                factor = -Axy*np.sqrt((n+m+2)*(n+m+1)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
-                r1 = (n+1)**2 + (n+1) - 1 + m + 1
-                Fxy += factor*(2*p[r]*np.conj(p[r1]) \
-                         - p[r]*np.conj(p_inc[r1]) \
-                         - p_inc[r]*np.conj(p[r1]) \
-                         + 2*q[r]*np.conj(q[r1]) \
-                         - q[r]*np.conj(q_inc[r1]) \
-                         - q_inc[r]*np.conj(q[r1]))
+        if n < Lmax:
+            # Fxy, term 2/3
+            factor = -Axy*np.sqrt((n+m+2)*(n+m+1)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
+            r1 = (n+1)**2 + (n+1) - 1 + m + 1
+            Fxy += factor*(2*p[r]*np.conj(p[r1]) \
+                     - p[r]*np.conj(p_inc[r1]) \
+                     - p_inc[r]*np.conj(p[r1]) \
+                     + 2*q[r]*np.conj(q[r1]) \
+                     - q[r]*np.conj(q_inc[r1]) \
+                     - q_inc[r]*np.conj(q[r1]))
 
-                # Fxy, term 3/3
-                factor = Axy*np.sqrt((n-m+1)*(n-m+2)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
-                r1 = (n+1)**2 + (n+1) - 1 + m - 1
-                Fxy += factor*(2*p[r1]*np.conj(p[r]) \
-                         - p[r1]*np.conj(p_inc[r]) \
-                         - p_inc[r1]*np.conj(p[r]) \
-                         + 2*q[r1]*np.conj(q[r]) \
-                         - q[r1]*np.conj(q_inc[r]) \
-                         - q_inc[r1]*np.conj(q[r]))
+            # Fxy, term 3/3
+            factor = Axy*np.sqrt((n-m+1)*(n-m+2)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
+            r1 = (n+1)**2 + (n+1) - 1 + m - 1
+            Fxy += factor*(2*p[r1]*np.conj(p[r]) \
+                     - p[r1]*np.conj(p_inc[r]) \
+                     - p_inc[r1]*np.conj(p[r]) \
+                     + 2*q[r1]*np.conj(q[r]) \
+                     - q[r1]*np.conj(q_inc[r]) \
+                     - q_inc[r1]*np.conj(q[r]))
 
-                # Fz, term 2/2
-                factor = Az/(n+1)*np.sqrt((n-m+1)*(n+m+1)*n*(n+2)/(2*n+3)/(2*n+1))
-                r1 = (n+1)**2 + (n+1) - 1 + m
-                Fz += factor*(2*p[r1]*np.conj(p[r]) \
-                        - p[r1]*np.conj(p_inc[r]) \
-                        - p_inc[r1]*np.conj(p[r]) \
-                        + 2*q[r1]*np.conj(q[r]) \
-                        - q[r1]*np.conj(q_inc[r]) \
-                        - q_inc[r1]*np.conj(q[r]))
+            # Fz, term 2/2
+            factor = Az/(n+1)*np.sqrt((n-m+1)*(n+m+1)*n*(n+2)/(2*n+3)/(2*n+1))
+            r1 = (n+1)**2 + (n+1) - 1 + m
+            Fz += factor*(2*p[r1]*np.conj(p[r]) \
+                    - p[r1]*np.conj(p_inc[r]) \
+                    - p_inc[r1]*np.conj(p[r]) \
+                    + 2*q[r1]*np.conj(q[r]) \
+                    - q[r1]*np.conj(q_inc[r]) \
+                    - q_inc[r1]*np.conj(q[r]))
 
     return np.array([np.real(Fxy), np.imag(Fxy), np.real(Fz)])
 
@@ -106,34 +103,31 @@ def torque(p_scat, p_inc, k, eps_b, mu_b):
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for n in range(1,Lmax+1):
-        for m in range(-n,n+1):
-            r = n**2 + n - 1 + m
+    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+        if m != n:
+            # Tx
+            factor = -A*np.sqrt((n-m)*(n+m+1))
+            r1 = n**2 + n - 1 + m + 1
+            T[0] += factor*np.real(p[r]*np.conj(p[r1]) \
+                    + q[r]*np.conj(q[r1]) \
+                    -0.5*(p[r1]*np.conj(p_inc[r]) \
+                    + p[r]*np.conj(p_inc[r1]) \
+                    + q[r1]*np.conj(q_inc[r]) \
+                    + q[r]*np.conj(q_inc[r1])))
 
-            if m != n:
-                # Tx
-                factor = -A*np.sqrt((n-m)*(n+m+1))
-                r1 = n**2 + n - 1 + m + 1
-                T[0] += factor*np.real(p[r]*np.conj(p[r1]) \
-                        + q[r]*np.conj(q[r1]) \
-                        -0.5*(p[r1]*np.conj(p_inc[r]) \
-                        + p[r]*np.conj(p_inc[r1]) \
-                        + q[r1]*np.conj(q_inc[r]) \
-                        + q[r]*np.conj(q_inc[r1])))
+            # Ty
+            T[1] += factor*np.imag(p[r]*np.conj(p[r1]) \
+                    + q[r]*np.conj(q[r1]) \
+                    +0.5*(p[r1]*np.conj(p_inc[r]) \
+                    - p[r]*np.conj(p_inc[r1]) \
+                    + q[r1]*np.conj(q_inc[r]) \
+                    - q[r]*np.conj(q_inc[r1])))
 
-                # Ty
-                T[1] += factor*np.imag(p[r]*np.conj(p[r1]) \
-                        + q[r]*np.conj(q[r1]) \
-                        +0.5*(p[r1]*np.conj(p_inc[r]) \
-                        - p[r]*np.conj(p_inc[r1]) \
-                        + q[r1]*np.conj(q_inc[r]) \
-                        - q[r]*np.conj(q_inc[r1])))
-
-            # Tz
-            factor = A*m
-            T[2] += factor* (np.abs(p[r])**2 + np.abs(q[r])**2 \
-                    - np.real(p[r]*np.conj(p_inc[r]) \
-                    + q[r]*np.conj(q_inc[r])))
+        # Tz
+        factor = A*m
+        T[2] += factor* (np.abs(p[r])**2 + np.abs(q[r])**2 \
+                - np.real(p[r]*np.conj(p_inc[r]) \
+                + q[r]*np.conj(q_inc[r])))
 
     return T
 

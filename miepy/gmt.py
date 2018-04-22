@@ -87,9 +87,6 @@ class cluster:
         ### cluster coefficients
         self.p_cluster = None
 
-        ### n and m indices for iteration
-        self.n_indices, self.m_indices = miepy.vsh.get_indices(self.Lmax)
-
         ### solve the interactions
         self.solve()
 
@@ -316,15 +313,12 @@ class cluster:
 
         if Lmax is None:
             Lmax = self.Lmax
-        n_indices, m_indices = miepy.vsh.get_indices(Lmax)
-        rmax = n_indices.shape[0]
 
+        rmax = miepy.vsh.Lmax_to_rmax(Lmax)
         p0 =  np.zeros([2, rmax], dtype=complex)
         self.solve_cluster_coefficients(Lmax)
-        for r in range(rmax):
-            n = n_indices[r]
-            m = m_indices[r]
-            p0[:,r] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
+        for i,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+            p0[:,i] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
 
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
 
@@ -478,17 +472,16 @@ class cluster:
 
     def _solve_source_decomposition(self):
         pos = self.position.T
-        for n in range(self.Nparticles):
-            pos = self.position[n]
-            for r in range(self.rmax):
-                self.p_src[n,:,r] = \
-                    self.source.structure_of_mode(self.n_indices[r], self.m_indices[r], pos, self.material_data.k)
+        for i in range(self.Nparticles):
+            pos = self.position[i]
+            for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
+                self.p_src[i,:,r] = \
+                    self.source.structure_of_mode(n, m, pos, self.material_data.k)
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
-        for r in range(self.rmax):
-            n = self.n_indices[r]
+        for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
@@ -496,7 +489,6 @@ class cluster:
         self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
                 self.p_src, self.material_data.k)
 
-        for r in range(self.rmax):
-            n = self.n_indices[r]
+        for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]

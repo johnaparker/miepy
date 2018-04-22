@@ -36,25 +36,22 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
     mj = n/n_b
     yj = xj*mj
 
-    for n in range(1,Lmax+1):
-        for m in range(-n,n+1):
-            r = n**2 + n - 1 + m
+    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+        # Cscat[0,n-1] += factor*np.abs(p_scat[r])**2
+        # Cscat[1,n-1] += factor*np.abs(q_scat[r])**2
 
-            # Cscat[0,n-1] += factor*np.abs(p_scat[r])**2
-            # Cscat[1,n-1] += factor*np.abs(q_scat[r])**2
+        psi_x, psi_xp = riccati(n, xj)
+        psi_y, psi_yp = riccati(n, yj)
+        
+        Dn = -np.divide(np.real(1j*mj*mu_b*mu*psi_y*np.conj(psi_yp)),
+                        np.abs(mu_b*mj*psi_y*psi_xp - mu*psi_x*psi_yp)**2)
+        Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
+                        np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
 
-            psi_x, psi_xp = riccati(n, xj)
-            psi_y, psi_yp = riccati(n, yj)
-            
-            Dn = -np.divide(np.real(1j*mj*mu_b*mu*psi_y*np.conj(psi_yp)),
-                            np.abs(mu_b*mj*psi_y*psi_xp - mu*psi_x*psi_yp)**2)
-            Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
-                            np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
+        Cabs[:,n-1] += np.array([Dn,Cn])*factor*np.abs(p_scat[:,r])**2
 
-            Cabs[:,n-1] += np.array([Dn,Cn])*factor*np.abs(p_scat[:,r])**2
-
-            #TODO should this be p_src or p_inc?
-            Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
+        #TODO should this be p_src or p_inc?
+        Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
 
     Cscat = Cext - Cabs
     return cross_sections(Cscat, Cabs, Cext)
@@ -75,13 +72,9 @@ def cluster_cross_sections(p_cluster, p_src, k):
 
     factor = 4*np.pi/k**2
 
-    for n in range(1,Lmax+1):
-        for m in range(-n,n+1):
-            r = n**2 + n - 1 + m
-
-            Cscat[:,n-1] += factor*np.abs(p_cluster[:,r])**2
-
-            Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
+    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+        Cscat[:,n-1] += factor*np.abs(p_cluster[:,r])**2
+        Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
 
     Cabs = Cext - Cscat
     return cross_sections(Cscat, Cabs, Cext)
