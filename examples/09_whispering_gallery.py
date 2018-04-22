@@ -15,7 +15,7 @@ X,Y = np.meshgrid(x, y, indexing='ij')
 Z = np.zeros_like(X)
 k = 2*np.pi/(400*nm)
 
-E = f.E([X,Y,Z], k).squeeze()
+E = f.E_field(X, Y, Z, k).squeeze()
 
 I = np.sum(np.abs(E)**2, axis=0)
 
@@ -32,7 +32,7 @@ sphere = miepy.cluster(position=[0,0,0],
                        # material=miepy.materials.predefined.Au(),
                        radius=radius,
                        source=source,
-                       Lmax=8,
+                       Lmax=4,
                        wavelength=400*nm)
 
 x = np.linspace(-radius-50*nm, radius+50*nm, 150)

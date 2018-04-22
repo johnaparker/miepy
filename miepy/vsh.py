@@ -426,7 +426,7 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=V
 
     THETA, PHI = coordinates.sphere_mesh(sampling)
     X,Y,Z = coordinates.sph_to_cart(r, THETA, PHI, origin=origin)
-    E = src.E([X,Y,Z], k)
+    E = src.E_field(X, Y, Z, k)
 
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
