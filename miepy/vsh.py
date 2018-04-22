@@ -152,16 +152,11 @@ def b_func(m,n,u,v,p):
 def Emn(m, n):
     return 1j**n*np.sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)))
 
-def A_translation(m, n, u, v, r, theta, phi, k, mode):
+def vsh_translation(m, n, u, v, r, theta, phi, k, mode):
+    """VSH translation coefficients"""
     m *= -1
     f = lambda n: special.gamma(n+1)
     zn = get_zn(mode)
-
-    # numerator = (2*v+1)*f(n-m)*f(v-u)
-    # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
-    # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
-    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v)/Emn(m,n)
-    # factor = norm*(-1.)**m * numerator/denominator*np.exp(1j*(u+m)*phi)
 
     factor = 0.5 * (-1.)**m * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
             /(v*(v+1)*n*(n+1)*f(v+u)*f(n+m))) * np.exp(1j*(u+m)*phi)
@@ -176,21 +171,7 @@ def A_translation(m, n, u, v, r, theta, phi, k, mode):
         Pnm = associated_legendre(p,u+m)
         sum_term += A*zn(p, k*r)*Pnm(np.cos(theta))
 
-    return factor*sum_term
-
-def B_translation(m, n, u, v, r, theta, phi, k, mode):
-    m *= -1
-    f = lambda n: special.gamma(n+1)
-    zn = get_zn(mode)
-
-    # numerator = (2*v+1)*f(n-m)*f(v-u)
-    # denominator = 2*n*(n+1)*f(n+m)*f(v+u)
-    # Ep = lambda m,n: 1j**n*(2*n+1)*factorial(n-m)/factorial(n+m)
-    # norm = f(n+m)/f(n-m)*Ep(m,n)/Ep(u,v)*Emn(u,v)/Emn(m,n)
-    # factor = norm*(-1.)**(m+1) * numerator/denominator*np.exp(1j*(u+m)*phi)
-
-    factor = 0.5 * (-1.)**(m+1) * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
-            /(v*(v+1)*n*(n+1)*f(v+u)*f(n+m))) * np.exp(1j*(u+m)*phi)
+    A_translation = factor*sum_term
 
     qmax = min(n, v, (n+v+1 - abs(m+u))//2)
     sum_term = 0
@@ -202,7 +183,9 @@ def B_translation(m, n, u, v, r, theta, phi, k, mode):
         Pnm = associated_legendre(p+1,u+m)
         sum_term += A*zn(p+1, k*r)*Pnm(np.cos(theta))
 
-    return factor*sum_term
+    B_translation = -factor*sum_term
+
+    return A_translation, B_translation
 
 class VSH_mode(enum.Enum):
     outgoing = enum.auto()
@@ -617,8 +600,7 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
                 a = p_scat[i,0,rp]
                 b = p_scat[i,1,rp]
 
-                A = A_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
-                B = B_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
+                A, B = vsh_translation(m, n, u, v, rad, theta, phi, k, VSH_mode.incident)
 
                 p_cluster[0,r] += a*A + b*B
                 p_cluster[1,r] += a*B + b*A

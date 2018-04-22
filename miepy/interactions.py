@@ -36,10 +36,8 @@ def sphere_cluster_t_matrix(positions, a, k):
 
             for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
                 for s,(v,u) in enumerate(miepy.vsh.mode_indices(Lmax)):
-                    A_transfer = miepy.vsh.A_translation(m,n,u,v,r_ji,theta_ji,phi_ji,
-                            k, miepy.vsh.VSH_mode.outgoing)
-                    B_transfer = miepy.vsh.B_translation(m,n,u,v,r_ji,theta_ji,phi_ji,
-                            k, miepy.vsh.VSH_mode.outgoing)
+                    A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
+                            r_ji, theta_ji, phi_ji, k, miepy.vsh.VSH_mode.outgoing)
 
                     interaction_matrix[i,0,r,j,0,s] = A_transfer*a[j,0,v-1]
                     interaction_matrix[i,0,r,j,1,s] = B_transfer*a[j,1,v-1]
