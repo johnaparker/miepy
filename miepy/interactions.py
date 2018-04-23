@@ -24,9 +24,7 @@ def sphere_cluster_t_matrix(positions, a, k):
     interaction_matrix = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
     for i in range(Nparticles):
-        for j in range(Nparticles):
-            if i == j: continue
-
+        for j in range(i+1, Nparticles):
             pi = positions[i]
             pj = positions[j]
             dji = pi -  pj
@@ -43,6 +41,11 @@ def sphere_cluster_t_matrix(positions, a, k):
                     interaction_matrix[i,0,r,j,1,s] = B_transfer*a[j,1,v-1]
                     interaction_matrix[i,1,r,j,0,s] = B_transfer*a[j,0,v-1]
                     interaction_matrix[i,1,r,j,1,s] = A_transfer*a[j,1,v-1]
+
+                    interaction_matrix[j,0,r,i,0,s] = (-1)**(m+u)*A_transfer*a[i,0,v-1]
+                    interaction_matrix[j,0,r,i,1,s] = (-1)**(m+u)*B_transfer*a[i,1,v-1]
+                    interaction_matrix[j,1,r,i,0,s] = (-1)**(m+u)*B_transfer*a[i,0,v-1]
+                    interaction_matrix[j,1,r,i,1,s] = (-1)**(m+u)*A_transfer*a[i,1,v-1]
 
     t_matrix = identity + interaction_matrix
     return t_matrix
