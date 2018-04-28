@@ -106,7 +106,7 @@ def wigner_3j(j1, j2, j3, m1, m2, m3):
     if not j3min <= j3 <= j1 + j2:
         return 0
 
-    f = lambda n: special.gamma(n+1)
+    f = factorial
     binomial = special.binom
     numerator = f(j1-m1)*f(j1+m1)*f(j2-m2)*f(j2+m2)*f(j3-m3)*f(j3+m3)
     denominator = f(j1+j2-j3)*f(j1-j2+j3)*f(-j1+j2+j3)*f(j1+j2+j3+1)
@@ -125,7 +125,7 @@ def wigner_3j(j1, j2, j3, m1, m2, m3):
 def a_func(m,n,u,v,p):
     """gaunt coefficient"""
 
-    f = lambda n: special.gamma(n+1)
+    f = factorial
     numerator = f(n+m)*f(v+u)*f(p-m-u)
     denominator = f(n-m)*f(v-u)*f(p+m+u)
     factor = (-1.)**(m+u)*(2*p+1)*(numerator/denominator)**0.5
@@ -139,7 +139,7 @@ def a_func(m,n,u,v,p):
 def b_func(m,n,u,v,p):
     """b function"""
 
-    f = lambda n: special.gamma(n+1)
+    f = factorial
     numerator = f(n+m)*f(v+u)*f(p-m-u+1)
     denominator = f(n-m)*f(v-u)*f(p+m+u+1)
     factor = (-1.)**(m+u)*(2*p+3)*(numerator/denominator)**0.5
@@ -155,7 +155,7 @@ def Emn(m, n):
 def vsh_translation(m, n, u, v, r, theta, phi, k, mode):
     """VSH translation coefficients"""
     m *= -1
-    f = lambda n: special.gamma(n+1)
+    f = factorial
     zn = get_zn(mode)
 
     factor = 0.5 * (-1.)**m * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
