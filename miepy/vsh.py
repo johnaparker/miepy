@@ -535,7 +535,7 @@ def expand_E_far(p_scat, k):
 
     return f
 
-def expand_H(p, k, mode, eps_b, mu_b):
+def expand_H(p, k, mode, eps, mu):
     """Expand VSH coefficients to obtain a magnetic field function
     Returns H(r,θ,φ) function
     
@@ -543,25 +543,25 @@ def expand_H(p, k, mode, eps_b, mu_b):
         p[2,rmax]       expansion coefficients 
         k               wavenumber
         mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
-        eps_b     background permitiviity
-        mu_b      background permeability
+        eps     medium permitiviity
+        mb      medium permeability
     """
 
-    factor = -1j*np.sqrt(eps_b/mu_b)
+    factor = -1j*np.sqrt(eps/mu)
     E_func = expand_E(p[::-1], k, mode)
     return lambda *args: factor*E_func(*args)
 
-def expand_H_far(p_scat, k, eps_b, mu_b):
+def expand_H_far(p_scat, k, eps, mu):
     """Expand VSH scattering coefficients to obtain a magnetic field function for the far-field
     Returns H(r,θ,φ) function
     
     Arguments:
         p_scat[2,rmax]    scattering coefficients 
         k                 wavenumber
-        eps_b     background permitiviity
-        mu_b      background permeability
+        eps     medium permitiviity
+        mu      medium permeability
     """
-    factor = -1j*np.sqrt(eps_b/mu_b)
+    factor = -1j*np.sqrt(eps/mu)
     E_func = expand_E_far(p[::-1], k)
     return lambda *args: factor*E_func(*args)
 

@@ -133,8 +133,8 @@ class cluster:
         rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
 
         H_sph = miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.outgoing, eps_b=self.material_data.eps_b,
-                  mu_b=self.material_data.mu_b)(rad,theta,phi)
+                  mode=miepy.vsh.VSH_mode.outgoing, eps=self.material_data.eps_b,
+                  mu=self.material_data.mu_b)(rad,theta,phi)
         Hscat = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         p = self.p_inc[i]
@@ -142,8 +142,8 @@ class cluster:
             p -= self.p_src[i]
 
         H_sph = miepy.vsh.expand_H(p, self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.ingoing, eps_b=self.material_data.eps_b,
-                  mu_b=self.material_data.mu_b)(rad,theta,phi)
+                  mode=miepy.vsh.VSH_mode.ingoing, eps=self.material_data.eps_b,
+                  mu=self.material_data.mu_b)(rad,theta,phi)
         Hinc = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         return Hscat + Hinc
@@ -237,13 +237,12 @@ class cluster:
         if far:
             expand = miepy.vsh.expand_H_far
         else:
-            expand = lambda p,k,eps_b,mu_b: miepy.vsh.expand_H(p, k, mode=miepy.vsh.VSH_mode.outgoing,
-                                               eps_b=eps_b, mu_b=mu_b)
+            expand = lambda p,k,eps,mu: miepy.vsh.expand_H(p, k, mode=miepy.vsh.VSH_mode.outgoing, eps=eps, mu=mu)
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
-            H_sph = expand(self.p_scat[i], self.material_data.k, eps_b=self.material_data.eps_b,
-                               mu_b=self.material_data.mu_b)(rad,theta,phi)
+            H_sph = expand(self.p_scat[i], self.material_data.k, eps=self.material_data.eps_b,
+                               mu=self.material_data.mu_b)(rad,theta,phi)
             H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         #TODO: [x,y,z] to x,y,z
@@ -260,7 +259,7 @@ class cluster:
 
                 rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
                 H_sph = miepy.vsh.expand_H(self.p_int[i], k_int, 
-                            eps_b=self.material_data.eps_b, mu_b=self.material_data.mu_b,
+                            eps=self.material_data.eps[i], mu=self.material_data.mu[i],
                             mode=miepy.vsh.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
                 H[:,idx] = miepy.coordinates.vec_sph_to_cart(H_sph, theta[idx], phi[idx])
 
