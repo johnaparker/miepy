@@ -44,22 +44,20 @@ def point_matching(source, position, radius, k, Lmax, sampling=6):
     _, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
 
     rmax = miepy.vsh.Lmax_to_rmax(Lmax)
-    E_vsh = np.zeros([3*Npoints, 2*rmax], dtype=complex)
-    E_src = np.zeros([3*Npoints], dtype=complex)
 
-    for N in range(Npoints):
-        E = source.E_field(X[N], Y[N], Z[N], k)
-        E = miepy.coordinates.vec_cart_to_sph(E, THETA[N], PHI[N])
-        E_src[3*N:3*N+3] = E
+    E_src = source.E_field(X, Y, Z, k)
+    E_src = miepy.coordinates.vec_cart_to_sph(E_src, THETA, PHI)
 
+    E_vsh = np.zeros([3, Npoints, 2, rmax], dtype=complex)
     for i,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
         Nfunc, Mfunc = miepy.vsh.VSH(n, m, mode=miepy.vsh.VSH_mode.incident)
         Emn_val = miepy.vsh.Emn(m, n)
-        for N in range(Npoints):
-            E_vsh[3*N:3*N+3,i] = -1j*Emn_val*Nfunc(radius, THETA[N], PHI[N], k)
-            E_vsh[3*N:3*N+3,rmax+i] = -1j*Emn_val*Mfunc(radius, THETA[N], PHI[N], k)
+        E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)
+        E_vsh[...,1,i] = -1j*Emn_val*Mfunc(radius, THETA, PHI, k)
 
-    sol = np.linalg.lstsq(E_vsh, E_src, rcond=None)
+    column = E_src.reshape([3*Npoints])
+    matrix = E_vsh.reshape([3*Npoints, 2*rmax])
+    sol = np.linalg.lstsq(matrix, column, rcond=None)
     p_src = sol[0]
 
     return np.reshape(p_src, [2,rmax])
