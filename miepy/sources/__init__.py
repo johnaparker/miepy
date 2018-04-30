@@ -1,5 +1,6 @@
 from . import plane_waves
 from . import beams
+from . import decomposition
 
 from .source_base import source
 

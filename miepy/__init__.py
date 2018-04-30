@@ -19,3 +19,4 @@ from .mie_single.scattering import scattering_per_multipole, absorbption_per_mul
                         extinction_per_multipole, cross_sections, multipole_label
 from .mie_single.mie_sphere import single_mie_sphere
 from .mie_single.mie_core_shell import single_mie_core_shell
+from .sources.decomposition import point_matching
