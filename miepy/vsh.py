@@ -40,6 +40,15 @@ def spherical_hn(n, z, derivative=False):
 
     return special.spherical_jn(n,z,derivative) + 1j*special.spherical_yn(n,z,derivative)
 
+def spherical_hn_2(n, z, derivative=False):
+    """spherical hankel function of the second kind or its derivative
+
+            n: int,array-like        order of the bessel function
+            z: array[complex/float]  argument
+            derivative: bool         If True, compute the derivative instead    """
+
+    return special.spherical_jn(n,z,derivative) - 1j*special.spherical_yn(n,z,derivative)
+
 @lru_cache(maxsize=None)
 def associated_legendre(n,m, deriv=0):
     """associated legendre function of integer order and degree
@@ -197,7 +206,9 @@ def get_zn(mode):
     """determine the zn function for a given mode"""
     if mode is VSH_mode.outgoing:
         return spherical_hn
-    elif mode in (VSH_mode.incident, VSH_mode.ingoing, VSH_mode.interior):
+    elif mode is VSH_mode.ingoing:
+        return spherical_hn_2
+    elif mode in (VSH_mode.incident, VSH_mode.interior):
         return special.spherical_jn
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
@@ -474,6 +485,7 @@ def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=VSH_mode.in
 
     return p
 
+#TODO: move k argument to field function for consistency
 def expand_E(p, k, mode):
     """Expand VSH coefficients to obtain an electric field function
     Returns E(r,θ,φ) function

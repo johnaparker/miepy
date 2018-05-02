@@ -113,7 +113,7 @@ class cluster:
         if not source:
             p -= self.p_src[i]
         E_sph = miepy.vsh.expand_E(p, self.material_data.k,
-                     mode=miepy.vsh.VSH_mode.ingoing)(rad,theta,phi)
+                     mode=miepy.vsh.VSH_mode.incident)(rad,theta,phi)
         Einc = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         return Escat + Einc
@@ -142,7 +142,7 @@ class cluster:
             p -= self.p_src[i]
 
         H_sph = miepy.vsh.expand_H(p, self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.ingoing, eps=self.material_data.eps_b,
+                  mode=miepy.vsh.VSH_mode.incident, eps=self.material_data.eps_b,
                   mu=self.material_data.mu_b)(rad,theta,phi)
         Hinc = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
