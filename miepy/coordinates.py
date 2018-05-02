@@ -27,6 +27,27 @@ def cart_to_sph(x, y, z, origin=None):
 
     return r, theta, phi
 
+def cyl_to_cart(r, phi, z, origin=None):
+    """convert cylindrical coordinates (r, phi, z) centered at origin to cartesian coordinates (x, y, z)"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
+    x = origin[0] + r*np.cos(phi)
+    y = origin[1] + r*np.sin(phi)
+
+    return x, y, z + origin[2]
+
+def cart_to_cyl(x, y, z, origin=None):
+    """convert cartesian coordinates (x, y, z) to cylindrical coordinates (r, phi, z) centered at origin"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
+    x0,y0,z0 = origin
+    r = ((x - x0)**2 + (y - y0)**2)**0.5
+    phi = np.arctan2(y - y0, x - x0)
+
+    return r, phi, z - z0
+
 #TODO: if theta is scalar, or phi is scalar... same with other functions here
 #TODO: implement origin
 def sph_basis_vectors(theta, phi, origin=None):
