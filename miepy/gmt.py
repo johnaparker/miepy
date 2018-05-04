@@ -474,7 +474,7 @@ class cluster:
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
-        for r,(n,m) in enumerate(miepy.mode_indices(self.Lmax)):
+        for r,n,m in miepy.mode_indices(self.Lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
@@ -482,6 +482,6 @@ class cluster:
         self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
                 self.p_src, self.material_data.k)
 
-        for r,(n,m) in enumerate(miepy.mode_indices(self.Lmax)):
+        for r,n,m in miepy.mode_indices(self.Lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]

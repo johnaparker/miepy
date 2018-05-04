@@ -32,7 +32,7 @@ class plane_wave(source):
         phase = 1j*k*position[2]
         alpha = 0
 
-        for i, (n,m) in enumerate(miepy.mode_indices(Lmax)):
+        for i,n,m in miepy.mode_indices(Lmax):
             pi_value = pi_func(n, m)(alpha)
             tau_value = tau_func(n, m)(alpha)
 

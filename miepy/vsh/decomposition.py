@@ -57,7 +57,7 @@ def point_matching(source, position, radius, k, Lmax, sampling=6):
     H_src = coordinates.vec_cart_to_sph(H_src, THETA, PHI)
 
     E_vsh = np.zeros([3, Npoints, 2, rmax], dtype=complex)
-    for i,(n,m) in enumerate(vsh.mode_indices(Lmax)):
+    for i,n,m in vsh.mode_indices(Lmax):
         Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.VSH_mode.incident)
         Emn_val = vsh.Emn(m, n)
         E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)
@@ -157,7 +157,7 @@ def decompose_fields(E, r, k, Lmax, mode=vsh.VSH_mode.outgoing, spherical=False)
     rmax = Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for i,(n,m) in enumerate(mode_indices(Lmax)):
+    for i,n,m in mode_indices(Lmax):
         p[0,i] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
         p[1,i] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
 
@@ -179,7 +179,7 @@ def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.VSH_mod
     rmax = Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for i,(n,m) in enumerate(mode_indices(Lmax)):
+    for i,n,m in mode_indices(Lmax):
         p[0,i] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
         p[1,i] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
 

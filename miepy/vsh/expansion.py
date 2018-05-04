@@ -23,7 +23,7 @@ def expand_E(p, k, mode):
         (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
 
-        for i,(n,m) in enumerate(vsh.mode_indices(Lmax)):
+        for i,n,m in vsh.mode_indices(Lmax):
             Nfunc,Mfunc = vsh.VSH(n, m, mode=mode)
 
             Emn_val = vsh.Emn(m, n)
@@ -54,7 +54,7 @@ def expand_E_far(p_scat, k):
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
         factor = np.exp(1j*k*rad)/(k*rad)
 
-        for i,(n,m) in enumerate(vsh.mode_indices(Lmax)):
+        for i,n,m in vsh.mode_indices(Lmax):
             Emn_val = vsh.Emn(m, n)
 
             tau = vsh.special.tau_func(n,m)(theta)

@@ -34,7 +34,7 @@ def force(p_scat, p_inc, k, eps_b, mu_b):
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for r,(n,m) in enumerate(miepy.mode_indices(Lmax)):
+    for r,n,m in miepy.mode_indices(Lmax):
         # Fxy, term 1/3
         if m != n:
             factor = Axy*np.sqrt((n+m+1)*(n-m))/(n*(n+1))
@@ -103,7 +103,7 @@ def torque(p_scat, p_inc, k, eps_b, mu_b):
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for r,(n,m) in enumerate(miepy.mode_indices(Lmax)):
+    for r,n,m in miepy.mode_indices(Lmax):
         if m != n:
             # Tx
             factor = -A*np.sqrt((n-m)*(n+m+1))

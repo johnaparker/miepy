@@ -36,8 +36,8 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
         rij = origin - positions[i]
         rad, theta, phi = coordinates.cart_to_sph(*rij)
         
-        for r,(n,m) in enumerate(vsh.mode_indices(Lmax)):
-            for rp,(v,u) in enumerate(vsh.mode_indices(Lmax_in)):
+        for r,n,m in vsh.mode_indices(Lmax):
+            for rp,v,u in vsh.mode_indices(Lmax_in):
                 a = p_scat[i,0,rp]
                 b = p_scat[i,1,rp]
 
