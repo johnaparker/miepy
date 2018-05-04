@@ -32,10 +32,10 @@ def sphere_cluster_t_matrix(positions, a, k):
             theta_ji = np.arccos(dji[2]/r_ji)
             phi_ji = np.arctan2(dji[1], dji[0])
 
-            for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
-                for s,(v,u) in enumerate(miepy.vsh.mode_indices(Lmax)):
+            for r,(n,m) in enumerate(miepy.mode_indices(Lmax)):
+                for s,(v,u) in enumerate(miepy.mode_indices(Lmax)):
                     A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                            r_ji, theta_ji, phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                            r_ji, theta_ji, phi_ji, k, miepy.VSH_mode.outgoing)
 
                     interaction_matrix[i,0,r,j,0,s] = A_transfer*a[j,0,v-1]
                     interaction_matrix[i,0,r,j,1,s] = B_transfer*a[j,1,v-1]

@@ -29,11 +29,3 @@ class point_dipole(source):
         r, theta, phi = miepy.coordinates.cart_to_sph(x, y , z, origin=self.location)
         M_cart = miepy.coordinates.vec_sph_to_cart(M(r, theta, phi, k), theta, phi) 
         return self.amplitude*M_cart
-
-    # def structure(self, n, m, r, k):
-        # rad, theta, phi = miepy.coordinates.cart_to_sph(*r, origin=self.location)
-        # p = miepy.vsh.A_translation(m, n, 0, 1, rad, theta, phi, k,
-                 # mode=miepy.vsh.VSH_mode.incident)
-        # q = miepy.vsh.B_translation(m, n, 0, 1, rad, theta, phi, k,
-                 # mode=miepy.vsh.VSH_mode.incident)
-        # return (p,q)

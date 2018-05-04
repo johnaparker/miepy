@@ -36,7 +36,7 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
     mj = n/n_b
     yj = xj*mj
 
-    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+    for r,(n,m) in enumerate(miepy.mode_indices(Lmax)):
         # Cscat[0,n-1] += factor*np.abs(p_scat[r])**2
         # Cscat[1,n-1] += factor*np.abs(q_scat[r])**2
 
@@ -72,7 +72,7 @@ def cluster_cross_sections(p_cluster, p_src, k):
 
     factor = 4*np.pi/k**2
 
-    for r,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
+    for r,(n,m) in enumerate(miepy.mode_indices(Lmax)):
         Cscat[:,n-1] += factor*np.abs(p_cluster[:,r])**2
         Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
 

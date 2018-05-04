@@ -105,15 +105,15 @@ class cluster:
         """
         rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
 
-        E_sph = miepy.vsh.expand_E(self.p_scat[i], self.material_data.k,
-                     mode=miepy.vsh.VSH_mode.outgoing)(rad,theta,phi)
+        E_sph = miepy.expand_E(self.p_scat[i], self.material_data.k,
+                     mode=miepy.VSH_mode.outgoing)(rad,theta,phi)
         Escat = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         p = self.p_inc[i]
         if not source:
             p -= self.p_src[i]
-        E_sph = miepy.vsh.expand_E(p, self.material_data.k,
-                     mode=miepy.vsh.VSH_mode.incident)(rad,theta,phi)
+        E_sph = miepy.expand_E(p, self.material_data.k,
+                     mode=miepy.VSH_mode.incident)(rad,theta,phi)
         Einc = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         return Escat + Einc
@@ -132,8 +132,8 @@ class cluster:
         """
         rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
 
-        H_sph = miepy.vsh.expand_H(self.p_scat[i], self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.outgoing, eps=self.material_data.eps_b,
+        H_sph = miepy.expand_H(self.p_scat[i], self.material_data.k,
+                  mode=miepy.VSH_mode.outgoing, eps=self.material_data.eps_b,
                   mu=self.material_data.mu_b)(rad,theta,phi)
         Hscat = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
@@ -141,8 +141,8 @@ class cluster:
         if not source:
             p -= self.p_src[i]
 
-        H_sph = miepy.vsh.expand_H(p, self.material_data.k,
-                  mode=miepy.vsh.VSH_mode.incident, eps=self.material_data.eps_b,
+        H_sph = miepy.expand_H(p, self.material_data.k,
+                  mode=miepy.VSH_mode.incident, eps=self.material_data.eps_b,
                   mu=self.material_data.mu_b)(rad,theta,phi)
         Hinc = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
@@ -173,9 +173,9 @@ class cluster:
             (x, y, z) = (x1, x2, x3)
 
         if far:
-            expand = miepy.vsh.expand_E_far
+            expand = miepy.expand_E_far
         else:
-            expand = lambda p,k: miepy.vsh.expand_E(p, k, mode=miepy.vsh.VSH_mode.outgoing)
+            expand = lambda p,k: miepy.expand_E(p, k, mode=miepy.VSH_mode.outgoing)
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
@@ -194,8 +194,8 @@ class cluster:
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
 
                 rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
-                E_sph = miepy.vsh.expand_E(self.p_int[i], k_int, 
-                                mode=miepy.vsh.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
+                E_sph = miepy.expand_E(self.p_int[i], k_int, 
+                                mode=miepy.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
                 E[:,idx] = miepy.coordinates.vec_sph_to_cart(E_sph, theta[idx], phi[idx])
 
         if mask and not far:
@@ -235,9 +235,9 @@ class cluster:
             (x, y, z) = (x1, x2, x3)
 
         if far:
-            expand = miepy.vsh.expand_H_far
+            expand = miepy.expand_H_far
         else:
-            expand = lambda p,k,eps,mu: miepy.vsh.expand_H(p, k, mode=miepy.vsh.VSH_mode.outgoing, eps=eps, mu=mu)
+            expand = lambda p,k,eps,mu: miepy.expand_H(p, k, mode=miepy.VSH_mode.outgoing, eps=eps, mu=mu)
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
@@ -258,9 +258,9 @@ class cluster:
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
 
                 rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
-                H_sph = miepy.vsh.expand_H(self.p_int[i], k_int, 
+                H_sph = miepy.expand_H(self.p_int[i], k_int, 
                             eps=self.material_data.eps[i], mu=self.material_data.mu[i],
-                            mode=miepy.vsh.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
+                            mode=miepy.VSH_mode.interior)(rad[idx], theta[idx], phi[idx])
                 H[:,idx] = miepy.coordinates.vec_sph_to_cart(H_sph, theta[idx], phi[idx])
 
         if mask and not far:
@@ -446,7 +446,7 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        self.p_cluster = miepy.vsh.cluster_coefficients(self.position, 
+        self.p_cluster = miepy.cluster_coefficients(self.position, 
                 self.p_scat, self.material_data.k, origin=self.origin, Lmax=Lmax)
 
     def solve(self, wavelength=None, source=None):
@@ -474,7 +474,7 @@ class cluster:
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
-        for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
+        for r,(n,m) in enumerate(miepy.mode_indices(self.Lmax)):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
@@ -482,6 +482,6 @@ class cluster:
         self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
                 self.p_src, self.material_data.k)
 
-        for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
+        for r,(n,m) in enumerate(miepy.mode_indices(self.Lmax)):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]

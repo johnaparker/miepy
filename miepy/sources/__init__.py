@@ -1,5 +1,4 @@
 from . import plane_waves
-from . import decomposition
 from . import paraxial_beams
 from . import focused_beams
 
