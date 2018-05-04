@@ -313,14 +313,10 @@ class cluster:
         if Lmax is None:
             Lmax = self.Lmax
 
-        rmax = miepy.vsh.Lmax_to_rmax(Lmax)
-        p0 =  np.zeros([2, rmax], dtype=complex)
         self.solve_cluster_coefficients(Lmax)
-        for i,(n,m) in enumerate(miepy.vsh.mode_indices(Lmax)):
-            p0[:,i] = self.source.structure_of_mode(n, m, self.origin, self.material_data.k)
+        p0 = self.source.structure(self.origin, self.material_data.k, Lmax)
 
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
-
 
     def cross_sections(self):
         """Compute the scattering, absorption, and extinction cross-section of the cluster"""
@@ -473,9 +469,7 @@ class cluster:
         pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
-            for r,(n,m) in enumerate(miepy.vsh.mode_indices(self.Lmax)):
-                self.p_src[i,:,r] = \
-                    self.source.structure_of_mode(n, m, pos, self.material_data.k)
+            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.Lmax)
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src

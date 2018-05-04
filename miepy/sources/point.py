@@ -30,15 +30,10 @@ class point_dipole(source):
         M_cart = miepy.coordinates.vec_sph_to_cart(M(r, theta, phi, k), theta, phi) 
         return self.amplitude*M_cart
 
-    def structure_of_mode(self, n, m, r, k):
+    # def structure(self, n, m, r, k):
         # rad, theta, phi = miepy.coordinates.cart_to_sph(*r, origin=self.location)
         # p = miepy.vsh.A_translation(m, n, 0, 1, rad, theta, phi, k,
                  # mode=miepy.vsh.VSH_mode.incident)
         # q = miepy.vsh.B_translation(m, n, 0, 1, rad, theta, phi, k,
                  # mode=miepy.vsh.VSH_mode.incident)
-
-        from miepy.vsh import project_source_onto
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
+        # return (p,q)

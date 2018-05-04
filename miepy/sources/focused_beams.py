@@ -100,7 +100,7 @@ class HG_00(source):
         Ey = g02*np.sin(2*phi)
         Ez = -2j*g01*np.cos(phi)
         E = np.array([Ex,Ey,Ez])*factor
-        
+
         return E
 
     def H_field(self, x, y, z, k):
@@ -118,12 +118,6 @@ class HG_00(source):
         H = np.array([Hx,Hy,Hz])*factor
         
         return H
-
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
 
 class HG_10(source):
     def __init__(self, width, theta_max, focal_length):
@@ -167,12 +161,6 @@ class HG_10(source):
     
         return H
 
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
-
 class HG_01(source):
     def __init__(self, width, theta_max, focal_length):
         self.width = width
@@ -215,12 +203,6 @@ class HG_01(source):
     
         return H
 
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
-
 class azimuthal_beam(source):
     def __init__(self, width, theta_max, focal_length):
         self.width = width
@@ -256,12 +238,6 @@ class azimuthal_beam(source):
 
         return H
 
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
-
 class radial_beam(source):
     def __init__(self, width, theta_max, focal_length):
         self.width = width
@@ -271,13 +247,13 @@ class radial_beam(source):
     def E_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        g10  = I10(k,  sel. theta_max, self.focal_length, self.width)(rho, z)
-        grad = Irad(k, sel. theta_max, self.focal_length, self.width)(rho, z)
+        g10  = I10(k,  self.theta_max, self.focal_length, self.width)(rho, z)
+        grad = Irad(k, self.theta_max, self.focal_length, self.width)(rho, z)
 
         factor = 1j*k*self.focal_length/2*np.exp(-1j*k*self.focal_length)
 
         Ex = 1j*grad*np.cos(phi)
-        Ey = -1j*grad*np.sin(phi)
+        Ey = 1j*grad*np.sin(phi)
         Ez = -4*g10
         E = np.array([Ex,Ey,Ez])*factor
         E = np.array([Ex,Ey,Ez])*factor
@@ -287,7 +263,7 @@ class radial_beam(source):
     def H_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        gazi = Iazi(k, sel. theta_max, self.focal_length, self.width)(rho, z)
+        gazi = Iazi(k, self.theta_max, self.focal_length, self.width)(rho, z)
 
         factor = 1j*k*self.focal_length/2*np.exp(-1j*k*self.focal_length)
 
@@ -297,12 +273,6 @@ class radial_beam(source):
         H = np.array([Hx,Hy,Hz])*factor
 
         return H
-
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
 
 #TODO: fix
 class shear_beam(source):
@@ -314,7 +284,7 @@ class shear_beam(source):
     def E_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        gazi = Iazi(k, sel. theta_max, self.focal_length, self.width)(rho, z)
+        gazi = Iazi(k, self.theta_max, self.focal_length, self.width)(rho, z)
 
         factor = 1j*k*self.focal_length/2*np.exp(-1j*k*self.focal_length)
 
@@ -328,8 +298,8 @@ class shear_beam(source):
     def H_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        g10  = I10(k,  sel. theta_max, self.focal_length, self.width)(rho, z)
-        grad = Irad(k, sel. theta_max, self.focal_length, self.width)(rho, z)
+        g10  = I10(k,  sel.theta_max, self.focal_length, self.width)(rho, z)
+        grad = Irad(k, sel.theta_max, self.focal_length, self.width)(rho, z)
 
         factor = 1j*k*self.focal_length/2*np.exp(-1j*k*self.focal_length)
 
@@ -339,9 +309,3 @@ class shear_beam(source):
         H = np.array([Hx,Hy,Hz])*factor
 
         return H
-
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)

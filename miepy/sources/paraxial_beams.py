@@ -50,12 +50,6 @@ class gaussian_beam(source):
 
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
 
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
-
 class hermite_gaussian_beam(source):
     def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):
         super().__init__(amplitude)
@@ -101,13 +95,6 @@ class hermite_gaussian_beam(source):
         pol = np.array([H0_x, H0_y, 0])
 
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
-
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
-
 
 class laguerre_gaussian_beam(source):
     def __init__(self, p, l, width, polarization, amplitude=1, center=np.zeros(3)):
@@ -158,12 +145,6 @@ class laguerre_gaussian_beam(source):
         pol = np.array([H0_x, H0_y, 0])
 
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
-
-    def structure_of_mode(self, n, m, r, k):
-        p = project_source_onto(self, k, 'electric', n, m, r)
-        q = project_source_onto(self, k, 'magnetic', n, m, r)
-
-        return (p,q)
 
 def azimuthal_beam(width, amplitude=1, center=np.zeros(3)):
     """azimuthally polarized beam"""

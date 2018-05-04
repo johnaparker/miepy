@@ -4,6 +4,7 @@ Source abstract base class
 
 import numpy as np
 from abc import ABCMeta, abstractmethod
+import miepy
 
 class source:
     """source interface base class"""
@@ -18,19 +19,10 @@ class source:
     @abstractmethod
     def H_field(self, x, y, z, k): pass
 
-    @abstractmethod
-    def structure_of_mode(self, n, m, r, k): pass
-
-    #TODO: this is maybe useless
-    def structure(self, position, k, Nmax):
-        p = np.zeros([Nmax, 2*Nmax+1], dtype=complex)
-        q = np.zeros([Nmax, 2*Nmax+1], dtype=complex)
-        for n in range(1, Nmax+1):
-            for m in range(-n,n+1):
-                p[n-1,m+n], q[n-1,m+n] = self.structure_of_mode(n, m, position, k)
-
-        return p,q
-
+    def structure(self, position, k, Lmax):
+        p_src = miepy.sources.decomposition.point_matching(self,
+                      position, radius=1e-9, k=k, Lmax=Lmax, sampling=6)
+        return p_src
 
     def __add__(self, other):
         return combined_source(self, other)
@@ -47,10 +39,3 @@ class combined_source(source):
 
     def H_field(self, x, y, z, k):
         return sum(map(lambda source: source.H_field(x, y, z, k), self.sources))
-    
-    def structure_of_mode(self, n, m, r, k):
-        structure = map(lambda source: source.structure_of_mode(n, m, r, k), self.sources)
-        p_all = sum([p for p,q in structure])
-        q_all = sum([q for p,q in structure])
-
-        return p_all, q_all
