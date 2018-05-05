@@ -1,6 +1,5 @@
 import numpy as np
 import miepy
-from my_pytools.my_numpy.integrate import simps_2d
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from math import factorial
@@ -27,7 +26,7 @@ def r_dependence():
         E2 = M(r, THETA, PHI, k)
 
         integrand  = np.sum(E1*np.conj(E1), axis=0)
-        integral   = simps_2d(tau, phi, integrand).real
+        integral   = miepy.vsh.misc.simps_2d(tau, phi, integrand).real
         y[i] = integral
 
     plt.plot(rvals, y)
@@ -43,7 +42,7 @@ for n in range(1,6):
     E = N(r, THETA, PHI, k)
 
     integrand  = np.sum(E*np.conj(E), axis=0)
-    integral   = simps_2d(tau, phi, integrand).real
+    integral   = miepy.vsh.misc.simps_2d(tau, phi, integrand).real
     err = 0
 
     def newF(theta, phi):

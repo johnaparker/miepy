@@ -12,6 +12,7 @@ from . import vsh
 from . import forces
 from . import flux
 from . import coordinates
+from . import interface
 
 from .materials.create import constant_material, function_material, data_material
 from .gmt import cluster

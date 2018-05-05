@@ -3,8 +3,8 @@ The Generalized Mie Theory (GMT) for a collection of spheres.
 """
 import numpy as np
 import miepy
-from my_pytools.my_numpy.array import atleast
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
+from miepy.interface import atleast
 
 #TODO: make several properties... such as wavelength, source, position, etc.
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)

@@ -4,7 +4,6 @@ Far-field analysis with the GMT
 
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_matplotlib.colors import cmap
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib as mpl
 import miepy
@@ -43,7 +42,7 @@ I /= np.max(I)
 X, Y, Z = miepy.coordinates.sph_to_cart(I, THETA, PHI)
 colors = mpl.cm.viridis(I)
 
-surface = ax.plot_surface(X, Y, Z, facecolors=colors, cmap='viridis', edgecolors='#000000',
+surface = ax.plot_surface(X, Y, Z, facecolors=colors, edgecolors='#000000',
         cstride=1, rstride=1, linewidth=.1, shade=False)
 surface.set_edgecolor('k')
 
@@ -52,9 +51,9 @@ ax.set(xlim=[-a,a], ylim=[-a,a], zlim=[-a,a],
         xlabel='x', ylabel='y', zlabel='z')
 ax.view_init(ax.elev, ax.azim+90)
 
-ax.contourf(X,Y,Z, zdir='x', offset=-a, cmap='viridis')
-ax.contourf(X,Y,Z, zdir='y', offset=-a, cmap='viridis')
-ax.contourf(X,Y,Z, zdir='z', offset=-a, cmap='viridis')
+ax.contourf(X,Y,Z, zdir='x', offset=-a)
+ax.contourf(X,Y,Z, zdir='y', offset=-a)
+ax.contourf(X,Y,Z, zdir='z', offset=-a)
 
 plt.show()
 

@@ -3,7 +3,6 @@ Test properties of a cluster of particles
 """
 
 import numpy as np
-import h5py
 import miepy
 from tqdm import tqdm
 

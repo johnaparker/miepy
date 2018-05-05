@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_numpy.integrate import simps_2d
 from tqdm import tqdm
-import h5py
 import miepy
 
 def sph_to_cart(r, theta, phi, origin=[0,0,0]):
@@ -64,7 +62,7 @@ for sep_idx,separation in enumerate(tqdm(separations)):
     flux = np.zeros_like(wavelengths)
 
     for i in range(Nwav):
-        flux[i] = simps_2d(tau, phi, I[i])
+        flux[i] = miepy.vsh.misc.simps_2d(tau, phi, I[i])
 
     plt.plot(wavelengths/nm, flux - .0004*sep_idx, color='C0')
 

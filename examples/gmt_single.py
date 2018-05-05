@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_matplotlib.colors import cmap
 import miepy
 
 nm = 1e-9
@@ -30,7 +29,7 @@ mask = np.zeros((Nx,Ny), dtype=bool)
 mask[(np.squeeze(Y))**2 + np.squeeze(X)**2 < 3.5*r**2] = True
 I[mask] = 0
 
-im = axes[0].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', cmap=cmap['parula'], rasterized=True)
+im = axes[0].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', rasterized=True)
 arrow = E[...]
 arrow[0][mask] = 0
 arrow[1][mask] = 0
@@ -53,7 +52,7 @@ I = np.sum(np.abs(E)**2, axis=0)
 print(E[:,0,0])
 I[mask] = 0
 
-im2 = axes[1].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', cmap=cmap['parula'], rasterized=True)
+im2 = axes[1].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', rasterized=True)
 arrow = E[...]
 arrow[0][mask] = 0
 arrow[1][mask] = 0

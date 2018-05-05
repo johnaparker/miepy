@@ -5,7 +5,6 @@ Decomposition of electric fields and sources into VSH coefficients using:
 """
 
 import numpy as np
-from my_pytools.my_numpy.integrate import simps_2d
 import miepy.coordinates as coordinates
 from miepy import vsh
 
@@ -115,7 +114,7 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoing, spheri
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
-    integrated = simps_2d(tau, phi, proj_data)
+    integrated = miepy.vsh.misc.simps_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 

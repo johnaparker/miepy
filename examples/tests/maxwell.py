@@ -6,11 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from miepy.materials import material
 from miepy import sphere
-import my_pytools.my_matplotlib.style as style
-import my_pytools.my_matplotlib.plots as plots
-import my_pytools.my_matplotlib.colors as colors
-
-style.screen()
 
 #wavelength from 400nm to 1000nm
 wav = np.linspace(300,1100,1000)

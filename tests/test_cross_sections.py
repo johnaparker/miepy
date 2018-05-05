@@ -3,7 +3,6 @@ Compare analytic cross-sections to integrated Poynting vector for an Ag dimer in
 """
 
 import numpy as np
-import h5py
 import miepy
 from tqdm import tqdm
 from scipy import constants

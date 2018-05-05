@@ -3,7 +3,6 @@ Comapre analytic force and torque expressions to integrated Maxwell stress tenso
 """
 
 import numpy as np
-import h5py
 import matplotlib.pyplot as plt
 import miepy
 from math import factorial

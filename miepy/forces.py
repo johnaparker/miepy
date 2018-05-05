@@ -5,7 +5,7 @@ Expressions for the force and torque given the expansion coefficients or the fie
 import numpy as np
 from scipy import constants
 import miepy
-from my_pytools.my_numpy.integrate import simps_2d
+from miepy.vsh.misc import simps_2d
 
 def levi_civita():
     """return the levi-civita symbol"""

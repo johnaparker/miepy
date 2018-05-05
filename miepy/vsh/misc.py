@@ -4,6 +4,18 @@ Miscellaneous functions related to vsh
 
 import numpy as np
 from scipy import special
+from scipy.integrate import simps
+
+def simps_2d(xd,yd,fd):
+    """1d simpsons rule extended to 2d"""
+    if np.iscomplexobj(fd):
+        return simps_2d(xd, yd, fd.real) + 1j*simps_2d(xd, yd, fd.imag)
+
+    xData = np.zeros(len(xd))
+    for i,x in enumerate(xd):
+        xData[i] = simps(fd[i,:], yd)
+
+    return simps(xData, xd)
 
 ###### below are pi,tau,VSH used in Mie theory, which may differ from those defined in GMT ######
 

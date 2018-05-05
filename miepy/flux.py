@@ -6,7 +6,6 @@ import numpy as np
 from scipy import constants
 import miepy
 from functools import namedtuple
-from my_pytools.my_numpy.integrate import simps_2d
 
 cross_sections = namedtuple('cross_sections', ['scattering', 'absorption', 'extinction'])
 
@@ -139,7 +138,7 @@ def flux_from_poynting_sphere(E, H, radius, eps=1, mu=1):
     dA = radius**2
 
     integrand = np.einsum('ixy,ixy->xy', S, rhat)*dA
-    flux = simps_2d(tau, phi, integrand)
+    flux = miepy.vsh.misc.simps_2d(tau, phi, integrand)
 
     return flux
 

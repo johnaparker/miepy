@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import miepy
 import matplotlib.cm as cm
-from my_pytools.my_matplotlib import colors, plots
 from tqdm import tqdm
 
 # Variable wavelengths and core index of refraction
@@ -36,9 +35,7 @@ data /= np.max(data)
 
 X,Y = np.meshgrid(indices, wavelengths*1e9, indexing='ij')
 
-cmap = colors.cmap['parula']
-plt.pcolormesh(X, Y, data, shading="gouraud", cmap=cmap)
-plots.pcolor_z_info(data.T,indices,wavelengths*1e9)
+plt.pcolormesh(X, Y, data, shading="gouraud")
 plt.xlabel("index of refraction")
 plt.ylabel("wavelength (nm)")
 plt.colorbar(label="scattering cross-section")

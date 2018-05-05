@@ -7,9 +7,7 @@ Test to ensure that scattering cross-section computed via 2 different methods yi
 
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_numpy.integrate import simps_2d
 from tqdm import tqdm
-import h5py
 import miepy
 
 def sph_to_cart(r, theta, phi, origin=[0,0,0]):
@@ -72,7 +70,7 @@ for wav_idx,wav in enumerate(tqdm(wavelengths)):
     tau = np.linspace(-1, 1, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
 
-    flux[wav_idx] = simps_2d(tau, phi, I)*dA
+    flux[wav_idx] = miepy.vsh.misc.simps_2d(tau, phi, I)*dA
 
 plt.plot(wavelengths/nm, flux, color='C0')
 plt.plot(wavelengths/nm, flux2, color='C1')

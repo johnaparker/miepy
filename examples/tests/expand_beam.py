@@ -4,7 +4,6 @@ Scattering, absroption, and extinction cross-sections of an Au dimer
 
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_matplotlib.colors import cmap
 from tqdm import tqdm
 import miepy
 
@@ -30,7 +29,7 @@ k = 2*np.pi/wavelength
 def plot(ax, E):
     I = np.sum(np.abs(E)**2, axis=0)
     # I[idx_center] = 0
-    ax.pcolormesh(X/nm, Y/nm, I, cmap=cmap['parula'], rasterized=True)
+    ax.pcolormesh(X/nm, Y/nm, I, rasterized=True)
 
     skip = 8
     idx = np.s_[::skip, ::skip]

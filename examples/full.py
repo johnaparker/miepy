@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from my_pytools.my_matplotlib.colors import cmap
 import miepy
 
 nm = 1e-9
@@ -29,7 +28,7 @@ for i,sim in enumerate([True,False]):
     mask[(np.squeeze(X)+sep/2)**2 + np.squeeze(Y)**2 < r**2] = True
     I[mask] = 0
 
-    im = axes[i].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', cmap=cmap['parula'], rasterized=True)
+    im = axes[i].pcolormesh(np.squeeze(X)/nm,np.squeeze(Y)/nm,I, shading='gouraud', rasterized=True)
     plt.colorbar(im, ax=axes[i], label='Intensity')
     axes[i].set(aspect='equal', xlabel='x (nm)', ylabel='y (nm)')
 
