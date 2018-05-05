@@ -11,7 +11,7 @@ import miepy
 wavelengths = np.linspace(400e-9,1000e-9,1000)
 
 # Ag material
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials.Ag()
 
 # Calculate scattering coefficients
 radius = 100e-9    # 100 nm radius

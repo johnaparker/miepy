@@ -11,7 +11,7 @@ import miepy
 wavelengths = np.linspace(400e-9,1000e-9,1000)
 
 # Ag shell and dielectric core
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials.Ag()
 dielectric = miepy.constant_material(1.46**2)
 
 # Calculate scattering coefficients

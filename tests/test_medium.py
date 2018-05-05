@@ -43,7 +43,7 @@ def test_medium_scaling_force(plot=False):
 def test_medium_cross_sections(plot=False):
     """verify cross-sections of an Au dimer in water by comparing with Poynting vector approach"""
     Nwav = 5
-    Au = miepy.materials.predefined.Au()
+    Au = miepy.materials. Au()
     radius = 50*nm
 
     Lmax = 2

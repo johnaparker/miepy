@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 nm = 1e-9
 
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials. Ag()
 radius = 75*nm
 source = miepy.sources.y_polarized_plane_wave()
 Lmax = 1

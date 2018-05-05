@@ -11,7 +11,7 @@ nm = 1e-9
 um = 1e-6
 Nwav = 60
 
-Au = miepy.materials.predefined.Au()
+Au = miepy.materials. Au()
 radius = 40*nm
 source = miepy.sources.x_polarized_plane_wave()
 Lmax = 3

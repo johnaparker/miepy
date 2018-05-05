@@ -12,7 +12,7 @@ from scipy import constants
 
 nm = 1e-9
 
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials. Ag()
 # Ag = miepy.constant_material(4**2 + 0.01j)
 radius = 75*nm
 source = miepy.sources.rhc_polarized_plane_wave(amplitude=2)

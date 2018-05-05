@@ -41,7 +41,7 @@ nm = 1e-9
 sampling = 40
 Nwav = 60
 
-Au = miepy.materials.predefined.Au()
+Au = miepy.materials. Au()
 radius = 40*nm
 source = miepy.sources.x_polarized_plane_wave(amplitude=1)
 # separations = np.linspace(2*radius+10e-9,2*radius+700e-9, 50)

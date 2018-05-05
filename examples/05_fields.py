@@ -8,7 +8,7 @@ import miepy
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials. Ag()
 
 # calculate scattering coefficients, 800 nm illumination
 radius = 200e-9      # 200 nm radius

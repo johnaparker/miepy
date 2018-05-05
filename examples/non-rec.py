@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 pdf = PdfPages('out.pdf')
 
-Ag = miepy.materials.predefined.Ag()
+Ag = miepy.materials. Ag()
 radius = [100e-9, 75e-9]
 
 sources = {'x-polarized': miepy.sources.x_polarized_plane_wave(amplitude=1e6),

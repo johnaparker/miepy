@@ -1,12 +1,12 @@
-import miepy
 from miepy.materials.load import load_material
+from miepy.materials.create import constant_material
 
 ### mediums
 def vacuum():
-    return miepy.constant_material(1)
+    return constant_material(1)
 
 def water():
-    return miepy.constant_material(1.33**2)
+    return constant_material(1.33**2)
 
 ### metals
 def Ag(author='Johnson'):

@@ -29,7 +29,7 @@ source = miepy.sources.point_dipole([-radius -10*nm, 0, 0], polarization=[0,0,1]
 # source = miepy.sources.x_polarized_plane_wave()
 sphere = miepy.cluster(position=[0,0,0],
                        material=miepy.constant_material(4**2),
-                       # material=miepy.materials.predefined.Au(),
+                       # material=miepy.materials. Au(),
                        radius=radius,
                        source=source,
                        Lmax=4,

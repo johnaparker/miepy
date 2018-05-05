@@ -18,7 +18,7 @@ dielectric = miepy.constant_material(3.7**2 + .1j)
 radius = 100*nm       # 100 nm radius
 
 # water medium
-medium = miepy.materials.predefined.water()
+medium = miepy.materials. water()
 
 # Single Mie Theory
 Lmax = 5       # Use up to 5 multipoles
