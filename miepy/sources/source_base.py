@@ -19,9 +19,17 @@ class source:
     @abstractmethod
     def H_field(self, x, y, z, k): pass
 
-    def structure(self, position, k, Lmax):
-        p_src = miepy.sources.decomposition.point_matching(self,
-                      position, radius=1e-9, k=k, Lmax=Lmax, sampling=6)
+    def analytic_structure(self, position, k, Lmax):
+        raise NotImplementedError('source does not have an analytic structure.'
+                                  ' Use numerical methods in miepy.vsh.decomposition instead')
+
+    def structure(self, position, k, Lmax, method='near'):
+        if method == 'near':
+            decompose = miepy.vsh.decomposition.near_field_point_matching
+        elif method == 'far':
+            decompose = miepy.vsh.decomposition.far_field_point_matching
+
+        p_src = decompose(self, position, radius=, k=k, Lmax=Lmax, sampling=6)
         return p_src
 
     def __add__(self, other):

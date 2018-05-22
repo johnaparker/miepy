@@ -8,6 +8,25 @@ from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite
 
+def fields_from_potential(U, polarization):
+    pass
+
+def far_fields_from_potential(U, polarization, phi):
+    """Determine far-field spherical fields from the scalar potential.
+    Returns E[2,...], the theta & phi components
+    
+    Arguments:
+        U[...]            values of the scalar potential
+        polarization[2]   polarization direction
+        phi[...]          phi angles
+    """
+    Ex = U*polarization[0]
+    Ey = U*polarization[1]
+    Etheta = -Ex*np.cos(phi) - Ey*np.sin(phi)
+    Ephi   = -Ex*np.sin(phi) + Ey*np.cos(phi)
+
+    return np.array([Etheta, Ephi])
+
 def zr(w0, wav):
     return np.pi*w0**2/wav
 
@@ -49,6 +68,10 @@ class gaussian_beam(source):
         pol = np.array([H0_x, H0_y, 0])
 
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+    def spherical_ingoing(self, theta, phi, k):
+        U = np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        return far_fields_from_potential(U, self.polarization, phi)
 
 class hermite_gaussian_beam(source):
     def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):

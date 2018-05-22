@@ -5,8 +5,7 @@ Decomposition of electric fields and sources into VSH coefficients using:
 """
 
 import numpy as np
-import miepy.coordinates as coordinates
-from miepy import vsh
+from miepy import vsh, coordinates
 
 def sample_sphere_point_matching(position, radius, sampling):
     """Sample points on the surface of the sphere for the point matching method
@@ -17,7 +16,6 @@ def sample_sphere_point_matching(position, radius, sampling):
            radius        radius of sphere
            sampling      angular points sampled per pi radians
     """
-
     theta = np.linspace(0, np.pi, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)[:-1]
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
@@ -26,11 +24,27 @@ def sample_sphere_point_matching(position, radius, sampling):
     Nphi = phi.shape[0]
     return np.reshape(np.array([X,Y,Z]), [3, -1])[:,Nphi-1:-Nphi+1]
 
+def sample_plane_point_matching(position, size, sampling):
+    """Sample points on a planar surface (z-oriented) for the point matching method
+       Returns points[3,N]
+
+       Arguments:
+           position[3]   center of plane
+           size          length of the plane (square shape)
+           sampling      number of sampling points along a dimension
+    """
+    x = position[0] + np.linspace(-size/2, size/2, sampling)
+    y = position[1] + np.linspace(-size/2, size/2, sampling)
+    X, Y = np.meshgrid(x, y)
+    Z = positio[2]*np.ones_like(X)
+
+    points = np.array([X, Y, Z])
+    return np.reshape(points, [3,-1])
+
 #TODO: create a root function: instead of source... pass in raw fields for more generality, (no position needed)
 #TODO: sampling default based on value of Lmax
-#TODO: radius default based on value of k
-def point_matching(source, position, radius, k, Lmax, sampling=6):
-    """Decompose a source into VSHs using the point matching method
+def far_field_point_matching(source, position, radius, k, Lmax, sampling=6):
+    """Decompose a source into VSHs using the point matching method in the far field
        Returns p_src[2,rmax]
        
        Arguments:
@@ -41,6 +55,8 @@ def point_matching(source, position, radius, k, Lmax, sampling=6):
            Lmax        maximum number of multipoles
            sampling    angular points sampled per pi radians (default: 5)
     """
+    position = np.asarray(position)
+
     points = sample_sphere_point_matching(position, radius, sampling)
     Npoints = points.shape[1]
     X = points[0]
@@ -50,17 +66,64 @@ def point_matching(source, position, radius, k, Lmax, sampling=6):
 
     rmax = vsh.Lmax_to_rmax(Lmax)
 
-    E_src = source.E_field(X, Y, Z, k)
-    H_src = source.H_field(X, Y, Z, k)
-    E_src = coordinates.vec_cart_to_sph(E_src, THETA, PHI)
-    H_src = coordinates.vec_cart_to_sph(H_src, THETA, PHI)
+    E_src = np.zeros([2, Npoints], dtype=complex)
+    E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
 
-    E_vsh = np.zeros([3, Npoints, 2, rmax], dtype=complex)
+    # fields in the upper-hemisphere are zero
+    idx = THETA < np.pi/2
+    E_src[:,idx] = source.spherical_ingoing(THETA[idx], PHI[idx], k)
+
+    # phase correction for moving away from the center of the source
+    rhat, *_ = miepy.coordinates.sph_basis_vectors(THETA, PHI)
+    delta = source.center - position
+    phase = k*np.einsum('ij,i', rhat, delta)
+    E_src *= np.exp(1j*phase)
+
+    for i,n,m in vsh.mode_indices(Lmax):
+        Nfunc, Mfunc = miepy.VSH(n, m, mode=miepy.VSH_mode.ingoing)
+        Emn_val = miepy.vsh.Emn(m, n)
+        E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)[1:]
+        E_vsh[...,1,i] = -1j*Emn_val*Mfunc(radius, THETA, PHI, k)[1:]
+
+    column = E_src.reshape([2*Npoints])
+    matrix = E_vsh.reshape([2*Npoints, 2*rmax])
+    sol = np.linalg.lstsq(matrix, column, rcond=None)
+    p_src = sol[0]
+
+    return np.reshape(p_src, [2,rmax])
+
+def near_field_point_matching(source, position, size, k, Lmax, sampling):
+    """Decompose a source into VSHs using the point matching method in the near field
+       Returns p_src[2,rmax]
+       
+       Arguments:
+           source      source object
+           position    position around which to decompose
+           size        size of xy planar region to perform point matching over
+           k           medium wavenumber
+           Lmax        maximum number of multipoles
+           sampling    number of sampling points along a dimension
+    """
+    points = sample_plane_point_matching(position, size, sampling)
+    Npoints = points.shape[1]
+    X = points[0]
+    Y = points[1]
+    Z = points[2]
+    RAD, THETA, PHI = coordinates.cart_to_sph(X, Y, Z, origin=position)
+
+    rmax = vsh.Lmax_to_rmax(Lmax)
+
+    E_src = source.E_field(X, Y, Z, k)[:2]
+    H_src = source.H_field(X, Y, Z, k)[:2]
+    # TODO: is this true?
+    # H_src = E_src[::-1]
+    E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
+
     for i,n,m in vsh.mode_indices(Lmax):
         Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.VSH_mode.incident)
         Emn_val = vsh.Emn(m, n)
-        E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)
-        E_vsh[...,1,i] = -1j*Emn_val*Mfunc(radius, THETA, PHI, k)
+        E_vsh[...,0,i] = -1j*Emn_val*coordinates.vec_sph_to_cart(Nfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
+        E_vsh[...,1,i] = -1j*Emn_val*coordinates.vec_sph_to_cart(Mfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
 
     H_vsh = -1j*E_vsh[...,::-1,:]
 
@@ -71,8 +134,8 @@ def point_matching(source, position, radius, k, Lmax, sampling=6):
 
     return np.reshape(p_src, [2,rmax])
 
-def project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoing, spherical=False):
-    """Project fields onto a given mode
+def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoing, spherical=False):
+    """Project fields onto a given mode using integral method
 
     Arguments:
         E[3,Ntheta,Nphi]     electric field values on the surface of a sphere
@@ -114,12 +177,12 @@ def project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoing, spheri
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
-    integrated = miepy.vsh.misc.simps_2d(tau, phi, proj_data)
+    integrated = vsh.misc.simps_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 
-def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
-    """Project source object onto a given mode
+def integral_project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
+    """Project source object onto a given mode using integral method
 
     Arguments:
         src        source object
@@ -133,6 +196,7 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=v
     """
 
     r = 2*np.pi/k   # choose radius to be a wavelength of the light
+    r = 50e-9
 
     THETA, PHI = coordinates.sphere_mesh(sampling)
     X,Y,Z = coordinates.sph_to_cart(r, THETA, PHI, origin=origin)
@@ -140,8 +204,8 @@ def project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=v
 
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
-def decompose_fields(E, r, k, Lmax, mode=vsh.VSH_mode.outgoing, spherical=False):
-    """Decompose fields into the VSHs
+def integral_project_fields(E, r, k, Lmax, mode=vsh.VSH_mode.outgoing, spherical=False):
+    """Decompose fields into the VSHs using integral method
     Returns p[2,rmax]
 
     Arguments:
@@ -153,17 +217,17 @@ def decompose_fields(E, r, k, Lmax, mode=vsh.VSH_mode.outgoing, spherical=False)
         spherical          If true, E should be in spherical components (default: False (cartesian))
     """
 
-    rmax = Lmax_to_rmax(Lmax)
+    rmax = vsh.Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for i,n,m in mode_indices(Lmax):
+    for i,n,m in vsh.mode_indices(Lmax):
         p[0,i] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
         p[1,i] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
 
     return p
 
-def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
-    """Decompose a source object into VSHs
+def integral_project_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
+    """Decompose a source object into VSHs using integral method
     Returns p[2,rmax]
 
     Arguments:
@@ -175,10 +239,10 @@ def decompose_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.VSH_mod
         mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
     """
 
-    rmax = Lmax_to_rmax(Lmax)
+    rmax = vsh.Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    for i,n,m in mode_indices(Lmax):
+    for i,n,m in vsh.mode_indices(Lmax):
         p[0,i] = project_source_onto(src, k, 'electric', n, m, origin, sampling, mode)
         p[1,i] = project_source_onto(src, k, 'magnetic', n, m, origin, sampling, mode)
 

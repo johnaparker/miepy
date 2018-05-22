@@ -30,6 +30,7 @@ def get_zn(mode):
 
 #TODO: this whole interface could probably be nicer...
 #TODO: specify spherical flag (either in VSH or the N/M functions themselves)
+#TODO: expansion issues at origin (r=0) for incident modes
 def VSH(n, m, mode=VSH_mode.outgoing):
     """electric and magnetic vector spherical harmonic function
 
