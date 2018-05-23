@@ -25,7 +25,7 @@ class plane_wave(source):
         pol = np.array([H0_x, H0_y, 0])
         return np.einsum('i...,...->i...', pol, amp)
 
-    def structure(self, position, k, Lmax):
+    def structure(self, position, k, Lmax, radius=None):
         rmax = miepy.vsh.Lmax_to_rmax(Lmax)
         p_src = np.zeros([2, rmax], dtype=complex)
 
@@ -43,6 +43,9 @@ class plane_wave(source):
                 p_src[:,i] /= (n*(n+1))
 
         return p_src
+
+    def is_paraxial(self, k):
+        return True
 
 def x_polarized_plane_wave(amplitude=1):
     return plane_wave(polarization=[1,0], amplitude=amplitude)

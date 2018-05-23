@@ -314,7 +314,7 @@ class cluster:
             Lmax = self.Lmax
 
         self.solve_cluster_coefficients(Lmax)
-        p0 = self.source.structure(self.origin, self.material_data.k, Lmax)
+        p0 = self.source.structure(self.origin, self.material_data.k, Lmax, radius=Lmax/self.material_data.k)
 
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
 
@@ -469,7 +469,7 @@ class cluster:
         pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
-            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.Lmax)
+            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.Lmax, self.radius[i])
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src

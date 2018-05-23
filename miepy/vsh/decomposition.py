@@ -36,7 +36,7 @@ def sample_plane_point_matching(position, size, sampling):
     x = position[0] + np.linspace(-size/2, size/2, sampling)
     y = position[1] + np.linspace(-size/2, size/2, sampling)
     X, Y = np.meshgrid(x, y)
-    Z = positio[2]*np.ones_like(X)
+    Z = position[2]*np.ones_like(X)
 
     points = np.array([X, Y, Z])
     return np.reshape(points, [3,-1])

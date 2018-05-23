@@ -3,13 +3,23 @@ beam sources
 """
 
 import numpy as np
-from miepy.vsh import project_source_onto
+import miepy
 from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite
 
 def fields_from_potential(U, polarization):
-    pass
+    """Determine cartesian fields from the scalar potential.
+    Returns E[2,...], the x & y components
+    
+    Arguments:
+        U[...]            values of the scalar potential
+        polarization[2]   polarization direction
+    """
+    Ex = U*polarization[0]
+    Ey = U*polarization[1]
+
+    return np.array([Ex, Ey])
 
 def far_fields_from_potential(U, polarization, phi):
     """Determine far-field spherical fields from the scalar potential.
@@ -26,6 +36,12 @@ def far_fields_from_potential(U, polarization, phi):
     Ephi   = -Ex*np.sin(phi) + Ey*np.cos(phi)
 
     return np.array([Etheta, Ephi])
+
+def sampling_from_Lmax(Lmax):
+    """Determine the required sampling from Lmax for point matching"""
+    rmax = miepy.vsh.Lmax_to_rmax(Lmax)
+    np.ceil(rmax**0.5)
+    return max(3, rmax)
 
 def zr(w0, wav):
     return np.pi*w0**2/wav
@@ -68,6 +84,20 @@ class gaussian_beam(source):
         pol = np.array([H0_x, H0_y, 0])
 
         return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+
+    def is_paraxial(self, k):
+        return 2*np.pi/k > self.width
+
+    def structure(self, position, k, Lmax, radius):
+        sampling = sampling_from_Lmax(Lmax)
+
+        if self.is_paraxial(k):
+            return miepy.vsh.decomposition.near_field_point_matching(self, 
+                              position, 2*radius, k, Lmax, sampling)
+        else:
+            r = 1e6*(2*np.pi/k)
+            return miepy.vsh.decomposition.far_field_point_matching(self, 
+                              position, r, k, Lmax, sampling)
 
     def spherical_ingoing(self, theta, phi, k):
         U = np.exp(-(k*self.width*np.tan(theta)/2)**2)
@@ -182,7 +212,7 @@ def radial_beam(width, amplitude=1, center=np.zeros(3)):
     return HG_1 + HG_2
 
 def shear_beam(width, amplitude=1, center=np.zeros(3)):
-    """radially polarized beam"""
+    """shear polarized beam"""
     HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude, center)
     HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], amplitude, center)
     return HG_1 + HG_2
