@@ -7,6 +7,11 @@ Decomposition of electric fields and sources into VSH coefficients using:
 import numpy as np
 from miepy import vsh, coordinates
 
+def sampling_from_Lmax(Lmax):
+    """Determine the required sampling from Lmax for point matching"""
+    rmax = vsh.Lmax_to_rmax(Lmax)
+    return max(3, int(np.ceil(rmax**0.5)))
+
 def sample_sphere_point_matching(position, radius, sampling):
     """Sample points on the surface of the sphere for the point matching method
        Returns points[3,N]
@@ -16,13 +21,13 @@ def sample_sphere_point_matching(position, radius, sampling):
            radius        radius of sphere
            sampling      angular points sampled per pi radians
     """
-    theta = np.linspace(0, np.pi, sampling)
-    phi = np.linspace(0, 2*np.pi, 2*sampling)[:-1]
+    theta = np.linspace(0, np.pi, sampling+2)[1:-1]
+    phi = np.linspace(0, 2*np.pi, 2*sampling + 1)[:-1]
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     X,Y,Z = coordinates.sph_to_cart(radius, THETA, PHI, origin=position)
 
     Nphi = phi.shape[0]
-    return np.reshape(np.array([X,Y,Z]), [3, -1])[:,Nphi-1:-Nphi+1]
+    return np.reshape(np.array([X,Y,Z]), [3, -1])
 
 def sample_plane_point_matching(position, size, sampling):
     """Sample points on a planar surface (z-oriented) for the point matching method
@@ -43,6 +48,7 @@ def sample_plane_point_matching(position, size, sampling):
 
 #TODO: create a root function: instead of source... pass in raw fields for more generality, (no position needed)
 #TODO: sampling default based on value of Lmax
+#TODO: use far-field expressions for the vsh functions
 def far_field_point_matching(source, position, radius, k, Lmax, sampling=6):
     """Decompose a source into VSHs using the point matching method in the far field
        Returns p_src[2,rmax]
@@ -70,18 +76,18 @@ def far_field_point_matching(source, position, radius, k, Lmax, sampling=6):
     E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
 
     # fields in the upper-hemisphere are zero
-    idx = THETA < np.pi/2
+    idx = THETA >= np.pi/2
     E_src[:,idx] = source.spherical_ingoing(THETA[idx], PHI[idx], k)
 
     # phase correction for moving away from the center of the source
-    rhat, *_ = miepy.coordinates.sph_basis_vectors(THETA, PHI)
+    rhat, *_ = coordinates.sph_basis_vectors(THETA, PHI)
     delta = source.center - position
     phase = k*np.einsum('ij,i', rhat, delta)
     E_src *= np.exp(1j*phase)
 
     for i,n,m in vsh.mode_indices(Lmax):
-        Nfunc, Mfunc = miepy.VSH(n, m, mode=miepy.VSH_mode.ingoing)
-        Emn_val = miepy.vsh.Emn(m, n)
+        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.VSH_mode.ingoing)
+        Emn_val = vsh.Emn(m, n)
         E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)[1:]
         E_vsh[...,1,i] = -1j*Emn_val*Mfunc(radius, THETA, PHI, k)[1:]
 
@@ -109,7 +115,7 @@ def near_field_point_matching(source, position, size, k, Lmax, sampling):
     X = points[0]
     Y = points[1]
     Z = points[2]
-    RAD, THETA, PHI = coordinates.cart_to_sph(X, Y, Z, origin=position)
+    RAD, THETA, PHI = coordinates.cart_to_sph(X, Y, Z + 1e-9, origin=position)
 
     rmax = vsh.Lmax_to_rmax(Lmax)
 

@@ -6,42 +6,7 @@ import numpy as np
 import miepy
 from miepy.sources.source_base import source, combined_source
 from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite
-
-def fields_from_potential(U, polarization):
-    """Determine cartesian fields from the scalar potential.
-    Returns E[2,...], the x & y components
-    
-    Arguments:
-        U[...]            values of the scalar potential
-        polarization[2]   polarization direction
-    """
-    Ex = U*polarization[0]
-    Ey = U*polarization[1]
-
-    return np.array([Ex, Ey])
-
-def far_fields_from_potential(U, polarization, phi):
-    """Determine far-field spherical fields from the scalar potential.
-    Returns E[2,...], the theta & phi components
-    
-    Arguments:
-        U[...]            values of the scalar potential
-        polarization[2]   polarization direction
-        phi[...]          phi angles
-    """
-    Ex = U*polarization[0]
-    Ey = U*polarization[1]
-    Etheta = -Ex*np.cos(phi) - Ey*np.sin(phi)
-    Ephi   = -Ex*np.sin(phi) + Ey*np.cos(phi)
-
-    return np.array([Etheta, Ephi])
-
-def sampling_from_Lmax(Lmax):
-    """Determine the required sampling from Lmax for point matching"""
-    rmax = miepy.vsh.Lmax_to_rmax(Lmax)
-    np.ceil(rmax**0.5)
-    return max(3, rmax)
+from scipy.special import eval_genlaguerre, eval_hermite, erfc
 
 def zr(w0, wav):
     return np.pi*w0**2/wav
@@ -55,7 +20,7 @@ def Rinv(z, w0, wav):
 def gouy(z, w0, wav):
     return np.arctan2(z, zr(w0,wav))
 
-class gaussian_beam(source):
+class beam(source):
     def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
         super().__init__(amplitude)
         self.width = width
@@ -63,33 +28,44 @@ class gaussian_beam(source):
         self.polarization = polarization
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
-    
-    def E_field(self, x, y, z, k):
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
-        wav = 2*np.pi/k
-        amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
-        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
-        pol = np.array([*self.polarization, 0])
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
 
+    def scalar_potenital(self, x, y, z, k): pass
+
+    def scalar_potenital_ingoing(self, theta, phi, k): pass
+
+    def is_paraxial(self, x, y, z, k): pass
+
+    def E_field(self, x, y, z, k):
+        U = self.scalar_potenital(x, y, z, k)
+        E = np.zeros((3,) + U.shape, dtype=complex)
+        E[0] = U*self.polarization[0]
+        E[1] = U*self.polarization[1]
+
+        return E
 
     def H_field(self, x, y, z, k):
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
-        wav = 2*np.pi/k
-        amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
-        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
-        H0_x, H0_y = -self.polarization[1], self.polarization[0]
-        pol = np.array([H0_x, H0_y, 0])
+        U = self.scalar_potenital(x, y, z, k)
+        H = np.zeros((3,) + U.shape, dtype=complex)
+        H[0] = -U*self.polarization[1]
+        H[1] = U*self.polarization[0]
 
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+        return H
 
-    def is_paraxial(self, k):
-        return 2*np.pi/k > self.width
+    def spherical_ingoing(self, theta, phi, k):
+        """Determine far-field spherical fields from the scalar potential.
+        Returns E[2,...], the theta & phi components"""
+        U = self.scalar_potenital_ingoing(theta, phi, k)
+        Esph = np.zeros((2,) + U.shape, dtype=complex)
+
+        Ex = U*self.polarization[0]
+        Ey = U*self.polarization[1]
+        Esph[0] = -Ex*np.cos(phi) - Ey*np.sin(phi)
+        Esph[1] = -Ex*np.sin(phi) + Ey*np.cos(phi)
+
+        return Esph
 
     def structure(self, position, k, Lmax, radius):
-        sampling = sampling_from_Lmax(Lmax)
+        sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax)
 
         if self.is_paraxial(k):
             return miepy.vsh.decomposition.near_field_point_matching(self, 
@@ -99,22 +75,38 @@ class gaussian_beam(source):
             return miepy.vsh.decomposition.far_field_point_matching(self, 
                               position, r, k, Lmax, sampling)
 
-    def spherical_ingoing(self, theta, phi, k):
-        U = np.exp(-(k*self.width*np.tan(theta)/2)**2)
-        return far_fields_from_potential(U, self.polarization, phi)
+class gaussian_beam(beam):
+    def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
+        super().__init__(width, polarization, amplitude, center)
+    
+    def scalar_potenital(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
+        rho_sq = rp[0]**2 + rp[1]**2
+        wav = 2*np.pi/k
+        amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
+        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
 
-class hermite_gaussian_beam(source):
+        return amp*np.exp(1j*phase)
+
+    def scalar_potenital_ingoing(self, theta, phi, k):
+        wav = 2*np.pi/k
+        c = 0.5*(k*self.width)**2
+        power = 1e-12
+        factor = np.sqrt(power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))
+        U = factor*np.exp(-(k*self.width*np.tan(theta)/2)**2)
+
+        return U
+
+    def is_paraxial(self, k):
+        return 2*np.pi/k < self.width
+
+class hermite_gaussian_beam(beam):
     def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(amplitude)
+        super().__init__(width, polarization, amplitude, center)
         self.l = l
         self.m = m
-        self.width = width
-        polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization = polarization
-        self.polarization /= np.linalg.norm(polarization)
-        self.center = np.asarray(center)
     
-    def E_field(self, x, y, z, k):
+    def scalar_potenital(self, x, y, z, k):
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
@@ -127,14 +119,15 @@ class hermite_gaussian_beam(source):
         amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
         phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
 
-        pol = np.array([*self.polarization, 0])
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+        return amp*np.exp(1j*phase)
 
-
-    def H_field(self, x, y, z, k):
+    def scalar_potenital_ingoing(self, theta, phi, k):
+        wav = 2*np.pi/k
+        r = 1e6*wav
+        x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
+        
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
-        wav = 2*np.pi/k
 
         wz = w(rp[2], self.width, wav)
         HG_l = eval_hermite(self.l, np.sqrt(2)*rp[0]/wz)
@@ -142,25 +135,19 @@ class hermite_gaussian_beam(source):
         N = self.l + self.m
 
         amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
 
-        H0_x, H0_y = -self.polarization[1], self.polarization[0]
-        pol = np.array([H0_x, H0_y, 0])
+        return amp
 
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+    def is_paraxial(self, k):
+        return 2*np.pi/k < self.width
 
-class laguerre_gaussian_beam(source):
+class laguerre_gaussian_beam(beam):
     def __init__(self, p, l, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(amplitude)
+        super().__init__(width, polarization, amplitude, center)
         self.p = p
         self.l = l
-        self.width = width
-        polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization = polarization
-        self.polarization /= np.linalg.norm(polarization)
-        self.center = np.asarray(center)
     
-    def E_field(self, x, y, z, k):
+    def scalar_potenital(self, x, y, z, k):
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         phi = np.arctan2(rp[1], rp[0])
@@ -175,15 +162,16 @@ class laguerre_gaussian_beam(source):
         amp = self.amplitude*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
         phase = self.l*phi + k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
 
-        pol = np.array([*self.polarization, 0])
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+        return amp*np.exp(1j*phase)
 
+    def scalar_potenital_ingoing(self, theta, phi, k):
+        wav = 2*np.pi/k
+        r = 1e6*wav
+        x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
 
-    def H_field(self, x, y, z, k):
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         phi = np.arctan2(rp[1], rp[0])
-        wav = 2*np.pi/k
 
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
         wz = w(rp[2], self.width, wav)
@@ -192,12 +180,12 @@ class laguerre_gaussian_beam(source):
         N = abs(self.l) + 2*self.p
 
         amp = self.amplitude*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
-        phase = self.l*phi + k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
+        phase = self.l*phi
 
-        H0_x, H0_y = -self.polarization[1], self.polarization[0]
-        pol = np.array([H0_x, H0_y, 0])
+        return amp*np.exp(1j*phase)
 
-        return np.einsum('i...,...->i...', pol, amp*np.exp(1j*phase))
+    def is_paraxial(self, k):
+        return 2*np.pi/k < self.width
 
 def azimuthal_beam(width, amplitude=1, center=np.zeros(3)):
     """azimuthally polarized beam"""
