@@ -21,9 +21,8 @@ def gouy(z, w0, wav):
     return np.arctan2(z, zr(w0,wav))
 
 class beam(source):
-    def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
+    def __init__(self, polarization, amplitude=1, center=np.zeros(3)):
         super().__init__(amplitude)
-        self.width = width
         polarization = np.asarray(polarization, dtype=np.complex)
         self.polarization = polarization
         self.polarization /= np.linalg.norm(polarization)
@@ -77,7 +76,8 @@ class beam(source):
 
 class gaussian_beam(beam):
     def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(width, polarization, amplitude, center)
+        super().__init__(polarization, amplitude, center)
+        self.width = width
     
     def scalar_potenital(self, x, y, z, k):
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
@@ -102,7 +102,8 @@ class gaussian_beam(beam):
 
 class hermite_gaussian_beam(beam):
     def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(width, polarization, amplitude, center)
+        super().__init__(polarization, amplitude, center)
+        self.width = width
         self.l = l
         self.m = m
     
@@ -143,7 +144,8 @@ class hermite_gaussian_beam(beam):
 
 class laguerre_gaussian_beam(beam):
     def __init__(self, p, l, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(width, polarization, amplitude, center)
+        super().__init__(polarization, amplitude, center)
+        self.width = width
         self.p = p
         self.l = l
     
