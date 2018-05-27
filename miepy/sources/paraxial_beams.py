@@ -100,6 +100,28 @@ class gaussian_beam(beam):
     def is_paraxial(self, k):
         return 2*np.pi/k < self.width
 
+class bigaussian_beam(beam):
+    def __init__(self, width_x, width_y, polarization, amplitude=1, center=np.zeros(3)):
+        super().__init__(polarization, amplitude, center)
+        self.width_x = width_x
+        self.width_y = width_y
+    
+    def scalar_potenital(self, x, y, z, k):
+        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
+        rho_sq = rp[0]**2/self.width_x**2 + rp[1]**2/self.width_y**2
+        wav = 2*np.pi/k
+        amp = self.amplitude*np.exp(-rho_sq)
+        phase = k*rp[2]
+
+        return amp*np.exp(1j*phase)
+
+    def scalar_potenital_ingoing(self, theta, phi, k):
+        pass
+
+    def is_paraxial(self, k):
+        return True
+        # return 2*np.pi/k < min(self.width_x, self.width_y)
+
 class hermite_gaussian_beam(beam):
     def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):
         super().__init__(polarization, amplitude, center)
