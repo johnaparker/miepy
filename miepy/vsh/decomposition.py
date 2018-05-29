@@ -7,10 +7,18 @@ Decomposition of electric fields and sources into VSH coefficients using:
 import numpy as np
 from miepy import vsh, coordinates
 
-def sampling_from_Lmax(Lmax):
+#TODO: this should be called by the point_matching methods below directly
+def sampling_from_Lmax(Lmax, method):
     """Determine the required sampling from Lmax for point matching"""
     rmax = vsh.Lmax_to_rmax(Lmax)
-    return max(3, int(np.ceil(rmax**0.5)))
+    N = max(3, int(np.ceil(rmax**0.5)))
+
+    if method == 'far':
+        return 3*N
+    elif method == 'near':
+        return 2*N
+    else:
+        raise ValueError(f"'{method}' is not a valid method. Use 'far' or 'near'")
 
 def sample_sphere_point_matching(position, radius, sampling):
     """Sample points on the surface of the sphere for the point matching method

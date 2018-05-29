@@ -64,12 +64,13 @@ class beam(source):
         return Esph
 
     def structure(self, position, k, Lmax, radius):
-        sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax)
 
         if self.is_paraxial(k):
+            sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax, method='near')
             return miepy.vsh.decomposition.near_field_point_matching(self, 
                               position, 2*radius, k, Lmax, sampling)
         else:
+            sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax, method='far')
             r = 1e6*(2*np.pi/k)
             return miepy.vsh.decomposition.far_field_point_matching(self, 
                               position, r, k, Lmax, sampling)
