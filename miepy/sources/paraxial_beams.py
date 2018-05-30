@@ -75,6 +75,17 @@ class beam(source):
             return miepy.vsh.decomposition.far_field_point_matching(self, 
                               position, r, k, Lmax, sampling)
 
+class paraxial_beam(beam):
+    def __init__(self, Ufunc, polarization, amplitude=1, center=np.zeros(3)):
+        super().__init__(polarization, amplitude, center)
+        self.Ufunc = Ufunc
+
+    def scalar_potenital(self, x, y, z, k):
+        return self.Ufunc(x, y, z, k)
+
+    def is_paraxial(self, k):
+        return True
+
 class gaussian_beam(beam):
     def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
         super().__init__(polarization, amplitude, center)
