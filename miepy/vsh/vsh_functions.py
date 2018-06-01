@@ -28,6 +28,17 @@ def get_zn(mode):
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
 
+def get_zn_far(mode):
+    """determine the zn function for a given mode, in the far-field limit"""
+    if mode is VSH_mode.outgoing:
+        return lambda n, z: np.exp(1j*(z - (n+1)*np.pi/2))/z
+    elif mode is VSH_mode.ingoing:
+        return lambda n, z: np.exp(-1j*(z - (n+1)*np.pi/2))/z
+    elif mode in (VSH_mode.incident, VSH_mode.interior):
+        return lambda n, z: np.cos(z - (n+1)*np.pi/2)/z
+    else:
+        raise TypeError(f'{mode} is not a valid type of mode')
+
 #TODO: this whole interface could probably be nicer...
 #TODO: specify spherical flag (either in VSH or the N/M functions themselves)
 #TODO: expansion issues at origin (r=0) for incident modes
@@ -38,8 +49,7 @@ def VSH(n, m, mode=VSH_mode.outgoing):
             m: int           degree
             mode: VSH_mode   type of VSH (outgoing, incident)
 
-
-       returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 x,y,z components"""
+       returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 spherical components"""
 
     pi_f = vsh.special.pi_func(n,m)
     tau_f = vsh.special.tau_func(n,m)
@@ -72,6 +82,36 @@ def VSH(n, m, mode=VSH_mode.outgoing):
 
     return N,M
 
+def VSH_far(n, m, mode=VSH_mode.outgoing):
+    """electric and magnetic vector spherical harmonic function in the far field
+
+            n: int           order
+            m: int           degree
+            mode: VSH_mode   type of VSH (outgoing, incident)
+
+       returns (N(r,θ,ϕ,k) -> [2,...], M(r,θ,ϕ,k) -> [2,...]), the 2 theta/phi components"""
+
+    pi_f = vsh.special.pi_func(n,m)
+    tau_f = vsh.special.tau_func(n,m)
+    zn = get_zn(mode)
+    sign = -1 if mode is vsh.VSH_mode.ingoing else 1
+        
+    def N(r, theta, phi, k):
+        factor = sign*zn(n, k*r)*np.exp(1j*m*phi)
+        theta_comp = 1j*tau_f(theta)*factor
+        phi_comp = -pi_f(theta)*factor
+
+        return np.array([theta_comp, phi_comp])
+
+    def M(r, theta, phi, k):
+        factor = zn(n, k*r)*np.exp(1j*m*phi)
+        theta_comp = 1j*pi_f(theta)*factor
+        phi_comp = -tau_f(theta)*factor
+
+        return np.array([theta_comp, phi_comp])
+
+    return N,M
+
 def vsh_normalization_values(mode, ftype, n, m, r, k):
     """Determine the norm of a given vsh mode
     
@@ -97,3 +137,13 @@ def vsh_normalization_values(mode, ftype, n, m, r, k):
         znp_val = zn(n, k*r, derivative=True)
         radial_term = (np.abs(zn_val + k*r*znp_val)**2 + n*(n+1)*np.abs(zn_val)**2)/(k*r)**2
         return angular_term*radial_term
+
+def vsh_normalization_values_far(n, m):
+    """Determine the norm of a given vsh mode in the far-field
+    
+    Arguments:
+        n                 vsh order (1, 2, ...)
+        m                 vsh orientation (-n, -n+1, ..., n)
+    """
+
+    return 4*np.pi*n*(n+1)*factorial(n+m)/((2*n+1)*factorial(n-m))

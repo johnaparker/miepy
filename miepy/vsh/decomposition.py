@@ -262,3 +262,44 @@ def integral_project_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.
 
     return p
 
+def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
+    """Decompose a source object into VSHs using integral method in the far-field
+    Returns p[2,rmax]
+
+    Arguments:
+        src        source object
+        k          wavenumber
+        Lmax       maximum number of multipoles
+        origin     origin around which to perform the expansion (default: [0,0,0])
+        sampling   number of points to sample between 0 and pi (default: 20)
+    """
+    rmax = vsh.Lmax_to_rmax(Lmax)
+    p = np.zeros([2,rmax], dtype=complex)
+
+    theta = np.linspace(np.pi/2, np.pi, sampling)
+    phi = np.linspace(0, 2*np.pi, 2*sampling)
+    THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+    rad = 1e6*(2*np.pi/k)
+    rhat, *_ = coordinates.sph_basis_vectors(THETA, PHI)
+    Esrc = src.spherical_ingoing(THETA, PHI, k)
+
+    delta = src.center - origin
+    phase = k*np.einsum('i...,i', rhat, delta)
+    Esrc *= np.exp(1j*phase)
+
+    for i,n,m in vsh.mode_indices(Lmax):
+        Emn_val = vsh.Emn(m, n)
+        factor = 4*np.pi*1j**(1-n)*np.abs(Emn_val)
+        N, M = vsh.VSH_far(n, m, vsh.VSH_mode.ingoing)
+
+        E = N(rad, THETA, PHI, k)
+        U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
+        integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
+        p[0,i] = factor*integral
+
+        E = M(rad, THETA, PHI, k)
+        U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
+        integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
+        p[1,i] = factor*integral
+
+    return p

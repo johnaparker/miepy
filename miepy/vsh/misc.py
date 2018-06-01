@@ -4,7 +4,7 @@ Miscellaneous functions related to vsh
 
 import numpy as np
 from scipy import special
-from scipy.integrate import simps
+from scipy.integrate import simps, trapz
 
 def simps_2d(xd,yd,fd):
     """1d simpsons rule extended to 2d"""
@@ -17,6 +17,16 @@ def simps_2d(xd,yd,fd):
 
     return simps(xData, xd)
 
+def trapz_2d(xd,yd,fd):
+    """1d trapezoidal rule extended to 2d"""
+    if np.iscomplexobj(fd):
+        return trapz_2d(xd, yd, fd.real) + 1j*trapz_2d(xd, yd, fd.imag)
+
+    xData = np.zeros(len(xd))
+    for i,x in enumerate(xd):
+        xData[i] = trapz(fd[i,:], yd)
+
+    return trapz(xData, xd)
 ###### below are pi,tau,VSH used in Mie theory, which may differ from those defined in GMT ######
 
 def pi_tau_func(n):
