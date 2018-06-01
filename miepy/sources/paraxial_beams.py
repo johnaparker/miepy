@@ -87,30 +87,47 @@ class paraxial_beam(beam):
         return True
 
 class gaussian_beam(beam):
-    def __init__(self, width, polarization, amplitude=1, center=np.zeros(3)):
+    def __init__(self, width, polarization, power=None, amplitude=None, center=np.zeros(3)):
         super().__init__(polarization, amplitude, center)
         self.width = width
+        self.power = power
+        self.amplitude = amplitude
+
+        if power is None and amplitude is None:
+            raise ValueError('either power or amplitude must be specified')
+        elif power is not None and amplitude is not None:
+            raise ValueError('cannot specify power and amplitude simultaneously')
+
+    def get_E0(self):
+        if self.amplitude is None:
+            E0 = 2/self.width*np.sqrt(self.power/np.pi)
+            return E0
+        else:
+            return self.amplitude
     
     def scalar_potenital(self, x, y, z, k):
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
-        amp = self.amplitude*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
+        E0 = self.get_E0()
+        amp = E0*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
         phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
 
         return amp*np.exp(1j*phase)
 
     def scalar_potenital_ingoing(self, theta, phi, k):
-        wav = 2*np.pi/k
-        c = 0.5*(k*self.width)**2
-        power = 1e-12
-        factor = np.sqrt(power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))
-        U = factor*np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        r = 1e6*(2*np.pi/k)
+        if self.amplitude is None:
+            c = 0.5*(k*self.width)**2
+            U0 = 2*np.sqrt(self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+        else:
+            U0 = k*self.width**2*self.amplitude/r/2
 
+        U = U0*np.exp(-(k*self.width*np.tan(theta)/2)**2)
         return U
 
     def is_paraxial(self, k):
-        return 2*np.pi/k < self.width
+        return 2*np.pi/k < self.width/2
 
 class bigaussian_beam(beam):
     def __init__(self, width_x, width_y, polarization, amplitude=1, center=np.zeros(3)):
