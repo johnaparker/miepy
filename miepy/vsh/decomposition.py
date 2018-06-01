@@ -289,7 +289,7 @@ def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
 
     for i,n,m in vsh.mode_indices(Lmax):
         Emn_val = vsh.Emn(m, n)
-        factor = 4*np.pi*1j**(1-n)*np.abs(Emn_val)
+        factor = k**2*1j**(2-n)*np.abs(Emn_val)/(4*np.pi)
         N, M = vsh.VSH_far(n, m, vsh.VSH_mode.ingoing)
 
         E = N(rad, THETA, PHI, k)

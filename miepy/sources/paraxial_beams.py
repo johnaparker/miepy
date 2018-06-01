@@ -70,10 +70,8 @@ class beam(source):
             return miepy.vsh.decomposition.near_field_point_matching(self, 
                               position, 2*radius, k, Lmax, sampling)
         else:
-            sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax, method='far')
-            r = 1e6*(2*np.pi/k)
-            return miepy.vsh.decomposition.far_field_point_matching(self, 
-                              position, r, k, Lmax, sampling)
+            return miepy.vsh.decomposition.integral_project_source_far(self, 
+                              k, Lmax, origin=position)
 
 class paraxial_beam(beam):
     def __init__(self, Ufunc, polarization, amplitude=1, center=np.zeros(3)):
