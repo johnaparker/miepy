@@ -277,6 +277,7 @@ def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
     p = np.zeros([2,rmax], dtype=complex)
 
     theta = np.linspace(np.pi/2, np.pi, sampling)
+    # theta = np.linspace(2.5, np.pi, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     rad = 1e6*(2*np.pi/k)
@@ -302,4 +303,4 @@ def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
         integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
         p[1,i] = factor*integral
 
-    return p
+    return p/2

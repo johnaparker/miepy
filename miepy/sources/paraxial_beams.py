@@ -7,6 +7,9 @@ import miepy
 from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite, erfc
+from scipy.constants import physical_constants
+
+Z0 = physical_constants['characteristic impedance of vacuum'][0]
 
 def zr(w0, wav):
     return np.pi*w0**2/wav
@@ -117,7 +120,7 @@ class gaussian_beam(beam):
         r = 1e6*(2*np.pi/k)
         if self.amplitude is None:
             c = 0.5*(k*self.width)**2
-            U0 = 2*np.sqrt(self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+            U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
         else:
             U0 = k*self.width**2*self.amplitude/r/2
 
