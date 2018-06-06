@@ -23,13 +23,38 @@ def Rinv(z, w0, wav):
 def gouy(z, w0, wav):
     return np.arctan2(z, zr(w0,wav))
 
+def find_cutoff(f, cutoff, tol=1e-7):
+    theta = np.pi/2
+    val = f(theta)
+    dtheta = 0.01*np.pi
+    err = np.abs(val - cutoff)
+    
+    while err > tol:
+        val = 0
+        while val < cutoff:
+            theta += dtheta
+            val = f(theta)
+
+        err = abs(val - cutoff)
+        theta -= dtheta
+        dtheta /= 2
+
+    return theta
+
 class beam(source):
-    def __init__(self, polarization, amplitude=1, center=np.zeros(3)):
+    def __init__(self, polarization, power=None, amplitude=None, center=np.zeros(3)):
         super().__init__(amplitude)
         polarization = np.asarray(polarization, dtype=np.complex)
         self.polarization = polarization
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
+
+        self.amplitude = amplitude
+        self.power = power
+        if power is None and amplitude is None:
+            raise ValueError('either power or amplitude must be specified')
+        elif power is not None and amplitude is not None:
+            raise ValueError('cannot specify power and amplitude simultaneously')
 
     def scalar_potenital(self, x, y, z, k): pass
 
@@ -67,18 +92,29 @@ class beam(source):
         return Esph
 
     def structure(self, position, k, Lmax, radius):
-
         if self.is_paraxial(k):
             sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax, method='near')
             return miepy.vsh.decomposition.near_field_point_matching(self, 
                               position, 2*radius, k, Lmax, sampling)
         else:
+            #TODO implement a better way of finding the maximum value... per source object
+            f = lambda theta: np.linalg.norm(self.spherical_ingoing(theta, 0, k))
+            g = lambda theta: np.linalg.norm(self.spherical_ingoing(theta, np.pi/2, k))
+            theta = np.linspace(np.pi/2, np.pi, 500)
+            f_max = np.max(f(theta))
+            g_max = np.max(g(theta))
+
+            if g_max > f_max:
+                cutoff = find_cutoff(lambda theta: g(theta)/g_max, 1e-6, tol=1e-9)
+            else:
+                cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
+
             return miepy.vsh.decomposition.integral_project_source_far(self, 
-                              k, Lmax, origin=position)
+                              k, Lmax, origin=position, theta_0=cutoff)
 
 class paraxial_beam(beam):
-    def __init__(self, Ufunc, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(polarization, amplitude, center)
+    def __init__(self, Ufunc, polarization, power=None, amplitude=1, center=np.zeros(3)):
+        super().__init__(polarization, power, amplitude, center)
         self.Ufunc = Ufunc
 
     def scalar_potenital(self, x, y, z, k):
@@ -89,28 +125,18 @@ class paraxial_beam(beam):
 
 class gaussian_beam(beam):
     def __init__(self, width, polarization, power=None, amplitude=None, center=np.zeros(3)):
-        super().__init__(polarization, amplitude, center)
+        super().__init__(polarization, power, amplitude, center)
         self.width = width
-        self.power = power
-        self.amplitude = amplitude
-
-        if power is None and amplitude is None:
-            raise ValueError('either power or amplitude must be specified')
-        elif power is not None and amplitude is not None:
-            raise ValueError('cannot specify power and amplitude simultaneously')
-
-    def get_E0(self):
-        if self.amplitude is None:
-            E0 = 2/self.width*np.sqrt(self.power/np.pi)
-            return E0
-        else:
-            return self.amplitude
     
     def scalar_potenital(self, x, y, z, k):
+        if self.amplitude is None:
+            E0 = 2/self.width*np.sqrt(Z0*self.power/np.pi)
+        else:
+            E0 = self.amplitude
+
         rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
         rho_sq = rp[0]**2 + rp[1]**2
         wav = 2*np.pi/k
-        E0 = self.get_E0()
         amp = E0*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
         phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
 
@@ -120,7 +146,10 @@ class gaussian_beam(beam):
         r = 1e6*(2*np.pi/k)
         if self.amplitude is None:
             c = 0.5*(k*self.width)**2
-            U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+            if self.is_paraxial(k):
+                U0 = 2*k*self.width*np.sqrt(Z0*self.power/np.pi)/r
+            else:
+                U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
         else:
             U0 = k*self.width**2*self.amplitude/r/2
 
@@ -128,11 +157,12 @@ class gaussian_beam(beam):
         return U
 
     def is_paraxial(self, k):
-        return 2*np.pi/k < self.width/2
+        wav = 2*np.pi/k
+        return self.width > 4*wav
 
 class bigaussian_beam(beam):
-    def __init__(self, width_x, width_y, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(polarization, amplitude, center)
+    def __init__(self, width_x, width_y, polarization, power=None, amplitude=None, center=np.zeros(3)):
+        super().__init__(polarization, power, amplitude, center)
         self.width_x = width_x
         self.width_y = width_y
     
@@ -153,8 +183,8 @@ class bigaussian_beam(beam):
         # return 2*np.pi/k < min(self.width_x, self.width_y)
 
 class hermite_gaussian_beam(beam):
-    def __init__(self, l, m, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(polarization, amplitude, center)
+    def __init__(self, l, m, width, polarization, power=None, amplitude=None, center=np.zeros(3)):
+        super().__init__(polarization, power, amplitude, center)
         self.width = width
         self.l = l
         self.m = m
@@ -192,11 +222,12 @@ class hermite_gaussian_beam(beam):
         return amp
 
     def is_paraxial(self, k):
-        return 2*np.pi/k < self.width
+        wav = 2*np.pi/k
+        return self.width > 4*wav
 
 class laguerre_gaussian_beam(beam):
-    def __init__(self, p, l, width, polarization, amplitude=1, center=np.zeros(3)):
-        super().__init__(polarization, amplitude, center)
+    def __init__(self, p, l, width, polarization, power=None, amplitude=None, center=np.zeros(3)):
+        super().__init__(polarization, power, amplitude, center)
         self.width = width
         self.p = p
         self.l = l
@@ -239,22 +270,23 @@ class laguerre_gaussian_beam(beam):
         return amp*np.exp(1j*phase)
 
     def is_paraxial(self, k):
-        return 2*np.pi/k < self.width
+        wav = 2*np.pi/k
+        return self.width > 4*wav
 
 def azimuthal_beam(width, amplitude=1, center=np.zeros(3)):
     """azimuthally polarized beam"""
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude, center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], amplitude, center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1],  amplitude=amplitude, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], amplitude=amplitude, center=center)
     return HG_1 + HG_2
 
 def radial_beam(width, amplitude=1, center=np.zeros(3)):
     """radially polarized beam"""
-    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], amplitude, center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], amplitude, center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], amplitude=amplitude, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], amplitude=amplitude, center=center)
     return HG_1 + HG_2
 
 def shear_beam(width, amplitude=1, center=np.zeros(3)):
     """shear polarized beam"""
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude, center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], amplitude, center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude=amplitude, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], amplitude=amplitude, center=center)
     return HG_1 + HG_2

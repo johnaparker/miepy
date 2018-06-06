@@ -262,7 +262,7 @@ def integral_project_source(src, k, Lmax, origin=[0,0,0], sampling=30, mode=vsh.
 
     return p
 
-def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
+def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20, theta_0=np.pi/2):
     """Decompose a source object into VSHs using integral method in the far-field
     Returns p[2,rmax]
 
@@ -272,12 +272,12 @@ def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
         Lmax       maximum number of multipoles
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 20)
+        theta_0    integral performed from theta_0 to pi (default: pi/2)
     """
     rmax = vsh.Lmax_to_rmax(Lmax)
     p = np.zeros([2,rmax], dtype=complex)
 
-    theta = np.linspace(np.pi/2, np.pi, sampling)
-    # theta = np.linspace(2.5, np.pi, sampling)
+    theta = np.linspace(theta_0, np.pi, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     rad = 1e6*(2*np.pi/k)
@@ -303,4 +303,4 @@ def integral_project_source_far(src, k, Lmax, origin=[0,0,0], sampling=20):
         integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
         p[1,i] = factor*integral
 
-    return p/2
+    return p
