@@ -5,6 +5,8 @@ Miscellaneous functions related to vsh
 import numpy as np
 from scipy import special
 from scipy.integrate import simps, trapz
+import miepy
+Z0 = miepy.sources.paraxial_beams.Z0
 
 def simps_2d(xd,yd,fd):
     """1d simpsons rule extended to 2d"""
@@ -27,6 +29,43 @@ def trapz_2d(xd,yd,fd):
         xData[i] = trapz(fd[i,:], yd)
 
     return trapz(xData, xd)
+
+def power_through_aperature(source, center, radius, k, sampling=150):
+    """Calculate the power through an aperature for a source
+
+       Arguments:
+           source      source object
+           center      center position of the aperature
+           radius      radius of the aperature
+           k           wavenumber
+           sampling    numer of samples used along the diamter of the aperature (default: 150)
+    """
+    x = center[0] + np.linspace(-radius, radius, sampling)
+    y = center[1] + np.linspace(-radius, radius, sampling)
+    X, Y = np.meshgrid(x, y)
+    Z = center[2] + np.zeros_like(X)
+
+    Lmax = int(np.ceil(k*radius))
+    Lmax = 8
+    p_src = source.structure(center, k, Lmax, radius)
+    mask = (X**2 + Y**2 < radius **2)
+
+    R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
+    Efunc = miepy.expand_E(p_src, k, miepy.VSH_mode.incident)
+    Hfunc = miepy.expand_H(p_src, k, miepy.VSH_mode.incident, 1, 1)
+
+    E = np.zeros((3,) + X.shape, dtype=complex)
+    H = np.zeros((3,) + X.shape, dtype=complex)
+    E[:,mask] = Efunc(R[mask], THETA[mask], PHI[mask])
+    H[:,mask] = Hfunc(R[mask], THETA[mask], PHI[mask])
+    E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
+    H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)/Z0
+
+    S = np.real(0.5*np.cross(E, np.conjugate(H), axis=0)[2])
+
+    P = trapz_2d(x, y, S)
+    return P
+
 ###### below are pi,tau,VSH used in Mie theory, which may differ from those defined in GMT ######
 
 def pi_tau_func(n):
