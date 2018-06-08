@@ -46,8 +46,8 @@ class combined_source(source):
         return sum(map(lambda source: source.H_field(x, y, z, k), self.sources))
 
     #TODO: alternatively, allow adding fields and performing structure only once
-    def structure(self, position, k, Lmax, size):
-        return sum((source.structure(position, k, Lmax, size) for source in self.sources))
+    def structure(self, position, k, Lmax, radius):
+        return sum((source.structure(position, k, Lmax, radius) for source in self.sources))
 
     def spherical_ingoing(self, theta, phi, k):
         return sum((source.spherical_ingoing(theta, phi, k) for source in self.sources))
