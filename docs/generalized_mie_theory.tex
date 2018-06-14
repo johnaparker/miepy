@@ -82,9 +82,9 @@ The VSHs are an orthogonal set when integrated over a closed surface $\Omega$
     \boldsymbol{E}_\text{src}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     iE_{mn} \left[ p_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
     \boldsymbol{E}_\text{inc}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[ p_{mn}^j \boldsymbol{N}_{mn}^{(1)} + q_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right] \\
+    iE_{mn} \left[ p_{mn}^{j,\text{inc}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{inc}} \boldsymbol{M}_{mn}^{(1)} \right] \\
     \boldsymbol{E}_\text{scat}^j &= \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[a_{mn}^j \boldsymbol{N}_{mn}^{(3)} + b_{mn}^j \boldsymbol{M}_{mn}^{(3)} \right] \\
+    iE_{mn} \left[p_{mn}^{j,\text{scat}} \boldsymbol{N}_{mn}^{(3)} + q_{mn}^{j,\text{scat}} \boldsymbol{M}_{mn}^{(3)} \right] \\
     \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
     iE_{mn} \left[ d_{mn}^j \boldsymbol{N}_{mn}^{(1)} + c_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
 \end{align}
@@ -135,14 +135,54 @@ The normalized translation coefficients are defined as
 The interaction equations among $N$ particles can be written as
 \begin{align}
     \begin{split}
-        p_{mn}^j &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    A_{mn}^{uv(3)}(l \rightarrow j) a_v^l p_{uv}^{l}
-    +B_{mn}^{uv(3)}(l \rightarrow j) b_v^l q_{uv}^{l} \\
-    q_{mn}^j &= q_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    B_{mn}^{uv(3)}(l \rightarrow j) a_v^l p_{uv}^{l}
-    +A_{mn}^{uv(3)}(l \rightarrow j) b_v^l q_{uv}^{l}
+        p_{mn}^{j,\text{inc}} &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
+        A_{mnuv}^{(3)(l \rightarrow j)} a_v^l p_{uv}^{l,\text{inc}}
+        +B_{mnuv}^{(3)(l \rightarrow j)} b_v^l q_{uv}^{l,\text{inc}} \\
+        q_{mn}^{j,\text{inc}} &= q_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
+        B_{mnuv}^{(3)(l \rightarrow j)} a_v^l p_{uv}^{l,\text{inc}}
+        +A_{mnuv}^{(3)(l \rightarrow j)} b_v^l q_{uv}^{l,\text{inc}}
     \label{eqn:gmt_system}
     \end{split}
+\end{align}
+
+\section{T-matrix formulation}
+\begin{equation}
+    \begin{pmatrix}
+        p_{mn}^{j,\text{scat}} \\[6pt]
+        q_{mn}^{j,\text{scat}}
+    \end{pmatrix}
+    = \sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
+    \mathcal{T}_{mnuv}^j
+    \begin{pmatrix}
+        p_{uv}^{j,\text{inc}} \\[6pt]
+        q_{uv}^{j,\text{inc}}
+    \end{pmatrix}
+    \label{eqn:t_matrix}
+\end{equation}
+
+\begin{align}
+    \begin{pmatrix}
+        p_{mn}^{j,\text{inc}} \\[6pt]
+        q_{mn}^{j,\text{inc}} 
+    \end{pmatrix}
+    = 
+    \begin{pmatrix}
+        p_{mn}^{j,\text{src}} \\[6pt]
+        q_{mn}^{j,\text{src}} 
+    \end{pmatrix}
+    -
+    \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
+    \sum_{v^\prime=1}^{L_\text{max}} \sum_{u^\prime=-v^\prime}^{v^\prime}
+    \begin{pmatrix}
+        A_{mnuv}^{(3)(l \rightarrow j)} & B_{mnuv}^{(3)(l \rightarrow j)} \\[6pt] 
+        B_{mnuv}^{(3)(l \rightarrow j)} & A_{mnuv}^{(3)(l \rightarrow j)}
+    \end{pmatrix}
+    \mathcal{T}_{uvu^\prime v^\prime}^l
+    \begin{pmatrix}
+        p_{u^\prime v^\prime}^{l,\text{inc}} \\[6pt]
+        q_{u^\prime v^\prime}^{l,\text{inc}}
+    \end{pmatrix}
+\label{eqn:gmt_system}
 \end{align}
 
 \section{Force and torque}
