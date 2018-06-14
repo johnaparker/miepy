@@ -18,7 +18,7 @@ def todo():
     width = 200*nm
 
     def A():
-        source = miepy.sources.gaussian_beam(width, [1,0])
+        source = miepy.sources.gaussian_beam(width, [1,0], power=1)
 
         def f(x, y):
             return 1e9*0.5*np.sum(np.abs(source.E_field(x, y, 0, k))**2)

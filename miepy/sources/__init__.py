@@ -1,5 +1,5 @@
 from . import plane_waves
-from . import paraxial_beams
+from . import beams
 from . import focused_beams
 
 from .source_base import source

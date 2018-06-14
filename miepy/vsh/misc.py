@@ -6,7 +6,7 @@ import numpy as np
 from scipy import special
 from scipy.integrate import simps, trapz
 import miepy
-Z0 = miepy.sources.paraxial_beams.Z0
+Z0 = miepy.sources.beams.Z0
 
 def simps_2d(xd,yd,fd):
     """1d simpsons rule extended to 2d"""
