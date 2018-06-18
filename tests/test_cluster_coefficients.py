@@ -18,7 +18,7 @@ def test_cross_section_methods_monomer(plot=False):
                                 radius=75*nm,
                                 material=miepy.constant_material(3.7**2),
                                 source=miepy.sources.x_polarized_plane_wave(),
-                                Lmax=2,
+                                lmax=2,
                                 wavelength=wavelength)
 
         C1[i] = cluster.cross_sections().scattering
@@ -53,11 +53,11 @@ def test_cross_section_methods_dimer(plot=False):
                                 radius=75*nm,
                                 material=miepy.constant_material(3.7**2),
                                 source=miepy.sources.x_polarized_plane_wave(),
-                                Lmax=2,
+                                lmax=2,
                                 wavelength=wavelength)
 
         C1[i] = cluster.cross_sections().scattering
-        C2[i] = cluster.cross_sections_per_multipole(Lmax=4).scattering
+        C2[i] = cluster.cross_sections_per_multipole(lmax=4).scattering
     C2_sum =np.sum(C2, axis=(1,2))
 
     if not plot:

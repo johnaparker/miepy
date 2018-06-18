@@ -10,12 +10,12 @@ r_ji = 1
 theta_ji = 0.7
 phi_ji = 0.3
 
-Lmax = 2
+lmax = 2
 k = 0.8
 
 
-for r,n,m in miepy.mode_indices(Lmax):
-    for s,v,u in miepy.mode_indices(Lmax):
+for r,n,m in miepy.mode_indices(lmax):
+    for s,v,u in miepy.mode_indices(lmax):
 
         ### original A and B
         A, B = miepy.vsh.vsh_translation(m, n, u, v, 

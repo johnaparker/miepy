@@ -23,7 +23,7 @@ for i, separation in enumerate(tqdm(separations)):
                         material=Ag,
                         source=source,
                         wavelength=600*nm,
-                        Lmax=2)
+                        lmax=2)
     force[:,i] = sol.force_on_particle(0)
     torque[:,i] = sol.torque_on_particle(0)
 

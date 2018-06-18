@@ -14,7 +14,7 @@ Nwav = 60
 Au = miepy.materials. Au()
 radius = 40*nm
 source = miepy.sources.x_polarized_plane_wave()
-Lmax = 3
+lmax = 3
 
 wavelengths = np.linspace(300*nm, 800*nm, Nwav)
 separation = 83*nm
@@ -29,7 +29,7 @@ for i,wavelength in enumerate(wavelengths):
                         material=Au,
                         source=source,
                         wavelength=wavelength,
-                        Lmax=Lmax)
+                        lmax=lmax)
     scat[i], absorb[i], extinct[i] = sol.cross_sections()
 
 plt.figure(figsize=(8,6))
@@ -37,7 +37,7 @@ plt.plot(wavelengths/nm, scat/um**2,    label='scattering (dimer)', color='C0')
 plt.plot(wavelengths/nm, absorb/um**2,  label='absorption (dimer)', color='C1')
 plt.plot(wavelengths/nm, extinct/um**2, label='extinction (dimer)', color='C2')
 
-sphere = miepy.single_mie_sphere(radius, Au, wavelengths, Lmax)
+sphere = miepy.single_mie_sphere(radius, Au, wavelengths, lmax)
 scat, absorb, extinct = sphere.cross_sections()
 
 plt.plot(wavelengths/nm, 2*scat/um**2,    label='scattering (single x 2)', color='C0', linestyle='--')

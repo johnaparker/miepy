@@ -72,9 +72,9 @@ def todo():
     print(P)
 
 
-    Lmax = 8
+    lmax = 8
     source = miepy.sources.gaussian_beam(width, [1,0], power=1)
-    p_src = source.structure([0,0,0], k, Lmax, width)
+    p_src = source.structure([0,0,0], k, lmax, width)
 
     P = miepy.vsh.misc.power_through_aperature(source, [0,0,0], 3*width, k)
     print(P)

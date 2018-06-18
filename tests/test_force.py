@@ -27,7 +27,7 @@ for i, separation in enumerate(tqdm(separations)):
                         material=Ag,
                         source=source,
                         wavelength=600*nm,
-                        Lmax=2)
+                        lmax=2)
 
     analytic_force[:,i] = mie.force_on_particle(0).squeeze()
     analytic_torque[:,i] = mie.torque_on_particle(0).squeeze()

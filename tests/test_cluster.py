@@ -11,7 +11,7 @@ nm = 1e-9
 Ag = miepy.materials. Ag()
 radius = 75*nm
 source = miepy.sources.y_polarized_plane_wave()
-Lmax = 1
+lmax = 1
 
 wavelengths = np.linspace(600*nm, 1000*nm, 5)
 
@@ -27,7 +27,7 @@ def test_off_center_particle(plot=False):
                             material=Ag,
                             source=source,
                             wavelength=wavelength,
-                            Lmax=Lmax)
+                            lmax=lmax)
 
         C1[i], A1[i], E1[i] = sol.cross_sections()
 
@@ -68,13 +68,13 @@ def test_interactions_off(plot=False):
                             material=Ag,
                             source=source,
                             wavelength=wavelength,
-                            Lmax=Lmax,
+                            lmax=lmax,
                             interactions=False)
 
         C1[i], A1[i], E1[i] = sol.cross_sections()
 
     # single
-    sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, Lmax)
+    sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, lmax)
     Cs,As,Es = sphere.cross_sections()
 
     if not plot:

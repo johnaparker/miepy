@@ -32,14 +32,14 @@ def c_values(m2,y,mu2,n):
     return np.transpose(c)
 
 class single_mie_core_shell:
-    def __init__(self, radius_in, radius_out, material_in, material_out, wavelength, Lmax, medium=None):
+    def __init__(self, radius_in, radius_out, material_in, material_out, wavelength, lmax, medium=None):
         """Solve traditional Mie theory: a single cores-shell in x-polarized plane wave illumination
                radius_in        core radius
                radius_out       core+shell radius
                material_in      core material
                material_out     shell material
                wavelength[N]    wavelength(s) to solve the system at
-               Lmax             maximum number of orders to use in angular momentum expansion
+               lmax             maximum number of orders to use in angular momentum expansion
                medium           material medium (must be non-absorbing; defaults to vacuum)
         """
 
@@ -49,7 +49,7 @@ class single_mie_core_shell:
         self.material_out = material_out
 
         self.wavelength = np.asarray(np.atleast_1d(wavelength), dtype=float)
-        self.Lmax = Lmax
+        self.lmax = lmax
         if medium is None:
             self.medium = miepy.constant_material(1.0, 1.0)
         else:
@@ -73,10 +73,10 @@ class single_mie_core_shell:
         self.material_data['n_b']        = np.sqrt(self.material_data['eps_b']*self.material_data['mu_b'])
         self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
                
-        self.an = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
-        self.bn = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
-        self.cn = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
-        self.dn = np.zeros((self.Nfreq, self.Lmax), dtype=np.complex)
+        self.an = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
+        self.bn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
+        self.cn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
+        self.dn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
 
         self.scattering_properties = (self.an, self.bn, self.material_data['k'])
 
@@ -91,7 +91,7 @@ class single_mie_core_shell:
         xvals = mat['k']*self.radius_in
         yvals = mat['k']*self.radius_out
 
-        for n in range(self.Lmax):
+        for n in range(self.lmax):
             M = M_matrix(m1, m2, xvals, yvals, mat['mu_b'], mat['mu_in'], mat['mu_out'], n+1)
             c = c_values(m2, yvals, mat['mu_out'], n+1)
             sol = np.linalg.solve(M,c)

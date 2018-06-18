@@ -30,11 +30,11 @@ def force(p_scat, p_inc, k, eps_b, mu_b):
     Axy = np.pi/k**2*constants.epsilon_0*eps_b**0.5
     Az = -2*np.pi/k**2*constants.epsilon_0*eps_b**0.5
 
-    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
+    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for r,n,m in miepy.mode_indices(Lmax):
+    for r,n,m in miepy.mode_indices(lmax):
         # Fxy, term 1/3
         if m != n:
             factor = Axy*np.sqrt((n+m+1)*(n-m))/(n*(n+1))
@@ -53,7 +53,7 @@ def force(p_scat, p_inc, k, eps_b, mu_b):
                 - p_inc[r]*np.conj(q[r]))
 
 
-        if n < Lmax:
+        if n < lmax:
             # Fxy, term 2/3
             factor = -Axy*np.sqrt((n+m+2)*(n+m+1)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
             r1 = (n+1)**2 + (n+1) - 1 + m + 1
@@ -99,11 +99,11 @@ def torque(p_scat, p_inc, k, eps_b, mu_b):
     T = np.zeros(3, dtype=float)
     A = -2*np.pi/k**3*constants.epsilon_0*eps_b**0.5
 
-    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
+    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
 
     p, q = p_scat
     p_inc, q_inc = p_inc
-    for r,n,m in miepy.mode_indices(Lmax):
+    for r,n,m in miepy.mode_indices(lmax):
         if m != n:
             # Tx
             factor = -A*np.sqrt((n-m)*(n+m+1))

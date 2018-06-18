@@ -13,7 +13,7 @@ def test_boundary_conditions():
     cluster = miepy.cluster(position=[[0,0,0]],
                             radius=radius,
                             material=miepy.materials. Ag(),
-                            Lmax=2,
+                            lmax=2,
                             wavelength=600*nm,
                             source=miepy.sources.y_polarized_plane_wave(),
                             medium=miepy.constant_material(1.2**2))

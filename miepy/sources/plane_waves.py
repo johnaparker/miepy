@@ -25,14 +25,14 @@ class plane_wave(source):
         pol = np.array([H0_x, H0_y, 0])
         return np.einsum('i...,...->i...', pol, amp)
 
-    def structure(self, position, k, Lmax, radius=None):
-        rmax = miepy.vsh.Lmax_to_rmax(Lmax)
+    def structure(self, position, k, lmax, radius=None):
+        rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.zeros([2, rmax], dtype=complex)
 
         phase = 1j*k*position[2]
         alpha = 0
 
-        for i,n,m in miepy.mode_indices(Lmax):
+        for i,n,m in miepy.mode_indices(lmax):
             pi_value = pi_func(n, m)(alpha)
             tau_value = tau_func(n, m)(alpha)
 

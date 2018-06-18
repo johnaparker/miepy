@@ -18,11 +18,11 @@ wavelengths = np.linspace(400e-9,1000e-9,N_wav)
 
 # Calculate scattering coefficients
 radius = 165e-9       # 165 nm radius
-Lmax = 10             # Use up to 10 multipoles
+lmax = 10             # Use up to 10 multipoles
 
 for i,index in enumerate(tqdm(indices)):
     dielectric = miepy.constant_material(index**2)
-    sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax)
+    sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, lmax)
 
     sphere.solve_exterior()
     S = sphere.cross_sections().scattering

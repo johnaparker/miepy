@@ -11,14 +11,14 @@ from miepy.interface import atleast
 #TODO: swap position indices, so that [N,3] => [3,N]
 class cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
-    def __init__(self, *, position, radius, material, Lmax,
+    def __init__(self, *, position, radius, material, lmax,
                  source=None, wavelength=None, medium=None, origin=None,
                  interactions=True):
         """Arguments:
                position[N,3] or [3]    sphere positions
                radius[N] or scalar     sphere radii
                material[N] or scalar   sphere materials
-               Lmax          maximum number of orders to use in angular momentum expansion (int)
+               lmax          maximum number of orders to use in angular momentum expansion (int)
                source        (optional) source object specifying the incident E and H functions (deault: defer source until later)
                wavelength    (optional) wavelength to solve the system at (default: defer wavelength until later)
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
@@ -36,8 +36,8 @@ class cluster:
         ### system properties
         self.source = source
         self.wavelength = wavelength
-        self.Lmax = Lmax
-        self.rmax = Lmax*(Lmax + 2)
+        self.lmax = lmax
+        self.rmax = lmax*(lmax + 2)
         self.interactions = interactions
 
         ### set the origin
@@ -63,11 +63,11 @@ class cluster:
         self.material_data = miepy.materials.material_struct(self.material, self.medium, wavelength=self.wavelength)
 
         ### mie coefficients
-        self.mie_scat = np.zeros([self.Nparticles, 2, self.Lmax], dtype=complex)
-        self.mie_int = np.zeros([self.Nparticles, 2, self.Lmax], dtype=complex)
+        self.mie_scat = np.zeros([self.Nparticles, 2, self.lmax], dtype=complex)
+        self.mie_int = np.zeros([self.Nparticles, 2, self.lmax], dtype=complex)
 
         for i in range(self.Nparticles):
-            for n in range(1, self.Lmax+1):
+            for n in range(1, self.lmax+1):
                 self.mie_scat[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_scattering_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
@@ -303,18 +303,18 @@ class cluster:
 
         return self.H_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)
 
-    def cross_sections_per_multipole(self, Lmax=None):
+    def cross_sections_per_multipole(self, lmax=None):
         """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
 
         Arguments:
-            Lmax    (optional) compute scattering for up to Lmax terms (defult: self.Lmax)
+            lmax    (optional) compute scattering for up to lmax terms (defult: self.lmax)
         """
 
-        if Lmax is None:
-            Lmax = self.Lmax
+        if lmax is None:
+            lmax = self.lmax
 
-        self.solve_cluster_coefficients(Lmax)
-        p0 = self.source.structure(self.origin, self.material_data.k, Lmax, radius=Lmax/self.material_data.k)
+        self.solve_cluster_coefficients(lmax)
+        p0 = self.source.structure(self.origin, self.material_data.k, lmax, radius=lmax/self.material_data.k)
 
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
 
@@ -436,18 +436,18 @@ class cluster:
 
         self.solve()
 
-    def solve_cluster_coefficients(self, Lmax=None):
+    def solve_cluster_coefficients(self, lmax=None):
         """Solve for the p,q coefficients of the entire cluster around the origin
 
         Arguments:
-            Lmax    (optional) compute scattering for up to Lmax terms (default: self.Lmax)
+            lmax    (optional) compute scattering for up to lmax terms (default: self.lmax)
         """
 
-        if Lmax is None:
-            Lmax = self.Lmax
+        if lmax is None:
+            lmax = self.lmax
 
         self.p_cluster = miepy.cluster_coefficients(self.position, 
-                self.p_scat, self.material_data.k, origin=self.origin, Lmax=Lmax)
+                self.p_scat, self.material_data.k, origin=self.origin, lmax=lmax)
 
     def solve(self, wavelength=None, source=None):
         """solve for the p,q incident and scattering coefficients
@@ -469,12 +469,12 @@ class cluster:
         pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
-            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.Lmax, self.radius[i])
+            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.lmax, self.radius[i])
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
-        for r,n,m in miepy.mode_indices(self.Lmax):
+        for r,n,m in miepy.mode_indices(self.lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
@@ -482,6 +482,6 @@ class cluster:
         self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
                 self.p_src, self.material_data.k)
 
-        for r,n,m in miepy.mode_indices(self.Lmax):
+        for r,n,m in miepy.mode_indices(self.lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]

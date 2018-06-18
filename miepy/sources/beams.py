@@ -95,11 +95,11 @@ class beam(source):
 
         return Esph
 
-    def structure(self, position, k, Lmax, radius):
+    def structure(self, position, k, lmax, radius):
         if self.is_paraxial(k):
-            sampling = miepy.vsh.decomposition.sampling_from_Lmax(Lmax, method='near')
+            sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
             return miepy.vsh.decomposition.near_field_point_matching(self, 
-                              position, 2*radius, k, Lmax, sampling)
+                              position, 2*radius, k, lmax, sampling)
         else:
             #TODO implement a better way of finding the maximum value... per source object
             f = lambda theta: np.linalg.norm(self.spherical_ingoing(theta, 0, k))
@@ -114,7 +114,7 @@ class beam(source):
                 cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
 
             return miepy.vsh.decomposition.integral_project_source_far(self, 
-                              k, Lmax, origin=position, theta_0=cutoff)
+                              k, lmax, origin=position, theta_0=cutoff)
 
 class paraxial_beam(beam):
     def __init__(self, Ufunc, polarization, power=None, amplitude=1, center=np.zeros(3)):

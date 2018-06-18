@@ -2,14 +2,14 @@
 Functions related to the (m,n) vsh mode indices
 """
 
-def rmax_to_Lmax(rmax):
-    """obtain Lmax from rmax"""
-    Lmax = int(-1 + (1+rmax)**0.5)
-    return Lmax
+def rmax_to_lmax(rmax):
+    """obtain lmax from rmax"""
+    lmax = int(-1 + (1+rmax)**0.5)
+    return lmax
 
-def Lmax_to_rmax(Lmax):
-    """obtain rmax from Lmax"""
-    rmax = Lmax*(Lmax + 2)
+def lmax_to_rmax(lmax):
+    """obtain rmax from lmax"""
+    rmax = lmax*(lmax + 2)
     return rmax
 
 class mode_indices:
@@ -17,12 +17,12 @@ class mode_indices:
 
     def __init__(self, *args, **kwargs):
         """
-        mode_indices(Lmax)
-        mode_indices(Lmin, Lmax, m_start=m_start, m_stop=m_stop)
+        mode_indices(lmax)
+        mode_indices(Lmin, lmax, m_start=m_start, m_stop=m_stop)
 
         Returns an object that produces a sequence of (r, n, m) indices with the following ranges:
 
-            n: [Lmin:Lmax+1]     (default: Lmin=1)
+            n: [Lmin:lmax+1]     (default: Lmin=1)
             m: [m_start:m_stop]  (default: [-n:n+1])
 
         r is a counting index useful for indexing expansion coefficients of shape [2,rmax]
@@ -47,15 +47,15 @@ class mode_indices:
         self.n_stop = n_stop
         self.m_start = kwargs.get('m_start', None)
         self.m_stop = kwargs.get('m_stop', None)
-        self.idx_start = Lmax_to_rmax(n_start-1)
+        self.idx_start = lmax_to_rmax(n_start-1)
 
     def __repr__(self):
         if self.n_start == 1 and self.m_start is None and self.m_stop is None:
-            return f'mode_indices(Lmax={self.n_stop})'
+            return f'mode_indices(lmax={self.n_stop})'
         elif self.m_start is None and self.m_stop is None:
-            return f'mode_indices(Lmin={self.n_start}, Lmax={self.n_stop})'
+            return f'mode_indices(Lmin={self.n_start}, lmax={self.n_stop})'
         else:
-            return f'mode_indices(Lmin={self.n_start}, Lmax={self.n_stop}, Mmin={self.m_start}, Mmax={self.m_stop})'
+            return f'mode_indices(Lmin={self.n_start}, lmax={self.n_stop}, Mmin={self.m_start}, Mmax={self.m_stop})'
 
     def __iter__(self):
         idx = self.idx_start
@@ -69,7 +69,7 @@ class mode_indices:
             for n in range(self.n_start, self.n_stop+1):
                 m_start = -n if (self.m_start is None or self.m_start < -n) else self.m_start
                 m_stop = n if (self.m_stop is None or self.m_stop > n) else self.m_stop
-                idx = Lmax_to_rmax(n-1) + m_start + n
+                idx = lmax_to_rmax(n-1) + m_start + n
                 for m in range(m_start, m_stop+1):
                     yield idx, n, m
                     idx += 1

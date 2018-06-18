@@ -15,7 +15,7 @@ def expand_E(p, k, mode):
         k                  wavenumber
         mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
     """
-    Lmax = vsh.rmax_to_Lmax(p.shape[1])
+    lmax = vsh.rmax_to_lmax(p.shape[1])
     factor = 1j if mode == vsh.VSH_mode.outgoing else -1j
 
     #TODO: depends on theta.shape
@@ -23,7 +23,7 @@ def expand_E(p, k, mode):
         (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
 
-        for i,n,m in vsh.mode_indices(Lmax):
+        for i,n,m in vsh.mode_indices(lmax):
             Nfunc,Mfunc = vsh.VSH(n, m, mode=mode)
 
             Emn_val = vsh.Emn(m, n)
@@ -45,7 +45,7 @@ def expand_E_far(p_scat, k):
         p_scat[2,rmax]    scattering coefficients 
         k                 wavenumber
     """
-    Lmax = vsh.rmax_to_Lmax(p_scat.shape[1])
+    lmax = vsh.rmax_to_lmax(p_scat.shape[1])
 
     #TODO: depends on theta.shape
     def f(rad, theta, phi):
@@ -54,7 +54,7 @@ def expand_E_far(p_scat, k):
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
         factor = np.exp(1j*k*rad)/(k*rad)
 
-        for i,n,m in vsh.mode_indices(Lmax):
+        for i,n,m in vsh.mode_indices(lmax):
             Emn_val = vsh.Emn(m, n)
 
             tau = vsh.special.tau_func(n,m)(theta)

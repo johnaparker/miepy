@@ -26,7 +26,7 @@ for i, separation in enumerate(tqdm(separations)):
                         material=Ag,
                         source=source,
                         wavelength=800*nm,
-                        Lmax=1)
+                        lmax=1)
 
     analytic_scattering[i], analytic_absorption[i], _ = mie.cross_sections()
 

@@ -12,8 +12,8 @@ Ag = miepy.materials. Ag()
 
 # calculate scattering coefficients, 800 nm illumination
 radius = 200e-9      # 200 nm radius
-Lmax = 5             # Use up to 5 multipoles
-sphere = miepy.single_mie_sphere(radius, Ag, 800e-9, Lmax)
+lmax = 5             # Use up to 5 multipoles
+sphere = miepy.single_mie_sphere(radius, Ag, 800e-9, lmax)
 
 # create discretized xy plane
 x = np.linspace(-2*radius,2*radius,100)

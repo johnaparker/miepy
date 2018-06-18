@@ -6,9 +6,9 @@ import numpy as np
 import miepy.coordinates as coordinates
 from miepy import vsh
 
-#TODO: equations for rmax, r, Lmax (here and elsewhere) should be a function call
+#TODO: equations for rmax, r, lmax (here and elsewhere) should be a function call
 #TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)
-def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
+def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
     """Solve for the cluster scattering coefficients of N particles around an origin
 
     Arguments:
@@ -16,16 +16,16 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
         p_scat[N,2,rmax]   scattering coefficients 
         k                medium wavenumber
         origin           position around which to calculate the cluster coefficients
-        Lmax             (optional) compute scattering for up to Lmax terms (default: Lmax of input p/q)
+        lmax             (optional) compute scattering for up to lmax terms (default: lmax of input p/q)
     """
 
     Nparticles = positions.shape[0]
-    Lmax_in = vsh.rmax_to_Lmax(p_scat.shape[-1])
+    lmax_in = vsh.rmax_to_lmax(p_scat.shape[-1])
 
-    if Lmax is None:
-        Lmax = Lmax_in
+    if lmax is None:
+        lmax = lmax_in
 
-    rmax = vsh.Lmax_to_rmax(Lmax)
+    rmax = vsh.lmax_to_rmax(lmax)
     p_cluster = np.zeros([2,rmax], dtype=complex)
 
     for i in range(Nparticles):
@@ -36,8 +36,8 @@ def cluster_coefficients(positions, p_scat, k, origin, Lmax=None):
         rij = origin - positions[i]
         rad, theta, phi = coordinates.cart_to_sph(*rij)
         
-        for r,n,m in vsh.mode_indices(Lmax):
-            for rp,v,u in vsh.mode_indices(Lmax_in):
+        for r,n,m in vsh.mode_indices(lmax):
+            for rp,v,u in vsh.mode_indices(lmax_in):
                 a = p_scat[i,0,rp]
                 b = p_scat[i,1,rp]
 

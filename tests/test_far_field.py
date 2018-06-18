@@ -11,7 +11,7 @@ dimer = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                       material=miepy.constant_material(3.6**2),
                       source=miepy.sources.y_polarized_plane_wave(),
                       wavelength=600*nm,
-                      Lmax=2)
+                      lmax=2)
 
 theta = np.linspace(0, np.pi, 5)
 phi = np.linspace(0, 2*np.pi, 5)
@@ -27,7 +27,7 @@ def test_far_field_convergence():
 
 def test_far_field_cluster_coefficient():
     """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
-    dimer.solve_cluster_coefficients(Lmax=4)
+    dimer.solve_cluster_coefficients(lmax=4)
     E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k)
     E_far = E_func(R, THETA, PHI)
 

@@ -20,7 +20,7 @@ def test_medium_scaling_force(plot=False):
                                medium=miepy.constant_material(n**2),
                                source=miepy.sources.x_polarized_plane_wave(),
                                wavelength=2800*nm,
-                               Lmax=2)
+                               lmax=2)
 
         F[i] = sphere.force_on_particle(0)[2]
 
@@ -46,7 +46,7 @@ def test_medium_cross_sections(plot=False):
     Au = miepy.materials. Au()
     radius = 50*nm
 
-    Lmax = 2
+    lmax = 2
     nb = 1.33
     medium = miepy.constant_material(nb**2)
 
@@ -66,7 +66,7 @@ def test_medium_cross_sections(plot=False):
                             source=source,
                             medium=medium,
                             wavelength=wavelength,
-                            Lmax=Lmax)
+                            lmax=lmax)
 
         scat[i], absorb[i], extinct[i] = sol.cross_sections()
 

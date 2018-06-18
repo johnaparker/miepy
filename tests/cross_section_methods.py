@@ -23,7 +23,7 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
                           material=miepy.constant_material(3.6**2 + 1j),
                           source=miepy.sources.y_polarized_plane_wave(),
                           wavelength=wavelength,
-                          Lmax=2)
+                          lmax=2)
     C[i], A[i], E[i] = dimer.cross_sections()
 
     for j in range(dimer.Nparticles):

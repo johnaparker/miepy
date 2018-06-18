@@ -22,10 +22,10 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
            n_b             background index of refraction
            mu_b            background permeability
     """
-    Lmax = miepy.vsh.rmax_to_Lmax(p_scat.shape[1])
+    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
 
-    Cext  = np.zeros([2, Lmax], dtype=float)
-    Cabs  = np.zeros([2, Lmax], dtype=float)
+    Cext  = np.zeros([2, lmax], dtype=float)
+    Cabs  = np.zeros([2, lmax], dtype=float)
 
     riccati = miepy.special_functions.riccati_1_single
 
@@ -35,7 +35,7 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
     mj = n/n_b
     yj = xj*mj
 
-    for r,n,m in miepy.mode_indices(Lmax):
+    for r,n,m in miepy.mode_indices(lmax):
         # Cscat[0,n-1] += factor*np.abs(p_scat[r])**2
         # Cscat[1,n-1] += factor*np.abs(q_scat[r])**2
 
@@ -57,21 +57,21 @@ def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
 
 def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster
-       Return (scat[2,Lmax], abs[2,Lmax], extinct[2,Lmax])
+       Return (scat[2,lmax], abs[2,lmax], extinct[2,lmax])
        
        Arguments:
            p_cluster[2,rmax]  cluster scattering coefficients
            p_src[2,rmax]      source scattering coefficients at origin
            k                  wavenumber
     """
-    Lmax = miepy.vsh.rmax_to_Lmax(p_cluster.shape[1])
+    lmax = miepy.vsh.rmax_to_lmax(p_cluster.shape[1])
 
-    Cscat = np.zeros([2, Lmax], dtype=float)
-    Cext  = np.zeros([2, Lmax], dtype=float)
+    Cscat = np.zeros([2, lmax], dtype=float)
+    Cext  = np.zeros([2, lmax], dtype=float)
 
     factor = 4*np.pi/k**2
 
-    for r,n,m in miepy.mode_indices(Lmax):
+    for r,n,m in miepy.mode_indices(lmax):
         Cscat[:,n-1] += factor*np.abs(p_cluster[:,r])**2
         Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_cluster[:,r])
 

@@ -17,8 +17,8 @@ dielectric = miepy.constant_material(1.46**2)
 # Calculate scattering coefficients
 radius_in  = 135e-9
 radius_out = 145e-9
-Lmax = 10     # Use up to 10 multipoles
-core_shell = miepy.single_mie_core_shell(radius_in, radius_out, dielectric, Ag, wavelengths, Lmax)
+lmax = 10     # Use up to 10 multipoles
+core_shell = miepy.single_mie_core_shell(radius_in, radius_out, dielectric, Ag, wavelengths, lmax)
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()

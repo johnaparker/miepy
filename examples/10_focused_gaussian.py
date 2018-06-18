@@ -12,10 +12,10 @@ width = 10*nm
 size = 600*nm
 wavelength = 600*nm
 k = 2*np.pi/wavelength
-Lmax = 6
+lmax = 6
 
 source = miepy.sources.gaussian_beam(width, [1, 1j])
-p_src = source.structure([0,0,0], k, Lmax, size)
+p_src = source.structure([0,0,0], k, lmax, size)
 Efunc = miepy.expand_E(p_src, k, mode=miepy.VSH_mode.incident)
 Hfunc = miepy.expand_H(p_src, k, mode=miepy.VSH_mode.incident, eps=1, mu=1)
 

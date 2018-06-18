@@ -19,7 +19,7 @@ X,Y = np.meshgrid(x, y, indexing='ij')
 R, THETA, PHI = miepy.coordinates.cart_to_sph(X,Y,0)
 
 source = miepy.sources.azimuthal_beam(600*nm)
-Lmax = 7
+lmax = 7
 
 wavelength = 900*nm
 k = 2*np.pi/wavelength
@@ -39,7 +39,7 @@ fig, axes = plt.subplots(nrows=2, ncols=4, figsize=(14,8))
 E = source.E([X,Y,0], k)
 plot(axes[0,0], E)
 
-for i in range(1, Lmax+1):
+for i in range(1, lmax+1):
     p,q = miepy.vsh.decompose_source(source, k, i)
     Efunc = miepy.vsh.expand(p, q, k, miepy.vsh.VSH_mode.incident)
     E = Efunc(X,Y,0)
@@ -57,7 +57,7 @@ for ax in axes[:,0]:
 
 axes[0,0].set_title('azimuthal beam')
 for i, ax in enumerate(axes.flatten()[1:]):
-    ax.set_title(f'Lmax = {i+1}')
+    ax.set_title(f'lmax = {i+1}')
 
 # plt.savefig('beam_expansion.pdf')
 plt.show()

@@ -12,12 +12,12 @@ def sphere_cluster_t_matrix(positions, a, k):
     
        Arguments:
            positions[N,3]      particles positions
-           a[N,2,Lmax]         mie scattering coefficients
+           a[N,2,lmax]         mie scattering coefficients
            k                   medium wavenumber
     """
     Nparticles = positions.shape[0]
-    Lmax = a.shape[-1]
-    rmax = miepy.vsh.Lmax_to_rmax(Lmax)
+    lmax = a.shape[-1]
+    rmax = miepy.vsh.lmax_to_rmax(lmax)
     identity = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     np.einsum('airair->air', identity)[...] = 1
     
@@ -32,8 +32,8 @@ def sphere_cluster_t_matrix(positions, a, k):
             theta_ji = np.arccos(dji[2]/r_ji)
             phi_ji = np.arctan2(dji[1], dji[0])
 
-            for r,n,m in miepy.mode_indices(Lmax):
-                for s,v,u in miepy.mode_indices(Lmax):
+            for r,n,m in miepy.mode_indices(lmax):
+                for s,v,u in miepy.mode_indices(lmax):
                     if s - 2*u < r: continue
 
                     A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
@@ -68,7 +68,7 @@ def solve_sphere_cluster(positions, a, p_src, k):
     
        Arguments:
            positions[N,3]      particles positions
-           a[N,2,Lmax]         mie scattering coefficients
+           a[N,2,lmax]         mie scattering coefficients
            p_src[N,2,rmax]     source scattering coefficients
            k                   medium wavenumber
     """

@@ -21,7 +21,7 @@ class source:
     def H_field(self, x, y, z, k): pass
 
     @abstractmethod
-    def structure(self, position, k, Lmax, radius): pass
+    def structure(self, position, k, lmax, radius): pass
 
     @abstractmethod
     def is_paraxial(self, k): pass
@@ -46,8 +46,8 @@ class combined_source(source):
         return sum(map(lambda source: source.H_field(x, y, z, k), self.sources))
 
     #TODO: alternatively, allow adding fields and performing structure only once
-    def structure(self, position, k, Lmax, radius):
-        return sum((source.structure(position, k, Lmax, radius) for source in self.sources))
+    def structure(self, position, k, lmax, radius):
+        return sum((source.structure(position, k, lmax, radius) for source in self.sources))
 
     def spherical_ingoing(self, theta, phi, k):
         return sum((source.spherical_ingoing(theta, phi, k) for source in self.sources))

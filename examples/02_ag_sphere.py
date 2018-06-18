@@ -15,8 +15,8 @@ Ag = miepy.materials.Ag()
 
 # Calculate scattering coefficients
 radius = 100e-9    # 100 nm radius
-Lmax = 10          # Use up to 10 multipoles
-sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, Lmax)
+lmax = 10          # Use up to 10 multipoles
+sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, lmax)
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()

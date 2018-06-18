@@ -11,35 +11,35 @@ import scipy.constants as constants
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
 
 def scattering_per_multipole(an, bn, k):
-    """Scattering cross-section per multipole. Returns scat[Nfreq,2,Lmax].
+    """Scattering cross-section per multipole. Returns scat[Nfreq,2,lmax].
             an[N]    an scattering coefficients
             bn[N]    bn scattering coefficients
             k[N]     wavenumbers
     """
-    Nfreq, Lmax = an.shape
-    flux = np.zeros([Nfreq,2,Lmax])
-    nvals = np.arange(1, Lmax+1)
+    Nfreq, lmax = an.shape
+    flux = np.zeros([Nfreq,2,lmax])
+    nvals = np.arange(1, lmax+1)
     flux[:,0,:] = 2*np.pi*(2*nvals+1)*np.abs(an)**2/k[:,np.newaxis]**2
     flux[:,1,:] = 2*np.pi*(2*nvals+1)*np.abs(bn)**2/k[:,np.newaxis]**2
 
     return flux
 
 def extinction_per_multipole(an, bn, k):
-    """Extinction cross-section per multipole. Returns extinct[Nfreq,2,Lmax].
+    """Extinction cross-section per multipole. Returns extinct[Nfreq,2,lmax].
             an[N]    an scattering coefficients
             bn[N]    bn scattering coefficients
             k[N]     wavenumbers
     """
-    Nfreq, Lmax = an.shape
-    flux = np.zeros([Nfreq,2,Lmax])
-    nvals = np.arange(1, Lmax+1)
+    Nfreq, lmax = an.shape
+    flux = np.zeros([Nfreq,2,lmax])
+    nvals = np.arange(1, lmax+1)
     flux[:,0,:] = 2*np.pi*(2*nvals+1)*np.real(an)/k[:,np.newaxis]**2
     flux[:,1,:] = 2*np.pi*(2*nvals+1)*np.real(bn)/k[:,np.newaxis]**2
 
     return flux
 
 def absorbption_per_multipole(an, bn, k):
-    """Absorbption cross-section per multipole. Returns absorb[Nfreq,2,Lmax].
+    """Absorbption cross-section per multipole. Returns absorb[Nfreq,2,lmax].
             an[N]    an scattering coefficients
             bn[N]    bn scattering coefficients
             k[N]     wavenumbers
@@ -76,10 +76,10 @@ def scattered_E(an, bn, k):
                 an[L]       bn coefficients
                 k           wavenumber in the medium
     """
-    Lmax = an.shape[0]
+    lmax = an.shape[0]
     def E_func(r, theta, phi):
         E = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
-        for L in range(1,Lmax+1):
+        for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
             VSH = vector_spherical_harmonics(L,3)
@@ -94,10 +94,10 @@ def interior_E(cn, dn, k):
                 dn[L]       dn coefficients
                 k           wavenumber inside the sphere
     """
-    Lmax = cn.shape[0]
+    lmax = cn.shape[0]
     def E_func(r, theta, phi):
         E = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
-        for L in range(1,Lmax+1):
+        for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
             VSH = vector_spherical_harmonics(L,1)
@@ -114,10 +114,10 @@ def scattered_H(an, bn, k, n_b, mu_b):
                 n_b         index of refraction of the medium
                 mu_b        permeability of the medium
     """
-    Lmax = an.shape[0]
+    lmax = an.shape[0]
     def H_func(r, theta, phi):
         H = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
-        for L in range(1,Lmax+1):
+        for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
             VSH = vector_spherical_harmonics(L,3)
@@ -134,10 +134,10 @@ def interior_H(cn, dn, k, n, mu):
                 n           index of refraction of the sphere
                 mu          permeability of the sphere
     """
-    Lmax = cn.shape[0]
+    lmax = cn.shape[0]
     def H_func(r, theta, phi):
         H = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
-        for L in range(1,Lmax+1):
+        for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
             VSH = vector_spherical_harmonics(L,1)

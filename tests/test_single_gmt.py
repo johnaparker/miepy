@@ -21,8 +21,8 @@ radius = 100*nm       # 100 nm radius
 medium = miepy.materials. water()
 
 # Single Mie Theory
-Lmax = 5       # Use up to 5 multipoles
-sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax, medium=medium)
+lmax = 5       # Use up to 5 multipoles
+sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, lmax, medium=medium)
 S,A,E = sphere.cross_sections()
 Fz = sphere.radiation_force()
 
@@ -40,7 +40,7 @@ for i,wavelength in enumerate(wavelengths):
                            material=dielectric,
                            source=source,
                            wavelength=wavelength,
-                           Lmax=Lmax,
+                           lmax=lmax,
                            medium=medium)
 
     scat[i],absorb[i],extinct[i] = system.cross_sections()

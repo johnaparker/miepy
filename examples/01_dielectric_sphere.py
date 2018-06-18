@@ -17,8 +17,8 @@ dielectric = miepy.constant_material(3.7**2)
 
 # Calculate scattering coefficients
 radius = 100e-9    # 100 nm radius
-Lmax = 2          # Use up to 10 multipoles
-sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, Lmax)
+lmax = 2          # Use up to 10 multipoles
+sphere = miepy.single_mie_sphere(radius, dielectric, wavelengths, lmax)
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()

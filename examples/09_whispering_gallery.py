@@ -32,7 +32,7 @@ sphere = miepy.cluster(position=[0,0,0],
                        # material=miepy.materials. Au(),
                        radius=radius,
                        source=source,
-                       Lmax=4,
+                       lmax=4,
                        wavelength=400*nm)
 
 x = np.linspace(-radius-50*nm, radius+50*nm, 150)
