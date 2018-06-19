@@ -1,1 +1,3 @@
+include download_materials.sh
 include miepy/materials/database
+include bin

@@ -12,10 +12,15 @@ todo.txt
 *.npy
 *.mp4
 
+# nfmds
+miepy/tmatrix/nfmds/fem
+miepy/tmatrix/nfmds/input
+
 # setup files
 build
 dist
 *.egg-info
+bin
 
 # material database
 miepy/materials/database
