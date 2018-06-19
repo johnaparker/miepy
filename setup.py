@@ -8,20 +8,20 @@ def read(fname):
 
 class build_ext(_build_ext):
     def run(self):
-        if not os.path.isdir('bin'):
-            subprocess.call(['mkdir', 'bin'])
+        if not os.path.isdir('miepy/bin'):
+            subprocess.call(['mkdir', 'miepy/bin'])
 
-        if not os.path.exists('./bin/tmatrix'):
+        if not os.path.exists('miepy/bin/tmatrix'):
             subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
             subprocess.call(['make precision=double'], cwd='./miepy/tmatrix/nfmds', shell=True)
             subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix', './bin'])
+            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix', 'miepy/bin'])
 
-        if not os.path.exists('./bin/tmatrix_extended'):
+        if not os.path.exists('miepy/bin/tmatrix_extended'):
             subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
             subprocess.call(['make precision=quad'], cwd='./miepy/tmatrix/nfmds', shell=True)
             subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix_extended', './bin'])
+            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix_extended', 'miepy/bin'])
 
         if not os.path.isdir('./miepy/materials/database'):
             command = ["./download_materials.sh"]
