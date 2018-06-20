@@ -122,5 +122,3 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
                 tmatrix[:,r1,:,r2] *= 1j**(n2-n1)
 
         return tmatrix
-
-nfmds_solver(3, dict(geometry_type=1, geometry_parameters=[50e-9,20e-9], wavelength=500e-9, index=2, index_m=1), extended_precision=False)

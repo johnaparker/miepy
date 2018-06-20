@@ -9,6 +9,7 @@ from . import sources
 from . import materials
 from . import interactions
 from . import vsh
+from . import tmatrix
 from . import forces
 from . import flux
 from . import coordinates
