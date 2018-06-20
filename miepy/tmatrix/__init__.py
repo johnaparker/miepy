@@ -1,2 +1,7 @@
-from get_tmatrix import nfmds_solver, tmatrix_solvers
-from common import tmatrix_cylinder, tmatrix_spheroid, tmatrix_sphere
+from . import get_tmatrix
+from . import common
+from . import required_files
+from . import axisymmetric_file
+
+from .get_tmatrix import nfmds_solver, tmatrix_solvers
+from .common import tmatrix_cylinder, tmatrix_spheroid, tmatrix_sphere

@@ -1,4 +1,4 @@
-from get_tmatrix import nfmds_solver
+from .get_tmatrix import nfmds_solver
 
 def tmatrix_sphere():
     pass
@@ -18,7 +18,7 @@ def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_pre
     """
     complex_plane = True if axis_xy > axis_z else False
     parameters = dict(geometry_type=1, geometry_parameters=[axis_z, axis_xy], wavelength=wavelength,
-                  index=eps**0.5, index_m=eps_m**0.5, complex_plane=complex_plane)
+                  index=eps**0.5, index_m=eps_m**0.5, complex_plane=complex_plane, Nparam=1)
     parameters.update(kwargs)
 
     return nfmds_solver(lmax, parameters, extended_precision=extended_precision)
@@ -43,7 +43,7 @@ def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False
         raise ValueError('prolate cylinders (height >= diameter) cannot be rounded')
 
     parameters = dict(geometry_type=geometry_type, geometry_parameters=[height/2, radius], wavelength=wavelength,
-                  index=eps**0.5, index_m=eps_m**0.5, complex_plane=complex_plane)
+                  index=eps**0.5, index_m=eps_m**0.5, complex_plane=complex_plane, Nparam=3)
     parameters.update(kwargs)
 
     return nfmds_solver(lmax, parameters, extended_precision=extended_precision)

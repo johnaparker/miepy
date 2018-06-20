@@ -5,8 +5,8 @@ import tempfile
 import numpy as np
 import miepy
 from functools import namedtuple
-from required_files import main_input_file, sct_input_file
-from axisymmetric_file import axisymmetric_file
+from .required_files import main_input_file, sct_input_file
+from .axisymmetric_file import axisymmetric_file
 
 
 tmatrix_input = namedtuple('TmatrixInput', 'number, input_function')
