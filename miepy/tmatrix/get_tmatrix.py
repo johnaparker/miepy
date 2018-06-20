@@ -57,7 +57,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         else:
             command = f'{miepy.__path__[0]}/bin/tmatrix'
 
-        proc = subprocess.Popen([command], cwd=sources_dir, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        proc = subprocess.Popen([command], cwd=sources_dir, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         proc.communicate(f'{solver.number}'.encode())
         proc.wait()
         

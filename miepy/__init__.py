@@ -10,6 +10,7 @@ from . import materials
 from . import interactions
 from . import vsh
 from . import tmatrix
+from . import particles
 from . import forces
 from . import flux
 from . import coordinates
@@ -23,3 +24,4 @@ from .mie_single.mie_sphere import single_mie_sphere
 from .mie_single.mie_core_shell import single_mie_core_shell
 from .vsh import (mode_indices, VSH_mode, VSH, expand_E, expand_E_far, expand_H, expand_H_far,
                   cluster_coefficients)
+from .particles import sphere, spheroid, cylinder
