@@ -29,11 +29,11 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     for j in range(dimer.Nparticles):
         ### absoprtion is calculated using p_inc
         Ap[i] += np.sum(miepy.flux.cluster_cross_sections(dimer.p_scat[j],
-                        dimer.p_inc[j], dimer.material_data.k).absorption)
+                        dimer.p_inc[j], dimer.material_data.k_b).absorption)
 
         ### extinction is calculated using p_src
         Ep[i] += np.sum(miepy.flux.cluster_cross_sections(dimer.p_scat[j],
-                        dimer.p_src[j], dimer.material_data.k).extinction)
+                        dimer.p_src[j], dimer.material_data.k_b).extinction)
 
         ### scattering is the difference
         Cp[i] = Ep[i] - Ap[i]

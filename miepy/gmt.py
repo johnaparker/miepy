@@ -71,12 +71,12 @@ class cluster:
                 self.mie_scat[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_scattering_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
-                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b)
 
                 self.mie_int[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_interior_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
-                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k)
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b)
 
         ### modified coefficients
         self.p_inc  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
@@ -105,14 +105,14 @@ class cluster:
         """
         rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
 
-        E_sph = miepy.expand_E(self.p_scat[i], self.material_data.k,
+        E_sph = miepy.expand_E(self.p_scat[i], self.material_data.k_b,
                      mode=miepy.VSH_mode.outgoing)(rad,theta,phi)
         Escat = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         p = self.p_inc[i]
         if not source:
             p -= self.p_src[i]
-        E_sph = miepy.expand_E(p, self.material_data.k,
+        E_sph = miepy.expand_E(p, self.material_data.k_b,
                      mode=miepy.VSH_mode.incident)(rad,theta,phi)
         Einc = miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
@@ -132,7 +132,7 @@ class cluster:
         """
         rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
 
-        H_sph = miepy.expand_H(self.p_scat[i], self.material_data.k,
+        H_sph = miepy.expand_H(self.p_scat[i], self.material_data.k_b,
                   mode=miepy.VSH_mode.outgoing, eps=self.material_data.eps_b,
                   mu=self.material_data.mu_b)(rad,theta,phi)
         Hscat = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
@@ -141,7 +141,7 @@ class cluster:
         if not source:
             p -= self.p_src[i]
 
-        H_sph = miepy.expand_H(p, self.material_data.k,
+        H_sph = miepy.expand_H(p, self.material_data.k_b,
                   mode=miepy.VSH_mode.incident, eps=self.material_data.eps_b,
                   mu=self.material_data.mu_b)(rad,theta,phi)
         Hinc = miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
@@ -179,12 +179,12 @@ class cluster:
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
-            E_sph = expand(self.p_scat[i], self.material_data.k)(rad,theta,phi)
+            E_sph = expand(self.p_scat[i], self.material_data.k_b)(rad,theta,phi)
             E += miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         #TODO: [x,y,z] to x,y,z
         if source:
-            E += self.source.E_field(x, y, z, self.material_data.k)
+            E += self.source.E_field(x, y, z, self.material_data.k_b)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -241,14 +241,14 @@ class cluster:
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
-            H_sph = expand(self.p_scat[i], self.material_data.k, eps=self.material_data.eps_b,
+            H_sph = expand(self.p_scat[i], self.material_data.k_b, eps=self.material_data.eps_b,
                                mu=self.material_data.mu_b)(rad,theta,phi)
             H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         #TODO: [x,y,z] to x,y,z
         if source:
             factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
-            H += factor*self.source.H_field(x, y, z, self.material_data.k)
+            H += factor*self.source.H_field(x, y, z, self.material_data.k_b)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -314,9 +314,9 @@ class cluster:
             lmax = self.lmax
 
         self.solve_cluster_coefficients(lmax)
-        p0 = self.source.structure(self.origin, self.material_data.k, lmax, radius=lmax/self.material_data.k)
+        p0 = self.source.structure(self.origin, self.material_data.k_b, lmax, radius=lmax/self.material_data.k_b)
 
-        return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k)
+        return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k_b)
 
     def cross_sections(self):
         """Compute the scattering, absorption, and extinction cross-section of the cluster"""
@@ -341,7 +341,7 @@ class cluster:
         """
 
         return miepy.flux.particle_cross_sections(self.p_scat[i], self.p_src[i], self.radius[i], 
-                    self.material_data.k, self.material_data.n[i], self.material_data.mu[i],
+                    self.material_data.k_b, self.material_data.n[i], self.material_data.mu[i],
                     self.material_data.n_b, self.material_data.mu_b)
 
     def cross_sections_of_particle(self, i):
@@ -369,7 +369,7 @@ class cluster:
         else:
             p_inc = self.p_inc - self.p_src
 
-        F = miepy.forces.force(self.p_scat[i], p_inc[i], self.material_data.k,
+        F = miepy.forces.force(self.p_scat[i], p_inc[i], self.material_data.k_b,
                 self.material_data.eps_b, self.material_data.mu_b)
 
         return F
@@ -389,7 +389,7 @@ class cluster:
         else:
             p_inc = self.p_inc - self.p_src
 
-        T = miepy.forces.torque(self.p_scat[i], p_inc[i], self.material_data.k,
+        T = miepy.forces.torque(self.p_scat[i], p_inc[i], self.material_data.k_b,
                 self.material_data.eps_b, self.material_data.mu_b)
 
         return T
@@ -447,7 +447,7 @@ class cluster:
             lmax = self.lmax
 
         self.p_cluster = miepy.cluster_coefficients(self.position, 
-                self.p_scat, self.material_data.k, origin=self.origin, lmax=lmax)
+                self.p_scat, self.material_data.k_b, origin=self.origin, lmax=lmax)
 
     def solve(self, wavelength=None, source=None):
         """solve for the p,q incident and scattering coefficients
@@ -469,7 +469,7 @@ class cluster:
         pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
-            self.p_src[i] = self.source.structure(pos, self.material_data.k, self.lmax, self.radius[i])
+            self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
@@ -480,7 +480,7 @@ class cluster:
 
     def _solve_interactions(self):
         self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
-                self.p_src, self.material_data.k)
+                self.p_src, self.material_data.k_b)
 
         for r,n,m in miepy.mode_indices(self.lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]

@@ -20,7 +20,7 @@ class material_struct:
         self.eps_b = None
         self.mu_b  = None
         self.n_b   = None
-        self.k     = None
+        self.k_b   = None
 
         self.wavelength = wavelength
 
@@ -38,7 +38,7 @@ class material_struct:
             self.eps_b = self.medium.eps(self._wavelength)
             self.mu_b  = self.medium.mu(self._wavelength)
             self.n_b = (self.eps_b*self.mu_b)**0.5
-            self.k = 2*np.pi*self.n_b/self._wavelength
+            self.k_b = 2*np.pi*self.n_b/self._wavelength
 
             for i,material in enumerate(self.materials):
                 self.eps[i] = material.eps(self._wavelength)

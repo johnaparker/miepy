@@ -1,7 +1,28 @@
+import miepy
+import numpy as np
 from .get_tmatrix import nfmds_solver
 
-def tmatrix_sphere():
-    pass
+def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax):
+    """Compute the T-matrix of a sphere, using regular Mie theory
+
+    Arguments:
+        radius      sphere radius
+        wavelength  incident wavelength
+        eps         particle permittivity
+        eps_m       medium permittivity
+        lmax        maximum number of multipoles
+    """
+    rmax = miepy.vsh.lmax_to_rmax(lmax)
+    tmatrix = np.zeros([2,rmax,2,rmax], dtype=complex)
+    k_medium = 2*np.pi*eps_m**0.5/wavelength
+
+    for i, n, m in miepy.mode_indices(lmax):
+        an, bn = miepy.mie_single.mie_sphere_scattering_coefficients(radius,
+                          n, eps, 1, eps_m, 1, k_medium)
+        tmatrix[0,i,0,i] = an
+        tmatrix[1,i,1,i] = bn
+
+    return tmatrix
 
 def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
     """Compute the T-matrix of a spheroid

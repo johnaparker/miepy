@@ -28,7 +28,7 @@ def test_far_field_convergence():
 def test_far_field_cluster_coefficient():
     """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
     dimer.solve_cluster_coefficients(lmax=4)
-    E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k)
+    E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k_b)
     E_far = E_func(R, THETA, PHI)
 
     np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-15)

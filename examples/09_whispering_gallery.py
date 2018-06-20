@@ -41,7 +41,7 @@ X,Z = np.meshgrid(x, z, indexing='ij')
 Y = np.zeros_like(X)
 
 E = sphere.E_field(X, Y, Z)
-# E = sphere.source.E([X,Y,Z], sphere.material_data.k).squeeze()
+# E = sphere.source.E([X,Y,Z], sphere.material_data.k_b).squeeze()
 I = np.sum(np.abs(E)**2, axis=0)
 
 fig, ax = plt.subplots()
