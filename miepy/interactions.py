@@ -6,8 +6,8 @@ import numpy as np
 import miepy
 
 #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
-def sphere_cluster_tmatrix(positions, a, k):
-    """Obtain the T-matrix for a cluster of spheres.
+def sphere_aggregate_tmatrix(positions, a, k):
+    """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
        Returns T[2,N,rmax,2,N,rmax]
     
        Arguments:
@@ -72,20 +72,20 @@ def solve_sphere_cluster(positions, a, p_src, k):
            p_src[N,2,rmax]     source scattering coefficients
            k                   medium wavenumber
     """
-    A = sphere_cluster_tmatrix(positions, a,  k)
+    A = sphere_aggregate_tmatrix(positions, a,  k)
     sol = np.linalg.tensorsolve(A, p_src)
 
     return sol
 
 #TODO vectorize for loops. Avoid transpose of position->pass x,y,z to source instead...?
 #TODO this function is more general than above and can be used for both cases (change only the einsum)
-def particle_cluster_tmatrix(positions, tmatrix, k):
-    """Obtain the T-matrix for a cluster of particles.
+def particle_aggregate_tmatrix(positions, tmatrix, k):
+    """Obtain the particle-centered aggregate T-matrix for a cluster of particles
        Returns T[2,N,rmax,2,N,rmax]
     
        Arguments:
            positions[N,3]      particles positions
-           tmatrix[N,2,rmax,2,rmax]   particle T-matrices
+           tmatrix[N,2,rmax,2,rmax]   single particle T-matrices
            k                   medium wavenumber
     """
     Nparticles = positions.shape[0]
@@ -146,7 +146,7 @@ def solve_particle_cluster(positions, tmatrix, p_src, k):
            p_src[N,2,rmax]     source scattering coefficients
            k                   medium wavenumber
     """
-    A = particle_cluster_tmatrix(positions, tmatrix,  k)
+    A = particle_aggregate_tmatrix(positions, tmatrix,  k)
     sol = np.linalg.tensorsolve(A, p_src)
 
     return sol
