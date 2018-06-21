@@ -35,13 +35,13 @@ extinct = np.zeros_like(wavelengths)
 force   = np.zeros((3,) + wavelengths.shape)
 
 for i,wavelength in enumerate(wavelengths):
-    system = miepy.cluster(position=[0,0,0],
-                           radius=radius,
-                           material=dielectric,
-                           source=source,
-                           wavelength=wavelength,
-                           lmax=lmax,
-                           medium=medium)
+    system = miepy.sphere_cluster(position=[0,0,0],
+                                  radius=radius,
+                                  material=dielectric,
+                                  source=source,
+                                  wavelength=wavelength,
+                                  lmax=lmax,
+                                  medium=medium)
 
     scat[i],absorb[i],extinct[i] = system.cross_sections()
     force[:,i] = system.force_on_particle(0)

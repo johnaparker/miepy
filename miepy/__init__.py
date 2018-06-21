@@ -17,7 +17,8 @@ from . import coordinates
 from . import interface
 
 from .materials.create import constant_material, function_material, data_material
-from .gmt import cluster
+from .cluster import cluster
+from .sphere_cluster import sphere_cluster
 from .mie_single.scattering import (scattering_per_multipole, absorbption_per_multipole,
                         extinction_per_multipole, cross_sections, multipole_label)
 from .mie_single.mie_sphere import single_mie_sphere

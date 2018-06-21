@@ -21,12 +21,12 @@ poynting_scattering = np.zeros(separations.shape)
 poynting_absorption = np.zeros(separations.shape)
 
 for i, separation in enumerate(tqdm(separations)):
-    mie = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
-                        radius=radius,
-                        material=Ag,
-                        source=source,
-                        wavelength=800*nm,
-                        lmax=1)
+    mie = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                               radius=radius,
+                               material=Ag,
+                               source=source,
+                               wavelength=800*nm,
+                               lmax=1)
 
     analytic_scattering[i], analytic_absorption[i], _ = mie.cross_sections()
 

@@ -18,12 +18,12 @@ force = np.zeros((3,) + separations.shape)
 torque = np.zeros_like(force)
 
 for i, separation in enumerate(tqdm(separations)):
-    sol = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
-                        radius=radius,
-                        material=Ag,
-                        source=source,
-                        wavelength=600*nm,
-                        lmax=2)
+    sol = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                               radius=radius,
+                               material=Ag,
+                               source=source,
+                               wavelength=600*nm,
+                               lmax=2)
     force[:,i] = sol.force_on_particle(0)
     torque[:,i] = sol.torque_on_particle(0)
 

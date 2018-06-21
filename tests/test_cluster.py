@@ -22,12 +22,12 @@ def test_off_center_particle(plot=False):
     # at the origin
     C1,A1,E1,C2,A2,E2 = [np.zeros_like(wavelengths, dtype=float) for i in range(6)]
     for i,wavelength in enumerate(wavelengths):
-        sol = miepy.cluster(position=[0,0,0],
-                            radius=radius,
-                            material=Ag,
-                            source=source,
-                            wavelength=wavelength,
-                            lmax=lmax)
+        sol = miepy.sphere_cluster(position=[0,0,0],
+                                   radius=radius,
+                                   material=Ag,
+                                   source=source,
+                                   wavelength=wavelength,
+                                   lmax=lmax)
 
         C1[i], A1[i], E1[i] = sol.cross_sections()
 
@@ -63,13 +63,13 @@ def test_interactions_off(plot=False):
 
     C1,A1,E1 = [np.zeros_like(wavelengths, dtype=float) for i in range(3)]
     for i,wavelength in enumerate(wavelengths):
-        sol = miepy.cluster(position=[[sep/2,0,0], [-sep/2,0,0]],
-                            radius=radius,
-                            material=Ag,
-                            source=source,
-                            wavelength=wavelength,
-                            lmax=lmax,
-                            interactions=False)
+        sol = miepy.sphere_cluster(position=[[sep/2,0,0], [-sep/2,0,0]],
+                                   radius=radius,
+                                   material=Ag,
+                                   source=source,
+                                   wavelength=wavelength,
+                                   lmax=lmax,
+                                   interactions=False)
 
         C1[i], A1[i], E1[i] = sol.cross_sections()
 

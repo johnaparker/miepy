@@ -10,13 +10,13 @@ def test_boundary_conditions():
     """verifies the continunity of tangential components of E and H at the surface of a particle"""
     radius = 50*nm
 
-    cluster = miepy.cluster(position=[[0,0,0]],
-                            radius=radius,
-                            material=miepy.materials. Ag(),
-                            lmax=2,
-                            wavelength=600*nm,
-                            source=miepy.sources.y_polarized_plane_wave(),
-                            medium=miepy.constant_material(1.2**2))
+    cluster = miepy.sphere_cluster(position=[[0,0,0]],
+                                   radius=radius,
+                                   material=miepy.materials. Ag(),
+                                   lmax=2,
+                                   wavelength=600*nm,
+                                   source=miepy.sources.y_polarized_plane_wave(),
+                                   medium=miepy.constant_material(1.2**2))
 
     theta = 0.3
     phi = 0.3

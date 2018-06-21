@@ -24,12 +24,12 @@ absorb  = np.zeros_like(wavelengths)
 extinct = np.zeros_like(wavelengths)
 
 for i,wavelength in enumerate(wavelengths):
-    sol = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
-                        radius=radius,
-                        material=Au,
-                        source=source,
-                        wavelength=wavelength,
-                        lmax=lmax)
+    sol = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                               radius=radius,
+                               material=Au,
+                               source=source,
+                               wavelength=wavelength,
+                               lmax=lmax)
     scat[i], absorb[i], extinct[i] = sol.cross_sections()
 
 plt.figure(figsize=(8,6))

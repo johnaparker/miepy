@@ -10,12 +10,12 @@ import miepy
 
 nm = 1e-9
 
-sol = miepy.cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
-                    radius=75*nm,
-                    material=miepy.constant_material(3.6**2),
-                    source=miepy.sources.y_polarized_plane_wave(),
-                    wavelength=600*nm,
-                    lmax=2)
+sol = miepy.sphere_cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
+                           radius=75*nm,
+                           material=miepy.constant_material(3.6**2),
+                           source=miepy.sources.y_polarized_plane_wave(),
+                           wavelength=600*nm,
+                           lmax=2)
 
 ### xy plane far-field
 fig, ax = plt.subplots(subplot_kw={'projection':'polar'})

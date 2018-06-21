@@ -22,12 +22,12 @@ mst_force = np.zeros_like(analytic_force)
 mst_torque = np.zeros_like(analytic_force)
 
 for i, separation in enumerate(tqdm(separations)):
-    mie = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
-                        radius=radius,
-                        material=Ag,
-                        source=source,
-                        wavelength=600*nm,
-                        lmax=2)
+    mie = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                               radius=radius,
+                               material=Ag,
+                               source=source,
+                               wavelength=600*nm,
+                               lmax=2)
 
     analytic_force[:,i] = mie.force_on_particle(0).squeeze()
     analytic_torque[:,i] = mie.torque_on_particle(0).squeeze()

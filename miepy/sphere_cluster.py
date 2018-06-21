@@ -9,7 +9,7 @@ from miepy.interface import atleast
 #TODO: make several properties... such as wavelength, source, position, etc.
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
 #TODO: swap position indices, so that [N,3] => [3,N]
-class cluster:
+class sphere_cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
     def __init__(self, *, position, radius, material, lmax,
                  source=None, wavelength=None, medium=None, origin=None,

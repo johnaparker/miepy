@@ -14,12 +14,12 @@ def test_cross_section_methods_monomer(plot=False):
     C2 = np.zeros([len(wavelengths), 2, 2])
 
     for i,wavelength in enumerate(tqdm(wavelengths)):
-        cluster = miepy.cluster(position=[0,0,0],
-                                radius=75*nm,
-                                material=miepy.constant_material(3.7**2),
-                                source=miepy.sources.x_polarized_plane_wave(),
-                                lmax=2,
-                                wavelength=wavelength)
+        cluster = miepy.sphere_cluster(position=[0,0,0],
+                                       radius=75*nm,
+                                       material=miepy.constant_material(3.7**2),
+                                       source=miepy.sources.x_polarized_plane_wave(),
+                                       lmax=2,
+                                       wavelength=wavelength)
 
         C1[i] = cluster.cross_sections().scattering
         C2[i] = cluster.cross_sections_per_multipole().scattering
@@ -49,12 +49,12 @@ def test_cross_section_methods_dimer(plot=False):
     separation = 200*nm
 
     for i,wavelength in enumerate(tqdm(wavelengths)):
-        cluster = miepy.cluster(position=[[-separation/2, 0, 0], [separation/2, 0, 0]],
-                                radius=75*nm,
-                                material=miepy.constant_material(3.7**2),
-                                source=miepy.sources.x_polarized_plane_wave(),
-                                lmax=2,
-                                wavelength=wavelength)
+        cluster = miepy.sphere_cluster(position=[[-separation/2, 0, 0], [separation/2, 0, 0]],
+                                       radius=75*nm,
+                                       material=miepy.constant_material(3.7**2),
+                                       source=miepy.sources.x_polarized_plane_wave(),
+                                       lmax=2,
+                                       wavelength=wavelength)
 
         C1[i] = cluster.cross_sections().scattering
         C2[i] = cluster.cross_sections_per_multipole(lmax=4).scattering

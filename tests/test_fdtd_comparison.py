@@ -109,12 +109,12 @@ gmtF = np.zeros((3,) + wavelengths.shape)
 gmtC = np.zeros((3,) + wavelengths.shape)
 
 for i,wavelength in enumerate(wavelengths):
-    sol = miepy.cluster(position=[[-separation/2,0,0],[separation/2,0,0]],
-                        radius=radius,
-                        material=Au,
-                        source=source,
-                        wavelength=wavelength,
-                        lmax=2)
+    sol = miepy.sphere_cluster(position=[[-separation/2,0,0],[separation/2,0,0]],
+                               radius=radius,
+                               material=Au,
+                               source=source,
+                               wavelength=wavelength,
+                               lmax=2)
 
     gmtF[:,i] = sol.force_on_particle(1) 
     gmtC[:,i] = sol.cross_sections()

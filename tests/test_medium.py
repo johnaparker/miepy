@@ -14,13 +14,13 @@ def test_medium_scaling_force(plot=False):
     n_b = np.linspace(1,5,10)
     F = np.zeros_like(n_b)
     for i,n in enumerate(n_b):
-        sphere = miepy.cluster(position=[0,0,0],
-                               radius=2*nm,
-                               material=miepy.constant_material(40**2),
-                               medium=miepy.constant_material(n**2),
-                               source=miepy.sources.x_polarized_plane_wave(),
-                               wavelength=2800*nm,
-                               lmax=2)
+        sphere = miepy.sphere_cluster(position=[0,0,0],
+                                      radius=2*nm,
+                                      material=miepy.constant_material(40**2),
+                                      medium=miepy.constant_material(n**2),
+                                      source=miepy.sources.x_polarized_plane_wave(),
+                                      wavelength=2800*nm,
+                                      lmax=2)
 
         F[i] = sphere.force_on_particle(0)[2]
 
@@ -60,13 +60,13 @@ def test_medium_cross_sections(plot=False):
 
     scat, absorb, extinct, C, A = (np.zeros_like(wavelengths) for i in range(5))
     for i,wavelength in enumerate(wavelengths):
-        sol = miepy.cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
-                            radius=radius,
-                            material=Au,
-                            source=source,
-                            medium=medium,
-                            wavelength=wavelength,
-                            lmax=lmax)
+        sol = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                                   radius=radius,
+                                   material=Au,
+                                   source=source,
+                                   medium=medium,
+                                   wavelength=wavelength,
+                                   lmax=lmax)
 
         scat[i], absorb[i], extinct[i] = sol.cross_sections()
 
