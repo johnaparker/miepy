@@ -9,47 +9,24 @@ from functools import namedtuple
 
 cross_sections = namedtuple('cross_sections', ['scattering', 'absorption', 'extinction'])
 
-def particle_cross_sections(p_scat, p_src, radius, k, n, mu, n_b, mu_b):
+def particle_cross_sections(p_scat, p_inc, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a particle
        
        Arguments:
            p_scat[2,rmax]  particle scattering coefficients
+           p_inc[2,rmax]   particle incident coefficients
            p_src[2,rmax]   source coefficients at particle
-           radius          particle radius
            k               wavenumber
-           n               particle index of refraction
-           mu              particle permeability
-           n_b             background index of refraction
-           mu_b            background permeability
     """
     lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
 
     Cext  = np.zeros([2, lmax], dtype=float)
     Cabs  = np.zeros([2, lmax], dtype=float)
 
-    riccati = miepy.special_functions.riccati_1_single
-
     factor = 4*np.pi/k**2
 
-    xj = k*radius
-    mj = n/n_b
-    yj = xj*mj
-
     for r,n,m in miepy.mode_indices(lmax):
-        # Cscat[0,n-1] += factor*np.abs(p_scat[r])**2
-        # Cscat[1,n-1] += factor*np.abs(q_scat[r])**2
-
-        psi_x, psi_xp = riccati(n, xj)
-        psi_y, psi_yp = riccati(n, yj)
-        
-        Dn = -np.divide(np.real(1j*mj*mu_b*mu*psi_y*np.conj(psi_yp)),
-                        np.abs(mu_b*mj*psi_y*psi_xp - mu*psi_x*psi_yp)**2)
-        Cn = -np.divide(np.real(1j*np.conj(mj)*mu_b*mu*psi_y*np.conj(psi_yp)),
-                        np.abs(mu*psi_y*psi_xp - mu_b*mj*psi_x*psi_yp)**2)
-
-        Cabs[:,n-1] += np.array([Dn,Cn])*factor*np.abs(p_scat[:,r])**2
-
-        #TODO should this be p_src or p_inc?
+        Cabs[:,n-1] += factor*(np.real(np.conj(p_inc[:,r])*p_scat[:,r]) - np.abs(p_scat[:,r])**2)
         Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
 
     Cscat = Cext - Cabs

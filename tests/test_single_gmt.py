@@ -58,7 +58,7 @@ def test_absoprtion():
     L2 = np.linalg.norm(absorb - A)/scat.shape[0]
     avg = np.average(np.abs(A) + np.abs(absorb))/2
 
-    assert np.all(L2 < 1e-15*avg)
+    assert np.all(L2 < 2e-15*avg)
 
 def test_force():
     """compare radiation force of GMT and single Mie theory"""

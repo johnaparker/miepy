@@ -325,10 +325,8 @@ class cluster:
         Arguments:
             i    particle index
         """
-
-        return miepy.flux.particle_cross_sections(self.p_scat[i], self.p_src[i], self.radius[i], 
-                    self.material_data.k_b, self.material_data.n[i], self.material_data.mu[i],
-                    self.material_data.n_b, self.material_data.mu_b)
+        return miepy.flux.particle_cross_sections(self.p_scat[i], self.p_inc[i], 
+                    self.p_src[i], self.material_data.k_b)
 
     def cross_sections_of_particle(self, i):
         """Compute the scattering, absorption, and extinction cross-section of a single particle

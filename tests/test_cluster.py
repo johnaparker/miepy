@@ -36,7 +36,7 @@ def test_off_center_particle(plot=False):
         C2[i], A2[i], E2[i] = sol.cross_sections()
 
     if not plot:
-        for a,b,tol in [(C1,C2,1e-15), (A1,A2,1e-15), (E1,E2,1e-15)]:
+        for a,b,tol in [(C1,C2,1e-15), (A1,A2,1e-14), (E1,E2,1e-15)]:
             L2 = np.linalg.norm(a - b)/a.shape[0]
             avg = np.average(a + b)/2
             print(L2, avg)
