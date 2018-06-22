@@ -41,7 +41,7 @@ class cluster:
 
         ### particle properties
         self.particles  = particles if isinstance(particles, list) else [particles]
-        self.Nparticles = len(particles)
+        self.Nparticles = len(self.particles)
         self.position = np.empty([self.Nparticles,3], dtype=float)
         self.material = np.empty([self.Nparticles], dtype=object)
         self.tmatrix  = np.empty([self.Nparticles, 2, self.rmax, 2, self.rmax], dtype=complex)
@@ -49,7 +49,7 @@ class cluster:
         for i in range(self.Nparticles):
             self.position[i] = self.particles[i].position
             self.material[i] = self.particles[i].material
-            self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.material[i].eps(wavelength))
+            self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.medium.eps(wavelength))
 
         ### set the origin
         self.auto_origin = False    
@@ -176,7 +176,7 @@ class cluster:
         if interior and not mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
-                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.particles[i].enclosed_radius()**2)
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
 
                 rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
@@ -187,7 +187,7 @@ class cluster:
         if mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
-                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.particles[i].enclosed_radius()**2)
                 E[:,idx] = 0
 
         #TODO: does this depend on the origin?
@@ -240,7 +240,7 @@ class cluster:
         if interior and not mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
-                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.particles[i].enclosed_radius()**2)
                 k_int = 2*np.pi*self.material_data.n[i]/self.wavelength
 
                 rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
@@ -252,7 +252,7 @@ class cluster:
         if mask and not far:
             for i in range(self.Nparticles):
                 x0, y0, z0 = self.position[i]
-                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.radius[i]**2)
+                idx = ((x - x0)**2 + (y - y0)**2 + (z - z0)**2 < self.particles[i].enclosed_radius()**2)
                 H[:,idx] = 0
 
         #TODO: does this depend on the origin?
@@ -453,7 +453,7 @@ class cluster:
         pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
-            self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
+            self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax, self.particles[i].enclosed_radius())
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
