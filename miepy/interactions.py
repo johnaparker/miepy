@@ -75,6 +75,9 @@ def sphere_aggregate_tmatrix(positions, a, k):
     rmax = miepy.vsh.lmax_to_rmax(lmax)
     identity = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     np.einsum('airair->air', identity)[...] = 1
+
+    if Nparticles == 1:
+        return identity
     
     interaction_matrix = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     r_ji, theta_ji, phi_ji, zn_values = interactions_precomputation(positions, k, lmax)
