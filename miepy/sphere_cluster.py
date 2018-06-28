@@ -477,8 +477,9 @@ class sphere_cluster:
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
     def _solve_interactions(self):
-        self.p_inc[...] = miepy.interactions.solve_sphere_cluster(self.position, self.mie_scat, 
-                self.p_src, self.material_data.k_b)
+        agg_tmatrix = miepy.interactions.sphere_aggregate_tmatrix(self.position, self.mie_scat,
+                                  self.material_data.k_b)
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method='exact')
 
         for r,n,m in miepy.mode_indices(self.lmax):
             self.p_scat[...,r] = self.p_inc[...,r]*self.mie_scat[...,n-1]

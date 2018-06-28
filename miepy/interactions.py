@@ -4,10 +4,30 @@ functions for building interaction matrices and solving them
 
 import numpy as np
 import miepy
+from scipy.sparse.linalg import bicgstab
+
+def solve_linear_system(tmatrix, p_src, method):
+    """Solve the linear system tmatrix*p_inc = p_src
+        
+       Arguments:
+           tmatrix[N,2,rmax,N,2,rmax]   particle aggregate tmatrix
+           p_src[N,2,rmax]   source scattering coefficients
+           method    solver method ('exact', 'bicgstab')
+    """
+
+    if method == 'exact':
+        return np.linalg.tensorsolve(tmatrix, p_src)
+
+    elif method == 'bicgstab':
+        N = p_src.shape[0]
+        rmax = p_src.shape[-1]
+
+        sol = bicgstab(tmatrix.reshape((2*N*rmax, -1)), p_src.reshape((-1,)))[0]
+        return sol.reshape((N,2,rmax))
 
 def sphere_aggregate_tmatrix(positions, a, k):
     """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
-       Returns T[2,N,rmax,2,N,rmax]
+       Returns T[N,2,rmax,N,2,rmax]
     
        Arguments:
            positions[N,3]      particles positions
@@ -79,25 +99,10 @@ def sphere_aggregate_tmatrix(positions, a, k):
     t_matrix = identity + interaction_matrix
     return t_matrix
 
-def solve_sphere_cluster(positions, a, p_src, k):
-    """Solve interactions of a collection of spheres.
-       Returns p_inc[2,rmax]
-    
-       Arguments:
-           positions[N,3]      particles positions
-           a[N,2,lmax]         mie scattering coefficients
-           p_src[N,2,rmax]     source scattering coefficients
-           k                   medium wavenumber
-    """
-    A = sphere_aggregate_tmatrix(positions, a,  k)
-    sol = np.linalg.tensorsolve(A, p_src)
-
-    return sol
-
 #TODO this function is more general than above and can be used for both cases (change only the einsum)
 def particle_aggregate_tmatrix(positions, tmatrix, k):
     """Obtain the particle-centered aggregate T-matrix for a cluster of particles
-       Returns T[2,N,rmax,2,N,rmax]
+       Returns T[N,2,rmax,N,2,rmax]
     
        Arguments:
            positions[N,3]      particles positions
@@ -151,19 +156,3 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
     interaction_matrix = np.einsum('iabjcd,jcdef->iabjef', interaction_matrix, tmatrix)
     A = identity + interaction_matrix
     return A
-
-def solve_particle_cluster(positions, tmatrix, p_src, k):
-    """Solve interactions of a collection of particles
-       Returns p_inc[2,rmax]
-    
-       Arguments:
-           positions[N,3]      particles positions
-           tmatrix[N,2,rmax,2,rmax]   particle T-matrices
-           p_src[N,2,rmax]     source scattering coefficients
-           k                   medium wavenumber
-    """
-    A = particle_aggregate_tmatrix(positions, tmatrix,  k)
-    sol = np.linalg.tensorsolve(A, p_src)
-
-    return sol
-

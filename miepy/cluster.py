@@ -460,6 +460,8 @@ class cluster:
         self.p_scat[...] = np.einsum('naibj,nbj->nai', self.tmatrix, self.p_inc)
 
     def _solve_interactions(self):
-        self.p_inc[...] = miepy.interactions.solve_particle_cluster(self.position, self.tmatrix, 
-                self.p_src, self.material_data.k_b)
+        agg_tmatrix = miepy.interactions.particle_aggregate_tmatrix(self.position, self.tmatrix,
+                                  self.material_data.k_b)
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method='exact')
+
         self.p_scat[...] = np.einsum('naibj,nbj->nai', self.tmatrix, self.p_inc)
