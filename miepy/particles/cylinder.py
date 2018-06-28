@@ -1,4 +1,5 @@
 import miepy
+import numpy as np
 from .particle_base import particle
 
 class cylinder(particle):
