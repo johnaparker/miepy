@@ -39,11 +39,16 @@ def sphere_aggregate_tmatrix(positions, a, k):
 
             idx +=1
 
+    nmax = 2*lmax + 1
+    zn_values = np.zeros((nmax, size), dtype=complex)
+    for n in range(nmax):
+        zn_values[n] = miepy.vsh.special.spherical_hn(n, k*r_ji)
+
     for r,n,m in miepy.mode_indices(lmax):
         for s,v,u in miepy.mode_indices(lmax):
             # if s - 2*u < r: continue
             A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.VSH_mode.outgoing)
+                    r_ji, theta_ji, phi_ji, k, miepy.VSH_mode.outgoing, zn_values=zn_values)
 
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
@@ -69,6 +74,7 @@ def sphere_aggregate_tmatrix(positions, a, k):
             # interaction_matrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
 
             interaction_matrix[:,:,r,:,:,s] *= a[:,:,v-1]
+            # interaction_matrix[:,:,s-2*u,:,:,r-2*m] *= a[:,:,n-1]
 
     t_matrix = identity + interaction_matrix
     return t_matrix

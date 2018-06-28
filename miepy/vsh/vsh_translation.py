@@ -5,12 +5,17 @@ VSH translation function
 import numpy as np
 from math import factorial
 from miepy import vsh
+from functools import partial
 
-def vsh_translation(m, n, u, v, r, theta, phi, k, mode):
+def vsh_translation(m, n, u, v, r, theta, phi, k, mode, zn_values=None):
     """VSH translation coefficients"""
     m *= -1
     f = factorial
-    zn = vsh.get_zn(mode)
+
+    if zn_values is None:
+        zn = partial(vsh.get_zn(mode), z=k*r)
+    else:
+        zn = lambda p: zn_values[p]
 
     factor = 0.5 * (-1.)**m * np.sqrt((2*v+1)*(2*n+1)*f(v-u)*f(n-m)
             /(v*(v+1)*n*(n+1)*f(v+u)*f(n+m))) * np.exp(1j*(u+m)*phi)
@@ -23,7 +28,7 @@ def vsh_translation(m, n, u, v, r, theta, phi, k, mode):
         A = 1j**p*(n*(n+1) + v*(v+1) - p*(p+1))*aq
 
         Pnm = vsh.special.associated_legendre(p,u+m)
-        sum_term += A*zn(p, k*r)*Pnm(np.cos(theta))
+        sum_term += A*zn(p)*Pnm(np.cos(theta))
 
     A_translation = factor*sum_term
 
@@ -35,7 +40,7 @@ def vsh_translation(m, n, u, v, r, theta, phi, k, mode):
         A = 1j**(p+1)*(((p+1)**2 - (n-v)**2)*((n+v+1)**2 - (p+1)**2))**0.5*bq
 
         Pnm = vsh.special.associated_legendre(p+1,u+m)
-        sum_term += A*zn(p+1, k*r)*Pnm(np.cos(theta))
+        sum_term += A*zn(p+1)*Pnm(np.cos(theta))
 
     B_translation = -factor*sum_term
 
