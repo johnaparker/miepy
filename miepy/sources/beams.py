@@ -117,8 +117,8 @@ class beam(source):
                               k, lmax, origin=position, theta_0=cutoff)
 
 class paraxial_beam(beam):
-    def __init__(self, Ufunc, polarization, power=None, amplitude=1, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, center)
+    def __init__(self, Ufunc, polarization, power=None, amplitude=1, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, power, amplitude, phase, center)
         self.Ufunc = Ufunc
 
     def scalar_potenital(self, x, y, z, k):
