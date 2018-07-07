@@ -8,14 +8,19 @@ import miepy
 from miepy import vsh
 from scipy import special
 import sympy
-
-n = 4
-m = 3
-mp = 1
-beta = 0.4
+import quaternion
 
 def wigner_d(n, m, mp, beta):
-    """recursion formulation (Mishchenko, Scattering, Absorption and Emission of Light by small Particles, p.365 (B.22 - B.24))"""
+    """Wigner-d function
+    
+    Arguments:
+        n       multipole order
+        m       multipole orientation (from)
+        mp      multipole orientation (to)
+        beta    euler angle 2
+
+    Note:
+        Solved using a recursion formulation (Mishchenko, Scattering, Absorption and Emission of Light by small Particles, p.365 (B.22 - B.24))"""
     wig_d = np.zeros(n + 1, dtype=complex)
     
     if beta < 0:
@@ -55,10 +60,30 @@ def wigner_d(n, m, mp, beta):
         # * special.jacobi(n-m, a, b)(np.cos(beta))
 
 def wigner_D(n, m, mp, alpha, beta, gamma):
+    """Wigner-D function
+    
+    Arguments:
+        n       multipole order
+        m       multipole orientation (from)
+        mp      multipole orientation (to)
+        alpha   euler angle 1
+        beta    euler angle 2
+        gamma   euler angle 3
+    """
     d = np.exp(1j*m*alpha)*wigner_d(n, m, mp, beta)*np.exp(1j*mp*gamma)
     return d
 
-def vsh_rotation_matrix(n, alpha, beta, gamma):
+def vsh_rotation_matrix(n, quat):
+    """Rotation matrix for a given multipole order
+
+    Arguments:
+        n       multipole order
+        quat    quaternion representing the rotation
+
+    Returns:
+        Rotation matrix R[2n+1,2n+1], such that p' = R*p
+    """
+    alpha, beta, gamma = -quaternion.as_euler_angles(quat)
     l = 2*n + 1
     R = np.zeros((l, l), dtype=complex)
 
@@ -68,20 +93,25 @@ def vsh_rotation_matrix(n, alpha, beta, gamma):
 
     return R
 
-def rotate_coefficients(p_scat, alpha, beta, gamma):
-    p_rot = np.empty_like(p_scat)
-    rmax = p_scat.shape[1]
+def rotate_expansion_coefficients(p_exp, quat):
+    """Rotate a set of expansion coefficients to a new reference frame
+
+    Arguments:
+        p_exp[2,rmax]   expansion coefficients
+        quat            quaternion representing the rotation
+
+    Returns:
+        The rotated expansion coefficients, p_rot[2,rmax]
+    """
+    p_rot = np.empty_like(p_exp)
+    rmax = p_exp.shape[1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)
 
-
     for n in range(1,lmax+1):
-        R = vsh_rotation_matrix(n, -alpha, -beta, -gamma)
+        R = vsh_rotation_matrix(n, quat)
         rmax = miepy.vsh.lmax_to_rmax(n)
         idx = np.s_[rmax-(2*n+1):rmax]
-        p_rot[:,idx] = np.einsum('ab,pa->pb', R, p_scat[:,idx])
-        p_rot[:,idx] = np.einsum('ab,pb->pa', R, p_scat[:,idx])
+        # p_rot[:,idx] = np.einsum('ab,pa->pb', R, p_exp[:,idx])
+        p_rot[:,idx] = np.einsum('ab,pb->pa', R, p_exp[:,idx])
 
     return p_rot
-
-# print(wigner_d(m, mp, n, beta))
-# print(spherical_functions.wigner_d(n, m, mp, beta))
