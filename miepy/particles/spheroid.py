@@ -2,7 +2,7 @@ import miepy
 from .particle_base import particle
 
 class spheroid(particle):
-    def __init__(self, position, axis_xy, axis_z, material, orientation=None):
+    def __init__(self, position, axis_xy, axis_z, material, orientation=None, tmatrix_lmax=0):
         """A spheroid object
 
         Arguments:
@@ -16,12 +16,21 @@ class spheroid(particle):
         self.axis_xy = axis_xy
         self.axis_z  = axis_z
 
+        self.tmatrix_lmax = tmatrix_lmax
+
     def is_inside(self, pos):
         pass
 
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
-        self.tmatrix = miepy.tmatrix.tmatrix_spheroid(self.axis_xy, self.axis_z, wavelength, 
-                self.material.eps(wavelength), eps_m, lmax, extended_precision=False)
+        calc_lmax = max(lmax+2, self.tmatrix_lmax)
+
+        self.tmatrix_fixed = miepy.tmatrix.tmatrix_spheroid(self.axis_xy, self.axis_z, wavelength, 
+                self.material.eps(wavelength), eps_m, calc_lmax, extended_precision=False)
+
+        if lmax < calc_lmax:
+            self.tmatrix_fixed = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix_fixed, lmax)
+
+        self._rotate_fixed_tmatrix()
         return self.tmatrix
 
     def enclosed_radius(self):
