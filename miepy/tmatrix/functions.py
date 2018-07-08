@@ -1,4 +1,6 @@
 import miepy
+import numpy as np
+import quaternion
 
 def tmatrix_reduce_lmax(tmatrix, lmax):
     """Reduce the dimensions of a tmatrix to lmax
@@ -20,3 +22,30 @@ def tmatrix_reduce_lmax(tmatrix, lmax):
     rmax = miepy.vsh.lmax_to_rmax(lmax)
 
     return tmatrix[:, :rmax, :, :rmax]
+
+def rotate_tmatrix(tmatrix, quat):
+    """Rotate a T-matrix
+    
+    Arguments:
+        tmatrix    tmatrix to be rotated
+        quat       quaternion representing the rotation
+
+    Returns:
+        The rotated T-matrix
+    """
+    alpha, beta, gamma = -quaternion.as_euler_angles(quat)
+
+    rmax = tmatrix.shape[1]
+    lmax = miepy.vsh.rmax_to_lmax(rmax)
+
+    R = np.zeros([rmax, rmax], dtype=complex)
+
+    for i,n,m in miepy.mode_indices(lmax):
+        # remove this for loop, fill in R block diagonal style
+        for j,v,u in miepy.mode_indices(lmax):
+            if n == v:
+                R[i,j] = miepy.vsh.vsh_rotation.wigner_D(n, m, u, alpha, beta, gamma) 
+
+    tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R.T), tmatrix)
+
+    return tmatrix_rot

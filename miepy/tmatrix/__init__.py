@@ -6,4 +6,4 @@ from . import functions
 
 from .get_tmatrix import nfmds_solver, tmatrix_solvers
 from .common import tmatrix_cylinder, tmatrix_spheroid, tmatrix_sphere
-from .functions import tmatrix_reduce_lmax
+from .functions import tmatrix_reduce_lmax, rotate_tmatrix
