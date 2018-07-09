@@ -451,23 +451,79 @@ Example Python code using MiePy
 
     # define material and source
     Ag = miepy.materials.Ag()
-    source = miepy.sources.x_polarized_plane_wave()
+    source = miepy.sources.plane_wave(polarization=[1,0])
 
     # build an Ag dimer with radii 50nm separated by 600nm in the x-direction
-    dimer = miepy.cluster(position=[[300*nm,0,0], [-300*nm,0,0]],
-                            radius=50*nm,
-                            material=Ag,
-                            source=source,
-                            wavelength=800*nm,
-                            lmax=2)
+    dimer = miepy.sphere_cluster(position=[[300*nm,0,0], [-300*nm,0,0]],
+                                    radius=50*nm,
+                                    material=Ag,
+                                    source=source,
+                                    wavelength=800*nm,
+                                    lmax=2)
 
     # obtain the cross-sections
-    scat, absorb, extinct = cluster.cross_sections()
+    scat, absorb, extinct = dimer.cross_sections()
 
     # obtain the force and torque on the right particle
-    F = cluster.force_on_particle(0)
-    T = cluster.torque_on_particle(0)
+    F = dimer.force_on_particle(0)
+    T = dimer.torque_on_particle(0)
 \end{lstlisting}
+
+\section{Target features}
+
+\begin{enumerate*}
+    \item \textbf{version 0.3}
+        \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+            \item 30x performance for larger clusters
+            \item T-matrix for non-spherical particles
+            \item Plane-wave/beams direction and polarization control
+        \end{itemize}
+    \item \textbf{version 0.4}
+        \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+            \item Periodic boundary conditions (1D and 2D)
+            \item Symmetry relationships (mirror, anti-mirror, discrete rotation, inversion)
+            \item Additional performance: 
+                        (i) A/B remainging symmetries, 
+                        (ii) lmax per particle,
+                        (iii) source=None for pre-computed aggregate T-matrix,
+                        (iv) no T-matrix recomputation for identical geometries
+                        (v) transition from [[2,rmax]] $\rightarrow$ [[rmax]] shape
+            \item Save solution so that it can be reloaded
+            \item Any changes to T-matrix/sources
+        \end{itemize}
+    \item \textbf{version 0.5}
+        \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+            \item Additional functions: 
+                       (i) cluster T-matrix,
+                       (ii) Mueller matrix,
+                       (iii) spin vs. orbital torque,
+                       (iv) local density of states,
+                       (v) energy and momentum density
+            \item Average over orientations calculations
+            \item Existing TODO items
+            \item Better documentation, examples, tests, and tutorial/introduction for quick introduction
+        \end{itemize}
+    \item \textbf{future}
+        \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+            \item Substrates, layered substrates
+            \item Beyond the Rayleigh hypothesis for non-spherical particle interactions
+            \item More T-matrix options:
+                        (i) non-axisymmetric particles, Gaussian spheres/cylinders, layered spheres/spheroids, etc.
+                        (ii) chiral materials,
+                        (iii) anisotropic materials
+                    \item Valid field expansion in circumscribing spheres (possibly using discrete sources)
+            \item 3D periodic boundary conditions
+            \item Band diagram calculations
+            \item Performance:
+                      (i) parallelization (MPI, openMP, and/or GPU),
+                      (ii) C++ implementations,
+                      (iii) approximation for long-range interactions in large systems,
+                      (iv) Preconditioner for iterative matrix solver
+            \item Scene visualization (3D)
+            \item Prettier output for main classes using \_\_repr\_\_
+            \item Time-domain via IFFT
+        \end{itemize}
+\end{enumerate*}
 
 
 \bibliographystyle{unsrt}
