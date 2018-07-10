@@ -406,19 +406,34 @@ class cluster:
 
         return T
 
-    def update_position(self, position):
-        """Update the positions of the spheres
+    def update(self, position=None, orientation=None):
+        """Update properties of the particles
 
             Arguments
-                position[N,3]       new particle positions
+                position[N,3]     new particle positions
+                orientation[N]    new particle orientations (array of quaternions)
         """
-        self.position = np.asarray(np.atleast_2d(position), dtype=float)
+
+        if position is not None:
+            self.position = np.asarray(np.atleast_2d(position), dtype=float)
+
+            if self.auto_origin:
+                self.origin = np.average(self.position, axis=0)
+
+        if orientation is not None:
+            for i in raneg(self.Nparticles):
+                self.particles[i].orientation = orientation[i]
+                self.tmatrix[i] = self.particles[i].tmatrix
+
         self._reset_cluster_coefficients()
 
-        if self.auto_origin:
-            self.origin = np.average(self.position, axis=0)
-
-        self.solve()
+        if position is not None or orientation is None:
+            self.solve()
+        elif position is None and orientation is not None:
+            if self.interactions:
+                self._solve_interactions()
+            else:
+                self._solve_without_interactions()
 
     def solve_cluster_coefficients(self, lmax=None):
         """Solve for the p,q coefficients of the entire cluster around the origin
