@@ -29,14 +29,7 @@ class plane_wave(source):
         self.k_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
 
         ### TE and TM vectors
-        zhat = np.array((0, 0, 1), dtype=float)
-
-        if np.array_equal(self.k_hat, zhat) or np.array_equal(self.k_hat, -zhat):
-            self.n_te = np.array([np.cos(phi), np.sin(phi), 0])
-            self.n_tm = np.array([np.sin(phi), np.cos(phi), 0])
-        else:
-            self.n_tm = np.cross(self.k_hat, zhat)
-            self.n_te = np.cross(self.n_tm, self.k_hat)
+        _, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
 
     @classmethod
     def from_string(cls, polarization, direction='z', amplitude=1, phase=0):
