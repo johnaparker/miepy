@@ -129,7 +129,7 @@ class plane_wave(source):
                       # (pi_value*(self.polarization[0]*np.cos(self.phi) + self.polarization[1]*np.cos(self.phi - np.pi/2))) \
                 # + 1j*(tau_value*(self.polarization[0]*np.sin(self.phi) + self.polarization[1]*np.sin(self.phi - np.pi/2))))
 
-        if self.theta != 0 and self.phi != 0:
+        if self.theta != 0 or self.phi != 0:
             quat = quaternion.from_spherical_coords(self.theta, self.phi)
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, quat)
 

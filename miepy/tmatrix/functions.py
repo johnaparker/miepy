@@ -41,11 +41,13 @@ def rotate_tmatrix(tmatrix, quat):
     R = np.zeros([rmax, rmax], dtype=complex)
 
     for i,n,m in miepy.mode_indices(lmax):
-        # remove this for loop, fill in R block diagonal style
+        #TODO: remove this for loop, fill in R block diagonal style
         for j,v,u in miepy.mode_indices(lmax):
             if n == v:
                 R[i,j] = miepy.vsh.vsh_rotation.wigner_D(n, m, u, alpha, beta, gamma) 
 
-    tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R.T), tmatrix)
+    #TODO: which should be correct?
+    # tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R), tmatrix)
+    tmatrix_rot = np.einsum('sm,wu,ambu->asbw', R, np.conjugate(R), tmatrix)
 
     return tmatrix_rot
