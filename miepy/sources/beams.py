@@ -42,12 +42,18 @@ def find_cutoff(f, cutoff, tol=1e-7):
     return theta
 
 class beam(source):
-    def __init__(self, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
+    def __init__(self, polarization, theta=0, phi=0, power=None, 
+                    amplitude=None, phase=0, center=np.zeros(3)):
         super().__init__(amplitude, phase)
-        polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization = polarization
-        self.polarization /= np.linalg.norm(polarization)
+        self.polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization /= np.linalg.norm(self.polarization)
         self.center = np.asarray(center)
+
+        self.theta = theta
+        self.phi   = phi
+
+        ### TE and TM vectors
+        self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
 
         self.amplitude = amplitude
         self.power = power
@@ -116,8 +122,9 @@ class beam(source):
                               k, lmax, origin=position, theta_0=cutoff)
 
 class paraxial_beam(beam):
-    def __init__(self, Ufunc, polarization, power=None, amplitude=1, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, phase, center)
+    def __init__(self, Ufunc, polarization, theta=0, phi=0, 
+                   power=None, amplitude=1, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.Ufunc = Ufunc
 
     def scalar_potenital(self, x, y, z, k):
@@ -127,8 +134,9 @@ class paraxial_beam(beam):
         return True
 
 class gaussian_beam(beam):
-    def __init__(self, width, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, phase, center)
+    def __init__(self, width, polarization, theta=0, phi=0, 
+                  power=None, amplitude=None, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width = width
     
     def scalar_potenital(self, x, y, z, k):
@@ -164,8 +172,9 @@ class gaussian_beam(beam):
         return self.width > 4*wav
 
 class bigaussian_beam(beam):
-    def __init__(self, width_x, width_y, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, phase, center)
+    def __init__(self, width_x, width_y, polarization, theta=0, phi=0,
+                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width_x = width_x
         self.width_y = width_y
     
@@ -191,8 +200,9 @@ class bigaussian_beam(beam):
         # return 2*np.pi/k < min(self.width_x, self.width_y)
 
 class hermite_gaussian_beam(beam):
-    def __init__(self, l, m, width, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, phase, center)
+    def __init__(self, l, m, width, polarization, theta=0, phi=0, 
+                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width = width
         self.l = l
         self.m = m
@@ -240,8 +250,9 @@ class hermite_gaussian_beam(beam):
         return self.width > 4*wav
 
 class laguerre_gaussian_beam(beam):
-    def __init__(self, p, l, width, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, power, amplitude, phase, center)
+    def __init__(self, p, l, width, polarization, theta=0, phi=0,
+                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
+        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width = width
         self.p = p
         self.l = l
@@ -297,26 +308,32 @@ class laguerre_gaussian_beam(beam):
         wav = 2*np.pi/k
         return self.width > 4*wav
 
-def azimuthal_beam(width, amplitude=None, power=None, phase=0, center=np.zeros(3)):
+def azimuthal_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
     """azimuthally polarized beam"""
     if power is not None:
         power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1],  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1],  theta=theta, phi=phi, 
+                  amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], theta=theta, phi=phi,
+                  amplitude=amplitude, power=power, phase=phase, center=center)
     return HG_1 + HG_2
 
-def radial_beam(width, amplitude=None, power=None, phase=0, center=np.zeros(3)):
+def radial_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
     """radially polarized beam"""
     if power is not None:
         power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], theta=theta, phi=phi,
+                  amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], theta=theta, phi=phi,
+                  amplitude=amplitude, power=power, phase=phase, center=center)
     return HG_1 + HG_2
 
-def shear_beam(width, amplitude=None, power=None, phase=0, center=np.zeros(3)):
+def shear_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
     """shear polarized beam"""
     if power is not None:
         power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], theta=theta, phi=phi,
+                  amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], theta=theta, phi=phi,
+                  amplitude=amplitude, power=power, phase=phase, center=center)
     return HG_1 + HG_2

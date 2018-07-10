@@ -26,10 +26,9 @@ class plane_wave(source):
 
         self.theta = theta
         self.phi   = phi
-        self.k_hat = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
 
         ### TE and TM vectors
-        _, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
+        self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
 
     @classmethod
     def from_string(cls, polarization, direction='z', amplitude=1, phase=0):
