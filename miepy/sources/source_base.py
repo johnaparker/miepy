@@ -6,13 +6,13 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 import miepy
 
-#TODO: in addition to an amplitude, all sources have a phase, polarization (maybe), and direction of propagation (maybe)
 class source:
     """source interface base class"""
     __metaclass__ = ABCMeta
 
-    def __init__(self, amplitude):
+    def __init__(self, amplitude, phase):
         self.amplitude = amplitude
+        self.phase = phase
 
     @abstractmethod
     def E_field(self, x, y, z, k): pass
@@ -37,7 +37,6 @@ class combined_source(source):
 
     def __init__(self, *sources):
         self.sources = sources
-        self.amplitude = sources[0].amplitude
 
     def E_field(self, x, y, z, k):
         return sum(map(lambda source: source.E_field(x, y, z, k), self.sources))

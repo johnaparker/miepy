@@ -43,12 +43,11 @@ def find_cutoff(f, cutoff, tol=1e-7):
 
 class beam(source):
     def __init__(self, polarization, power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(amplitude)
+        super().__init__(amplitude, phase)
         polarization = np.asarray(polarization, dtype=np.complex)
         self.polarization = polarization
         self.polarization /= np.linalg.norm(polarization)
         self.center = np.asarray(center)
-        self.phase = phase
 
         self.amplitude = amplitude
         self.power = power
