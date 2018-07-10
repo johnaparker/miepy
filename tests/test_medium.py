@@ -18,7 +18,7 @@ def test_medium_scaling_force(plot=False):
                                       radius=2*nm,
                                       material=miepy.constant_material(40**2),
                                       medium=miepy.constant_material(n**2),
-                                      source=miepy.sources.x_polarized_plane_wave(),
+                                      source=miepy.sources.plane_wave.from_string(polarization='x'),
                                       wavelength=2800*nm,
                                       lmax=2)
 
@@ -52,7 +52,7 @@ def test_medium_cross_sections(plot=False):
 
     wavelengths = np.linspace(500*nm, 1000*nm, Nwav)
     separation = 2*radius + 40*nm
-    source = miepy.sources.x_polarized_plane_wave()
+    source = miepy.sources.plane_wave.from_string(polarization='x')
 
     THETA, PHI = miepy.coordinates.sphere_mesh(20)
     R = (separation/2 + radius + 20*nm)*np.ones_like(THETA)

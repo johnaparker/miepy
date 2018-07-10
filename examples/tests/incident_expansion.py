@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import miepy
 
 ### source definition
-source = miepy.sources.x_polarized_plane_wave()
+source = miepy.sources.plane_wave.from_string(polarization='x')
 k = 2*np.pi/1
 Nmax = 5
 

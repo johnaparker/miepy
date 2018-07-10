@@ -104,7 +104,7 @@ frequency = np.linspace(1, 1/0.4, 40)
 separation = 400*nm
 radius = 75*nm
 Au = miepy.data_material(wavelengths, eps)
-source = miepy.sources.rhc_polarized_plane_wave()
+source = miepy.sources.plane_wave.from_string(polarization='rhc')
 gmtF = np.zeros((3,) + wavelengths.shape)
 gmtC = np.zeros((3,) + wavelengths.shape)
 

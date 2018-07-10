@@ -139,15 +139,3 @@ class plane_wave(source):
 
     def is_paraxial(self, k):
         return True
-
-def x_polarized_plane_wave(amplitude=1):
-    return plane_wave(polarization=[1,0], amplitude=amplitude)
-
-def y_polarized_plane_wave(amplitude=1):
-    return plane_wave(polarization=[0,1], amplitude=amplitude)
-
-def rhc_polarized_plane_wave(amplitude=1):
-    return plane_wave(polarization=[1,1j], amplitude=amplitude)
-
-def lhc_polarized_plane_wave(amplitude=1):
-    return plane_wave(polarization=[1,-1j], amplitude=amplitude)

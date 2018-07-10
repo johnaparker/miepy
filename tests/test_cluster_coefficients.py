@@ -17,7 +17,7 @@ def test_cross_section_methods_monomer(plot=False):
         cluster = miepy.sphere_cluster(position=[0,0,0],
                                        radius=75*nm,
                                        material=miepy.constant_material(3.7**2),
-                                       source=miepy.sources.x_polarized_plane_wave(),
+                                       source=miepy.sources.plane_wave.from_string(polarization='x'),
                                        lmax=2,
                                        wavelength=wavelength)
 
@@ -52,7 +52,7 @@ def test_cross_section_methods_dimer(plot=False):
         cluster = miepy.sphere_cluster(position=[[-separation/2, 0, 0], [separation/2, 0, 0]],
                                        radius=75*nm,
                                        material=miepy.constant_material(3.7**2),
-                                       source=miepy.sources.x_polarized_plane_wave(),
+                                       source=miepy.sources.plane_wave.from_string(polarization='x'),
                                        lmax=2,
                                        wavelength=wavelength)
 

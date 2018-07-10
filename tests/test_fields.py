@@ -15,7 +15,7 @@ def test_boundary_conditions():
                                    material=miepy.materials. Ag(),
                                    lmax=2,
                                    wavelength=600*nm,
-                                   source=miepy.sources.y_polarized_plane_wave(),
+                                   source=miepy.sources.plane_wave.from_string(polarization='y'),
                                    medium=miepy.constant_material(1.2**2))
 
     theta = 0.3

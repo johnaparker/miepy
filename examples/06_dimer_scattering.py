@@ -13,7 +13,7 @@ Nwav = 60
 
 Au = miepy.materials. Au()
 radius = 40*nm
-source = miepy.sources.x_polarized_plane_wave()
+source = miepy.sources.plane_wave.from_string(polarization='x')
 lmax = 3
 
 wavelengths = np.linspace(300*nm, 800*nm, Nwav)

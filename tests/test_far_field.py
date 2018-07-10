@@ -9,7 +9,7 @@ nm = 1e-9
 dimer = miepy.sphere_cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                       radius=75*nm,
                       material=miepy.constant_material(3.6**2),
-                      source=miepy.sources.y_polarized_plane_wave(),
+                      source=miepy.sources.plane_wave.from_string(polarization='y'),
                       wavelength=600*nm,
                       lmax=2)
 

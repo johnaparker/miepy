@@ -18,7 +18,7 @@ THETA = np.arccos(Z/R)
 PHI = np.arctan2(Y,X)
 
 system = miepy.gmt(miepy.spheres([0,0,0], r, miepy.constant_material(1.3)), 
-            miepy.sources.x_polarized_plane_wave(),
+            miepy.sources.plane_wave.from_string(polarization='x'),
             600*nm, 2, interactions=False)
 
 E = np.squeeze(system.E_field(X,Y,Z,False))

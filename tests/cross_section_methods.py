@@ -21,7 +21,7 @@ for i, wavelength in enumerate(tqdm(wavelengths)):
     dimer = miepy.sphere_cluster(position=[[-100*nm,0,0], [100*nm, 0, 0]],
                                  radius=75*nm,
                                  material=miepy.constant_material(3.6**2 + 1j),
-                                 source=miepy.sources.y_polarized_plane_wave(),
+                                 source=miepy.sources.plane_wave.from_string(polarization='y'),
                                  wavelength=wavelength,
                                  lmax=2)
     C[i], A[i], E[i] = dimer.cross_sections()

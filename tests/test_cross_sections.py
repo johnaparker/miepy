@@ -11,7 +11,7 @@ nm = 1e-9
 
 Ag = miepy.materials. Ag()
 radius = 75*nm
-source = miepy.sources.x_polarized_plane_wave()
+source = miepy.sources.plane_wave.from_string(polarization='x')
 separations = np.linspace(2*radius + 10*nm, 2*radius + 200*nm, 5)
 
 analytic_scattering = np.zeros(separations.shape)

@@ -27,7 +27,7 @@ S,A,E = sphere.cross_sections()
 Fz = sphere.radiation_force()
 
 # Generalized Mie Theory (GMT)
-source = miepy.sources.x_polarized_plane_wave()
+source = miepy.sources.plane_wave.from_string(polarization='x')
 
 scat    = np.zeros_like(wavelengths)
 absorb  = np.zeros_like(wavelengths)
