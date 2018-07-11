@@ -143,6 +143,6 @@ PrintProgress
                  is printed. 
 """
     return file_str_template.format(geometry_type=geometry_type, geometry_parameters=geometry_parameters,
-             Nrank=Nrank, wavelength=wavelength, index=index, index_m=index_m, chiral=str(chiral).lower(), 
+             Nrank=Nrank, wavelength=wavelength, index=index/index_m, index_m=index_m, chiral=str(chiral).lower(), 
              kb=kb, conducting=str(conducting).lower(), Nparam=Nparam, use_ds=str(use_ds).lower(), 
              complex_plane=str(complex_plane).lower(), eps_z_re_im=eps_z_re_im, Nint=Nint)
