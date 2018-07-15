@@ -8,6 +8,7 @@ from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite, erfc
 from scipy.constants import physical_constants
+import quaternion
 
 Z0 = physical_constants['characteristic impedance of vacuum'][0]
 
@@ -41,6 +42,7 @@ def find_cutoff(f, cutoff, tol=1e-7):
 
     return theta
 
+#TODO: implement .from_string constructors
 class beam(source):
     def __init__(self, polarization, theta=0, phi=0, power=None, 
                     amplitude=None, phase=0, center=np.zeros(3)):
@@ -51,6 +53,7 @@ class beam(source):
 
         self.theta = theta
         self.phi   = phi
+        self.orientation = quaternion.from_spherical_coords(self.theta, self.phi)
 
         ### TE and TM vectors
         self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
@@ -66,25 +69,29 @@ class beam(source):
 
     def scalar_potenital_ingoing(self, theta, phi, k): pass
 
-    def is_paraxial(self, x, y, z, k): pass
+    def is_paraxial(self, k): pass
 
     def E_field(self, x, y, z, k):
-        U = self.scalar_potenital(x, y, z, k)
-        E = np.zeros((3,) + U.shape, dtype=complex)
-        E[0] = U*self.polarization[0]
-        E[1] = U*self.polarization[1]
-        E *= np.exp(1j*self.phase)
+        xp, yp, zp = miepy.coordinates.translate(x, y, z, -self.center)
+        xp, yp, zp = miepy.coordinates.rotate(xp, yp, zp, self.orientation.inverse())
 
-        return E
+        U = self.scalar_potenital(xp, yp, zp, k)
+        E = np.zeros((3,) + U.shape, dtype=complex)
+        amp = U*np.exp(1j*self.phase)
+
+        pol = self.n_te*self.polarization[0] + self.n_tm*self.polarization[1]
+        return np.einsum('i...,...->i...', pol, amp)
 
     def H_field(self, x, y, z, k):
-        U = self.scalar_potenital(x, y, z, k)
-        H = np.zeros((3,) + U.shape, dtype=complex)
-        H[0] = -U*self.polarization[1]
-        H[1] = U*self.polarization[0]
-        H *= np.exp(1j*self.phase)
+        xp, yp, zp = miepy.coordinates.translate(x, y, z, -self.center)
+        xp, yp, zp = miepy.coordinates.rotate(xp, yp, zp, -self.orientation)
 
-        return H
+        U = self.scalar_potenital(xp, yp, zp, k)
+        H = np.zeros((3,) + U.shape, dtype=complex)
+        amp = U*np.exp(1j*self.phase)
+
+        pol = self.n_tm*self.polarization[0] - self.n_te*self.polarization[1]
+        return np.einsum('i...,...->i...', pol, amp)
 
     def spherical_ingoing(self, theta, phi, k):
         """Determine far-field spherical fields from the scalar potential.
@@ -101,9 +108,12 @@ class beam(source):
         return Esph
 
     def structure(self, position, k, lmax, radius):
+        #TODO: fix orientation_copy hack
+        orientation_copy = self.orientation
+        self.orientation = quaternion.one
         if self.is_paraxial(k):
             sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
-            return miepy.vsh.decomposition.near_field_point_matching(self, 
+            p_src = miepy.vsh.decomposition.near_field_point_matching(self, 
                               position, 2*radius, k, lmax, sampling)
         else:
             #TODO implement a better way of finding the maximum value... per source object
@@ -118,8 +128,15 @@ class beam(source):
             else:
                 cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
 
-            return miepy.vsh.decomposition.integral_project_source_far(self, 
+            p_src = miepy.vsh.decomposition.integral_project_source_far(self, 
                               k, lmax, origin=position, theta_0=cutoff)
+
+        self.orientation = orientation_copy
+
+        if self.theta != 0 or self.phi != 0:
+            p_src = miepy.vsh.rotate_expansion_coefficients(p_src, self.orientation)
+
+        return p_src
 
 class paraxial_beam(beam):
     def __init__(self, Ufunc, polarization, theta=0, phi=0, 
@@ -145,11 +162,10 @@ class gaussian_beam(beam):
         else:
             E0 = self.amplitude
 
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
+        rho_sq = x**2 + y**2
         wav = 2*np.pi/k
-        amp = E0*self.width/w(rp[2], self.width, wav) * np.exp(-rho_sq/w(rp[2],self.width,wav)**2)
-        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - gouy(rp[2],self.width,wav)
+        amp = E0*self.width/w(z, self.width, wav) * np.exp(-rho_sq/w(z,self.width,wav)**2)
+        phase = k*z[2] + k*rho_sq*Rinv(z[2],self.width,wav)/2 - gouy(z[2],self.width,wav)
 
         return amp*np.exp(1j*phase)
 
@@ -184,11 +200,10 @@ class bigaussian_beam(beam):
         else:
             E0 = self.amplitude
 
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2/self.width_x**2 + rp[1]**2/self.width_y**2
+        rho_sq = x**2/self.width_x**2 + y**2/self.width_y**2
         wav = 2*np.pi/k
         amp = E0*np.exp(-rho_sq)
-        phase = k*rp[2]
+        phase = k*z
 
         return amp*np.exp(1j*phase)
 
@@ -214,17 +229,16 @@ class hermite_gaussian_beam(beam):
         else:
             E0 = self.amplitude
 
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
+        rho_sq = x**2 + y**2
         wav = 2*np.pi/k
 
-        wz = w(rp[2], self.width, wav)
-        HG_l = eval_hermite(self.l, np.sqrt(2)*rp[0]/wz)
-        HG_m = eval_hermite(self.m, np.sqrt(2)*rp[1]/wz)
+        wz = w(z, self.width, wav)
+        HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
+        HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
         N = self.l + self.m
 
         amp = E0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-        phase = k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
+        phase = k*z + k*rho_sq*Rinv(z,self.width,wav)/2 - (N+1)*gouy(z,self.width,wav)
 
         return amp*np.exp(1j*phase)
 
@@ -233,12 +247,11 @@ class hermite_gaussian_beam(beam):
         r = 1e6*wav
         x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
         
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
+        rho_sq = x**2 + y**2
 
-        wz = w(rp[2], self.width, wav)
-        HG_l = eval_hermite(self.l, np.sqrt(2)*rp[0]/wz)
-        HG_m = eval_hermite(self.m, np.sqrt(2)*rp[1]/wz)
+        wz = w(z, self.width, wav)
+        HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
+        HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
         N = self.l + self.m
 
         amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
@@ -263,19 +276,18 @@ class laguerre_gaussian_beam(beam):
         else:
             E0 = self.amplitude
 
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
-        phi = np.arctan2(rp[1], rp[0])
+        rho_sq = x**2 + y**2
+        phi = np.arctan2(y, x)
         wav = 2*np.pi/k
 
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
-        wz = w(rp[2], self.width, wav)
+        wz = w(z, self.width, wav)
 
         Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
         N = abs(self.l) + 2*self.p
 
         amp = E0*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
-        phase = self.l*phi + k*rp[2] + k*rho_sq*Rinv(rp[2],self.width,wav)/2 - (N+1)*gouy(rp[2],self.width,wav)
+        phase = self.l*phi + k*z + k*rho_sq*Rinv(z,self.width,wav)/2 - (N+1)*gouy(z,self.width,wav)
 
         return amp*np.exp(1j*phase)
 
@@ -289,12 +301,11 @@ class laguerre_gaussian_beam(beam):
         r = 1e6*wav
         x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
 
-        rp = np.array([x - self.center[0], y - self.center[1], z - self.center[2]])
-        rho_sq = rp[0]**2 + rp[1]**2
-        phi = np.arctan2(rp[1], rp[0])
+        rho_sq = x**2 + y**2
+        phi = np.arctan2(y, x)
 
         C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
-        wz = w(rp[2], self.width, wav)
+        wz = w(z, self.width, wav)
 
         Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
         N = abs(self.l) + 2*self.p

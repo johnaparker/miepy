@@ -3,6 +3,7 @@ Defines functions used to construct basis vectors, convert between coordinate sy
 """
 
 import numpy as np
+import quaternion
 
 def sph_to_cart(r, theta, phi, origin=None):
     """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
@@ -132,3 +133,23 @@ def cart_sphere_mesh(radius, origin, sampling):
     Z = origin[2] + R*np.cos(THETA)
 
     return map(np.squeeze, (X,Y,Z,THETA,PHI,tau,phi))
+
+def rotate(x, y, z, quat, origin=None):
+    """Rotate the points (x, y, z) around an origin using a quaternion"""
+    if origin is None:
+        origin = np.zeros(3, dtype=float)
+
+    R = quaternion.as_rotation_matrix(quat)
+    p = np.asarray(translate(x, y, z, -origin))
+    p_rotated = np.einsum('ij,j...->i...', R, p)
+    p_final = translate(*p_rotated, origin)
+
+    return p_final
+
+def translate(x, y, z, dr):
+    """Translate the points (x, y, z) by dr"""
+    xp = x + dr[0]
+    yp = y + dr[1]
+    zp = z + dr[2]
+
+    return xp, yp, zp
