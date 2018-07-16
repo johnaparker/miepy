@@ -33,21 +33,16 @@ def rotate_tmatrix(tmatrix, quat):
     Returns:
         The rotated T-matrix
     """
-    alpha, beta, gamma = -quaternion.as_euler_angles(quat)
-
     rmax = tmatrix.shape[1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)
 
     R = np.zeros([rmax, rmax], dtype=complex)
 
     for i,n,m in miepy.mode_indices(lmax):
-        #TODO: remove this for loop, fill in R block diagonal style
-        for j,v,u in miepy.mode_indices(lmax):
-            if n == v:
-                R[i,j] = miepy.vsh.vsh_rotation.wigner_D(n, m, u, alpha, beta, gamma) 
+        r = miepy.vsh.lmax_to_rmax(n)
+        idx = np.s_[r-(2*n+1):r]
+        R[idx,idx] = miepy.vsh.vsh_rotation_matrix(n, quat).T
 
-    #TODO: which should be correct?
-    # tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R), tmatrix)
-    tmatrix_rot = np.einsum('sm,wu,ambu->asbw', R, np.conjugate(R), tmatrix)
+    tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R), tmatrix)
 
     return tmatrix_rot
