@@ -1,6 +1,6 @@
 import os
 import subprocess
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
 def read(fname):
@@ -44,7 +44,7 @@ setup(
     license = "MIT",
     keywords = "electrodynamics mie scattering",
     url = "",
-    packages=['miepy'],
+    packages=find_packages(),
     long_description=read('README.md'),
     install_requires=['numpy', 'scipy', 'matplotlib'],
     include_package_data = True,

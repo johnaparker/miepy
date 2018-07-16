@@ -18,6 +18,10 @@ def axisymmetric_file(geometry_type, geometry_parameters, Nrank, wavelength,
         eps_z_re_im (float)          parameter used to distribute discrete sources (default: 0.95)
         Nint (int)                   number of points used in integration (default: 200)
     """
+    geometry_xy = geometry_parameters[0]/wavelength
+    geometry_z = geometry_parameters[1]/wavelength
+    wavelength = 1
+
     if kb is None:
         chiral = False
         kb = 1
@@ -47,8 +51,8 @@ GeomProp
 '../GEOMFILES/prolate.fem'
 {geometry_type}
 2
-{geometry_parameters[0]}
-{geometry_parameters[1]}
+{geometry_xy}
+{geometry_z}
 {Nparam}
 1.0
 1.0
@@ -142,7 +146,7 @@ PrintProgress
  - PrnProgress - if PrnProgress = t, the progress of calculation 
                  is printed. 
 """
-    return file_str_template.format(geometry_type=geometry_type, geometry_parameters=geometry_parameters,
+    return file_str_template.format(geometry_type=geometry_type, geometry_xy=geometry_xy, geometry_z=geometry_z,
              Nrank=Nrank, wavelength=wavelength, index=index/index_m, index_m=index_m, chiral=str(chiral).lower(), 
              kb=kb, conducting=str(conducting).lower(), Nparam=Nparam, use_ds=str(use_ds).lower(), 
              complex_plane=str(complex_plane).lower(), eps_z_re_im=eps_z_re_im, Nint=Nint)

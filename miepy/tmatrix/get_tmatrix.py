@@ -4,6 +4,7 @@ import tempfile
 
 import numpy as np
 import miepy
+import pandas
 from functools import namedtuple
 from .required_files import main_input_file, sct_input_file
 from .axisymmetric_file import axisymmetric_file
@@ -24,7 +25,6 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         extended_precision (bool)    whether to use extended precision (default: False)
     """
     rmax = miepy.vsh.lmax_to_rmax(lmax)
-    input_kwargs.update(dict(Nrank=lmax))
 
     ### create temporary directory tree
     with tempfile.TemporaryDirectory() as direc:
@@ -49,7 +49,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
             f.write(sct_input_file())
 
         with open(f'{input_files_dir}/InputAXSYM.dat', 'w') as f:
-            f.write((solver.input_function(**input_kwargs)))
+            f.write((solver.input_function(Nrank=lmax, **input_kwargs)))
 
         ### execute program and communicate
         if extended_precision:
@@ -60,65 +60,47 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         proc = subprocess.Popen([command], cwd=sources_dir, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         proc.communicate(f'{solver.number}'.encode())
         proc.wait()
-        
+
         ### read T-matrix dimensions
         with open(f'{tmatrix_output_dir}/Infotmatrix.dat', 'r') as f:
-            info_lines = f.readlines()
+            lines = f.readlines()
 
-        for line in info_lines:
-            if line.split()[0:4] == ['-', 'maximum', 'expansion', 'order,']:
-                n_rank = int(line.split()[-1][0:-1])
+            ### last entries in the final two lines give Nrank, Mrank, respectively
+            m_rank_str = lines[-1].split()[-1]
+            n_rank_str = lines[-2].split()[-1]
 
-            if line.split()[0:5] == ['-', 'number', 'of', 'azimuthal', 'modes,']:
-                m_rank = int(line.split()[-1][0:-1])
+            ### Remove the pesky comma and period from the string
+            m_rank = int(m_rank_str[:-1])
+            n_rank = int(n_rank_str[:-1])
 
         ### read T-matrix output
-        with open(f'{tmatrix_output_dir}/tmatrix.dat') as f:
-            tmat_lines = f.readlines()
-
-        tmatrix_u = [[]]
-        column_index = 0
-        for line in tmat_lines[3:]:
-            split_line = line.split()
-            for i_entry in range(int(len(split_line) / 2)):
-                if column_index == 2 * n_rank:
-                    tmatrix_u.append([])
-                    column_index = 0
-                tmatrix_u[-1].append(complex(split_line[2 * i_entry]) + 1j * complex(split_line[2 * i_entry + 1]))
-                column_index += 1
+        tmatrix_file = f'{tmatrix_output_dir}/tmatrix.dat'
+        data = pandas.read_csv(tmatrix_file, skiprows=3,
+                  delim_whitespace=True, header=None).values.flatten()  # read as flat array
+        data = data[~np.isnan(data)]  # throw out the NaNs
+        data_real = data[::2]  # every other element is the real part
+        data_imag = data[1::2]
+        T_nfmds = np.reshape(data_real, (-1, 2*n_rank)) \
+                  + 1j*np.reshape(data_imag, (-1, 2*n_rank))  # reshape the final result to have 2*n_rank columns
 
         ### restructure T-matrix
-        T = np.zeros((2*rmax, 2*rmax), dtype=complex)
+        T = np.zeros((2, rmax, 2, rmax), dtype=complex)
+        for r1,n1,m1 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
+            for r2,n2,m2 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
+                if m1 != m2:
+                    continue
 
-        m_max = lmax
-        for m in range(-m_max, m_max + 1):
-            n_max_nfmds = n_rank - max(1, abs(m)) + 1
-            for tau1 in range(2):
-                for l1 in range(max(1, abs(m)), lmax + 1):
-                    n1 = l1*(l1+1) + m -1 + tau1*rmax
-                    l1_nfmds = l1 - max(1, abs(m))
-                    n1_nfmds = 2 * n_rank * abs(m) + tau1 * n_max_nfmds + l1_nfmds
-                    for tau2 in range(2):
-                        for l2 in range(max(1, abs(m)), lmax + 1):
-                            n2 = l2*(l2+1) + m -1 + tau2*rmax
-                            l2_nfmds = l2 - max(1, abs(m))
-                            n2_nfmds = tau2 * n_max_nfmds + l2_nfmds
-                            if abs(m) <= m_rank:
-                                if m >= 0:
-                                    T[n1, n2] = tmatrix_u[n1_nfmds][n2_nfmds]
-                                else:
-                                    T[n1, n2] = tmatrix_u[n1_nfmds][n2_nfmds] * (-1) ** (tau1 + tau2)
+                n_max = n_rank - max(1, abs(m1)) + 1
+                l1 = n1 - max(1, abs(m1)) 
+                l2 = n2 - max(1, abs(m2)) 
 
-        ### restructure T-matrix again
-        T = np.reshape(T, [2, rmax, 2, rmax])
-        tmatrix = np.empty_like(T)
-        tmatrix[0,:,0,:] = -T[1,:,1,:]
-        tmatrix[1,:,1,:] = -T[0,:,0,:]
-        tmatrix[0,:,1,:] = -T[1,:,0,:]
-        tmatrix[1,:,0,:] = -T[0,:,1,:]
+                x = 2*n_rank*abs(m1) + l1
+                y = l2
 
-        for r1,n1,m1 in miepy.mode_indices(lmax):
-            for r2,n2,m2 in miepy.mode_indices(lmax):
-                tmatrix[:,r1,:,r2] *= 1j**(n2-n1)
+                factor = -1j**(n2-n1)
+                T[1,r1,1,r2] = T_nfmds[x, y]*factor
+                T[0,r1,0,r2] = T_nfmds[x+n_max, y+n_max]*factor
+                T[0,r1,1,r2] = T_nfmds[x+n_max, y]*factor*np.sign(m1)
+                T[1,r1,0,r2] = T_nfmds[x, y+n_max]*factor*np.sign(m2)
 
-        return tmatrix
+        return T
