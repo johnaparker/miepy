@@ -42,6 +42,20 @@ def find_cutoff(f, cutoff, tol=1e-7):
 
     return theta
 
+def power_numeric(beam, k):
+    """Calculate the total power in a beam via numeric integration"""
+    radius = 1e6*2*np.pi/k
+    theta = np.linspace(np.pi/2, np.pi, 30)
+    phi = np.linspace(0, 2*np.pi, 20)
+    THETA, PHI = np.meshgrid(theta, phi)
+    R = radius*np.ones_like(THETA)
+
+    E = beam.scalar_potenital_ingoing(THETA, PHI, k, norm=False)
+    S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
+    P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.real.T)/4
+
+    return P
+
 #TODO: implement .from_string constructors
 class beam(source):
     def __init__(self, polarization, theta=0, phi=0, power=None, 
@@ -242,7 +256,16 @@ class hermite_gaussian_beam(beam):
 
         return amp*np.exp(1j*phase)
 
-    def scalar_potenital_ingoing(self, theta, phi, k):
+    def scalar_potenital_ingoing(self, theta, phi, k, norm=True):
+        #TODO: remove the norm hack
+        if norm:
+            if self.amplitude is None:
+                U0 = np.sqrt(self.power/power_numeric(self, k))
+            else:
+                U0 = self.amplitude
+        else:
+            U0 = 1
+
         wav = 2*np.pi/k
         r = 1e6*wav
         x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
@@ -254,7 +277,7 @@ class hermite_gaussian_beam(beam):
         HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
         N = self.l + self.m
 
-        amp = self.amplitude*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
+        amp = U0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
 
         return amp
 
