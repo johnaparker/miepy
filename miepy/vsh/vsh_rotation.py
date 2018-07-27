@@ -5,7 +5,6 @@ VSH rotation functions
 import numpy as np
 import miepy
 import quaternion
-from spherical_functions import Wigner_D_matrices, Wigner_D_element
 
 def wigner_D(n, m, mp, quat):
     """Wigner-D function
@@ -16,6 +15,8 @@ def wigner_D(n, m, mp, quat):
         mp      multipole orientation (to)
         quat    quaternion representing the rotation
     """
+    from spherical_functions import Wigner_D_element
+
     return Wigner_D_element(quat, n, mp, m)
 
 def vsh_rotation_matrix(n, quat):
@@ -28,6 +29,8 @@ def vsh_rotation_matrix(n, quat):
     Returns:
         Rotation matrix R[2n+1,2n+1], such that p' = R*p
     """
+    from spherical_functions import Wigner_D_matrices
+
     l = 2*n + 1
     R = Wigner_D_matrices(quat, n, n).reshape((l,l))
 

@@ -54,3 +54,15 @@ tags
 
 # pytest
 .pytest_cache
+
+# compiled files
+*.o
+*.mod
+
+# tmatrix objects
+miepy/tmatrix/nfmds/fem
+miepy/tmatrix/nfmds/input
+miepy/tmatrix/nfmds/old
+miepy/tmatrix/nfmds/tmatrix
+miepy/tmatrix/nfmds/tmatrix_extended
+
