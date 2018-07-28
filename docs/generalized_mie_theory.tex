@@ -3,6 +3,7 @@
 % standard header for all latex files
 \input{/home/john/.latex/standard_header.tex}
 
+\usepackage[utf8]{inputenc}
 \usepackage[margin=.9in]{geometry}
 \usepackage[labelfont=bf]{caption}
 \usepackage{subcaption}
@@ -10,19 +11,31 @@
 \usepackage[affil-it]{authblk}
 \usepackage{enumitem}
 \usepackage{scrextend}
-\usepackage{cleveref}
 
-\usepackage[nottoc,notlot,notlof]{tocbibind}
+\usepackage{varioref}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=blue,
+    urlcolor=black
+}
+
+%\usepackage[nottoc,notlot,notlof]{tocbibind}
 \renewcommand{\bibname}{References}
 
-\title{Generalized multiparticle Mie theory}
+\title{Generalized multiparticle Mie theory (GMMT)}
 \date{}
 \author{}
 
 \begin{document}
 \maketitle
+\tableofcontents
 
-\section{Vector spherical harmonic functions}
+\section{Particle interactions in the GMMT}
+\subsection{Vector spherical harmonic functions}
 
 The generalized multiparticle Mie theory (GMMT) is outlined, following Xu's work. \cite{xu1995electromagnetic}
 The vector spherical harmonic (VSH) functions are a complete basis set of the vector wave equations
@@ -34,13 +47,13 @@ The vector spherical harmonic (VSH) functions are a complete basis set of the ve
 \end{align}
 They are defined as
 \begin{align}
-    \boldsymbol{M}_{mn}^{(J)} &= \big[
-    \boldsymbol{\hat \theta} i\pi_{mn}(\cos\theta) 
-   -\boldsymbol{\hat \phi} \tau_{mn}(\cos\theta) \big] z_n^{(J)}(kr) e^{im\phi} \\
-    \boldsymbol{N}_{mn}^{(J)} &= 
-    \boldsymbol{\hat r} n(n+1) P_n^m(\cos\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \\
-    &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\cos\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\cos\theta) \right]
-    \frac{d}{dr} \left[ rz_n^{(J)}(kr)e^{im\phi} \right] \nonumber
+    \boldsymbol{N}_{mn1}^{(J)} &= 
+    \boldsymbol{\hat r} n(n+1) P_n^m(\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \nonumber \\
+    &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\theta) \right]
+    \frac{d}{dr} \left[ rz_n^{(J)}(kr)e^{im\phi} \right] \\
+    \boldsymbol{N}_{mn2}^{(J)} &= \big[
+    \boldsymbol{\hat \theta} i\pi_{mn}(\theta) 
+   -\boldsymbol{\hat \phi} \tau_{mn}(\theta) \big] z_n^{(J)}(kr) e^{im\phi} \nonumber
 \end{align}
 where $J= 1,2,3,4$. The radial functions $z_n^{(J)}$ are
 \begin{equation}
@@ -52,140 +65,208 @@ z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
 where $j_n$, $y_n$ are the spherical Bessel functions of the first and second kind, and $h_n^{(1)}$, $h_n^{(2)}$ are the spherical Hankel functions of the first and second kind.
 The angular functions $\pi_{mn}$ and $\tau_{mn}$ are
 \begin{align}
-\pi_{mn}(\cos\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
-\tau_{mn}(\cos\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
+\pi_{mn}(\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
+\tau_{mn}(\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
 \end{align}
 The associated Legendre polynomials $P_n^m$ are defined without the Condon-Shortley phase, i.e.
 \begin{equation}
 P_n^m(x) = (1 - x^2)^{m/2} \frac{d^m}{dx^m} P_n(x)
 \end{equation}
-The VSHs are an orthogonal set when integrated over a closed surface $\Omega$
+
+The VSHs are an orthogonal (but not orthonormal) set when integrated over a closed surface $\Omega$
 \begin{align}
 \begin{split}
-    \langle \boldsymbol{N}_{mn}^{(J)}, \boldsymbol{N}_{m^\prime n^\prime}^{(J)} \rangle
-    &= \int_\Omega \boldsymbol{N}_{mn}^{(J)} \cdot \boldsymbol{N}_{m^\prime n^\prime}^{(J)*} \;d\Omega \\
+    \langle \boldsymbol{N}_{mn1}^{(J)}, \boldsymbol{N}_{m^\prime n^\prime 1}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{N}_{mn1}^{(J)} \cdot \boldsymbol{N}_{m^\prime n^\prime 1}^{(J)*} \;d\Omega \\
     &= \delta_{mm^\prime}\delta_{nn^\prime}4\pi \frac{n(n+1)(n+m)!}{(2n+1)(n-m)!}
       \left[ \frac{\left|z_n^{(J)}(kr) + krz_n^{(J)\prime}(kr)\right|^2 + n(n+1) \left|z_n^{(J)}(kr)\right|^2 }{(kr)^2} \right] \\
-    \langle \boldsymbol{M}_{mn}^{(J)}, \boldsymbol{M}_{m^\prime n^\prime}^{(J)} \rangle
-    &= \int_\Omega \boldsymbol{M}_{mn}^{(J)} \cdot \boldsymbol{M}_{m^\prime n^\prime}^{(J)*} \;d\Omega
+    \langle \boldsymbol{N}_{mn2}^{(J)}, \boldsymbol{N}_{m^\prime n^\prime 2}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{N}_{mn2}^{(J)} \cdot \boldsymbol{N}_{m^\prime n^\prime 2}^{(J)*} \;d\Omega
     = \delta_{mm^\prime}\delta_{nn^\prime}4\pi \frac{n(n+1)(n+m)!}{(2n+1)(n-m)!} |z_n^{(J)}(kr)|^2 \\
-    \langle \boldsymbol{N}_{mn}^{(J)}, \boldsymbol{M}_{m^\prime n^\prime}^{(J)} \rangle
-    &= \int_\Omega \boldsymbol{N}_{mn}^{(J)} \cdot \boldsymbol{M}_{m^\prime n^\prime}^{(J)*} \;d\Omega = 0
+    \langle \boldsymbol{N}_{mn1}^{(J)}, \boldsymbol{N}_{m^\prime n^\prime 2}^{(J)} \rangle
+    &= \int_\Omega \boldsymbol{N}_{mn1}^{(J)} \cdot \boldsymbol{N}_{m^\prime n^\prime 2}^{(J)*} \;d\Omega = 0
 \end{split}
 \end{align}
 
+The table below outlines the physical interpretation of the VSHs
+\begin{center}
+ \begin{tabular}{|l l|} 
+ \hline
+ \textbf{Entity} & \textbf{Physical interpretation}  \\ [0.5ex] 
+ \hline\hline
+ $\bm{N}_{mn1}$ & electric (TE) modes \\ 
+ $\bm{N}_{mn2}$ & magnetic (TM) modes \\ 
+ \hline
+ $n$ & multipolar order (1: dipole, 2: quadrupole, etc.) \\
+ $m$ & azimuthal order (from $-n$ to $n$) \\
+ \hline
+ $J=1$ & $z$-propagating mode \\ 
+ $J=2$ & counter-$z$-propagating mode \\ 
+ $J=3$ & spherically outgoing mode \\ 
+ $J=4$ & spherically ingoing mode \\
+ \hline
+\end{tabular}
+\end{center}
 
-\section{Field expansions}
+\subsection{Field expansions}
+The source, incident, scattered, and interior electric and magnetic fields of particle $j$ can be expanded in terms of the VSHs.
+The incident field includes the source field plus the incident field from all other particles in the system.
+\newline
+
 \textit{Electric field}
 \begin{subequations}
 \begin{align}
-    \boldsymbol{E}_\text{src}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[ p_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
-    \boldsymbol{E}_\text{inc}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[ p_{mn}^{j,\text{inc}} \boldsymbol{N}_{mn}^{(1)} + q_{mn}^{j,\text{inc}} \boldsymbol{M}_{mn}^{(1)} \right] \\
-    \boldsymbol{E}_\text{scat}^j &= \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[p_{mn}^{j,\text{scat}} \boldsymbol{N}_{mn}^{(3)} + q_{mn}^{j,\text{scat}} \boldsymbol{M}_{mn}^{(3)} \right] \\
-    \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    iE_{mn} \left[ d_{mn}^j \boldsymbol{N}_{mn}^{(1)} + c_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
+    \boldsymbol{E}_\text{src}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    iE_{mn} p_{mnr}^{j,\text{src}} \boldsymbol{N}_{mnr}^{(1)} \\
+    \boldsymbol{E}_\text{inc}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    iE_{mn} p_{mnr}^{j,\text{inc}} \boldsymbol{N}_{mnr}^{(1)} \\
+    \boldsymbol{E}_\text{scat}^j &= \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    iE_{mn} p_{mnr}^{j,\text{scat}} \boldsymbol{N}_{mnr}^{(3)} \\
+    \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    iE_{mn} p_{mnr}^{j,\text{int}} \boldsymbol{N}_{mnr}^{(1)}
 \end{align}
 \end{subequations}
 
 \textit{Magnetic field}
 \begin{subequations}
 \begin{align}
-    \boldsymbol{H}_\text{src}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \left[ q_{mn}^{j,\text{src}} \boldsymbol{N}_{mn}^{(1)} + p_{mn}^{j,\text{src}} \boldsymbol{M}_{mn}^{(1)} \right] \\
-    \boldsymbol{H}_\text{inc}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \left[ q_{mn}^j \boldsymbol{N}_{mn}^{(1)} + p_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right] \\
-    \boldsymbol{H}_\text{scat}^j &= \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \left[b_{mn}^j \boldsymbol{N}_{mn}^{(3)} + a_{mn}^j \boldsymbol{M}_{mn}^{(3)} \right] \\
-    \boldsymbol{H}_\text{int}^j &= -\sqrt{\frac{\varepsilon^j}{\mu^j}}  \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    E_{mn} \left[ c_{mn}^j \boldsymbol{N}_{mn}^{(1)} + d_{mn}^j \boldsymbol{M}_{mn}^{(1)} \right]
+    \boldsymbol{H}_\text{src}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    E_{mn} p_{mn\bar r}^{j,\text{src}} \boldsymbol{N}_{mnr}^{(1)} \\
+    \boldsymbol{H}_\text{inc}^j &= - \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    E_{mn} p_{mn\bar r}^{j,\text{inc}} \boldsymbol{N}_{mnr}^{(1)} \\
+    \boldsymbol{H}_\text{scat}^j &= \sqrt{\frac{\varepsilon_b}{\mu_b}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    E_{mn} p_{mn\bar r}^{j,\text{scat}} \boldsymbol{N}_{mnr}^{(3)} \\
+    \boldsymbol{H}_\text{int}^j &= - \sqrt{\frac{\varepsilon^j}{\mu^j}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
+    E_{mn} p_{mn\bar r}^{j,\text{int}} \boldsymbol{N}_{mnr}^{(1)}
 \end{align}
 \end{subequations}
-where $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
+where $\bar r = 3-r$,  and $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
 \begin{equation}
     E_{mn} = i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
 \end{equation}
 
-\section{VSH translation coefficients}
-The VSH functions computed in one coordinate system ($\bm{r}_j$) can be converted to a different coordinate system ($\bm{r}_l$) by use of the translation coefficients $\widetilde{A}_{mn}^{uv(J)}(l \rightarrow j)$ and $\widetilde{B}_{mn}^{uv(J)}(l \rightarrow j)$
-\begin{subequations}
-\begin{align}
-    \bm{M}_{uv}^{(J)}(k\bm{r}_l) &= \sum_{n=0}^\infty \sum_{m=-n}^{m=n}
-    \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \bm{M}_{mn}^{(1)}(k\bm{r}_j)
-    + \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j) \bm{N}_{mn}^{(1)}(k\bm{r}_j) \\
-    \bm{N}_{uv}^{(J)}(k\bm{r}_l) &= \sum_{n=0}^\infty \sum_{m=-n}^{m=n}
-    \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j) \bm{M}_{mn}^{(1)}(k\bm{r}_j)
-    + \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \bm{N}_{mn}^{(1)}(k\bm{r}_j)
-\end{align}
-\end{subequations}
+\subsection{VSH translation coefficients}
+The VSH functions computed in one coordinate system ($\bm{r}_j$) can be converted to a different coordinate system ($\bm{r}_l$) by use of the translation coefficient $\widetilde{A}_{mnruvs}^{jl}$
+\begin{equation}
+    \bm{N}_{mnr}^{(J)}(k\bm{r}_j) = \sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
+    \widetilde{A}_{mnruvs}^{(J)jl} \bm{N}_{uvs}^{(1)}(k\bm{r}_l)
+\end{equation}
 Explicit formula for the translation coefficients can be found elsewhere. \cite{Xu_1998}
 
 The normalized translation coefficients are defined as
-\begin{subequations}
-\begin{align}
-    A_{mn}^{uv(J)}(l \rightarrow j) &= \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mn}^{uv(J)}(l \rightarrow j) \\
-    B_{mn}^{uv(J)}(l \rightarrow j) &= \frac{E_{uv}}{E_{mn}} \widetilde{B}_{mn}^{uv(J)}(l \rightarrow j)
-\end{align}
-\end{subequations}
-
-
-\section{Interaction equations}
-The interaction equations among $N$ particles can be written as
-\begin{align}
-    \begin{split}
-        p_{mn}^{j,\text{inc}} &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
-        A_{mnuv}^{(3)(l \rightarrow j)} a_v^l p_{uv}^{l,\text{inc}}
-        +B_{mnuv}^{(3)(l \rightarrow j)} b_v^l q_{uv}^{l,\text{inc}} \\
-        q_{mn}^{j,\text{inc}} &= q_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
-        B_{mnuv}^{(3)(l \rightarrow j)} a_v^l p_{uv}^{l,\text{inc}}
-        +A_{mnuv}^{(3)(l \rightarrow j)} b_v^l q_{uv}^{l,\text{inc}}
-    \label{eqn:gmt_system}
-    \end{split}
-\end{align}
-
-\section{T-matrix formulation}
 \begin{equation}
-    \begin{pmatrix}
-        p_{mn}^{j,\text{scat}} \\[6pt]
-        q_{mn}^{j,\text{scat}}
-    \end{pmatrix}
-    = \sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
-    \mathcal{T}_{mnuv}^j
-    \begin{pmatrix}
-        p_{uv}^{j,\text{inc}} \\[6pt]
-        q_{uv}^{j,\text{inc}}
-    \end{pmatrix}
-    \label{eqn:t_matrix}
+    A_{mnruvs}^{(J)jl} &= \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mnruvs}^{(J)jl}
 \end{equation}
 
-\begin{align}
-    \begin{pmatrix}
-        p_{mn}^{j,\text{inc}} \\[6pt]
-        q_{mn}^{j,\text{inc}} 
-    \end{pmatrix}
-    = 
-    \begin{pmatrix}
-        p_{mn}^{j,\text{src}} \\[6pt]
-        q_{mn}^{j,\text{src}} 
-    \end{pmatrix}
-    -
-    \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
-    \sum_{v^\prime=1}^{L_\text{max}} \sum_{u^\prime=-v^\prime}^{v^\prime}
-    \begin{pmatrix}
-        A_{mnuv}^{(3)(l \rightarrow j)} & B_{mnuv}^{(3)(l \rightarrow j)} \\[6pt] 
-        B_{mnuv}^{(3)(l \rightarrow j)} & A_{mnuv}^{(3)(l \rightarrow j)}
-    \end{pmatrix}
-    \mathcal{T}_{uvu^\prime v^\prime}^l
-    \begin{pmatrix}
-        p_{u^\prime v^\prime}^{l,\text{inc}} \\[6pt]
-        q_{u^\prime v^\prime}^{l,\text{inc}}
-    \end{pmatrix}
-\label{eqn:gmt_system}
-\end{align}
 
-\section{Force and torque}
+\subsection{VSH rotation coefficients}
+
+\subsection{T-matrix formulation}
+\newcommand{\tmatrix}{\mathcal{T}}
+The T-matrix of particle $j$, $\tmatrix_{mnruvs}^j$, relates the incident expansion coefficients to the scattered expansion coefficients for an arbitrary, non-spherical particle.
+To simplify the index notation, a multi-index is used to denote a given mode, i.e. $\alpha = (n,m,r)$.
+Greek letters are used to represent a multi-index.
+Furthermore, Einstein notation is used so that repeated multi-indices are always summed over.
+Then the T-matrix is defined as
+\begin{equation}
+    p_\alpha^{j,\text{scat}} = \tmatrix_{\alpha\beta}^j p_\beta^{j,\text{inc}}
+\label{eqn:tmatrix_defintion}
+\end{equation}
+If the particle is a sphere, then the T-matrix is diagonal,
+\begin{equation}
+    \tmatrix_{\alpha\beta} = t_{rn} \delta_{\alpha\beta}
+\label{eqn:tmatrix_sphere}
+\end{equation}
+where $t_{1n} = a_n$ and $t_{2n} = b_n$ are the classical Mie theory coefficients of the sphere.
+
+\subsection{Interaction equations}
+The interaction equations among $N$ particles can be written as
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    A_{\alpha \beta}^{(3)jl}
+    \mathcal{T}_{\beta \gamma}^l
+    p_{\gamma}^{l,\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+More explicitly, dropping the Einstein summation rule:
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    \sum_{l \neq j}^{(1,N)}
+    \sum_{\beta} \sum_{\gamma}
+    A_{\alpha \beta}^{(3)jl}
+    \mathcal{T}_{\beta \gamma}^l
+    p_{\gamma}^{l,\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+Even more explicitly, the multi-index can be unraveled:
+\begin{equation}
+    p_{mnr}^{j,\text{inc}} = 
+    p_{mnr}^{j,\text{src}} -
+    \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v}
+    \sum_{s=1}^{2}
+    \sum_{v^\prime=1}^{L_\text{max}} \sum_{u^\prime=-v^\prime}^{v^\prime}
+    \sum_{s^\prime=1}^{2}
+    A_{mnruvs}^{(3)jl}
+    \mathcal{T}_{uvsu^\prime v^\prime s^\prime}^l
+    p_{u^\prime v^\prime s^\prime}^{l,\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+If the system consists entirely of spheres, then using \cref{eqn:tmatrix_sphere}, the interaction equation becomes
+\begin{equation}
+    p_{mnr}^{j,\text{inc}} &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v} \sum_{s=1}^2
+    A_{mnruvs}^{(3)jl} t_{sv}^l p_{uvs}^{l,\text{inc}}
+    \label{eqn:gmt_system}
+\end{equation}
+
+\section{Periodic boundary conditions}
+If the unit cell consists of a single particle,
+\begin{equation}
+    p_{\alpha}^{\text{inc}} = 
+    p_{\alpha}^{\text{src}} -
+    A_{\alpha \beta}^{(3)0l}
+    \mathcal{T}_{\beta \gamma}
+    p_{\gamma}^{\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+where $l$ enumerates the periodic lattice.
+If the unit cell consists of $N$ particles, let $l$ enumerate the positions of the unit cell and $j$ enumerate the positions of the particles relative to the unit cell position
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    A_{\alpha \beta}^{(3)j 0}
+    A_{\beta \gamma}^{(3)0l}
+    A_{\gamma \delta}^{(3)l j^\prime}
+    \mathcal{T}_{\delta \epsilon}^{j^\prime}
+    p_{\epsilon}^{j^\prime,\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+Since three VSHW translations are performed (one to the center of the unit cell, one to the origin, and one back to a particle), this approach comes with a loss of information.
+This loss of information can be avoided by performing the translation directly, at the cost performance
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    A_{\alpha \beta}^{(3)j j^\prime}
+    \mathcal{T}_{\beta \gamma}^{j^\prime}
+    p_{\gamma}^{j^\prime,\text{inc}}
+\label{eqn:gmt_system}
+\end{equation}
+
+\section{Symmetries}
+\subsection{Mirror symmetries}
+Suppose that there is a mirror plane that passes through the origin and has a normal vector of $\bm{\hat x}$, $\bm{\hat y}$, or $\bm{\hat z}$.
+Each particle at position $\bm{r}^j$ then has a corresponding mirror particle at position $\bm{r}^{\prime j}$.
+By symmetry, the expansion coefficients of the mirror particle are related to those of the original particle
+\begin{equation}
+    p^{\prime j,\text{inc}}_{mnr} = (-1)^{m+1} p^{j,\text{inc}}_{mnr}
+    \label{eqn:mirror_symmetry}
+\end{equation}
+
+\subsection{Discrete rotational symmetry}
+
+\section{Cluster properties}
+\subsection{Force and torque}
 \emph{Maxwell stress tensor equations}
 \begin{equation}
     \langle \boldsymbol{T} \rangle = \frac{1}{2} \text{Re} \left[ \varepsilon  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu \boldsymbol{H} \otimes \boldsymbol{H^*}
@@ -260,7 +341,7 @@ The interaction equations among $N$ particles can be written as
 \end{align}
 \end{subequations}
 
-\section{Cluster coefficients}
+\subsection{Cluster coefficients}
 The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed by translating the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$ to the origin $\bm{p_0}$
 \begin{align}
 \begin{split}
@@ -273,7 +354,7 @@ The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed
 \end{split}
 \end{align}
 
-\section{Far-field expansions}
+\subsection{Far-field expansions}
 
 \begin{align}
 \begin{split}
@@ -284,7 +365,7 @@ The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed
 \end{split}
 \end{align}
 
-\section{Cross-sections}
+\subsection{Cross-sections}
 
 The cross-sections can be computed via two methods: one that uses the cluster coefficients $a_{mn}$, $b_{mn}$ and one that uses the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$.
 
@@ -359,8 +440,12 @@ q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) 
 \end{split}
 \end{align}
 
+\subsection{Far-field integration}
+\subsection{Near-field point matching}
+\subsection{Focused beams}
+
 \section{Efficient numeric evaluation}
-\section{Recursion relations}
+\subsection{Recursion relations}
 
 \section{Other conventions}
 A different convention for the field expansions used in other work \cite{barton1989theoretical} is presented here.
@@ -443,6 +528,9 @@ where $|E_0|$ is the amplitude of the source field.
 We have chosen to absorb this amplitude into the $a$, $b$, $p$, and $q$ coefficients.
 
 \section{MiePy}
+\subsection{Installation}
+
+\subsection{Example script}
 
 Example Python code using MiePy
 \begin{lstlisting}
@@ -469,10 +557,10 @@ Example Python code using MiePy
     T = dimer.torque_on_particle(0)
 \end{lstlisting}
 
-\section{Target features}
+\subsection{Target features}
 
 \begin{enumerate*}
-    \item \textbf{version 0.3}
+    \item \textbf{version 0.3} (released)
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item 30x performance for larger clusters
             \item T-matrix for non-spherical particles
@@ -488,7 +576,7 @@ Example Python code using MiePy
                         (iii) source=None for pre-computed aggregate T-matrix,
                         (iv) no T-matrix recomputation for identical geometries
                         (v) transition from [[2,rmax]] $\rightarrow$ [[rmax]] shape
-            \item Save solution so that it can be reloaded
+                    \item Save solution so that(released)it can be reloaded
             \item Any changes to T-matrix/sources
         \end{itemize}
     \item \textbf{version 0.5}
@@ -510,7 +598,7 @@ Example Python code using MiePy
             \item More T-matrix options:
                         (i) non-axisymmetric particles, Gaussian spheres/cylinders, layered spheres/spheroids, etc.
                         (ii) chiral materials,
-                        (iii) anisotropic materials
+                        (iii) anisotropic materials (expand definition of material class)
                     \item Valid field expansion in circumscribing spheres (possibly using discrete sources)
             \item 3D periodic boundary conditions
             \item Band diagram calculations
