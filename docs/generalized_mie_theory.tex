@@ -68,7 +68,7 @@ The angular functions $\pi_{mn}$ and $\tau_{mn}$ are
 \pi_{mn}(\theta) &= \frac{m}{\sin\theta} P_n^m(\cos\theta) \\
 \tau_{mn}(\theta) &= \frac{d}{d\theta} P_n^m(\cos\theta) 
 \end{align}
-The associated Legendre polynomials $P_n^m$ are defined without the Condon-Shortley phase, i.e.
+The associated Legendre polynomials $P_n^m$ are defined without the Condon-Shortley phase, i.e.\
 \begin{equation}
 P_n^m(x) = (1 - x^2)^{m/2} \frac{d^m}{dx^m} P_n(x)
 \end{equation}
@@ -125,6 +125,7 @@ The incident field includes the source field plus the incident field from all ot
     \boldsymbol{E}_\text{int}^j &= - \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
     iE_{mn} p_{mnr}^{j,\text{int}} \boldsymbol{N}_{mnr}^{(1)}
 \end{align}
+\label{eqn:electric_field_expansion}
 \end{subequations}
 
 \textit{Magnetic field}
@@ -139,6 +140,7 @@ The incident field includes the source field plus the incident field from all ot
     \boldsymbol{H}_\text{int}^j &= - \sqrt{\frac{\varepsilon^j}{\mu^j}} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n} \sum_{r=1}^2
     E_{mn} p_{mn\bar r}^{j,\text{int}} \boldsymbol{N}_{mnr}^{(1)}
 \end{align}
+\label{eqn:magnetic_field_expansion}
 \end{subequations}
 where $\bar r = 3-r$,  and $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
 \begin{equation}
@@ -164,7 +166,7 @@ The normalized translation coefficients are defined as
 \subsection{T-matrix formulation}
 \newcommand{\tmatrix}{\mathcal{T}}
 The T-matrix of particle $j$, $\tmatrix_{mnruvs}^j$, relates the incident expansion coefficients to the scattered expansion coefficients for an arbitrary, non-spherical particle.
-To simplify the index notation, a multi-index is used to denote a given mode, i.e. $\alpha = (n,m,r)$.
+To simplify the index notation, a multi-index is used to denote a given mode, i.e.\ $\alpha = (m,n,r)$.
 Greek letters are used to represent a multi-index.
 Furthermore, Einstein notation is used so that repeated multi-indices are always summed over.
 Then the T-matrix is defined as
@@ -174,20 +176,20 @@ Then the T-matrix is defined as
 \end{equation}
 If the particle is a sphere, then the T-matrix is diagonal,
 \begin{equation}
-    \tmatrix_{\alpha\beta} = t_{rn} \delta_{\alpha\beta}
+    \tmatrix_{\alpha\beta}^j = t_{rn}^j \delta_{\alpha\beta}
 \label{eqn:tmatrix_sphere}
 \end{equation}
-where $t_{1n} = a_n$ and $t_{2n} = b_n$ are the classical Mie theory coefficients of the sphere.
+where $t_{1n}^j = a_n^j$ and $t_{2n}^j = b_n^j$ are the classical Mie theory coefficients of the $j$th sphere.\cite{bohren2008absorption}
 
 \subsection{Interaction equations}
-The interaction equations among $N$ particles can be written as
+The interaction equation among $N$ particles can be written as
 \begin{equation}
     p_{\alpha}^{j,\text{inc}} = 
     p_{\alpha}^{j,\text{src}} -
     A_{\alpha \beta}^{(3)jl}
-    \mathcal{T}_{\beta \gamma}^l
+    \tmatrix_{\beta \gamma}^l
     p_{\gamma}^{l,\text{inc}}
-\label{eqn:gmt_system}
+\label{eqn:particle_interactions}
 \end{equation}
 More explicitly, dropping the Einstein summation rule:
 \begin{equation}
@@ -196,9 +198,8 @@ More explicitly, dropping the Einstein summation rule:
     \sum_{l \neq j}^{(1,N)}
     \sum_{\beta} \sum_{\gamma}
     A_{\alpha \beta}^{(3)jl}
-    \mathcal{T}_{\beta \gamma}^l
+    \tmatrix_{\beta \gamma}^l
     p_{\gamma}^{l,\text{inc}}
-\label{eqn:gmt_system}
 \end{equation}
 Even more explicitly, the multi-index can be unraveled:
 \begin{equation}
@@ -209,15 +210,30 @@ Even more explicitly, the multi-index can be unraveled:
     \sum_{v^\prime=1}^{L_\text{max}} \sum_{u^\prime=-v^\prime}^{v^\prime}
     \sum_{s^\prime=1}^{2}
     A_{mnruvs}^{(3)jl}
-    \mathcal{T}_{uvsu^\prime v^\prime s^\prime}^l
+    \tmatrix_{uvsu^\prime v^\prime s^\prime}^l
     p_{u^\prime v^\prime s^\prime}^{l,\text{inc}}
-\label{eqn:gmt_system}
 \end{equation}
 If the system consists entirely of spheres, then using \cref{eqn:tmatrix_sphere}, the interaction equation becomes
 \begin{equation}
     p_{mnr}^{j,\text{inc}} &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v} \sum_{s=1}^2
     A_{mnruvs}^{(3)jl} t_{sv}^l p_{uvs}^{l,\text{inc}}
-    \label{eqn:gmt_system}
+    \label{eqn:sphere_interations}
+\end{equation}
+
+Whether the cluster is composed solely of spheres or more generally non-spherical particles, the interaction equation is always of the form
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    \tmatrix_{\alpha \beta}^{jl}
+    p_{\beta}^{l,\text{inc}}
+\end{equation}
+where $\tmatrix_{\alpha \beta}^{jl}$ is the \emph{particle aggregate T-matrix}.
+By setting $p_\alpha^{j,\text{inc}} = \delta_{\alpha\beta} \delta_{jl} p_\beta^{l,\text{inc}}$, the interaction equation can be rewritten in the standard form for linear systems, $[A]x=b$,
+\begin{equation}
+    \left[ \delta_{\alpha\beta} \delta_{jl}
+    + \tmatrix_{\alpha \beta}^{jl} \right]
+    p_{\beta}^{l,\text{inc}} =
+    p_{\alpha}^{j,\text{src}}
 \end{equation}
 
 \section{Periodic boundary conditions}
@@ -226,9 +242,8 @@ If the unit cell consists of a single particle,
     p_{\alpha}^{\text{inc}} = 
     p_{\alpha}^{\text{src}} -
     A_{\alpha \beta}^{(3)0l}
-    \mathcal{T}_{\beta \gamma}
+    \tmatrix_{\beta \gamma}
     p_{\gamma}^{\text{inc}}
-\label{eqn:gmt_system}
 \end{equation}
 where $l$ enumerates the periodic lattice.
 If the unit cell consists of $N$ particles, let $l$ enumerate the positions of the unit cell and $j$ enumerate the positions of the particles relative to the unit cell position
@@ -238,9 +253,8 @@ If the unit cell consists of $N$ particles, let $l$ enumerate the positions of t
     A_{\alpha \beta}^{(3)j 0}
     A_{\beta \gamma}^{(3)0l}
     A_{\gamma \delta}^{(3)l j^\prime}
-    \mathcal{T}_{\delta \epsilon}^{j^\prime}
+    \tmatrix_{\delta \epsilon}^{j^\prime}
     p_{\epsilon}^{j^\prime,\text{inc}}
-\label{eqn:gmt_system}
 \end{equation}
 Since three VSHW translations are performed (one to the center of the unit cell, one to the origin, and one back to a particle), this approach comes with a loss of information.
 This loss of information can be avoided by performing the translation directly, at the cost performance
@@ -248,9 +262,8 @@ This loss of information can be avoided by performing the translation directly, 
     p_{\alpha}^{j,\text{inc}} = 
     p_{\alpha}^{j,\text{src}} -
     A_{\alpha \beta}^{(3)j j^\prime}
-    \mathcal{T}_{\beta \gamma}^{j^\prime}
+    \tmatrix_{\beta \gamma}^{j^\prime}
     p_{\gamma}^{j^\prime,\text{inc}}
-\label{eqn:gmt_system}
 \end{equation}
 
 \section{Symmetries}
@@ -262,26 +275,118 @@ By symmetry, the expansion coefficients of the mirror particle are related to th
     p^{\prime j,\text{inc}}_{mnr} = (-1)^{m+1} p^{j,\text{inc}}_{mnr}
     \label{eqn:mirror_symmetry}
 \end{equation}
+i.e.\ modes with an even azimuthal order $m$ have their sign flipped by a mirror.
 
 \subsection{Discrete rotational symmetry}
+Suppose the system has a discrete rotational symmetry of order $R$.
+If a particle exists at position $r^{j1}$, then the symmetric particles are at position $r^{jr}$, where $r = 2..R$.
+By symmetry,
+\begin{equation}
+    p^{jr,\text{inc}}_{mnr} = D_{mun}(\theta_r) p^{j1,\text{inc}}_{mur}
+    \label{eqn:rotational_symmetry}
+\end{equation}
 
 \section{Cluster properties}
+
+\subsection{Cluster coefficients and cluster T-matrix}
+The expansion coefficients of the entire cluster, $p_{\alpha}^{\text{cluster}}$, are computed by translating the individual particle coefficients $p_{\alpha}^{j,\text{scat}}$ to the origin $\bm{r_0}$
+
+\begin{equation}
+    p_{\alpha}^{\text{cluster}} = 
+    A_{\alpha \beta}^{(1)0j}
+    p_{\beta}^{j,\text{scat}}
+\label{eqn:cluster_coefficients}
+\end{equation}
+
+The \emph{particle aggregate T-matrix} is defined by 
+\begin{equation}
+    \tmatrix_{\alpha\beta}^{jl} =
+    A_{\alpha \gamma}^{(3)jl}
+    \tmatrix_{\gamma \beta}^l
+\label{eqn:particle_aggregate_tmatrix}
+\end{equation}
+and the interaction equation becomes
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}} = 
+    p_{\alpha}^{j,\text{src}} -
+    \tmatrix_{\alpha \beta}^{jl}
+    p_{\beta}^{l,\text{inc}}
+\end{equation}
+
+The \emph{cluster T-matrix} is defined such that
+\begin{equation}
+    p_\alpha^{\text{cluster}} = \tmatrix_{\alpha\beta}^{\text{cluster}} p_\beta^{0,\text{src}}
+\label{eqn:cluster_tmatrix}
+\end{equation}
+That is, the cluster T-matrix treats the system of particles as if it were a single scattering object, hiding the internal details.
+
+\subsection{Cross-sections}
+
+The cross-sections can be computed via two methods: one that uses the cluster coefficients $p_\alpha^\text{cluster}$ and one that uses the individual particle coefficients $p_\alpha^j$.
+
+\hfill
+
+\textit{Cross-sections via individual particle coefficients}
+\begin{subequations}
+\begin{align}
+    C_\text{abs} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{\alpha}
+        \text{Re} \left\{p_\alpha^{j,\text{inc}}^* p_\alpha^{j,\text{scat}} \right\} 
+        - |p_\alpha^{j,\text{scat}}|^2\\
+    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{\alpha}
+        \text{Re} \left\{p_\alpha^{j,\text{src}}^* p_\alpha^{j,\text{scat}} \right\} \\
+    C_\text{scat} &= C_\text{ext} - C_\text{abs}
+\end{align}
+\label{eqn:cross_sections}
+\end{subequations}
+This approach is the most efficient way to compute the total cross-sections.
+Each term in the absorption/extinction cross-section sum can be interpreted as the absorption/extinction of that individual particle due to a given mode $\alpha$.
+
+\hfill
+
+\textit{Cross-sections via cluster coefficients} \cite{xu1995electromagnetic}
+\begin{subequations}
+\begin{align}
+    C_\text{scat} &= \frac{4\pi}{k^2} \sum_{\alpha}
+        |p_{\alpha}^\text{cluster}|^2 \\
+    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{\alpha}
+    \text{Re} \left\{ p_\alpha^{0,\text{src}}^* p_\alpha^\text{cluster} \right\} \\
+    C_\text{abs} &= C_\text{ext} - C_\text{scat}
+\end{align}
+\end{subequations}
+This approach has a benefit in its interpretation.
+Each term in the scattering sum corresponds to the multipolar scattering of the  $\alpha$ mode, so that the scattering from the entire cluster can be identified as electric or magnetic in nature, dipole, quadrupole, etc.
+These equations should typically be avoided in calculating total cross-sections since there is a loss of information in using the cluster coefficients and they may not converge.
+
+All of these cross-sections have units of (area)$\times$(electric field)$^2$.
+If the source is a plane wave of amplitude $E_0$, then these cross-sections should be normalized by $E_0^2$.
+For non-plane wave sources, the cross-sections should be normalized depending on the convention being used, typically an averaged intensity over some area:
+\begin{equation}
+    E_0^2 = \frac{1}{A} \int_A \boldsymbol{S}(\boldsymbol{r}) 
+    \cdot \bm{\hat n} \;dA
+\end{equation}
+where $\bm{S} = \frac{1}{2} \bm{E} \times \bm{H^*}$ is the Poynting vector.
+For instance, the area $A$ may be a circular aperture (power striking a structure) or all of space (total power of the source, provided it is finite).
+
 \subsection{Force and torque}
-\emph{Maxwell stress tensor equations}
-\begin{equation}
-    \langle \boldsymbol{T} \rangle = \frac{1}{2} \text{Re} \left[ \varepsilon  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu \boldsymbol{H} \otimes \boldsymbol{H^*}
-    - \frac{1}{2}(\varepsilon E^2 + \mu H^2)\boldsymbol{I} \right]
-\end{equation}
+The time-average force $\langle \bm{F} \rangle$ and torque $\langle \bm{\tau} \rangle$ on a particle can be determined by integrating the Maxwell stress tensor over a closed surface surrounding the particle: \cite{mst}
+\begin{subequations}
+\begin{align}
+    \langle \boldsymbol{T} \rangle &= \frac{1}{2} \text{Re} \left[ \varepsilon_b  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu_b \boldsymbol{H} \otimes \boldsymbol{H^*}
+    - \frac{1}{2}(\varepsilon_b E^2 + \mu_b H^2)\boldsymbol{I} \right] \\
+    \langle \boldsymbol{F} \rangle &= \oint_\Omega \langle \boldsymbol{T} \rangle \cdot d \boldsymbol{\Omega} \\
+    \langle \boldsymbol{\tau} \rangle &= \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
+\end{align}
+\end{subequations}
+where $\bm{I}$ is a 3x3 identitiy matrix and $\otimes$ is the vector outer product.
 
-\begin{equation}
-    \langle \boldsymbol{F} \rangle = \oint_\Omega \langle \boldsymbol{T} \rangle \cdot d \boldsymbol{\Omega}
-\end{equation}
-
-\begin{equation}
-    \langle \boldsymbol{\tau} \rangle = \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
-\end{equation}
-
-\emph{Force equations}
+The electric and magnetic fields around particle $j$ can be calculated using the field expansions, \cref{eqn:electric_field_expansion,eqn:magnetic_field_expansion}.
+The integration for the time-averaged force can then be carried out analytically in the far-field, resulting in a sum over the particle expansion coefficients. \cite{barton1989theoretical}
+For these equations, it is helpful to denote
+$a_{mn} = p_{mn1}^{j,\text{inc}}$,
+$b_{mn} = p_{mn2}^{j,\text{inc}}$,
+$p_{mn} = p_{mn1}^{j,\text{scat}}$, and
+$q_{mn} = p_{mn2}^{j,\text{scat}}$. 
+Then, the force is given by
 \begin{subequations}
 \begin{align}
 \begin{split}
@@ -311,8 +416,7 @@ By symmetry, the expansion coefficients of the mirror particle are related to th
 \end{split}
 \end{align}
 \end{subequations}
-
-\emph{Torque equations}
+Similarly, the torque can be integrated analytically,
 \begin{subequations}
 \begin{align}
 \begin{split}
@@ -341,19 +445,6 @@ By symmetry, the expansion coefficients of the mirror particle are related to th
 \end{align}
 \end{subequations}
 
-\subsection{Cluster coefficients}
-The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed by translating the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$ to the origin $\bm{p_0}$
-\begin{align}
-\begin{split}
-    a_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    A_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
-    +B_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l} \\
-    b_{mn} &= \sum_{l=1}^N\sum_{v=1}^{N_\text{max}} \sum_{u=-v}^{v}
-    B_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) a_{uv}^{l}
-    +A_{mn}^{uv(1)}(l \rightarrow \boldsymbol{p_0}) b_{uv}^{l}
-\end{split}
-\end{align}
-
 \subsection{Far-field expansions}
 
 \begin{align}
@@ -365,74 +456,21 @@ The expansion coefficients of the entire cluster $a_{mn}$, $b_{mn}$ are computed
 \end{split}
 \end{align}
 
-\subsection{Cross-sections}
-
-The cross-sections can be computed via two methods: one that uses the cluster coefficients $a_{mn}$, $b_{mn}$ and one that uses the individual particle coefficients $a_{mn}^j$, $b_{mn}^j$.
-
-\hfill
-
-\textit{Cross-sections via individual particle coefficients} \cite{xu1997electromagnetic}
-\begin{subequations}
-\begin{align}
-    C_\text{abs} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    D_n^j|a_{mn}^j|^2 + C_n^j|b_{mn}^j|^2 \\
-    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    \text{Re} \bigg\{ p_{mn}^{j,\text{src}*} a_{mn}^j 
-    + q_{mn}^{j,\text{src}*}b_{mn}^j \bigg\} \\
-    C_\text{scat} &= C_\text{ext} - C_\text{abs}
-\end{align}
-\end{subequations}
-where
-\begin{subequations}
-\begin{align}
-    D_n^j &= \frac{\text{Re}\{ im^j \mu_b \mu^j \psi_n(y^j)\psi_n^{\prime *}(y^j)\}}
-    {|\mu_b m^j \psi_n(y^j)\psi_n^\prime(x^j) - \mu^j \psi_n(x^j)\psi_n^\prime(y^j)|^2} \\
-    C_n^j &= \frac{\text{Re}\{ im^{j*} \mu_b \mu^j \psi_n(y^j)\psi_n^{\prime *}(y^j)\}}
-    {|\mu^j \psi_n(y^j)\psi_n^\prime(x^j) - \mu_b m^j \psi_n(x^j)\psi_n^\prime(y^j)|^2}
-\end{align}
-\end{subequations}
-and $m_j = n^j/n_b$, $x^j = k r^j$, $y^j = m^jx^j$ and $\psi_n$ is the Riccati-Bessel function of the first kind.
-This approach is the most efficient way to compute the total cross-sections.
-Each term in the absorption/extinction cross-section sum can be interpreted as the absorption/extinction of that individual particle due to a given mode $(n,m)$
-
-\hfill
-
-\textit{Cross-sections via cluster coefficients} \cite{xu1995electromagnetic}
-\begin{subequations}
-\begin{align}
-    C_\text{scat} &= \frac{4\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    |a_{mn}|^2 + |b_{mn}|^2 \\
-    C_\text{ext} &= \frac{4\pi}{k^2} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    \text{Re} \bigg\{ p_{mn}^{\text{src}*}(\boldsymbol{p_0}) a_{mn} 
-    + q_{mn}^{\text{src}*}(\boldsymbol{p_0})b_{mn} \bigg\} \\
-    C_\text{abs} &= C_\text{ext} - C_\text{scat}
-\end{align}
-\end{subequations}
-This approach has a benefit in its interpretation.
-Each term in the scattering sum corresponds to the multipolar scattering of order $(n,m)$, so that the scattering from the entire cluster can be identified as electric or magnetic in nature, dipole, quadrupole, etc.
-These equations should typically be avoided in calculating total cross-sections since there is a loss of information in using the cluster coefficients and they may not converge.
-
-All of these cross-sections have units of (area)$\times$(electric field)$^2$.
-If the source is a plane wave of amplitude $E_0$, then these cross-sections should be normalized by $E_0^2$.
-For non-plane wave sources, the cross-sections should be normalized depending on the convention being used, typically an averaged intensity over some area:
-\begin{equation}
-    E_0^2 = \frac{1}{A} \int_A |\boldsymbol{E}(\boldsymbol{r})|^2 \;dA
-\end{equation}
+\subsection{Orientation-averaged properties}
 
 \section{Source decomposition}
-Given the fields of the incident source $\boldsymbol{E}_\text{src}(\boldsymbol{r})$, $\boldsymbol{H}_\text{src}(\boldsymbol{r})$, the source can be decomposed by integration
-\begin{align}
-\begin{split}
-    p_{mn}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}_\text{src} \cdot \boldsymbol{N}_{mn}^{(1)*} \; d\Omega}
-    {E_{mn} \langle \boldsymbol{N}_{mn}^{(1)},\boldsymbol{N}_{mn}^{(1)} \rangle} \\
-    q_{mn}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}_\text{src} \cdot \boldsymbol{M}_{mn}^{(1)*} \; d\Omega}
-    {E_{mn} \langle \boldsymbol{M}_{mn}^{(1)},\boldsymbol{M}_{mn}^{(1)} \rangle}
-\end{split}
-\end{align}
+To solve the particle interaction equation, \cref{eqn:particle_interactions}, the expansion coefficients of the source field must be known at each particle.
+Given the electric fields of the incident source, $\boldsymbol{E}^\text{src}(\boldsymbol{r})$, the source can be decomposed into expansion coefficients by integration around particle $j$
+\begin{equation}
+    p_{mnr}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}^\text{src} \cdot \boldsymbol{N}_{mnr}^{(1)*} \; d\Omega}
+    {E_{mn} \langle \boldsymbol{N}_{mnr}^{(1)},\boldsymbol{N}_{mnr}^{(1)} \rangle} \\
+\end{equation}
 where $\Omega$ is a closed surface around particle $j$.
 
-For a plane wave, the decomposition can be carried out analytically.
-For a TM mode with incident polar angle $\alpha$ and azimuthal angle $\beta$
+For a plane wave, this decomposition can be carried out analytically.
+The direction of the incident $\bm{k}$ vector can be described by the two spherical angles $\theta$ and $\phi$.
+A linear polarization of the plane wave is either TE ($\bm{\hat \theta}$) or TM ($\bm{\hat \phi}$).
+Elliptically polarized light is then a complex linear combination of TE and TM polarizations.
 \begin{align}
 \begin{split}
 p_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \tau_{mn}(\cos \alpha) \exp(-im\beta) \exp(i\bm{k} \cdot \bm{r}_j) \\
@@ -444,8 +482,9 @@ q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) 
 \subsection{Near-field point matching}
 \subsection{Focused beams}
 
-\section{Efficient numeric evaluation}
+\section{Efficient numerical implementation}
 \subsection{Recursion relations}
+\subsection{Parallel execution}
 
 \section{Other conventions}
 A different convention for the field expansions used in other work \cite{barton1989theoretical} is presented here.
@@ -527,7 +566,7 @@ Another convention uses a different value for the $E_{mn}$ normalization values 
 where $|E_0|$ is the amplitude of the source field.
 We have chosen to absorb this amplitude into the $a$, $b$, $p$, and $q$ coefficients.
 
-\section{MiePy}
+\section{MiePy: a GMMT Python library}
 \subsection{Installation}
 
 \subsection{Example script}
@@ -576,7 +615,7 @@ Example Python code using MiePy
                         (iii) source=None for pre-computed aggregate T-matrix,
                         (iv) no T-matrix recomputation for identical geometries
                         (v) transition from [[2,rmax]] $\rightarrow$ [[rmax]] shape
-                    \item Save solution so that(released)it can be reloaded
+                    \item Save solution so that it can be reloaded
             \item Any changes to T-matrix/sources
         \end{itemize}
     \item \textbf{version 0.5}
