@@ -16,8 +16,8 @@ lmax = 6
 
 source = miepy.sources.gaussian_beam(width, [1, 1j])
 p_src = source.structure([0,0,0], k, lmax, size)
-Efunc = miepy.expand_E(p_src, k, mode=miepy.VSH_mode.incident)
-Hfunc = miepy.expand_H(p_src, k, mode=miepy.VSH_mode.incident, eps=1, mu=1)
+Efunc = miepy.expand_E(p_src, k, mode=miepy.vsh_mode.incident)
+Hfunc = miepy.expand_H(p_src, k, mode=miepy.vsh_mode.incident, eps=1, mu=1)
 
 Nx = 50
 x = np.linspace(-size/2, size/2, Nx)

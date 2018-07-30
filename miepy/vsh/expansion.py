@@ -13,10 +13,10 @@ def expand_E(p, k, mode):
     Arguments:
         p[2,rmax]          expansion coefficients 
         k                  wavenumber
-        mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
+        mode: vsh_mode     type of VSH (outgoing, incident, interior, ingoing)
     """
     lmax = vsh.rmax_to_lmax(p.shape[1])
-    factor = 1j if mode == vsh.VSH_mode.outgoing else -1j
+    factor = 1j if mode == vsh.vsh_mode.outgoing else -1j
 
     #TODO: depends on theta.shape
     def f(rad, theta, phi):
@@ -74,7 +74,7 @@ def expand_H(p, k, mode, eps, mu):
     Arguments:
         p[2,rmax]       expansion coefficients 
         k               wavenumber
-        mode: VSH_mode     type of VSH (outgoing, incident, interior, ingoing)
+        mode: vsh_mode     type of VSH (outgoing, incident, interior, ingoing)
         eps     medium permitiviity
         mb      medium permeability
     """

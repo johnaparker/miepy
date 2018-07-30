@@ -94,7 +94,7 @@ def far_field_point_matching(source, position, radius, k, lmax, sampling=6):
     E_src *= np.exp(1j*phase)
 
     for i,n,m in vsh.mode_indices(lmax):
-        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.VSH_mode.ingoing)
+        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.vsh_mode.ingoing)
         Emn_val = vsh.Emn(m, n)
         E_vsh[...,0,i] = -1j*Emn_val*Nfunc(radius, THETA, PHI, k)[1:]
         E_vsh[...,1,i] = -1j*Emn_val*Mfunc(radius, THETA, PHI, k)[1:]
@@ -134,7 +134,7 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
     E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
 
     for i,n,m in vsh.mode_indices(lmax):
-        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.VSH_mode.incident)
+        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.vsh_mode.incident)
         Emn_val = vsh.Emn(m, n)
         E_vsh[...,0,i] = -1j*Emn_val*coordinates.vec_sph_to_cart(Nfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
         E_vsh[...,1,i] = -1j*Emn_val*coordinates.vec_sph_to_cart(Mfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
@@ -148,7 +148,7 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
 
     return np.reshape(p_src, [2,rmax])
 
-def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoing, spherical=False):
+def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoing, spherical=False):
     """Project fields onto a given mode using integral method
 
     Arguments:
@@ -158,7 +158,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoin
         ftype                'electric' or 'magnetic'
         n                    vsh order (1, 2, ...)
         m                    vsh orientation (-n, -n+1, ..., n)
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: outgoing)
+        mode: vsh_mode       type of VSH (outgoing, incident) (default: outgoing)
         spherical            If true, E should be in spherical components (default: False (cartesian))
     """
     Ntheta, Nphi = E.shape[1:]
@@ -181,9 +181,9 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoin
 
     Emn_val = vsh.Emn(m, n)
 
-    if mode == vsh.VSH_mode.outgoing:
+    if mode == vsh.vsh_mode.outgoing:
         factor = 1/(1j*Emn_val)
-    elif mode in (vsh.VSH_mode.incident, vsh.VSH_mode.ingoing):
+    elif mode in (vsh.vsh_mode.incident, vsh.vsh_mode.ingoing):
         factor = -1/(1j*Emn_val)
     else:
         raise ValueError(f'{mode} is not a valid type of mode')
@@ -195,7 +195,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.VSH_mode.outgoin
 
     return factor*integrated/norm
 
-def integral_project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
+def integral_project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=30, mode=vsh.vsh_mode.incident):
     """Project source object onto a given mode using integral method
 
     Arguments:
@@ -206,7 +206,7 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=3
         m          vsh orientation (-n, -n+1, ..., n)
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 30)
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
+        mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
 
     r = 2*np.pi/k   # choose radius to be a wavelength of the light
@@ -218,7 +218,7 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0,0,0], sampling=3
 
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
-def integral_project_fields(E, r, k, lmax, mode=vsh.VSH_mode.outgoing, spherical=False):
+def integral_project_fields(E, r, k, lmax, mode=vsh.vsh_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs using integral method
     Returns p[2,rmax]
 
@@ -227,7 +227,7 @@ def integral_project_fields(E, r, k, lmax, mode=vsh.VSH_mode.outgoing, spherical
         r                  radius
         k                  wavenumber
         lmax               maximum number of multipoles
-        mode: VSH_mode     type of VSH (outgoing, incident) (default: outgoing)
+        mode: vsh_mode     type of VSH (outgoing, incident) (default: outgoing)
         spherical          If true, E should be in spherical components (default: False (cartesian))
     """
 
@@ -240,7 +240,7 @@ def integral_project_fields(E, r, k, lmax, mode=vsh.VSH_mode.outgoing, spherical
 
     return p
 
-def integral_project_source(src, k, lmax, origin=[0,0,0], sampling=30, mode=vsh.VSH_mode.incident):
+def integral_project_source(src, k, lmax, origin=[0,0,0], sampling=30, mode=vsh.vsh_mode.incident):
     """Decompose a source object into VSHs using integral method
     Returns p[2,rmax]
 
@@ -250,7 +250,7 @@ def integral_project_source(src, k, lmax, origin=[0,0,0], sampling=30, mode=vsh.
         lmax       maximum number of multipoles
         origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 30)
-        mode: VSH_mode       type of VSH (outgoing, incident) (default: incident)
+        mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
 
     rmax = vsh.lmax_to_rmax(lmax)
@@ -291,7 +291,7 @@ def integral_project_source_far(src, k, lmax, origin=[0,0,0], sampling=20, theta
     for i,n,m in vsh.mode_indices(lmax):
         Emn_val = vsh.Emn(m, n)
         factor = k**2*1j**(2-n)*np.abs(Emn_val)/(4*np.pi)
-        N, M = vsh.VSH_far(n, m, vsh.VSH_mode.ingoing)
+        N, M = vsh.VSH_far(n, m, vsh.vsh_mode.ingoing)
 
         E = N(rad, THETA, PHI, k)
         U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)

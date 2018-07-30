@@ -51,8 +51,8 @@ def power_through_aperature(source, center, radius, k, sampling=150):
     mask = (X**2 + Y**2 < radius **2)
 
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
-    Efunc = miepy.expand_E(p_src, k, miepy.VSH_mode.incident)
-    Hfunc = miepy.expand_H(p_src, k, miepy.VSH_mode.incident, 1, 1)
+    Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
+    Hfunc = miepy.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
 
     E = np.zeros((3,) + X.shape, dtype=complex)
     H = np.zeros((3,) + X.shape, dtype=complex)

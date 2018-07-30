@@ -41,7 +41,7 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
                 a = p_scat[i,0,rp]
                 b = p_scat[i,1,rp]
 
-                A, B = vsh.vsh_translation(m, n, u, v, rad, theta, phi, k, vsh.VSH_mode.incident)
+                A, B = vsh.vsh_translation(m, n, u, v, rad, theta, phi, k, vsh.vsh_mode.incident)
 
                 p_cluster[0,r] += a*A + b*B
                 p_cluster[1,r] += a*B + b*A

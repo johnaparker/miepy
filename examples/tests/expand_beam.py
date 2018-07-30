@@ -41,7 +41,7 @@ plot(axes[0,0], E)
 
 for i in range(1, lmax+1):
     p,q = miepy.vsh.decompose_source(source, k, i)
-    Efunc = miepy.vsh.expand(p, q, k, miepy.vsh.VSH_mode.incident)
+    Efunc = miepy.vsh.expand(p, q, k, miepy.vsh.vsh_mode.incident)
     E = Efunc(X,Y,0)
     print(E.shape)
     plot(axes.flatten()[i], E)

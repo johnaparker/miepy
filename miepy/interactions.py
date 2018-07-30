@@ -86,7 +86,7 @@ def sphere_aggregate_tmatrix(positions, a, k):
         for s,v,u in miepy.mode_indices(lmax):
             # if s - 2*u < r: continue
             A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.VSH_mode.outgoing, zn_values=zn_values)
+                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing, zn_values=zn_values)
 
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
@@ -143,7 +143,7 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
         for s,v,u in miepy.mode_indices(lmax):
             # if s - 2*u < r: continue
             A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.VSH_mode.outgoing, zn_values=zn_values)
+                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing, zn_values=zn_values)
 
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]

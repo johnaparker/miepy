@@ -19,11 +19,11 @@ for r,n,m in miepy.mode_indices(lmax):
 
         ### original A and B
         A, B = miepy.vsh.vsh_translation(m, n, u, v, 
-                r_ji, theta_ji, phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                r_ji, theta_ji, phi_ji, k, miepy.vsh.vsh_mode.outgoing)
 
         ### same mode, but reverse position
         A_calc, B_calc = miepy.vsh.vsh_translation(m, n, u, v, 
-                r_ji, np.pi - theta_ji, np.pi + phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                r_ji, np.pi - theta_ji, np.pi + phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(n+v)*A, (-1)**(n+v+1)*B
 
         assert np.allclose(A_calc, A_expect)
@@ -31,7 +31,7 @@ for r,n,m in miepy.mode_indices(lmax):
 
         ### swap (m,n) with (u,v) and negate m and u
         A_calc, B_calc = miepy.vsh.vsh_translation(-u, v, -m, n, 
-                r_ji, theta_ji, phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                r_ji, theta_ji, phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(m+u)*A, (-1)**(m+u+1)*B
 
         assert np.allclose(A_calc, A_expect)
@@ -39,7 +39,7 @@ for r,n,m in miepy.mode_indices(lmax):
 
         ### swap (m,n) with (u,v) and negate m and u and reverse positions
         A_calc, B_calc = miepy.vsh.vsh_translation(-u, v, -m, n, 
-                r_ji, np.pi - theta_ji, np.pi + phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                r_ji, np.pi - theta_ji, np.pi + phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(m+u+n+v)*A, (-1)**(m+u+n+v)*B
 
 
@@ -48,7 +48,7 @@ for r,n,m in miepy.mode_indices(lmax):
 
         ### swap (m,n) with (u,v)
         A_calc, B_calc = miepy.vsh.vsh_translation(u, v, m, n, 
-                r_ji, theta_ji, phi_ji, k, miepy.vsh.VSH_mode.outgoing)
+                r_ji, theta_ji, phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(m+u)*A, (-1)**(m+u+1)*B
 
         print(f'{(n,m)} -> {(v,u)}: A = {A_calc}, Ap = {A_expect}, B = {B_calc}, Bp = {B_expect}')

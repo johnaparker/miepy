@@ -32,7 +32,7 @@ R_p, THETA_p, PHI_p = miepy.coordinates.cart_to_sph(x, y, z)
 E_prime = func(R_p, THETA_p, PHI_p, k)
 E_prime = miepy.coordinates.vec_sph_to_cart(E_prime, THETA_p, PHI_p)
 E_prime = miepy.coordinates.vec_cart_to_sph(E_prime, THETA, PHI)
-p_prime = miepy.vsh.integral_project_fields_onto(E_prime, r, k, ftype, v, u, spherical=True, mode=miepy.vsh.VSH_mode.incident)
+p_prime = miepy.vsh.integral_project_fields_onto(E_prime, r, k, ftype, v, u, spherical=True, mode=miepy.vsh.vsh_mode.incident)
 
 A = p_prime/p
 print(A)

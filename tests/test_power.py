@@ -38,7 +38,7 @@ def todo():
         P = dblquad(h, np.pi/2, np.pi, lambda x: 0, lambda x: 2*np.pi)
         print(P[0]*5.5e-4)
 
-    N, M = miepy.VSH(1, 0, mode=miepy.VSH_mode.incident)
+    N, M = miepy.VSH(1, 0, mode=miepy.vsh_mode.incident)
 
     def f(x, y):
         r, theta, phi = miepy.coordinates.cart_to_sph(x, y, 1*nm*np.ones_like(x))
@@ -84,7 +84,7 @@ def todo():
     THETA, PHI = np.meshgrid(theta, phi)
     R = radius*np.ones_like(THETA)
 
-    Efunc = miepy.expand_E(p_src/2, k, miepy.VSH_mode.ingoing)
+    Efunc = miepy.expand_E(p_src/2, k, miepy.vsh_mode.ingoing)
     E = Efunc(R, THETA, PHI)
     S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
     P = radius**2*trapz_2d(theta, phi, S.real.T)
@@ -105,8 +105,8 @@ def todo():
     y = np.linspace(-a, a, 150)
     X, Y = np.meshgrid(x, y)
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, 0)
-    Efunc = miepy.expand_E(p_src, k, miepy.VSH_mode.incident)
-    Hfunc = miepy.expand_H(p_src, k, miepy.VSH_mode.incident, 1, 1)
+    Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
+    Hfunc = miepy.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
     E = Efunc(R, THETA, PHI)
     H = Hfunc(R, THETA, PHI)
     E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)

@@ -28,7 +28,7 @@ def exact():
 ### analytic expansion
 def analytic():
     p,q = source.structure([0,0,0], k, Nmax)
-    f =  miepy.vsh.expand(p, q, k, miepy.vsh.VSH_mode.incident)
+    f =  miepy.vsh.expand(p, q, k, miepy.vsh.vsh_mode.incident)
     expanded_E = f(X,Y,Z).squeeze()
 
     fig,ax = plt.subplots()
@@ -42,7 +42,7 @@ def analytic():
 ### numerical decomposition and expansion
 def numeric():
     p,q = miepy.vsh.decompose_source(source, k, Nmax, sampling=31)
-    f =  miepy.vsh.expand(p, q, k, miepy.vsh.VSH_mode.incident)
+    f =  miepy.vsh.expand(p, q, k, miepy.vsh.vsh_mode.incident)
     expanded_E = f(X,Y,Z).squeeze()
 
     fig,ax = plt.subplots()
