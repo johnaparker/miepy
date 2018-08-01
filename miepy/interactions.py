@@ -63,17 +63,17 @@ def interactions_precomputation(positions, k, lmax):
 
     return r_ji, theta_ji, phi_ji, zn_values
 
-def sphere_aggregate_tmatrix(positions, a, k):
+def sphere_aggregate_tmatrix(positions, mie, k):
     """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
        Returns T[N,2,rmax,N,2,rmax]
     
        Arguments:
            positions[N,3]      particles positions
-           a[N,2,lmax]         mie scattering coefficients
+           mie[N,2,lmax]       mie scattering coefficients
            k                   medium wavenumber
     """
     Nparticles = positions.shape[0]
-    lmax = a.shape[-1]
+    lmax = mie.shape[-1]
     rmax = miepy.vsh.lmax_to_rmax(lmax)
     agg_tmatrix = np.zeros(shape=(Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
@@ -91,27 +91,24 @@ def sphere_aggregate_tmatrix(positions, a, k):
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
 
-            agg_tmatrix[:,0,r,:,0,s][upper_idx] = A_transfer
-            agg_tmatrix[:,0,r,:,1,s][upper_idx] = B_transfer
-            agg_tmatrix[:,1,r,:,0,s][upper_idx] = B_transfer
-            agg_tmatrix[:,1,r,:,1,s][upper_idx] = A_transfer
+            for a in range(2):
+                for b in range(2):
+                    val = (A_transfer, B_transfer)[(a+b)%2]
 
-            agg_tmatrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
-            agg_tmatrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            agg_tmatrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            agg_tmatrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
+                    agg_tmatrix[:,a,r,:,b,s][upper_idx] = val
+                    agg_tmatrix[:,a,r,:,b,s][lower_idx] = (-1)**(n+v+a+b)*val
 
-            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
 
-            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
 
-            agg_tmatrix[:,:,r,:,:,s] *= a[:,:,v-1]
+            agg_tmatrix[:,:,r,:,:,s] *= mie[:,:,v-1]
             # agg_tmatrix[:,:,s-2*u,:,:,r-2*m] *= a[:,:,n-1]
 
     return agg_tmatrix
@@ -145,25 +142,22 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
 
-            agg_tmatrix[:,0,r,:,0,s][upper_idx] = A_transfer
-            agg_tmatrix[:,0,r,:,1,s][upper_idx] = B_transfer
-            agg_tmatrix[:,1,r,:,0,s][upper_idx] = B_transfer
-            agg_tmatrix[:,1,r,:,1,s][upper_idx] = A_transfer
+            for a in range(2):
+                for b in range(2):
+                    val = (A_transfer, B_transfer)[(a+b)%2]
 
-            agg_tmatrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
-            agg_tmatrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            agg_tmatrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            agg_tmatrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
+                    agg_tmatrix[:,a,r,:,b,s][upper_idx] = val
+                    agg_tmatrix[:,a,r,:,b,s][lower_idx] = (-1)**(n+v+a+b)*val
 
-            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
 
-            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
 
     agg_tmatrix = np.einsum('iabjcd,jcdef->iabjef', agg_tmatrix, tmatrix)
     return agg_tmatrix
