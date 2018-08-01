@@ -7,22 +7,24 @@ import miepy
 from scipy.sparse.linalg import bicgstab
 
 def solve_linear_system(tmatrix, p_src, method):
-    """Solve the linear system tmatrix*p_inc = p_src
+    """Solve the linear system p_inc = p_src - tmatrix*p_inc
         
        Arguments:
            tmatrix[N,2,rmax,N,2,rmax]   particle aggregate tmatrix
            p_src[N,2,rmax]   source scattering coefficients
            method    solver method ('exact', 'bicgstab')
     """
+    interaction_matrix = np.copy(tmatrix)
+    np.einsum('airair->air', interaction_matrix)[...] += 1
 
     if method == 'exact':
-        return np.linalg.tensorsolve(tmatrix, p_src)
+        return np.linalg.tensorsolve(interaction_matrix, p_src)
 
     elif method == 'bicgstab':
         N = p_src.shape[0]
         rmax = p_src.shape[-1]
 
-        sol = bicgstab(tmatrix.reshape((2*N*rmax, -1)), p_src.reshape((-1,)))[0]
+        sol = bicgstab(interaction_matrix.reshape((2*N*rmax, -1)), p_src.reshape((-1,)))[0]
         return sol.reshape((N,2,rmax))
 
 def interactions_precomputation(positions, k, lmax):
@@ -73,13 +75,11 @@ def sphere_aggregate_tmatrix(positions, a, k):
     Nparticles = positions.shape[0]
     lmax = a.shape[-1]
     rmax = miepy.vsh.lmax_to_rmax(lmax)
-    identity = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
-    np.einsum('airair->air', identity)[...] = 1
+    agg_tmatrix = np.zeros(shape=(Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
     if Nparticles == 1:
-        return identity
+        return agg_tmatrix
     
-    interaction_matrix = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     r_ji, theta_ji, phi_ji, zn_values = interactions_precomputation(positions, k, lmax)
 
     for r,n,m in miepy.mode_indices(lmax):
@@ -91,30 +91,29 @@ def sphere_aggregate_tmatrix(positions, a, k):
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
 
-            interaction_matrix[:,0,r,:,0,s][upper_idx] = A_transfer
-            interaction_matrix[:,0,r,:,1,s][upper_idx] = B_transfer
-            interaction_matrix[:,1,r,:,0,s][upper_idx] = B_transfer
-            interaction_matrix[:,1,r,:,1,s][upper_idx] = A_transfer
+            agg_tmatrix[:,0,r,:,0,s][upper_idx] = A_transfer
+            agg_tmatrix[:,0,r,:,1,s][upper_idx] = B_transfer
+            agg_tmatrix[:,1,r,:,0,s][upper_idx] = B_transfer
+            agg_tmatrix[:,1,r,:,1,s][upper_idx] = A_transfer
 
-            interaction_matrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
-            interaction_matrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            interaction_matrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            interaction_matrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
+            agg_tmatrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
+            agg_tmatrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
+            agg_tmatrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
+            agg_tmatrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
 
-            # interaction_matrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-            # interaction_matrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
 
-            # interaction_matrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-            # interaction_matrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
 
-            interaction_matrix[:,:,r,:,:,s] *= a[:,:,v-1]
-            # interaction_matrix[:,:,s-2*u,:,:,r-2*m] *= a[:,:,n-1]
+            agg_tmatrix[:,:,r,:,:,s] *= a[:,:,v-1]
+            # agg_tmatrix[:,:,s-2*u,:,:,r-2*m] *= a[:,:,n-1]
 
-    agg_tmatrix = identity + interaction_matrix
     return agg_tmatrix
 
 #TODO this function is more general than above and can be used for both cases (change only the einsum)
@@ -130,13 +129,11 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
     Nparticles = positions.shape[0]
     rmax = tmatrix.shape[-1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)
-    identity = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
-    np.einsum('airair->air', identity)[...] = 1
+    agg_tmatrix = np.zeros(shape=(Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
     if Nparticles == 1:
-        return identity
+        return agg_tmatrix
     
-    interaction_matrix = np.zeros(shape = (Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     r_ji, theta_ji, phi_ji, zn_values = interactions_precomputation(positions, k, lmax)
 
     for r,n,m in miepy.mode_indices(lmax):
@@ -148,27 +145,25 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
 
-            interaction_matrix[:,0,r,:,0,s][upper_idx] = A_transfer
-            interaction_matrix[:,0,r,:,1,s][upper_idx] = B_transfer
-            interaction_matrix[:,1,r,:,0,s][upper_idx] = B_transfer
-            interaction_matrix[:,1,r,:,1,s][upper_idx] = A_transfer
+            agg_tmatrix[:,0,r,:,0,s][upper_idx] = A_transfer
+            agg_tmatrix[:,0,r,:,1,s][upper_idx] = B_transfer
+            agg_tmatrix[:,1,r,:,0,s][upper_idx] = B_transfer
+            agg_tmatrix[:,1,r,:,1,s][upper_idx] = A_transfer
 
-            interaction_matrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
-            interaction_matrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            interaction_matrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
-            interaction_matrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
+            agg_tmatrix[:,0,r,:,0,s][lower_idx] = (-1)**(n+v)  *A_transfer
+            agg_tmatrix[:,0,r,:,1,s][lower_idx] = (-1)**(n+v+1)*B_transfer
+            agg_tmatrix[:,1,r,:,0,s][lower_idx] = (-1)**(n+v+1)*B_transfer
+            agg_tmatrix[:,1,r,:,1,s][lower_idx] = (-1)**(n+v)  *A_transfer
 
-            # interaction_matrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-            # interaction_matrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
 
-            # interaction_matrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-            # interaction_matrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-            # interaction_matrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
+            # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
+            # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
 
-    interaction_matrix = np.einsum('iabjcd,jcdef->iabjef', interaction_matrix, tmatrix)
-    agg_tmatrix = identity + interaction_matrix
-
+    agg_tmatrix = np.einsum('iabjcd,jcdef->iabjef', agg_tmatrix, tmatrix)
     return agg_tmatrix
