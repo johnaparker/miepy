@@ -1,9 +1,15 @@
 #include "main.hpp"
+//#include <cmath>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
+#include <gsl/gsl_sf_legendre.h>
 #include <omp.h>
 
 using std::complex;
+
+int factorial(int n) {
+    return (n == 0) ? 1 : factorial(n - 1) * n;
+}
 
 complex<double> spherical_hn(int n, double z, bool derivative) {
     if (!derivative) {
@@ -16,6 +22,26 @@ complex<double> spherical_hn(int n, double z, bool derivative) {
 
 complex<double> spherical_hn_2(int n, double z, bool derivative) {
     return std::conj(spherical_hn(n, z, derivative));
+}
+
+// create and return Eigen array instead
+// better performance for direct evaluation (especially when n=1) compared to scipy/sympy
+double associated_legendre(int n, int m, double z, bool derivative) {
+    auto size = gsl_sf_legendre_array_n(n);
+    auto index = gsl_sf_legendre_array_index(n, abs(m));
+    double *result = new double[size];
+    gsl_sf_legendre_array(GSL_SF_LEGENDRE_NONE, n, z, result);
+    double leg = result[index];
+    delete[] result;
+
+    if (m < 0) {
+        //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
+        double factor = pow(-1, m)*factorial(n+m)/double(factorial(n-m));
+        return factor*leg;
+    }
+    else {
+        return leg;
+    }
 }
 
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {

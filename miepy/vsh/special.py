@@ -9,7 +9,7 @@ from functools import lru_cache
 from math import factorial
 
 from miepy.cpp.special import (spherical_hn, spherical_hn_2,
-         wigner_3j)
+         wigner_3j, associated_legendre)
 
 # def spherical_hn(n, z, derivative=False):
     # """spherical hankel function of the first kind or its derivative
@@ -48,22 +48,22 @@ def riccati_2(n,z, derivative = False):
 def riccati_3(n,z, derivative = False):
     return riccati_2(n,z, derivative) - riccati_1(n,z, derivative)
 
-@lru_cache(maxsize=None)
-def associated_legendre(n,m, deriv=0):
-    """associated legendre function of integer order and degree
+# @lru_cache(maxsize=None)
+# def associated_legendre(n,m, deriv=0):
+    # """associated legendre function of integer order and degree
 
-            n: int         order
-            m: int         degree
-            deriv: int     derivative to take
+            # n: int         order
+            # m: int         degree
+            # deriv: int     derivative to take
 
-        returns lpmv(x) function     """
+        # returns lpmv(x) function     """
 
-    x = sympy.symbols('x')
-    legfun_sym = (-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
-    legfunc_sym_deriv = sympy.diff(legfun_sym, x, deriv)
+    # x = sympy.symbols('x')
+    # legfun_sym = (-1)**abs(m)*sympy.functions.special.polynomials.assoc_legendre(n,m,x)
+    # legfunc_sym_deriv = sympy.diff(legfun_sym, x, deriv)
 
-    legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
-    return legfun_num_deriv
+    # legfun_num_deriv = sympy.lambdify(x,legfunc_sym_deriv, modules='numpy')
+    # return legfun_num_deriv
 
 @lru_cache(maxsize=None)
 def pi_func(n, m):

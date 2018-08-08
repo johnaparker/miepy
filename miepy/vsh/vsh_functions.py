@@ -53,14 +53,14 @@ def VSH(n, m, mode=vsh_mode.outgoing):
 
     pi_f = vsh.special.pi_func(n,m)
     tau_f = vsh.special.tau_func(n,m)
-    Pnm = vsh.special.associated_legendre(n,m)
+    Pnm = vsh.special.associated_legendre
 
     zn = get_zn(mode)
         
     def N(r, theta, phi, k):
         H = zn(n, k*r)
         Hp = zn(n, k*r, derivative=True)
-        Pnm_val = Pnm(np.cos(theta))
+        Pnm_val = Pnm(n, m, np.cos(theta))
 
         factor = (H + r*k*Hp)*np.exp(1j*m*phi)/(k*r)
 

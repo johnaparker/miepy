@@ -27,8 +27,8 @@ def vsh_translation(m, n, u, v, r, theta, phi, k, mode, zn_values=None):
         aq = vsh.special.a_func(m,n,u,v,p)
         A = 1j**p*(n*(n+1) + v*(v+1) - p*(p+1))*aq
 
-        Pnm = vsh.special.associated_legendre(p,u+m)
-        sum_term += A*zn(p)*Pnm(np.cos(theta))
+        Pnm_val = vsh.special.associated_legendre(p,u+m, np.cos(theta))
+        sum_term += A*zn(p)*Pnm_val
 
     A_translation = factor*sum_term
 
@@ -39,8 +39,8 @@ def vsh_translation(m, n, u, v, r, theta, phi, k, mode, zn_values=None):
         bq = vsh.special.b_func(m,n,u,v,p)
         A = 1j**(p+1)*(((p+1)**2 - (n-v)**2)*((n+v+1)**2 - (p+1)**2))**0.5*bq
 
-        Pnm = vsh.special.associated_legendre(p+1,u+m)
-        sum_term += A*zn(p+1)*Pnm(np.cos(theta))
+        Pnm_val = vsh.special.associated_legendre(p+1,u+m, np.cos(theta))
+        sum_term += A*zn(p+1)*Pnm_val
 
     B_translation = -factor*sum_term
 

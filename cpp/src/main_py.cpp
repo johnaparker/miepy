@@ -30,6 +30,11 @@ PYBIND11_MODULE(cpp, m) {
         Spherical hankel function of the second kind or its derivative
     )pbdoc");
 
+    special.def("associated_legendre", py::vectorize(associated_legendre), 
+           "n"_a, "m"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Associated legendre function of integer order and degree
+    )pbdoc");
+
     special.def("wigner_3j", wigner_3j, 
            "j1"_a, "j2"_a, "j3"_a, "m1"_a, "m2"_a, "m3"_a, R"pbdoc(
         Wigner 3-j coefficients
