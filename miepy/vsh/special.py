@@ -8,23 +8,25 @@ from scipy import special
 from functools import lru_cache
 from math import factorial
 
-def spherical_hn(n, z, derivative=False):
-    """spherical hankel function of the first kind or its derivative
+from miepy.cpp import spherical_hn, spherical_hn_2
 
-            n: int,array-like        order of the bessel function
-            z: array[complex/float]  argument
-            derivative: bool         If True, compute the derivative instead    """
+# def spherical_hn(n, z, derivative=False):
+    # """spherical hankel function of the first kind or its derivative
 
-    return special.spherical_jn(n,z,derivative) + 1j*special.spherical_yn(n,z,derivative)
+            # n: int,array-like        order of the bessel function
+            # z: array[complex/float]  argument
+            # derivative: bool         If True, compute the derivative instead    """
 
-def spherical_hn_2(n, z, derivative=False):
-    """spherical hankel function of the second kind or its derivative
+    # return special.spherical_jn(n,z,derivative) + 1j*special.spherical_yn(n,z,derivative)
 
-            n: int,array-like        order of the bessel function
-            z: array[complex/float]  argument
-            derivative: bool         If True, compute the derivative instead    """
+# def spherical_hn_2(n, z, derivative=False):
+    # """spherical hankel function of the second kind or its derivative
 
-    return special.spherical_jn(n,z,derivative) - 1j*special.spherical_yn(n,z,derivative)
+            # n: int,array-like        order of the bessel function
+            # z: array[complex/float]  argument
+            # derivative: bool         If True, compute the derivative instead    """
+
+    # return special.spherical_jn(n,z,derivative) - 1j*special.spherical_yn(n,z,derivative)
 
 def riccati_1(n,z, derivative = False):
     jn = special.spherical_jn(n, z)

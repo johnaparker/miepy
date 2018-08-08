@@ -1,3 +1,7 @@
 include download_materials.sh
 include miepy/materials/database
 include miepy/bin
+
+global-include cpp/CMakeLists.txt *.cmake
+recursive-include cpp/src *
+recursive-include cpp/pybind11/include *.h

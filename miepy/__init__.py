@@ -15,6 +15,7 @@ from . import forces
 from . import flux
 from . import coordinates
 from . import interface
+from . import cpp
 
 from .materials.create import constant_material, function_material, data_material
 from .cluster import cluster
