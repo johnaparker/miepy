@@ -4,10 +4,6 @@
 
 using std::complex;
 
-int add(int i, int j) {
-    return i + j + 2;
-}
-
 complex<double> spherical_hn(int n, double z, bool derivative) {
     if (!derivative) {
         return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));

@@ -8,7 +8,7 @@ from scipy import special
 from functools import lru_cache
 from math import factorial
 
-from miepy.cpp import spherical_hn, spherical_hn_2
+from miepy.cpp.special import spherical_hn, spherical_hn_2
 
 # def spherical_hn(n, z, derivative=False):
     # """spherical hankel function of the first kind or its derivative
