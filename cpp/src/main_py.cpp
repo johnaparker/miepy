@@ -30,9 +30,19 @@ PYBIND11_MODULE(cpp, m) {
         Spherical hankel function of the second kind or its derivative
     )pbdoc");
 
+    special.def("wigner_3j", wigner_3j, 
+           "j1"_a, "j2"_a, "j3"_a, "m1"_a, "m2"_a, "m3"_a, R"pbdoc(
+        Wigner 3-j coefficients
+    )pbdoc");
+
     special.def("test", test, 
             py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
             Test function
+    )pbdoc");
+
+    special.def("test2", test2, 
+            R"pbdoc(
+            Test2 function
     )pbdoc");
 
 }
