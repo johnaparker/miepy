@@ -1,5 +1,5 @@
 #include "main.hpp"
-//#include <cmath>
+#include <cmath>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
@@ -26,7 +26,17 @@ complex<double> spherical_hn_2(int n, double z, bool derivative) {
 
 // create and return Eigen array instead
 // better performance for direct evaluation (especially when n=1) compared to scipy/sympy
+// it may be worth included direct n=2 (still better than recursive)
+// z is always equal to cos(theta) -- simplifies the n=(1,2) equations
 double associated_legendre(int n, int m, double z, bool derivative) {
+    if (n == 1) {
+        if (m == 0)
+            return z;
+        if (m == 1)
+            return sqrt(1 - pow(z,2));
+        if (m == -1)
+            return -sqrt(1 - pow(z,2))/2;
+    }
     auto size = gsl_sf_legendre_array_n(n);
     auto index = gsl_sf_legendre_array_index(n, abs(m));
     double *result = new double[size];
@@ -41,6 +51,71 @@ double associated_legendre(int n, int m, double z, bool derivative) {
     }
     else {
         return leg;
+    }
+}
+
+// combine below into pi_tau_func that computes both and returns as a tuple
+// take the sympy reduced expressions for n=1,2 and use for direct computation
+//          best case: recurse upward after n=2
+double pi_func(int n, int m, double theta) {
+    if (theta == 0) {
+        if (m == 1)
+            return n*(n+1)/2.0;
+        else if (m == -1)
+            return 1/2.0;
+        else
+            return 0;
+    }
+    else if (theta == M_PI) {
+        if (m == 1)
+            return pow(-1, n+1)*n*(n+1)/2.0;
+        else if (m == -1)
+            return pow(-1, n+1)/2.0;
+        else
+            return 0;
+    }
+    else {
+        double z = cos(theta);
+        return m/sin(theta)*associated_legendre(n, m, z);
+    }
+
+}
+
+double tau_func(int n, int m, double theta) {
+    if (theta == 0) {
+        if (m == 1)
+            return n*(n+1)/2.0;
+        else if (m == -1)
+            return -1/2.0;
+        else
+            return 0;
+    }
+    else if (theta == M_PI) {
+        if (m == 1)
+            return pow(-1, n)*n*(n+1)/2.0;
+        else if (m == -1)
+            return -pow(-1, n)/2.0;
+        else
+            return 0;
+    }
+    else {
+        double z = cos(theta);
+        auto size = gsl_sf_legendre_array_n(n);
+        auto index = gsl_sf_legendre_array_index(n, abs(m));
+        double *result = new double[size];
+        double *result_p = new double[size];
+        gsl_sf_legendre_deriv_array(GSL_SF_LEGENDRE_NONE, n, z, result, result_p);
+        double leg_p = -sin(theta)*result_p[index];
+        delete[] result;
+
+        if (m < 0) {
+            //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
+            double factor = pow(-1, m)*factorial(n+m)/double(factorial(n-m));
+            return factor*leg_p;
+        }
+        else {
+            return leg_p;
+        }
     }
 }
 

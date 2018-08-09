@@ -45,8 +45,8 @@ def test_far_field_directly():
     k = 1
     N = Nfunc(rad, theta, phi, k)
     M = Mfunc(rad, theta, phi, k)
-    tau = miepy.vsh.special.tau_func(n,m)(theta)
-    pi = miepy.vsh.special.pi_func(n,m)(theta)
+    tau = miepy.vsh.special.tau_func(n, m, theta)
+    pi = miepy.vsh.special.pi_func(n, m, theta)
 
     E_theta_1 = 1j*N[1]
     factor = np.exp(1j*k*rad)/(k*rad)

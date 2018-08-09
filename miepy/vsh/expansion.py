@@ -57,8 +57,8 @@ def expand_E_far(p_scat, k):
         for i,n,m in vsh.mode_indices(lmax):
             Emn_val = vsh.Emn(m, n)
 
-            tau = vsh.special.tau_func(n,m)(theta)
-            pi = vsh.special.pi_func(n,m)(theta)
+            pi = vsh.special.pi_func(n, m, theta)
+            tau = vsh.special.tau_func(n, m, theta)
 
             E_sph[1] += 1j*factor*Emn_val*(-1j)**(n)*(p_scat[0,i]*tau + p_scat[1,i]*pi)*np.exp(1j*m*phi)
             E_sph[2] += -factor*Emn_val*(-1j)**(n)*(p_scat[0,i]*pi + p_scat[1,i]*tau)*np.exp(1j*m*phi)

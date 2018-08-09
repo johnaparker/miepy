@@ -51,8 +51,8 @@ def VSH(n, m, mode=vsh_mode.outgoing):
 
        returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 spherical components"""
 
-    pi_f = vsh.special.pi_func(n,m)
-    tau_f = vsh.special.tau_func(n,m)
+    pi_f = vsh.special.pi_func
+    tau_f = vsh.special.tau_func
     Pnm = vsh.special.associated_legendre
 
     zn = get_zn(mode)
@@ -65,8 +65,8 @@ def VSH(n, m, mode=vsh_mode.outgoing):
         factor = (H + r*k*Hp)*np.exp(1j*m*phi)/(k*r)
 
         r_comp = n*(n+1)*Pnm_val*H/(k*r)*np.exp(1j*m*phi)
-        theta_comp = tau_f(theta)*factor
-        phi_comp = 1j*pi_f(theta)*factor
+        theta_comp = tau_f(n, m, theta)*factor
+        phi_comp = 1j*pi_f(n, m, theta)*factor
 
         return np.array([r_comp, theta_comp, phi_comp])
 
@@ -74,8 +74,8 @@ def VSH(n, m, mode=vsh_mode.outgoing):
         H = zn(n, k*r)
         factor = H*np.exp(1j*m*phi)
 
-        theta_comp = 1j*pi_f(theta)*factor
-        phi_comp = -1*tau_f(theta)*factor
+        theta_comp = 1j*pi_f(n, m, theta)*factor
+        phi_comp = -1*tau_f(n, m, theta)*factor
         r_comp = np.zeros_like(theta_comp)
 
         return np.array([r_comp, theta_comp, phi_comp])
@@ -91,22 +91,22 @@ def VSH_far(n, m, mode=vsh_mode.outgoing):
 
        returns (N(r,θ,ϕ,k) -> [2,...], M(r,θ,ϕ,k) -> [2,...]), the 2 theta/phi components"""
 
-    pi_f = vsh.special.pi_func(n,m)
-    tau_f = vsh.special.tau_func(n,m)
+    pi_f = vsh.special.pi_func
+    tau_f = vsh.special.tau_func
     zn = get_zn(mode)
     sign = -1 if mode is vsh.vsh_mode.ingoing else 1
         
     def N(r, theta, phi, k):
         factor = sign*zn(n, k*r)*np.exp(1j*m*phi)
-        theta_comp = 1j*tau_f(theta)*factor
-        phi_comp = -pi_f(theta)*factor
+        theta_comp = 1j*tau_f(n, m, theta)*factor
+        phi_comp = -pi_f(n, m, theta)*factor
 
         return np.array([theta_comp, phi_comp])
 
     def M(r, theta, phi, k):
         factor = zn(n, k*r)*np.exp(1j*m*phi)
-        theta_comp = 1j*pi_f(theta)*factor
-        phi_comp = -tau_f(theta)*factor
+        theta_comp = 1j*pi_f(n, m, theta)*factor
+        phi_comp = -tau_f(n, m, theta)*factor
 
         return np.array([theta_comp, phi_comp])
 

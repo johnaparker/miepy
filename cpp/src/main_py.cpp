@@ -35,6 +35,16 @@ PYBIND11_MODULE(cpp, m) {
         Associated legendre function of integer order and degree
     )pbdoc");
 
+    special.def("pi_func", py::vectorize(pi_func), 
+           "n"_a, "m"_a, "theta"_a, R"pbdoc(
+        pi special function that appears in the vector spherical harmonics
+    )pbdoc");
+
+    special.def("tau_func", py::vectorize(tau_func), 
+           "n"_a, "m"_a, "theta"_a, R"pbdoc(
+        tau special function that appears in the vector spherical harmonics
+    )pbdoc");
+
     special.def("wigner_3j", wigner_3j, 
            "j1"_a, "j2"_a, "j3"_a, "m1"_a, "m2"_a, "m3"_a, R"pbdoc(
         Wigner 3-j coefficients

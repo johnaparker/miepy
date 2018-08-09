@@ -102,8 +102,8 @@ class plane_wave(source):
         phase = k*(self.k_hat[0]*position[0] + self.k_hat[1]*position[1] + self.k_hat[2]*position[2]) + self.phase
 
         for i,n,m in miepy.mode_indices(lmax):
-            pi_value = pi_func(n, m)(0)
-            tau_value = tau_func(n, m)(0)
+            pi_value = pi_func(n, m, 0)
+            tau_value = tau_func(n, m, 0)
 
             p_src[0,i] = self.amplitude*np.exp(1j*phase)*np.sqrt(2*n+1)*tau_value*(self.polarization[0] - 1j*m*self.polarization[1])
             p_src[1,i] = self.amplitude*np.exp(1j*phase)*np.sqrt(2*n+1)*pi_value*(self.polarization[0] - 1j*m*self.polarization[1])

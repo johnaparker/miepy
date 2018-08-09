@@ -1,4 +1,5 @@
 from . import special
+from . import old_special
 
 from .mode_indices import rmax_to_lmax, lmax_to_rmax, mode_indices
 from .vsh_functions import (Emn, vsh_mode, get_zn, VSH, vsh_normalization_values,
