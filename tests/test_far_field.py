@@ -23,7 +23,7 @@ E_exact = dimer.E_field(R, THETA, PHI, source=False, interior=False, spherical=T
 def test_far_field_convergence():
     """far-field E and H field should agree with exact field in the large radius limit"""
     E_far = dimer.E_field(R, THETA, PHI, far=True, source=False, interior=False, spherical=True)
-    np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-25)
+    np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-16)
 
 def test_far_field_cluster_coefficient():
     """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
