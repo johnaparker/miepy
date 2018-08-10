@@ -177,6 +177,29 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
     return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
 }
 
+double a_func(int m, int n, int u, int v, int p) {
+    double numerator   = factorial(n+m)*factorial(v+u)*factorial(p-m-u);
+    double denominator = factorial(n-m)*factorial(v-u)*factorial(p+m+u);
+    double factor = pow(-1, m+u)*(2*p+1)*sqrt(numerator/denominator);
+
+    double w1 = wigner_3j(n, v, p, 0, 0, 0);
+    double w2 = wigner_3j(n, v, p, m, u, -m-u);
+
+    return factor*w1*w2;
+}
+
+double b_func(int m, int n, int u, int v, int p) {
+    double numerator   = factorial(n+m)*factorial(v+u)*factorial(p-m-u+1);
+    double denominator = factorial(n-m)*factorial(v-u)*factorial(p+m+u+1);
+    double factor = pow(-1, m+u)*(2*p+3)*sqrt(numerator/denominator);
+
+    double w1 = wigner_3j(n, v, p, 0, 0, 0);
+    double w2 = wigner_3j(n, v, p+1, m, u, -m-u);
+
+    return factor*w1*w2;
+}
+
+
 #pragma omp declare reduction( + : std::complex<double> : \
                        std::plus< std::complex<double> >( )) \
                        initializer(omp_priv = omp_orig)

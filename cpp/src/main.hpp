@@ -16,6 +16,8 @@ double tau_func(int n, int m, double theta);
 double pi_func(int n, int m, double theta);
 
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3);
+double a_func(int m, int n, int u, int v, int p);
+double b_func(int m, int n, int u, int v, int p);
 
 std::complex<double> test(int n, double z, bool derivative=false);
 double test2();

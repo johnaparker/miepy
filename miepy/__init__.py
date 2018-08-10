@@ -5,17 +5,17 @@ Python module to calcuate scattering coefficients of a plane wave incident on a 
 """
 
 # main submodules
+from . import cpp
+from . import vsh
 from . import sources
 from . import materials
 from . import interactions
-from . import vsh
 from . import tmatrix
 from . import particles
 from . import forces
 from . import flux
 from . import coordinates
 from . import interface
-from . import cpp
 
 from .materials.create import constant_material, function_material, data_material
 from .cluster import cluster

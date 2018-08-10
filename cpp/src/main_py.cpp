@@ -65,6 +65,16 @@ PYBIND11_MODULE(cpp, m) {
         Wigner 3-j coefficients
     )pbdoc");
 
+    special.def("a_func", a_func, 
+           "m"_a, "n"_a, "u"_a, "v"_a, "p"_a, R"pbdoc(
+        a function (Gaunt coefficient)
+    )pbdoc");
+
+    special.def("b_func", b_func, 
+           "m"_a, "n"_a, "u"_a, "v"_a, "p"_a, R"pbdoc(
+        b function
+    )pbdoc");
+
     special.def("test", test, 
             py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
             Test function
