@@ -52,6 +52,32 @@ complex<double> spherical_hn_2(int n, double z, bool derivative) {
     return std::conj(spherical_hn(n, z, derivative));
 }
 
+double riccati_1(int n, double z, bool derivative) {
+    double jn = gsl_sf_bessel_jl(n, z);
+    if (!derivative) {
+        return z*jn;
+    }
+    else {
+        double jn_d = gsl_sf_bessel_jl(n-1, z) - (n+1)/z*jn;
+        return z*jn_d + jn;
+    }
+}
+
+double riccati_2(int n, double z, bool derivative) {
+    double yn = gsl_sf_bessel_yl(n, z);
+    if (!derivative) {
+        return -z*yn;
+    }
+    else {
+        double yn_d = gsl_sf_bessel_yl(n-1, z) - (n+1)/z*yn;
+        return -z*yn_d - yn;
+    }
+}
+
+double riccati_3(int n, double z, bool derivative) {
+    return riccati_2(n, z, derivative) - riccati_1(n, z, derivative);
+}
+
 // create and return Eigen array instead
 // better performance for direct evaluation (especially when n=1) compared to scipy/sympy
 // it may be worth included direct n=2 (still better than recursive)

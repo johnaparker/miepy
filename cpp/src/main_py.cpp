@@ -30,6 +30,21 @@ PYBIND11_MODULE(cpp, m) {
         Spherical hankel function of the second kind or its derivative
     )pbdoc");
 
+    special.def("riccati_1", py::vectorize(riccati_1), 
+           "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Riccati Bessel function of the first kind
+    )pbdoc");
+
+    special.def("riccati_2", py::vectorize(riccati_2), 
+           "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Riccati Bessel function of the second kind
+    )pbdoc");
+
+    special.def("riccati_3", py::vectorize(riccati_3), 
+           "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Riccati Bessel function of the third kind
+    )pbdoc");
+
     special.def("associated_legendre", py::vectorize(associated_legendre), 
            "n"_a, "m"_a, "z"_a, "derivative"_a=false, R"pbdoc(
         Associated legendre function of integer order and degree

@@ -9,26 +9,8 @@ from functools import lru_cache
 from math import factorial
 
 from miepy.cpp.special import (spherical_hn, spherical_hn_2,
-         wigner_3j, associated_legendre, pi_func, tau_func)
-
-def riccati_1(n,z, derivative = False):
-    jn = special.spherical_jn(n, z)
-
-    if derivative:
-        jn_p = special.spherical_jn(n, z, derivative=True)
-        return z*jn_p + jn
-    return z*jn
-
-def riccati_2(n,z, derivative = False):
-    yn = special.spherical_yn(n, z, derivative = derivative) 
-
-    if derivative:
-        yn_p = special.spherical_yn(n, z, derivative=True)
-        return -z*yn_p - yn
-    return -z*yn
-
-def riccati_3(n,z, derivative = False):
-    return riccati_2(n,z, derivative) - riccati_1(n,z, derivative)
+         wigner_3j, associated_legendre, pi_func, tau_func,
+         riccati_1, riccati_2, riccati_3)
 
 @lru_cache(None)
 def a_func(m,n,u,v,p):
