@@ -32,7 +32,7 @@ def associated_legendre():
     display(f'Associated Legendre (n = {n}, m = {m})', Tcpp, Tpy)
 
 def hankel():
-    n = 15
+    n = 4
     x = np.linspace(0.3, 0.5, 1000)
 
     f = partial(miepy.cpp.special.spherical_hn, n, x)

@@ -11,9 +11,37 @@ int factorial(int n) {
     return (n == 0) ? 1 : factorial(n - 1) * n;
 }
 
+// if n>z, the iterative jn's may not converge
 complex<double> spherical_hn(int n, double z, bool derivative) {
     if (!derivative) {
-        return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));
+        //return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));
+        double sin_z = sin(z);
+        double cos_z = cos(z);
+
+        double jn_2p = sin_z/z;
+        double jn = jn_2p;
+
+        double yn_2p = -cos_z/z;
+        double yn = yn_2p;
+
+        if (n > 0) {
+            double jn_p = jn_2p/z - cos_z/z;
+            double yn_p = yn_2p/z - jn_2p;
+            jn = jn_p;
+            yn = yn_p;
+
+            for (int i = 2; i <= n; i++) {
+                jn = (2*i - 1)/z*jn_p - jn_2p;
+                jn_2p = jn_p;
+                jn_p = jn;
+
+                yn = (2*i - 1)/z*yn_p - yn_2p;
+                yn_2p = yn_p;
+                yn_p = yn;
+            }
+        }
+
+        return std::complex<double>(jn, yn);
     }
     else {
         return spherical_hn(n-1, z) - (n+1)/z*spherical_hn(n, z);
