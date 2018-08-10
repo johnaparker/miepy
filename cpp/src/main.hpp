@@ -4,6 +4,10 @@
 
 //separate into 3 files: radial functions, angular functions, and a/b coefficients
 
+int factorial(int n);
+
+std::complex<double> spherical_jn(int n, double z, bool derivative=false);
+std::complex<double> spherical_yn(int n, double z, bool derivative=false);
 std::complex<double> spherical_hn(int n, double z, bool derivative=false);
 std::complex<double> spherical_hn_2(int n, double z, bool derivative=false);
 

@@ -12,6 +12,21 @@ int factorial(int n) {
 }
 
 // if n>z, the iterative jn's may not converge
+
+complex<double> spherical_jn(int n, double z, bool derivative) {
+    if (derivative)
+        return spherical_jn(n-1, z) - (n+1)/z*spherical_jn(n, z);
+
+    return gsl_sf_bessel_jl(n, z);
+}
+
+complex<double> spherical_yn(int n, double z, bool derivative) {
+    if (derivative)
+        return spherical_yn(n-1, z) - (n+1)/z*spherical_yn(n, z);
+
+    return gsl_sf_bessel_yl(n, z);
+}
+
 complex<double> spherical_hn(int n, double z, bool derivative) {
     if (!derivative) {
         //return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));

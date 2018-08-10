@@ -3,6 +3,7 @@
 #include <pybind11/complex.h>
 
 #include "main.hpp"
+#include "vsh_translation.hpp"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -75,6 +76,18 @@ PYBIND11_MODULE(cpp, m) {
         b function
     )pbdoc");
 
+    py::enum_<vsh_mode>(special, "vsh_mode")
+        .value("outgoing", vsh_mode::outgoing)
+        .value("ingoing",  vsh_mode::ingoing)
+        .value("incident", vsh_mode::incident)
+        .value("interior", vsh_mode::interior);
+
+    special.def("vsh_translation", vsh_translation, 
+           "m"_a, "n"_a, "u"_a, "v"_a, "rad"_a, "theta"_a,
+           "phi"_a, "k"_a, "mode"_a, R"pbdoc(
+        VSH translation coefficients
+    )pbdoc");
+
     special.def("test", test, 
             py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
             Test function
@@ -83,6 +96,11 @@ PYBIND11_MODULE(cpp, m) {
     special.def("test2", test2, 
             R"pbdoc(
             Test2 function
+    )pbdoc");
+
+    special.def("test3", test3, 
+            R"pbdoc(
+            Test3 function
     )pbdoc");
 
 }

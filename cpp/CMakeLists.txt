@@ -10,12 +10,12 @@ find_package(OpenMP REQUIRED)
 add_subdirectory(pybind11)
 
 include_directories(src)
-file(GLOB SOURCES src/main.cpp)
-file(GLOB INCLUDE src/main.hpp)
+file(GLOB SOURCES src/main.cpp src/vsh_translation.cpp)
+file(GLOB INCLUDE src/main.hpp src/vsh_translation.hpp)
 
 #pybind11_add_module(cpp src/main_py.cpp src/main.cpp)
 
-add_library(cpp MODULE src/main_py.cpp src/main.cpp)
+add_library(cpp MODULE src/main_py.cpp src/main.cpp src/vsh_translation.cpp)
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX)
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                          SUFFIX "${PYTHON_MODULE_EXTENSION}")
