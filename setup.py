@@ -97,7 +97,7 @@ class builder(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-        subprocess.call(['cp', f'{extdir}/cpp.cpython-36m-x86_64-linux-gnu.so', 'miepy'])
+        subprocess.call(['cp', f'{extdir}/cpp.cpython-37m-x86_64-linux-gnu.so', 'miepy'])
 
 setup(
     name = "miepy",
