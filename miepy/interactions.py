@@ -5,10 +5,11 @@ functions for building interaction matrices and solving them
 import numpy as np
 import miepy
 from scipy.sparse.linalg import bicgstab
+from miepy.cpp.special import vsh_translation_numpy as vsh_translation
 
 def solve_linear_system(tmatrix, p_src, method):
     """Solve the linear system p_inc = p_src - tmatrix*p_inc
-        
+        size
        Arguments:
            tmatrix[N,2,rmax,N,2,rmax]   particle aggregate tmatrix
            p_src[N,2,rmax]   source scattering coefficients
@@ -85,8 +86,8 @@ def sphere_aggregate_tmatrix(positions, mie, k):
     for r,n,m in miepy.mode_indices(lmax):
         for s,v,u in miepy.mode_indices(lmax):
             # if s - 2*u < r: continue
-            A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing, zn_values=zn_values)
+            A_transfer, B_transfer = vsh_translation(m, n, u, v, 
+                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing)
 
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]
@@ -136,8 +137,8 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
     for r,n,m in miepy.mode_indices(lmax):
         for s,v,u in miepy.mode_indices(lmax):
             # if s - 2*u < r: continue
-            A_transfer, B_transfer = miepy.vsh.vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing, zn_values=zn_values)
+            A_transfer, B_transfer = vsh_translation(m, n, u, v, 
+                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing)
 
             upper_idx = np.triu_indices(Nparticles, 1)
             lower_idx = upper_idx[::-1]

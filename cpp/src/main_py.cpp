@@ -88,6 +88,13 @@ PYBIND11_MODULE(cpp, m) {
         VSH translation coefficients
     )pbdoc");
 
+    special.def("vsh_translation_numpy", vsh_translation_numpy, 
+           "m"_a, "n"_a, "u"_a, "v"_a, py::arg("rad").noconvert(),
+           py::arg("theta").noconvert(), py::arg("phi").noconvert(),
+           "k"_a, "mode"_a, R"pbdoc(
+        VSH translation coefficients
+    )pbdoc");
+
     special.def("test", test, 
             py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
             Test function
@@ -103,4 +110,5 @@ PYBIND11_MODULE(cpp, m) {
             Test3 function
     )pbdoc");
 
+    special.def("combine_arrays", &combine_arrays, "Combine two NumPy arrays");
 }

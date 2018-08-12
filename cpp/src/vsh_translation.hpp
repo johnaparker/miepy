@@ -5,6 +5,12 @@
 #include <functional>
 #include <tuple>
 
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/complex.h>
+#include <pybind11/stl.h>
+namespace py = pybind11;
+
 enum class vsh_mode {
     outgoing,
     ingoing,
@@ -14,9 +20,16 @@ enum class vsh_mode {
 
 std::function<std::complex<double>(int, double, bool)> get_zn(vsh_mode mode);
 
+py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b);
+
 std::tuple<std::complex<double>, std::complex<double>> vsh_translation(
         int m, int n, int u, int v, double rad, double theta,
         double phi, double k, vsh_mode mode);
+
+py::array_t<std::complex<double>> vsh_translation_numpy(
+        int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
+        py::array_t<double> phi, double k, vsh_mode mode);
+
 
 double test3();
 
