@@ -15,8 +15,54 @@ std::function<complex<double>(int, double, bool)> get_zn(vsh_mode mode) {
         case vsh_mode::incident:
         case vsh_mode::interior:
             return spherical_jn;
-
     }
+}
+
+ComplexMatrix vsh_translation_eigen(
+        int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
+        const Ref<const Array>& phi, double k, vsh_mode mode) {
+
+    int size = rad.size();
+    ComplexMatrix result = ComplexMatrix::Zero(2, size);
+
+    m *= -1;
+    auto zn = get_zn(mode);
+
+    double factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
+            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+    
+    ComplexArray exp_phi = exp(1i*double(u+m)*phi);
+    Array cos_theta = cos(theta);
+
+    int qmax = std::min({n, v, (n + v - abs(m+u))/2});
+
+    for (int q = 0; q < qmax+1; q++) {
+        int p = n + v - 2*q;
+        double aq = a_func(m, n, u, v, p);
+        complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
+
+        for (size_t idx = 0; idx < size; idx++) {
+            double Pnm_val = associated_legendre(p, u+m, cos_theta(idx));
+            complex<double> zn_val  = zn(p, k*rad(idx), false);
+            result(0,idx) += factor*exp_phi(idx)*A*Pnm_val*zn_val;
+        }
+    }
+
+    qmax = std::min({n, v, (n + v + 1 - abs(m+u))/2});
+
+    for (int q = 1; q < qmax+1; q++) {
+        int p = n + v - 2*q;
+        double bq = b_func(m, n, u, v, p);
+        complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
+
+        for (size_t idx = 0; idx < size; idx++) {
+            double Pnm_val = associated_legendre(p+1, u+m, cos_theta(idx));
+            complex<double> zn_val  = zn(p+1, k*rad(idx), false);
+            result(1,idx) -= factor*exp_phi(idx)*A*Pnm_val*zn_val;
+        }
+    }
+
+    return result;
 }
 
 py::array_t<complex<double>> vsh_translation_numpy(

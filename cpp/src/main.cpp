@@ -3,7 +3,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
-#include <omp.h>
+//#include <omp.h>
 
 using std::complex;
 
@@ -215,13 +215,13 @@ double b_func(int m, int n, int u, int v, int p) {
 }
 
 
-#pragma omp declare reduction( + : std::complex<double> : \
-                       std::plus< std::complex<double> >( )) \
-                       initializer(omp_priv = omp_orig)
+//#pragma omp declare reduction( + : std::complex<double> : \
+                       //std::plus< std::complex<double> >( )) \
+                       //initializer(omp_priv = omp_orig)
 
 complex<double> test(int n, double z, bool derivative) {
     complex<double> total = 0;
-#pragma omp parallel for default(shared) reduction(+:total)
+//#pragma omp parallel for default(shared) reduction(+:total)
     for (int i = 0; i < 10000; i++) { 
         total += spherical_hn(n, z, derivative);
     }

@@ -3,7 +3,15 @@
 
 #include <complex>
 #include <functional>
+
 #include <tuple>
+
+#include <eigen3/Eigen/Core>
+using Array = Eigen::Array<double, Eigen::Dynamic, 1>;
+using ComplexArray = Eigen::Array<std::complex<double>, Eigen::Dynamic, 1>;
+using Matrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using ComplexMatrix = Eigen::Matrix<std::complex<double>, 2, Eigen::Dynamic, Eigen::RowMajor>;
+using Eigen::Ref;
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -30,6 +38,9 @@ py::array_t<std::complex<double>> vsh_translation_numpy(
         int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
         py::array_t<double> phi, double k, vsh_mode mode);
 
+ComplexMatrix vsh_translation_eigen(
+        int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
+        const Ref<const Array>& phi, double k, vsh_mode mode);
 
 double test3();
 

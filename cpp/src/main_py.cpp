@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/eigen.h>
 #include <pybind11/complex.h>
 
 #include "main.hpp"
@@ -92,6 +93,12 @@ PYBIND11_MODULE(cpp, m) {
            "m"_a, "n"_a, "u"_a, "v"_a, py::arg("rad").noconvert(),
            py::arg("theta").noconvert(), py::arg("phi").noconvert(),
            "k"_a, "mode"_a, R"pbdoc(
+        VSH translation coefficients
+    )pbdoc");
+
+    special.def("vsh_translation_eigen", vsh_translation_eigen, 
+           "m"_a, "n"_a, "u"_a, "v"_a, "rad"_a, "theta"_a,
+           "phi"_a, "k"_a, "mode"_a, R"pbdoc(
         VSH translation coefficients
     )pbdoc");
 
