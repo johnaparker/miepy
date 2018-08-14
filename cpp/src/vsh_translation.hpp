@@ -42,6 +42,13 @@ ComplexMatrix vsh_translation_eigen(
         int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
         const Ref<const Array>& phi, double k, vsh_mode mode);
 
+std::function<std::tuple<std::complex<double>, std::complex<double>> (double, double, double, double)> vsh_translation_lambda(
+        int m, int n, int u, int v, vsh_mode mode);
+
+py::array_t<std::complex<double>> vsh_translation_lambda_py(
+        int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
+        py::array_t<double> phi, double k, vsh_mode mode);
+
 double test3();
 
 #endif

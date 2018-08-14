@@ -18,6 +18,81 @@ std::function<complex<double>(int, double, bool)> get_zn(vsh_mode mode) {
     }
 }
 
+py::array_t<complex<double>> vsh_translation_lambda_py(
+        int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
+        py::array_t<double> phi, double k, vsh_mode mode) {
+
+
+    auto fn = vsh_translation_lambda(m, n, u, v, mode);
+
+    auto buf_rad = rad.unchecked<1>(), buf_theta = theta.unchecked<1>(), buf_phi = phi.unchecked<1>();
+    int size = buf_theta.shape(0);
+
+    py::array_t<complex<double>> result({2, size});
+    auto buf = result.mutable_unchecked<2>();
+
+    for (int i = 0; i < size; i++) {
+        auto AB = fn(buf_rad(i), buf_theta(i), buf_phi(i), k);
+        buf(0,i) = std::get<0>(AB);
+        buf(1,i) = std::get<1>(AB);
+    }
+
+    return result;
+}
+
+std::function<std::tuple<complex<double>, complex<double>> (double, double, double, double)> vsh_translation_lambda(
+        int m, int n, int u, int v, vsh_mode mode) {
+    
+    m *= -1;
+    auto zn = get_zn(mode);
+
+    complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
+            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+
+    int qmax_A = std::min({n, v, (n + v - abs(m+u))/2});
+    ComplexArray A(qmax_A+1);
+
+    for (int q = 0; q < qmax_A+1; q++) {
+        int p = n + v - 2*q;
+        double aq = a_func(m, n, u, v, p);
+        A(q) = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
+    }
+
+
+    int qmax_B = std::min({n, v, (n + v + 1 - abs(m+u))/2});
+    ComplexArray B(qmax_A+1);
+    B(0) = 0;
+
+    for (int q = 1; q < qmax_B+1; q++) {
+        int p = n + v - 2*q;
+        double bq = b_func(m, n, u, v, p);
+        B(q) = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
+    }
+
+
+    return [m,n,u,v,zn,factor,qmax_A,qmax_B,A,B](double rad, double theta, double phi, double k) {
+        double cos_theta = cos(theta);
+        complex<double> exp_phi = exp(1i*double(u+m)*phi);
+        complex<double> sum_term_A = 0, sum_term_B = 0;
+
+        for (int q = 0; q < qmax_A+1; q++) {
+            int p = n + v - 2*q;
+            double Pnm_val = associated_legendre(p, u+m, cos_theta);
+            sum_term_A += A(q)*Pnm_val*zn(p, k*rad, false);
+            if (q > 0) {
+                Pnm_val = associated_legendre(p+1, u+m, cos_theta);
+                sum_term_B += B(q)*Pnm_val*zn(p+1, k*rad, false);
+            }
+        }
+
+        complex<double> A_translation = factor*exp_phi*sum_term_A;
+        complex<double> B_translation = -factor*exp_phi*sum_term_B;
+
+        return std::make_tuple(A_translation, B_translation);
+    };
+}
+
+// Instead, return tuple of ComplexArray
 ComplexMatrix vsh_translation_eigen(
         int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
         const Ref<const Array>& phi, double k, vsh_mode mode) {
@@ -193,58 +268,34 @@ std::tuple<complex<double>, complex<double>> vsh_translation(
 }
 
 double test3() {
+    //double sum = 0;
+
+    //int n = 2, m = 2, u = 2, v = 2;
+    //Array rad   = Array::Constant(1500, 0.3);
+    //Array theta = Array::Constant(1500, 0.3);
+    //Array phi   = Array::Constant(1500, 0.3);
+    //double k = 1;
+    //auto mode = vsh_mode::outgoing;
+
+    //ComplexArray result = vsh_translation_eigen(m, n, u, v, rad, theta, phi, k, mode);
+    //return sum;
+
     double sum = 0;
+
+    ComplexMatrix result = ComplexMatrix::Zero(2, 1500);
 
     int n = 2, m = 2, u = 2, v = 2;
     double rad = 0.3, theta = 0.3, phi = 0.3;
-    double k =1;
+    double k = 1;
     auto mode = vsh_mode::outgoing;
 
-    m *= -1;
-    auto zn = get_zn(mode);
+    auto fn = vsh_translation_lambda(m, n, u, v, mode);
 
-    //complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            ///(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(complex<double>(0, (u+m)*phi));
-    complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(1i*double(u+m)*phi);
-
-    double cos_theta;
-    for (int i = 0; i < 2; i++)
-        cos_theta = cos(theta);
-
-    int qmax = std::min({n, v, (n + v - abs(m+u)/2)});
-    complex<double> sum_term = 0;
-
-    for (int q = 0; q < qmax+1; q++) {
-        int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
-        complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
-
-        double Pnm_val;
-        for (int i = 0; i < 2; i++)
-            Pnm_val = associated_legendre(p, u+m, cos_theta);
-
-        sum_term += A*Pnm_val*zn(p, k*rad, false);
+    for (int i = 0; i <1500; i++) {
+        auto AB = fn(rad, theta, phi, k);
+        result(0,i) = std::get<0>(AB);
+        result(1,i) = std::get<1>(AB);
     }
-
-    complex<double> A_translation = factor*sum_term;
-
-    qmax = std::min({n, v, (n + v + 1 - abs(m+u)/2)});
-    sum_term = 0;
-
-    for (int q = 1; q < qmax+1; q++) {
-        int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
-        complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
-
-        double Pnm_val;
-        for (int i = 0; i < 2; i++)
-            Pnm_val = associated_legendre(p+1, u+m, cos_theta);
-
-        sum_term += A*Pnm_val*zn(p+1, k*rad, false);
-    }
-
-    complex<double> B_translation = -factor*sum_term;
 
     return sum;
 }

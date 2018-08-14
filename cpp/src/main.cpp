@@ -176,6 +176,7 @@ double tau_func(int n, int m, double theta) {
         gsl_sf_legendre_deriv_array(GSL_SF_LEGENDRE_NONE, n, z, result, result_p);
         double leg_p = -sin(theta)*result_p[index];
         delete[] result;
+        delete[] result_p;
 
         if (m < 0) {
             //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
