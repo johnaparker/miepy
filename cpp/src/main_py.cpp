@@ -6,6 +6,7 @@
 
 #include "main.hpp"
 #include "vsh_translation.hpp"
+#include "interactions.hpp"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -112,6 +113,11 @@ PYBIND11_MODULE(cpp, m) {
            "m"_a, "n"_a, "u"_a, "v"_a, "rad"_a, "theta"_a,
            "phi"_a, "k"_a, "mode"_a, R"pbdoc(
         VSH translation coefficients
+    )pbdoc");
+
+    special.def("sphere_aggregate_tmatrix", sphere_aggregate_tmatrix, 
+           "positions"_a, "mie"_a, "k"_a, R"pbdoc(
+        Obtain the particle-centered aggregate T-matrix for a cluster of spheres
     )pbdoc");
 
     special.def("test", test, 

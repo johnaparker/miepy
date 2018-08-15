@@ -3,16 +3,16 @@
 
 #include <complex>
 #include <eigen3/Eigen/Core>
-#include "vsh_translation.h"
+#include "vsh_translation.hpp"
 #include <vector>
 
-using position_t = Eigen::Matrix<double, 3, Eigen::Dynamic, Eigen::RowMajor>;
+using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using tmatrix_t  = std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
 
 enum class solver {
     bicgstab,
     exact
-}
+};
 
 ComplexArray solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
         const Ref<const ComplexArray>& p_src, solver method = solver::bicgstab);

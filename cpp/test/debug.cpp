@@ -1,16 +1,18 @@
 #include "vsh_translation.hpp"
+#include "interactions.hpp"
 #include <iostream>
 
 using namespace std;
 
 int main() {
-    int m =1, n=2, u=2, v=2;
-    double rad = 0.3, theta = 0.3, phi = 0.3;
+    int Nparticles = 2;
+    int lmax = 1;
+    int rmax = lmax*(lmax+2);
     double k = 1;
-    auto mode = vsh_mode::outgoing;
-    cout << m << endl;
 
-    // auto A = vsh_translation(m, n, u, v, rad, theta, phi, k, mode);
-    auto A = vsh_translation(0, 2, 1, 1, 2*M_PI*4/6, M_PI/4, M_PI/4, 1.0, mode);
-    
+    position_t pos = position_t::Zero(Nparticles,3); 
+    pos(1,0) = 5;
+
+    ComplexMatrix mie = ComplexMatrix::Ones(Nparticles, 2*lmax);
+    ComplexMatrix T = sphere_aggregate_tmatrix(pos, mie, k);
 }

@@ -42,7 +42,7 @@ py::array_t<complex<double>> vsh_translation_lambda_py(
     return result;
 }
 
-std::function<std::tuple<complex<double>, complex<double>> (double, double, double, double)> vsh_translation_lambda(
+std::function<std::array<complex<double>, 2> (double, double, double, double)> vsh_translation_lambda(
         int m, int n, int u, int v, vsh_mode mode) {
     
     m *= -1;
@@ -62,7 +62,7 @@ std::function<std::tuple<complex<double>, complex<double>> (double, double, doub
 
 
     int qmax_B = std::min({n, v, (n + v + 1 - abs(m+u))/2});
-    ComplexArray B(qmax_A+1);
+    ComplexArray B(qmax_B+1);
     B(0) = 0;
 
     for (int q = 1; q < qmax_B+1; q++) {
@@ -81,16 +81,18 @@ std::function<std::tuple<complex<double>, complex<double>> (double, double, doub
             int p = n + v - 2*q;
             double Pnm_val = associated_legendre(p, u+m, cos_theta);
             sum_term_A += A(q)*Pnm_val*zn(p, k*rad, false);
-            if (q > 0) {
-                Pnm_val = associated_legendre(p+1, u+m, cos_theta);
-                sum_term_B += B(q)*Pnm_val*zn(p+1, k*rad, false);
-            }
+        }
+        
+        for (int q = 1; q < qmax_B+1; q++) {
+            int p = n + v - 2*q;
+            double Pnm_val = associated_legendre(p+1, u+m, cos_theta);
+            sum_term_B += B(q)*Pnm_val*zn(p+1, k*rad, false);
         }
 
         complex<double> A_translation = factor*exp_phi*sum_term_A;
         complex<double> B_translation = -factor*exp_phi*sum_term_B;
 
-        return std::make_tuple(A_translation, B_translation);
+        return std::array<complex<double>,2>{A_translation, B_translation};
     };
 }
 
@@ -225,7 +227,7 @@ py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b)
     return result;
 }
 
-std::tuple<complex<double>, complex<double>> vsh_translation(
+std::array<complex<double>, 2> vsh_translation(
         int m, int n, int u, int v, double rad, double theta,
         double phi, double k, vsh_mode mode) {
     
@@ -266,7 +268,7 @@ std::tuple<complex<double>, complex<double>> vsh_translation(
 
     complex<double> B_translation = -factor*sum_term;
 
-    return std::make_tuple(A_translation, B_translation);
+    return std::array<complex<double>,2>{A_translation, B_translation};
 }
 
 double test3(int size, int cores) {
@@ -296,8 +298,8 @@ double test3(int size, int cores) {
 //#pragma omp parallel for num_threads(cores)
     for (int i = 0; i <size; i++) {
         auto AB = fn(rad, theta, phi, k);
-        result(0,i) = std::get<0>(AB);
-        result(1,i) = std::get<1>(AB);
+        result(0,i) = AB[0];
+        result(1,i) = AB[1];
     }
 
     return sum;
