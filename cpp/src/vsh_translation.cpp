@@ -2,6 +2,8 @@
 #include "main.hpp"
 #include <cmath>
 #include <algorithm>
+//#include <omp.h>
+#include <iostream>
 
 using std::complex;
 using namespace std::complex_literals;
@@ -93,12 +95,12 @@ std::function<std::tuple<complex<double>, complex<double>> (double, double, doub
 }
 
 // Instead, return tuple of ComplexArray
-ComplexMatrix vsh_translation_eigen(
+AB_type vsh_translation_eigen(
         int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
         const Ref<const Array>& phi, double k, vsh_mode mode) {
 
     int size = rad.size();
-    ComplexMatrix result = ComplexMatrix::Zero(2, size);
+    AB_type result = AB_type::Zero(2, size);
 
     m *= -1;
     auto zn = get_zn(mode);
@@ -267,7 +269,7 @@ std::tuple<complex<double>, complex<double>> vsh_translation(
     return std::make_tuple(A_translation, B_translation);
 }
 
-double test3() {
+double test3(int size, int cores) {
     //double sum = 0;
 
     //int n = 2, m = 2, u = 2, v = 2;
@@ -282,7 +284,7 @@ double test3() {
 
     double sum = 0;
 
-    ComplexMatrix result = ComplexMatrix::Zero(2, 1500);
+    AB_type result = AB_type::Zero(2, size);
 
     int n = 2, m = 2, u = 2, v = 2;
     double rad = 0.3, theta = 0.3, phi = 0.3;
@@ -291,7 +293,8 @@ double test3() {
 
     auto fn = vsh_translation_lambda(m, n, u, v, mode);
 
-    for (int i = 0; i <1500; i++) {
+//#pragma omp parallel for num_threads(cores)
+    for (int i = 0; i <size; i++) {
         auto AB = fn(rad, theta, phi, k);
         result(0,i) = std::get<0>(AB);
         result(1,i) = std::get<1>(AB);

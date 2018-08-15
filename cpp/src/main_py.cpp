@@ -124,8 +124,8 @@ PYBIND11_MODULE(cpp, m) {
             Test2 function
     )pbdoc");
 
-    special.def("test3", test3, 
-            R"pbdoc(
+    special.def("test3", test3,
+            "size"_a, "cores"_a, R"pbdoc(
             Test3 function
     )pbdoc");
 
