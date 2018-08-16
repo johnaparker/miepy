@@ -27,3 +27,4 @@ from .mie_single.mie_core_shell import single_mie_core_shell
 from .vsh import (mode_indices, vsh_mode, VSH, expand_E, expand_E_far, expand_H, expand_H_far,
                   cluster_coefficients)
 from .particles import sphere, spheroid, cylinder
+from .cpp.special import solver

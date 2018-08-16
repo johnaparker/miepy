@@ -15,18 +15,11 @@ def solve_linear_system(tmatrix, p_src, method):
            p_src[N,2,rmax]   source scattering coefficients
            method    solver method ('exact', 'bicgstab')
     """
-    interaction_matrix = np.copy(tmatrix)
-    np.einsum('airair->air', interaction_matrix)[...] += 1
+    Nparticles = tmatrix.shape[0]
+    rmax = p_src.shape[-1]
+    size = Nparticles*2*rmax
 
-    if method == 'exact':
-        return np.linalg.tensorsolve(interaction_matrix, p_src)
-
-    elif method == 'bicgstab':
-        N = p_src.shape[0]
-        rmax = p_src.shape[-1]
-
-        sol = bicgstab(interaction_matrix.reshape((2*N*rmax, -1)), p_src.reshape((-1,)))[0]
-        return sol.reshape((N,2,rmax))
+    return miepy.cpp.special.solve_linear_system(tmatrix.reshape(size, size), p_src.reshape(-1), method=method).reshape([Nparticles,2,rmax])
 
 def interactions_precomputation(positions, k, lmax):
     """Get the relative r,theta,phi positions of the particles and precomputed zn function

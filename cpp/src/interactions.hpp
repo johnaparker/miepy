@@ -8,14 +8,15 @@
 
 using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using tmatrix_t  = std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
+using ComplexVector = Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1>;
 
 enum class solver {
     bicgstab,
     exact
 };
 
-ComplexArray solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
-        const Ref<const ComplexArray>& p_src, solver method = solver::bicgstab);
+ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
+        const Ref<const ComplexVector>& p_src, solver method = solver::bicgstab);
 
 ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
         const Ref<const ComplexMatrix>& mie, double k);

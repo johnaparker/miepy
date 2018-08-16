@@ -1,13 +1,31 @@
 #include "interactions.hpp"
 #include <math.h>
+#include <Eigen/IterativeLinearSolvers>
 
 using std::complex;
 using namespace std::complex_literals;
 
 using Eigen::Vector3d;
 
+
 int lmax_to_rmax(int lmax) {
     return lmax*(lmax + 2);
+}
+
+ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
+        const Ref<const ComplexVector>& p_src, solver method) {
+
+    ComplexMatrix interaction_matrix = agg_tmatrix;
+    for (int i = 0; i < interaction_matrix.cols(); i++)
+        interaction_matrix(i,i) += 1;
+    
+    switch (method) {
+        case solver::bicgstab:
+            Eigen::BiCGSTAB<ComplexMatrix> solver;
+            solver.setTolerance(1e-5);
+            solver.compute(interaction_matrix);
+            return solver.solveWithGuess(p_src, p_src);
+    }
 }
 
 ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,

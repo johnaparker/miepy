@@ -37,7 +37,7 @@ def tests(Nmax):
                               mie.position, mie.mie_scat, mie.material_data.k_b))
 
         A = miepy.interactions.sphere_aggregate_tmatrix(mie.position, mie.mie_scat, k=mie.material_data.k_b)
-        t_solve[N-1] = time_function(partial(solve_linear_system, A, mie.p_src, method='bicgstab'))
+        t_solve[N-1] = time_function(partial(solve_linear_system, A, mie.p_src, method=miepy.solver.bicgstab))
 
     fig, ax = plt.subplots()
 
