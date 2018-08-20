@@ -51,4 +51,4 @@ def tests(Nmax):
 
     plt.show()
 
-tests(40)
+tests(100)

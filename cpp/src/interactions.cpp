@@ -1,6 +1,7 @@
 #include "interactions.hpp"
 #include <math.h>
 #include <Eigen/IterativeLinearSolvers>
+#include <omp.h>
 
 using std::complex;
 using namespace std::complex_literals;
@@ -38,6 +39,19 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
 
     ComplexMatrix agg_tmatrix = ComplexMatrix::Zero(size, size);
     
+    int N = Nparticles*(Nparticles-1)/2;
+    Array ivals(N);
+    Array jvals(N);
+    int counter = 0;
+
+    for (int i = 0; i < Nparticles; i++) {
+        for (int j = i+1; j < Nparticles; j++) {
+            ivals(counter) = i;
+            jvals(counter) = j;
+            counter += 1;
+        }
+    }
+
     if (Nparticles == 1)
         return agg_tmatrix;
 
@@ -48,24 +62,26 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
 
                     auto fn = vsh_translation_lambda(m, n, u, v, vsh_mode::outgoing);
 
-                    for (int i = 0; i < Nparticles; i++) {
-                        for (int j = i+1; j < Nparticles; j++) {
-                            Vector3d dji = positions.row(i) - positions.row(j);
+#pragma omp parallel for
+                    for (int ij = 0; ij < N; ij++) {
+                        int i = ivals(ij);
+                        int j = jvals(ij);
 
-                            double rad = dji.norm();
-                            double theta = acos(dji(2)/rad);
-                            double phi = atan2(dji(1), dji(0));
-                            auto transfer = fn(rad, theta, phi, k);
+                        Vector3d dji = positions.row(i) - positions.row(j);
 
-                            for (int a = 0; a < 2; a++) {
-                                for (int b = 0; b < 2; b++) {
-                                    complex<double> val = transfer[(a+b)%2];
-                                    int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
-                                    int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+                        double rad = dji.norm();
+                        double theta = acos(dji(2)/rad);
+                        double phi = atan2(dji(1), dji(0));
+                        auto transfer = fn(rad, theta, phi, k);
 
-                                    agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
-                                    agg_tmatrix(idy, idx) = pow(-1, n+v+a+b)*val*mie(i, a*lmax + n-1);
-                                }
+                        for (int a = 0; a < 2; a++) {
+                            for (int b = 0; b < 2; b++) {
+                                complex<double> val = transfer[(a+b)%2];
+                                int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
+                                int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+
+                                agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
+                                agg_tmatrix(idy, idx) = pow(-1, n+v+a+b)*val*mie(i, a*lmax + n-1);
                             }
                         }
                     }
