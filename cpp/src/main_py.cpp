@@ -124,6 +124,11 @@ PYBIND11_MODULE(cpp, m) {
         .value("bicgstab", solver::bicgstab)
         .value("exact",  solver::exact);
 
+    special.def("bicgstab", bicgstab, 
+           "A"_a, "b"_a, "maxiter"_a, "tolerance"_a, R"pbdoc(
+        BiCGSTAB linear solver
+    )pbdoc");
+
     special.def("solve_linear_system", solve_linear_system, 
            "agg_tmatrix"_a, "p_src"_a, "method"_a, R"pbdoc(
         Solve the linear system:  p_inc = p_src - tmatrix*p_inc

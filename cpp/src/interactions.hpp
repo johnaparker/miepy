@@ -15,6 +15,9 @@ enum class solver {
     exact
 };
 
+ComplexVector bicgstab(const Ref<const ComplexMatrix>& A, const Ref<const ComplexVector>& b,
+        int maxiter = 1000, double tolerance = 1e-5);
+
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
         const Ref<const ComplexVector>& p_src, solver method = solver::bicgstab);
 

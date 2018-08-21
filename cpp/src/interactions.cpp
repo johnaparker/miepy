@@ -8,9 +8,94 @@ using namespace std::complex_literals;
 
 using Eigen::Vector3d;
 
-
 int lmax_to_rmax(int lmax) {
     return lmax*(lmax + 2);
+}
+
+ComplexVector matrix_vector_product(const Ref<const ComplexMatrix>& A, const Ref<const ComplexVector>& x) {
+    int size = x.size();
+    ComplexVector ret(size);
+#pragma omp parallel for
+    for (int i = 0; i < size; i++) {
+        ret(i) = A.row(i)*x;
+    }
+
+    return ret;
+}
+
+complex<double> dot_product(const Ref<const ComplexVector>& x, const Ref<const ComplexVector>& y) {
+    int size = x.size();
+    double real_part = 0;
+    double imag_part = 0;
+#pragma omp parallel for reduction(+:real_part,imag_part)
+    for (int i = 0; i < size; i++) {
+        real_part += x(i).real()*y(i).real() + x(i).imag()*y(i).imag();
+        imag_part += x(i).real()*y(i).imag() - x(i).imag()*y(i).real();
+    }
+
+    return std::complex<double>(real_part, imag_part);
+}
+
+ComplexVector bicgstab(const Ref<const ComplexMatrix>& A, const Ref<const ComplexVector>& b,
+        int maxiter, double tolerance) {
+
+    int size = b.size();
+
+    // step 1
+    ComplexVector x_prev = b;
+
+    double error = (A*x_prev - b).norm();
+    if (error < tolerance)
+        return x_prev;
+
+    ComplexVector r_prev = b - A*x_prev;
+
+    // step 2
+    ComplexVector r_hat = r_prev;
+
+    // step 3
+    complex<double> rho_prev = 1;
+    complex<double> alpha    = 1;
+    complex<double> w_prev   = 1;
+
+    // step 4
+    ComplexVector v_prev = ComplexVector::Zero(size);
+    ComplexVector p_prev = ComplexVector::Zero(size);
+
+    // step 5
+    int current_iteration = 1;
+
+    while (true) {
+        //complex<double> rho_i = r_hat.dot(r_prev);
+        complex<double> rho_i = dot_product(r_hat, r_prev);
+        complex<double> beta = (rho_i/rho_prev)*(alpha/w_prev);
+        ComplexVector pi = r_prev + beta*(p_prev - w_prev*v_prev);
+        ComplexVector vi = matrix_vector_product(A, pi);
+
+        //alpha = rho_i/r_hat.dot(vi);
+        alpha = rho_i/dot_product(r_hat, vi);
+        ComplexVector h = x_prev + alpha*pi;
+
+        ComplexVector s = r_prev - alpha*vi;
+        ComplexVector t = matrix_vector_product(A, s);
+        //complex<double> w_i = t.dot(s)/t.dot(t);
+        complex<double> w_i = dot_product(t,s)/dot_product(t,t);
+        ComplexVector xi = h + w_i*s;
+        ComplexVector ri = s - w_i*t;
+
+        error = ri.norm();
+        if (error < tolerance || current_iteration > maxiter)
+            return xi;
+
+        x_prev   = xi;
+        r_prev   = ri;
+        rho_prev = rho_i;
+        v_prev   = vi;
+        p_prev   = pi;
+        w_prev   = w_i;
+
+        current_iteration += 1;
+    }
 }
 
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
@@ -22,10 +107,11 @@ ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
     
     switch (method) {
         case solver::bicgstab:
-            Eigen::BiCGSTAB<ComplexMatrix> solver;
-            solver.setTolerance(1e-5);
-            solver.compute(interaction_matrix);
-            return solver.solveWithGuess(p_src, p_src);
+            //Eigen::BiCGSTAB<ComplexMatrix> solver;
+            //solver.setTolerance(1e-5);
+            //solver.compute(interaction_matrix);
+            //return solver.solveWithGuess(p_src, p_src);
+            return bicgstab(interaction_matrix, p_src);
     }
 }
 
