@@ -18,19 +18,10 @@ def particle_cross_sections(p_scat, p_inc, p_src, k):
            p_src[2,rmax]   source coefficients at particle
            k               wavenumber
     """
-    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
+    Cscat, Cabs, Cext = miepy.cpp.special.particle_cross_sections(p_scat.reshape(-1), 
+            p_inc.reshape(-1), p_src.reshape(-1), k)
 
-    Cext  = np.zeros([2, lmax], dtype=float)
-    Cabs  = np.zeros([2, lmax], dtype=float)
-
-    factor = 4*np.pi/k**2
-
-    for r,n,m in miepy.mode_indices(lmax):
-        Cabs[:,n-1] += factor*(np.real(np.conj(p_inc[:,r])*p_scat[:,r]) - np.abs(p_scat[:,r])**2)
-        Cext[:,n-1] += factor*np.real(np.conj(p_src[:,r])*p_scat[:,r])
-
-    Cscat = Cext - Cabs
-    return cross_sections(Cscat, Cabs, Cext)
+    return cross_sections(Cscat.reshape([2,-1]), Cabs.reshape([2,-1]), Cext.reshape([2,-1]))
 
 def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster

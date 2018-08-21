@@ -1,5 +1,6 @@
 #include "interactions.hpp"
 #include "vsh_translation.hpp"
+#include "indices.hpp"
 #include <math.h>
 #include <Eigen/IterativeLinearSolvers>
 #include <omp.h>
@@ -8,10 +9,6 @@ using std::complex;
 using namespace std::complex_literals;
 
 using Eigen::Vector3d;
-
-int lmax_to_rmax(int lmax) {
-    return lmax*(lmax + 2);
-}
 
 ComplexVector matrix_vector_product(const Ref<const ComplexMatrix>& A, const Ref<const ComplexVector>& x) {
     int size = x.size();

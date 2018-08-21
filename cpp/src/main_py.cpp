@@ -8,6 +8,7 @@
 #include "vsh_translation.hpp"
 #include "interactions.hpp"
 #include "forces.hpp"
+#include "flux.hpp"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -145,6 +146,16 @@ PYBIND11_MODULE(cpp, m) {
            "p_scat"_a, "p_inc"_a, "k"_a, 
            py::arg("eps_b") = 1, py::arg("mu_b") = 1, R"pbdoc(
         Torque on particle from expansion coefficients
+    )pbdoc");
+
+    special.def("particle_cross_sections", particle_cross_sections, 
+           "p_scat"_a, "p_inc"_a, "p_src"_a, "k"_a, R"pbdoc(
+        Returns (scattering, absorption, extinction) cross-sections of particle
+    )pbdoc");
+
+    special.def("cluster_cross_sections", cluster_cross_sections, 
+           "p_cluster"_a, "p_src"_a, "k"_a, R"pbdoc(
+        Returns (scattering, absorption, extinction) cross-sections of a cluster
     )pbdoc");
 
     special.def("test", test, 

@@ -1,11 +1,7 @@
 #include "forces.hpp"
 #include <complex>
 #include <gsl/gsl_const_mksa.h>
-
-int rmax_to_lmax(int rmax) {
-    int lmax = -1 + int(sqrt(1+rmax));
-    return lmax;
-}
+#include "indices.hpp"
 
 vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         double k, double eps_b, double mu_b) {
