@@ -1,4 +1,5 @@
 #include "interactions.hpp"
+#include "vsh_translation.hpp"
 #include <math.h>
 #include <Eigen/IterativeLinearSolvers>
 #include <omp.h>

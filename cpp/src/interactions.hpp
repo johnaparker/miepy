@@ -3,12 +3,11 @@
 
 #include <complex>
 #include <eigen3/Eigen/Core>
-#include "vsh_translation.hpp"
 #include <vector>
+#include "vec.hpp"
 
 using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using tmatrix_t  = std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
-using ComplexVector = Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1>;
 
 enum class solver {
     bicgstab,

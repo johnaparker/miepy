@@ -16,7 +16,7 @@ nm = 1e-9
 Ag = miepy.materials.Ag()
 radius = 75*nm
 source = miepy.sources.plane_wave.from_string(polarization='rhc')
-separation = 250*nm
+separation = 165*nm
 
 def tests(Nmax, step=1):
     Nparticles = np.arange(1, Nmax+1, step)
@@ -51,4 +51,4 @@ def tests(Nmax, step=1):
 
     plt.show()
 
-tests(50, step=1)
+tests(150, step=10)

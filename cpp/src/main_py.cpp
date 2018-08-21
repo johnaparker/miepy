@@ -7,6 +7,7 @@
 #include "main.hpp"
 #include "vsh_translation.hpp"
 #include "interactions.hpp"
+#include "forces.hpp"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -132,6 +133,12 @@ PYBIND11_MODULE(cpp, m) {
     special.def("solve_linear_system", solve_linear_system, 
            "agg_tmatrix"_a, "p_src"_a, "method"_a, R"pbdoc(
         Solve the linear system:  p_inc = p_src - tmatrix*p_inc
+    )pbdoc");
+
+    special.def("force", force, 
+           "p_scat"_a, "p_inc"_a, "k"_a, 
+           py::arg("eps_b") = 1, py::arg("mu_b") = 1, R"pbdoc(
+        Force on particle from expansion coefficients
     )pbdoc");
 
     special.def("test", test, 

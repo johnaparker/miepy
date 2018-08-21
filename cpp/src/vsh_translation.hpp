@@ -5,19 +5,13 @@
 #include <functional>
 #include <array>
 
-#include <eigen3/Eigen/Core>
-using Array = Eigen::Array<double, Eigen::Dynamic, 1>;
-using ComplexArray = Eigen::Array<std::complex<double>, Eigen::Dynamic, 1>;
-using Matrix = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-using ComplexMatrix = Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
-using AB_type = Eigen::Matrix<std::complex<double>, 2, Eigen::Dynamic, Eigen::RowMajor>;
-using Eigen::Ref;
-
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/complex.h>
 #include <pybind11/stl.h>
 namespace py = pybind11;
+
+#include "vec.hpp"
 
 enum class vsh_mode {
     outgoing,

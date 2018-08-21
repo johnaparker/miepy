@@ -1,18 +1,21 @@
 #include "vsh_translation.hpp"
 #include "interactions.hpp"
+#include "forces.hpp"
 #include <iostream>
+#include <complex>
 
 using namespace std;
 
 int main() {
-    int Nparticles = 2;
-    int lmax = 1;
+    int lmax = 2;
     int rmax = lmax*(lmax+2);
-    double k = 1;
 
-    position_t pos = position_t::Zero(Nparticles,3); 
-    pos(1,0) = 5;
+    ComplexVector p_scat = ComplexVector::Ones(2*rmax); 
+    ComplexVector p_inc  = ComplexVector::Ones(2*rmax); 
+    for (int i = 0; i < p_scat.size(); i++) {
+        p_scat(i) += complex<double>(-.2*i,.4*i);
+        p_inc(i) += complex<double>(-.3*i,.3*i);
+    }
 
-    ComplexMatrix mie = ComplexMatrix::Ones(Nparticles, 2*lmax);
-    ComplexMatrix T = sphere_aggregate_tmatrix(pos, mie, k);
+    vec3 F = force(p_scat, p_inc, 1.0);
 }

@@ -6,6 +6,7 @@ import numpy as np
 from scipy import constants
 import miepy
 from miepy.vsh.misc import simps_2d
+from miepy.cpp.special import force
 
 def levi_civita():
     """return the levi-civita symbol"""
@@ -14,77 +15,6 @@ def levi_civita():
     eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
     return eijk
-
-def force(p_scat, p_inc, k, eps_b, mu_b):
-    """force from the expansion coefficients
-    
-       Arguments:
-           p_scat[2,rmax]   scattering coefficients
-           p_inc[2,rmax]    incident coefficients
-           k                wavenumber
-           eps_b            background relative permitvitty
-           mu_b             background relative permeability
-    """
-    Fxy = 0
-    Fz = 0
-    Axy = np.pi/k**2*constants.epsilon_0*eps_b**0.5
-    Az = -2*np.pi/k**2*constants.epsilon_0*eps_b**0.5
-
-    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
-
-    p, q = p_scat
-    p_inc, q_inc = p_inc
-    for r,n,m in miepy.mode_indices(lmax):
-        # Fxy, term 1/3
-        if m != n:
-            factor = Axy*np.sqrt((n+m+1)*(n-m))/(n*(n+1))
-            r1 = n**2 + n - 1 + m + 1
-            Fxy += factor*(2*p[r]*np.conj(q[r1]) \
-                     - p[r]*np.conj(q_inc[r1]) \
-                     - p_inc[r]*np.conj(q[r1]) \
-                     + 2*q[r]*np.conj(p[r1]) \
-                     - q[r]*np.conj(p_inc[r1]) \
-                     - q_inc[r]*np.conj(p[r1]))
-
-        # Fz, term 1/2
-        factor = Az*m/(n*(n+1))
-        Fz += factor*(2*p[r]*np.conj(q[r]) \
-                - p[r]*np.conj(q_inc[r]) \
-                - p_inc[r]*np.conj(q[r]))
-
-
-        if n < lmax:
-            # Fxy, term 2/3
-            factor = -Axy*np.sqrt((n+m+2)*(n+m+1)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
-            r1 = (n+1)**2 + (n+1) - 1 + m + 1
-            Fxy += factor*(2*p[r]*np.conj(p[r1]) \
-                     - p[r]*np.conj(p_inc[r1]) \
-                     - p_inc[r]*np.conj(p[r1]) \
-                     + 2*q[r]*np.conj(q[r1]) \
-                     - q[r]*np.conj(q_inc[r1]) \
-                     - q_inc[r]*np.conj(q[r1]))
-
-            # Fxy, term 3/3
-            factor = Axy*np.sqrt((n-m+1)*(n-m+2)*n*(n+2)/((2*n+3)*(2*n+1)))/(n+1)
-            r1 = (n+1)**2 + (n+1) - 1 + m - 1
-            Fxy += factor*(2*p[r1]*np.conj(p[r]) \
-                     - p[r1]*np.conj(p_inc[r]) \
-                     - p_inc[r1]*np.conj(p[r]) \
-                     + 2*q[r1]*np.conj(q[r]) \
-                     - q[r1]*np.conj(q_inc[r]) \
-                     - q_inc[r1]*np.conj(q[r]))
-
-            # Fz, term 2/2
-            factor = Az/(n+1)*np.sqrt((n-m+1)*(n+m+1)*n*(n+2)/(2*n+3)/(2*n+1))
-            r1 = (n+1)**2 + (n+1) - 1 + m
-            Fz += factor*(2*p[r1]*np.conj(p[r]) \
-                    - p[r1]*np.conj(p_inc[r]) \
-                    - p_inc[r1]*np.conj(p[r]) \
-                    + 2*q[r1]*np.conj(q[r]) \
-                    - q[r1]*np.conj(q_inc[r]) \
-                    - q_inc[r1]*np.conj(q[r]))
-
-    return np.array([np.real(Fxy), np.imag(Fxy), np.real(Fz)])
 
 def torque(p_scat, p_inc, k, eps_b, mu_b):
     """torque from the expansion coefficients

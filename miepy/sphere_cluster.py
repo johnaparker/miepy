@@ -367,8 +367,8 @@ class sphere_cluster:
         else:
             p_inc = self.p_inc - self.p_src
 
-        F = miepy.forces.force(self.p_scat[i], p_inc[i], self.material_data.k_b,
-                self.material_data.eps_b, self.material_data.mu_b)
+        F = miepy.forces.force(self.p_scat[i].reshape(-1), p_inc[i].reshape(-1),
+                self.material_data.k_b, self.material_data.eps_b, self.material_data.mu_b)
 
         return F
 
