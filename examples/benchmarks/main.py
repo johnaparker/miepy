@@ -20,7 +20,7 @@ separation = 165*nm
 
 def tests(Nmax, step=1):
     Nparticles = np.arange(1, Nmax+1, step)
-    t_force, t_flux, t_build, t_solve = [np.zeros_like(Nparticles, dtype=float) for i in range(4)]
+    t_force, t_flux, t_build, t_solve, t_expand = [np.zeros_like(Nparticles, dtype=float) for i in range(5)]
     for i,N in enumerate(Nparticles):
         print(N, Nmax)
         positions = [[n*separation, 0, 0] for n in range(N)]
@@ -38,6 +38,12 @@ def tests(Nmax, step=1):
 
         A = miepy.interactions.sphere_aggregate_tmatrix(mie.position, mie.mie_scat, k=mie.material_data.k_b)
         t_solve[i] = time_function(partial(solve_linear_system, A, mie.p_src, method=miepy.solver.bicgstab))
+        
+        x = np.linspace(0, N*separation, 100)
+        y = 2*radius*np.ones_like(x)
+        z = np.zeros_like(x)
+
+        t_expand[i] = time_function(partial(mie.E_field, x, y, z))
 
     fig, ax = plt.subplots()
 
@@ -45,10 +51,11 @@ def tests(Nmax, step=1):
     ax.plot(Nparticles, t_flux, label='flux')
     ax.plot(Nparticles, t_build, label='build')
     ax.plot(Nparticles, t_solve, label='solve')
+    ax.plot(Nparticles, t_expand, label='expand')
 
     ax.legend()
     ax.set(xlabel='number of particles', ylabel='runtime (s)')
 
     plt.show()
 
-tests(150, step=10)
+tests(50, step=5)

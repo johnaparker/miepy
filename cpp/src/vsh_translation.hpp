@@ -4,21 +4,13 @@
 #include <complex>
 #include <functional>
 #include <array>
+#include "vec.hpp"
+#include "vsh_functions.hpp"
 
 #include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
 #include <pybind11/complex.h>
-#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 namespace py = pybind11;
-
-#include "vec.hpp"
-
-enum class vsh_mode {
-    outgoing,
-    ingoing,
-    incident,
-    interior
-};
 
 std::function<std::complex<double>(int, double, bool)> get_zn(vsh_mode mode);
 

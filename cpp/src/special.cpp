@@ -1,4 +1,4 @@
-#include "main.hpp"
+#include "special.hpp"
 #include <cmath>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>

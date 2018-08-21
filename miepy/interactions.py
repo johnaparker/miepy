@@ -5,7 +5,7 @@ functions for building interaction matrices and solving them
 import numpy as np
 import miepy
 from scipy.sparse.linalg import bicgstab
-from miepy.cpp.special import vsh_translation_numpy as vsh_translation
+from miepy.cpp.vsh_translation import vsh_translation_numpy as vsh_translation
 
 def solve_linear_system(tmatrix, p_src, method):
     """Solve the linear system p_inc = p_src - tmatrix*p_inc
@@ -19,7 +19,7 @@ def solve_linear_system(tmatrix, p_src, method):
     rmax = p_src.shape[-1]
     size = Nparticles*2*rmax
 
-    return miepy.cpp.special.solve_linear_system(tmatrix.reshape(size, size), p_src.reshape(-1), method=method).reshape([Nparticles,2,rmax])
+    return miepy.cpp.interactions.solve_linear_system(tmatrix.reshape(size, size), p_src.reshape(-1), method=method).reshape([Nparticles,2,rmax])
 
 def interactions_precomputation(positions, k, lmax):
     """Get the relative r,theta,phi positions of the particles and precomputed zn function
@@ -69,7 +69,7 @@ def sphere_aggregate_tmatrix(positions, mie, k):
     Nparticles = positions.shape[0]
     lmax = mie.shape[-1]
     rmax = miepy.vsh.lmax_to_rmax(lmax)
-    return miepy.cpp.special.sphere_aggregate_tmatrix(positions, mie.reshape([Nparticles,-1]), k).reshape([Nparticles,2,rmax,Nparticles,2,rmax])
+    return miepy.cpp.interactions.sphere_aggregate_tmatrix(positions, mie.reshape([Nparticles,-1]), k).reshape([Nparticles,2,rmax,Nparticles,2,rmax])
 
 #TODO this function is more general than above and can be used for both cases (change only the einsum)
 def particle_aggregate_tmatrix(positions, tmatrix, k):

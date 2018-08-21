@@ -18,7 +18,7 @@ def particle_cross_sections(p_scat, p_inc, p_src, k):
            p_src[2,rmax]   source coefficients at particle
            k               wavenumber
     """
-    Cscat, Cabs, Cext = miepy.cpp.special.particle_cross_sections(p_scat.reshape(-1), 
+    Cscat, Cabs, Cext = miepy.cpp.flux.particle_cross_sections(p_scat.reshape(-1), 
             p_inc.reshape(-1), p_src.reshape(-1), k)
 
     return cross_sections(Cscat.reshape([2,-1]), Cabs.reshape([2,-1]), Cext.reshape([2,-1]))

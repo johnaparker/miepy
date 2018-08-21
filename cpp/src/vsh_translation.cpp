@@ -1,8 +1,7 @@
 #include "vsh_translation.hpp"
-#include "main.hpp"
+#include "special.hpp"
 #include <cmath>
 #include <algorithm>
-//#include <omp.h>
 #include <iostream>
 
 using std::complex;

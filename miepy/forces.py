@@ -6,8 +6,7 @@ import numpy as np
 from scipy import constants
 import miepy
 from miepy.vsh.misc import simps_2d
-from miepy.cpp.special import force
-from miepy.cpp.special import torque
+from miepy.cpp.forces import force, torque
 
 def levi_civita():
     """return the levi-civita symbol"""

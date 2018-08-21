@@ -1,5 +1,5 @@
-#ifndef GUARD_main_h
-#define GUARD_main_h
+#ifndef GUARD_special_h
+#define GUARD_special_h
 #include <complex>
 
 //separate into 3 files: radial functions, angular functions, and a/b coefficients
