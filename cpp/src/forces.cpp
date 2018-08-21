@@ -20,19 +20,10 @@ vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector
     int rmax = p_scat.size()/2;
     int lmax = rmax_to_lmax(rmax);
 
-    //Eigen::Map<const ComplexVector, Eigen::Aligned128> p(p_scat.data(), rmax);
-    //Eigen::Map<const ComplexVector, Eigen::Aligned128> q(p_scat.data() + rmax, rmax);
-    //Eigen::Map<const ComplexVector, Eigen::Aligned128> pi(p_inc.data(), rmax);
-    //Eigen::Map<const ComplexVector, Eigen::Aligned128> qi(p_inc.data() + rmax, rmax);
-
-    ComplexVector p(rmax), q(rmax), pi(rmax), qi(rmax);
-    for (int i = 0; i < rmax; i++) {
-        p(i) = p_scat(i);
-        q(i) = p_scat(rmax+i);
-        pi(i) = p_inc(i);
-        qi(i) = p_inc(rmax+i);
-    }
-
+    Eigen::Map<const ComplexVector> p(p_scat.data(), rmax);
+    Eigen::Map<const ComplexVector> q(p_scat.data() + rmax, rmax);
+    Eigen::Map<const ComplexVector> pi(p_inc.data(), rmax);
+    Eigen::Map<const ComplexVector> qi(p_inc.data() + rmax, rmax);
 
     for (int n = 1; n < lmax + 1; n++) {
         for (int m = -n; m < n+1; m++) {
@@ -94,3 +85,57 @@ vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector
     F << real(Fxy), imag(Fxy), real(Fz);
     return F;
 }
+
+vec3 torque(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
+        double k, double eps_b, double mu_b) {
+
+    static double eps_0 = GSL_CONST_MKSA_VACUUM_PERMITTIVITY;
+
+    int rmax = p_scat.size()/2;
+    int lmax = rmax_to_lmax(rmax);
+    double A = -2*M_PI/pow(k,3)*eps_0*sqrt(eps_b);
+    vec3 T = vec3::Zero();
+
+    Eigen::Map<const ComplexVector> p(p_scat.data(), rmax);
+    Eigen::Map<const ComplexVector> q(p_scat.data() + rmax, rmax);
+    Eigen::Map<const ComplexVector> pi(p_inc.data(), rmax);
+    Eigen::Map<const ComplexVector> qi(p_inc.data() + rmax, rmax);
+
+    for (int n = 1; n < lmax + 1; n++) {
+        for (int m = -n; m < n+1; m++) {
+            int r = pow(n,2) + n + m - 1;
+            if (m != n) {
+                double factor = -A*sqrt((n-m)*(n+m+1));
+                int r1 = r + 1;
+                
+                // Tx
+                T[0] += factor*real(p[r]*conj(p[r1])
+                                  + q[r]*conj(q[r1])
+                                  - 0.5*(p[r1]*conj(pi[r])
+                                       + p[r]*conj(pi[r1])
+                                       + q[r1]*conj(qi[r])
+                                       + q[r]*conj(qi[r1])));
+
+                // Ty
+                T[1] += factor*imag(p[r]*conj(p[r1])
+                                  + q[r]*conj(q[r1])
+                                  + 0.5*(p[r1]*conj(pi[r])
+                                       - p[r]*conj(pi[r1])
+                                       + q[r1]*conj(qi[r])
+                                       - q[r]*conj(qi[r1])));
+            }
+
+            // Tz
+            double factor = A*m;
+            T[2] += factor*(norm(p[r]) + norm(q[r])
+                          - real(p[r]*conj(pi[r])
+                               + q[r]*conj(qi[r])));
+        }
+    }
+
+    return T;
+}
+
+
+
+

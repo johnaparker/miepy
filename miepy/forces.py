@@ -7,6 +7,7 @@ from scipy import constants
 import miepy
 from miepy.vsh.misc import simps_2d
 from miepy.cpp.special import force
+from miepy.cpp.special import torque
 
 def levi_civita():
     """return the levi-civita symbol"""
@@ -15,51 +16,6 @@ def levi_civita():
     eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
     return eijk
-
-def torque(p_scat, p_inc, k, eps_b, mu_b):
-    """torque from the expansion coefficients
-    
-       Arguments:
-           p_scat[2,rmax]   scattering coefficients
-           p_inc[2,rmax]    incident coefficients
-           k        wavenumber
-           eps_b    background relative permitvitty
-           mu_b     background relative permeability
-    """
-    T = np.zeros(3, dtype=float)
-    A = -2*np.pi/k**3*constants.epsilon_0*eps_b**0.5
-
-    lmax = miepy.vsh.rmax_to_lmax(p_scat.shape[1])
-
-    p, q = p_scat
-    p_inc, q_inc = p_inc
-    for r,n,m in miepy.mode_indices(lmax):
-        if m != n:
-            # Tx
-            factor = -A*np.sqrt((n-m)*(n+m+1))
-            r1 = n**2 + n - 1 + m + 1
-            T[0] += factor*np.real(p[r]*np.conj(p[r1]) \
-                    + q[r]*np.conj(q[r1]) \
-                    -0.5*(p[r1]*np.conj(p_inc[r]) \
-                    + p[r]*np.conj(p_inc[r1]) \
-                    + q[r1]*np.conj(q_inc[r]) \
-                    + q[r]*np.conj(q_inc[r1])))
-
-            # Ty
-            T[1] += factor*np.imag(p[r]*np.conj(p[r1]) \
-                    + q[r]*np.conj(q[r1]) \
-                    +0.5*(p[r1]*np.conj(p_inc[r]) \
-                    - p[r]*np.conj(p_inc[r1]) \
-                    + q[r1]*np.conj(q_inc[r]) \
-                    - q[r]*np.conj(q_inc[r1])))
-
-        # Tz
-        factor = A*m
-        T[2] += factor* (np.abs(p[r])**2 + np.abs(q[r])**2 \
-                - np.real(p[r]*np.conj(p_inc[r]) \
-                + q[r]*np.conj(q_inc[r])))
-
-    return T
 
 def maxwell_stress_tensor(E, H, eps=1, mu=1):
     """Compute the Maxwell stress tensor

@@ -141,6 +141,12 @@ PYBIND11_MODULE(cpp, m) {
         Force on particle from expansion coefficients
     )pbdoc");
 
+    special.def("torque", torque, 
+           "p_scat"_a, "p_inc"_a, "k"_a, 
+           py::arg("eps_b") = 1, py::arg("mu_b") = 1, R"pbdoc(
+        Torque on particle from expansion coefficients
+    )pbdoc");
+
     special.def("test", test, 
             py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
             Test function
