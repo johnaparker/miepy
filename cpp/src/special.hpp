@@ -6,8 +6,9 @@
 
 int factorial(int n);
 
-std::complex<double> spherical_jn(int n, double z, bool derivative=false);
-std::complex<double> spherical_yn(int n, double z, bool derivative=false);
+//double spherical_jn(int n, double z, bool derivative=false);
+std::complex<double> spherical_jn(int n, std::complex<double> z, bool derivative=false);
+double spherical_yn(int n, double z, bool derivative=false);
 std::complex<double> spherical_hn(int n, double z, bool derivative=false);
 std::complex<double> spherical_hn_2(int n, double z, bool derivative=false);
 

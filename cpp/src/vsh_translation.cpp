@@ -7,18 +7,6 @@
 using std::complex;
 using namespace std::complex_literals;
 
-std::function<complex<double>(int, double, bool)> get_zn(vsh_mode mode) {
-    switch(mode) {
-        case vsh_mode::outgoing:
-            return spherical_hn;
-        case vsh_mode::ingoing:
-            return spherical_hn_2;
-        case vsh_mode::incident:
-        case vsh_mode::interior:
-            return spherical_jn;
-    }
-}
-
 py::array_t<complex<double>> vsh_translation_lambda_py(
         int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
         py::array_t<double> phi, double k, vsh_mode mode) {

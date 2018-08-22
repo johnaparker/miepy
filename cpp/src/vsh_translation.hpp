@@ -12,7 +12,6 @@
 #include <pybind11/numpy.h>
 namespace py = pybind11;
 
-std::function<std::complex<double>(int, double, bool)> get_zn(vsh_mode mode);
 
 py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b);
 

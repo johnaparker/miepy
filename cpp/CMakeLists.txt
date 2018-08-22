@@ -17,6 +17,7 @@ include_directories(src)
 
 set(SOURCES ${SOURCES} 
     src/special.cpp
+    src/vsh_functions.cpp
     src/vsh_translation.cpp
     src/interactions.cpp
     src/forces.cpp

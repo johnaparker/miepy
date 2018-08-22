@@ -6,9 +6,6 @@
 #include <vector>
 #include "vec.hpp"
 
-using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
-using tmatrix_t  = std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
-
 enum class solver {
     bicgstab,
     exact

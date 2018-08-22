@@ -13,14 +13,41 @@ int factorial(int n) {
 
 // if n>z, the iterative jn's may not converge
 
-complex<double> spherical_jn(int n, double z, bool derivative) {
-    if (derivative)
-        return spherical_jn(n-1, z) - (n+1)/z*spherical_jn(n, z);
+//double spherical_jn(int n, double z, bool derivative) {
+    //if (derivative)
+        //return spherical_jn(n-1, z) - (n+1)/z*spherical_jn(n, z);
 
-    return gsl_sf_bessel_jl(n, z);
+    //return gsl_sf_bessel_jl(n, z);
+//}
+
+complex<double> spherical_jn(int n, complex<double> z, bool derivative) {
+    if (!derivative) {
+        //return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));
+        complex<double> sin_z = sin(z);
+        complex<double> cos_z = cos(z);
+
+        complex<double> jn_2p = sin_z/z;
+        complex<double> jn = jn_2p;
+
+        if (n > 0) {
+            complex<double> jn_p = jn_2p/z - cos_z/z;
+            jn = jn_p;
+
+            for (int i = 2; i <= n; i++) {
+                jn = double(2*i - 1)/z*jn_p - jn_2p;
+                jn_2p = jn_p;
+                jn_p = jn;
+            }
+        }
+
+        return jn;
+    }
+    else {
+        return spherical_jn(n-1, z) - double(n+1)/z*spherical_jn(n, z);
+    }
 }
 
-complex<double> spherical_yn(int n, double z, bool derivative) {
+double spherical_yn(int n, double z, bool derivative) {
     if (derivative)
         return spherical_yn(n-1, z) - (n+1)/z*spherical_yn(n, z);
 

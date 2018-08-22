@@ -3,6 +3,8 @@
 namespace py = pybind11;
 
 // special submodule
+void bind_spherical_jn(py::module &);
+void bind_spherical_yn(py::module &);
 void bind_spherical_hn(py::module &);
 void bind_spherical_hn_2(py::module &);
 
@@ -20,6 +22,10 @@ void bind_b_func(py::module &);
 
 // vsh functions submodule
 void bind_enum_vsh_mode(py::module &);
+void bind_Emn(py::module &);
+void bind_vsh_electric(py::module &);
+void bind_vsh_magnetic(py::module &);
+void bind_expand_E_cluster(py::module &);
 
 // vsh_translation submodule
 void bind_vsh_translation(py::module &);
@@ -62,6 +68,8 @@ PYBIND11_MODULE(cpp, m) {
     // special submodule
     py::module special_m = m.def_submodule("special", "special functions module");
 
+    bind_spherical_jn(special_m);
+    bind_spherical_yn(special_m);
     bind_spherical_hn(special_m);
     bind_spherical_hn_2(special_m);
 
@@ -80,6 +88,10 @@ PYBIND11_MODULE(cpp, m) {
     // vsh functions submodule
     py::module vsh_functions_m = m.def_submodule("vsh_functions", "vsh functions module");
     bind_enum_vsh_mode(vsh_functions_m);
+    bind_Emn(vsh_functions_m);
+    bind_vsh_electric(vsh_functions_m);
+    bind_vsh_magnetic(vsh_functions_m);
+    bind_expand_E_cluster(vsh_functions_m);
 
     // vsh_translation submodule
     py::module vsh_translation_m = m.def_submodule("vsh_translation", "vsh translation functions module");

@@ -7,10 +7,7 @@ from scipy import special
 import enum
 from math import factorial
 from miepy import vsh
-from miepy.cpp.vsh_functions import vsh_mode
-
-def Emn(m, n):
-    return 1j**n*np.sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)))
+from miepy.cpp.vsh_functions import vsh_mode, Emn
 
 def get_zn(mode):
     """determine the zn function for a given mode"""
@@ -19,7 +16,7 @@ def get_zn(mode):
     elif mode is vsh_mode.ingoing:
         return vsh.special.spherical_hn_2
     elif mode in (vsh_mode.incident, vsh_mode.interior):
-        return special.spherical_jn
+        return vsh.special.spherical_jn
     else:
         raise TypeError(f'{mode} is not a valid type of mode')
 

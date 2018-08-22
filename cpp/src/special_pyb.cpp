@@ -7,6 +7,20 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+void bind_spherical_jn(py::module &m) {
+    m.def("spherical_jn", py::vectorize(spherical_jn), 
+           "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Spherical bessel function of the first kind or its derivative
+    )pbdoc");
+}
+
+void bind_spherical_yn(py::module &m) {
+    m.def("spherical_yn", py::vectorize(spherical_yn), 
+           "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
+        Spherical bessel function of the second kind or its derivative
+    )pbdoc");
+}
+
 void bind_spherical_hn(py::module &m) {
     m.def("spherical_hn", py::vectorize(spherical_hn), 
            "n"_a, "z"_a, "derivative"_a=false, R"pbdoc(
