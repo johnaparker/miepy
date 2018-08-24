@@ -165,7 +165,10 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
                                 int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
 
                                 agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
-                                agg_tmatrix(idy, idx) = pow(-1, n+v+a+b)*val*mie(i, a*lmax + n-1);
+
+                                idx = j*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
+                                idy = i*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+                                agg_tmatrix(idx, idy) = pow(-1, n+v+a+b)*val*mie(i, b*lmax + v-1);
                             }
                         }
                     }

@@ -148,20 +148,48 @@ where $\bar r = 3-r$,  and $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}
 \end{equation}
 
 \subsection{VSH translation coefficients}
-The VSH functions computed in one coordinate system ($\bm{r}_j$) can be converted to a different coordinate system ($\bm{r}_l$) by use of the translation coefficient $\widetilde{A}_{mnruvs}^{jl}$
+The VSH functions computed in one coordinate system ($\bm{r}_l$) can be converted to a different coordinate system ($\bm{r}_j$) by use of the translation coefficient $\widetilde{A}_{mnruvs}^{jl}$
 \begin{equation}
     \bm{N}_{mnr}^{(J)}(k\bm{r}_j) = \sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
     \widetilde{A}_{mnruvs}^{(J)jl} \bm{N}_{uvs}^{(1)}(k\bm{r}_l)
 \end{equation}
+Here, the fields being translated from are scattered fields (hence $J=1$), and the fields being translated to can correspond to any $J$ value.
+If $J=1$, $\widetilde{A}$ translates scattered fields to scattered fields, and if $J=3$, $\widetilde{A}$ translates scattered fields to incident fields.
 Explicit formula for the translation coefficients can be found elsewhere. \cite{Xu_1998}
 
-The normalized translation coefficients are defined as
+From the field expansions, \cref{eqn:electric_field_expansion}, the VSH translation coefficients can be used to relate the scattered expansion coefficients of particle $l$ to the expansion coefficients around particle $j$,
+\begin{equation}
+    p_{mnr}^{j,(J)} = f^{(J)}\sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
+    A_{mnruvs}^{(J)jl} p_{uvs}^{l,\text{scat}}
+\end{equation}
+where $A_{mnruvs}^{(J)jl}$ are the \emph{normalized} translation coefficients
 \begin{equation}
     A_{mnruvs}^{(J)jl} &= \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mnruvs}^{(J)jl}
 \end{equation}
-
+and $f^{(J)}$ is a $\pm 1$ sign term
+\begin{equation}
+    f^{(J)} =
+    \begin{cases}
+        +1 \qquad \text{if } J = 3 \\
+        -1 \qquad \text{otherwise}
+    \end{cases}
+\end{equation}
+The translation coefficients have the following useful symmetry relationships \cite{hovenier1996light}
+\begin{subequations}
+    \begin{align}
+        A_{mnruvs}^{ij} &= (-1)^{n+v+r+s} A_{mnruvs}^{ji} \\
+                        &= (-1)^{m+k} \frac{v(v+1)(2n+1)}{n(n+1)(2v+1)} A_{-uvs-mnr}^{ji} \\
+                        &= \frac{v(v+1)(2n+1)}{n(n+1)(2v+1)} 
+                           \frac{(n-m)!(v+u)!}{(n+m)!(v-u)!}[A_{uvsmnr}^{ji}]^*
+    \end{align}
+\end{subequations}
 
 \subsection{VSH rotation coefficients}
+The rotation of the expansion coefficients is given by the Wigner-D matrix
+\begin{equation}
+    p_{mnr}^\prime = D_{ms}^{n}(\hat q) p_{mns}
+\end{equation}
+where $\hat q$ represents the rotation.
 
 \subsection{T-matrix formulation}
 \newcommand{\tmatrix}{\mathcal{T}}
@@ -180,6 +208,12 @@ If the particle is a sphere, then the T-matrix is diagonal,
 \label{eqn:tmatrix_sphere}
 \end{equation}
 where $t_{1n}^j = a_n^j$ and $t_{2n}^j = b_n^j$ are the classical Mie theory coefficients of the $j$th sphere.\cite{bohren2008absorption}
+
+Once a particle's T-matrix is known, it does not have to be recomputed for a new orientation of the particle, provided the geometrical and material properties of the particle remain the same.
+Given a particle T-matrix in one coordinate system, the T-matrix in a rotated coordinate system is
+\begin{equation}
+    T_{m^\prime nr u^\prime vs}^\prime = D_{m^\prime m}^n(\hat q) \lbrack D_{u^\prime u}^v(\hat q) \rbrack^* T_{mnruvs}
+\end{equation}
 
 \subsection{Interaction equations}
 The interaction equation among $N$ particles can be written as
@@ -297,6 +331,7 @@ The expansion coefficients of the entire cluster, $p_{\alpha}^{\text{cluster}}$,
     p_{\beta}^{j,\text{scat}}
 \label{eqn:cluster_coefficients}
 \end{equation}
+Note that $J=1$ in the translation coefficient since the translation is from the scattered fields around one origin to the scattered fields around a different origin.
 
 The \emph{particle aggregate T-matrix} is defined by 
 \begin{equation}
