@@ -67,5 +67,4 @@ miepy/tmatrix/nfmds/tmatrix
 miepy/tmatrix/nfmds/tmatrix_extended
 
 # c++ code
-cpp/pybind11
 *.so
