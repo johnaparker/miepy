@@ -116,6 +116,7 @@ setup(
                       'tqdm',
                       'sympy',
                       'pandas',
+                      'pyyaml'
                       'numpy_quaternion',
                       'spherical_functions'],
     include_package_data = True,
