@@ -47,13 +47,16 @@ The vector spherical harmonic (VSH) functions are a complete basis set of the ve
 \end{align}
 They are defined as
 \begin{align}
-    \boldsymbol{N}_{mn1}^{(J)} &= 
-    \boldsymbol{\hat r} n(n+1) P_n^m(\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \nonumber \\
-    &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\theta) \right]
-    \frac{d}{dr} \left[ rz_n^{(J)}(kr)e^{im\phi} \right] \\
-    \boldsymbol{N}_{mn2}^{(J)} &= \big[
-    \boldsymbol{\hat \theta} i\pi_{mn}(\theta) 
-   -\boldsymbol{\hat \phi} \tau_{mn}(\theta) \big] z_n^{(J)}(kr) e^{im\phi} \nonumber
+    \begin{split}
+        \boldsymbol{N}_{mn1}^{(J)} &= 
+        \boldsymbol{\hat r} n(n+1) P_n^m(\theta) \frac{z_n^{(J)}(kr)}{kr}e^{im\phi} \\
+        &\quad + \frac{1}{kr} \left[ \boldsymbol{\hat \theta} \tau_{mn}(\theta) + \boldsymbol{\hat \phi} i\pi_{mn}(\theta) \right]
+        \frac{d}{dr} \left[ rz_n^{(J)}(kr)e^{im\phi} \right] \\
+        \boldsymbol{N}_{mn2}^{(J)} &= \big[
+        \boldsymbol{\hat \theta} i\pi_{mn}(\theta) 
+       -\boldsymbol{\hat \phi} \tau_{mn}(\theta) \big] z_n^{(J)}(kr) e^{im\phi} 
+    \end{split}
+\label{eqn:vsh_definition}
 \end{align}
 where $J= 1,2,3,4$. The radial functions $z_n^{(J)}$ are
 \begin{equation}
@@ -270,7 +273,14 @@ By setting $p_\alpha^{j,\text{inc}} = \delta_{\alpha\beta} \delta_{jl} p_\beta^{
     p_{\alpha}^{j,\text{src}}
 \end{equation}
 
-\section{Periodic boundary conditions}
+\section{Symmetries}
+Symmetries in the system can be used to reduce the total number of interaction equations.
+It is important to remember that not only do the particles have to satisfy a given symmetry (their position, size, orientation, and material), but that the incident source field must also satisfy it.
+In many cases, a phase factor must be included with a given symmetry depending on the incident field.
+For example, if the incident field is right-hand-circularly polarized and a mirror symmetry is imposed, the mirrored fields will be left-hand-circularly polarized.
+This can be corrected by including a $\pi$ phase factor in the mirror symmetry.
+
+\subsection{Translational symmetry (periodic boundary conditions)}
 If the unit cell consists of a single particle,
 \begin{equation}
     p_{\alpha}^{\text{inc}} = 
@@ -300,8 +310,7 @@ This loss of information can be avoided by performing the translation directly, 
     p_{\gamma}^{j^\prime,\text{inc}}
 \end{equation}
 
-\section{Symmetries}
-\subsection{Mirror symmetries}
+\subsection{Mirror symmetry}
 Suppose that there is a mirror plane that passes through the origin and has a normal vector of $\bm{\hat x}$, $\bm{\hat y}$, or $\bm{\hat z}$.
 Each particle at position $\bm{r}^j$ then has a corresponding mirror particle at position $\bm{r}^{\prime j}$.
 By symmetry, the expansion coefficients of the mirror particle are related to those of the original particle
@@ -311,7 +320,7 @@ By symmetry, the expansion coefficients of the mirror particle are related to th
 \end{equation}
 i.e.\ modes with an even azimuthal order $m$ have their sign flipped by a mirror.
 
-\subsection{Discrete rotational symmetry}
+\subsection{Rotational symmetry}
 Suppose the system has a discrete rotational symmetry of order $R$.
 If a particle exists at position $r^{j1}$, then the symmetric particles are at position $r^{jr}$, where $r = 2..R$.
 By symmetry,
@@ -403,13 +412,15 @@ where $\bm{S} = \frac{1}{2} \bm{E} \times \bm{H^*}$ is the Poynting vector.
 For instance, the area $A$ may be a circular aperture (power striking a structure) or all of space (total power of the source, provided it is finite).
 
 \subsection{Force and torque}
-The time-average force $\langle \bm{F} \rangle$ and torque $\langle \bm{\tau} \rangle$ on a particle can be determined by integrating the Maxwell stress tensor over a closed surface surrounding the particle: \cite{mst}
+\newcommand{\mst}{\langle \boldsymbol{T} \rangle}
+
+The time-average force $\langle \bm{F} \rangle$ and torque $\langle \bm{\tau} \rangle$ on a particle can be determined by integrating the Maxwell stress tensor $\mst$ over a closed surface surrounding the particle: \cite{mst}
 \begin{subequations}
 \begin{align}
-    \langle \boldsymbol{T} \rangle &= \frac{1}{2} \text{Re} \left[ \varepsilon_b  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu_b \boldsymbol{H} \otimes \boldsymbol{H^*}
+    \mst &= \frac{1}{2} \text{Re} \left[ \varepsilon_b  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu_b \boldsymbol{H} \otimes \boldsymbol{H^*}
     - \frac{1}{2}(\varepsilon_b E^2 + \mu_b H^2)\boldsymbol{I} \right] \\
-    \langle \boldsymbol{F} \rangle &= \oint_\Omega \langle \boldsymbol{T} \rangle \cdot d \boldsymbol{\Omega} \\
-    \langle \boldsymbol{\tau} \rangle &= \oint_\Omega \boldsymbol{r} \times \langle \boldsymbol{T}  \rangle \cdot d \boldsymbol{\Omega}
+    \langle \boldsymbol{F} \rangle &= \oint_\Omega \mst \cdot d \boldsymbol{\Omega} \\
+    \langle \boldsymbol{\tau} \rangle &= \oint_\Omega \boldsymbol{r} \times \mst \cdot d \boldsymbol{\Omega}
 \end{align}
 \end{subequations}
 where $\bm{I}$ is a 3x3 identitiy matrix and $\otimes$ is the vector outer product.
@@ -482,14 +493,29 @@ Similarly, the torque can be integrated analytically,
 
 \subsection{Far-field expansions}
 
+In the far-field, the VSH functions take on a simplified form from their exact expression in \cref{eqn:vsh_definition}.
+The radial component of $\bm{N}$ vanishes and the spherical Bessel functions approach an asymptotic form.
+For spherically outgoing modes, the spherical Hankel function of the first kind is $h_n^{(1)}(kr) \simeq i^{-n-1} e^{ikr}/(kr)$ as $kr \rightarrow \infty$.
+
+Given a set of scattering expansion coefficients $q_{mnr}$, the far fields can be expanded over a single sum of the multipolar modes:
 \begin{align}
 \begin{split}
     E_{\text{scat},\theta}(\theta,\phi) &= i\frac{e^{ikr}}{kr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    (-i)^nE_{mn} \big[a_{mn}\tau_{mn}(\cos\theta) + b_{mn}\pi_{mn}(\cos\theta)\big] e^{im\phi} \\
+    (-i)^nE_{mn} \big[q_{mn1}\tau_{mn}(\cos\theta) + q_{mn2}\pi_{mn}(\cos\theta)\big] e^{im\phi} \\
     E_{\text{scat},\phi}(\theta,\phi) &= -\frac{e^{ikr}}{kr} \sum_{n=1}^{N_\text{max}} \sum_{m=-n}^{n}
-    (-i)^nE_{mn} \big[a_{mn}\pi_{mn}(\cos\theta) + b_{mn}\tau_{mn}(\cos\theta)\big] e^{im\phi}
+    (-i)^nE_{mn} \big[q_{mn1}\pi_{mn}(\cos\theta) + q_{mn2}\tau_{mn}(\cos\theta)\big] e^{im\phi} \\
 \end{split}
 \end{align}
+One option is to set $q_{mnr} = p_{mnr}^\text{cluster}$, the cluster expansion coefficients.
+This approach comes with a loss of information, but has the physical interpretation that each term in the sum can be attributed to the far-fields of a given multipolar mode.
+To avoid the loss of information, a sum over particle pairs can be performed \cite{Xu_1997}
+\begin{equation}
+    q_{\alpha}(\theta, \phi) = \sum_{l=1}^N \sum_{j=1}^N \sum_\beta 
+                 \exp \left[i(\bm{\hat k} - \bm{\hat r}) \cdot \bm{r}^l\right]
+                 \exp \left[i \bm{\hat k} \cdot (\bm{r}^l - \bm{r}^j) \right]
+                 \tmatrix_{\alpha \beta}^{lj} p_{\beta}^\text{j,\text{inc}}
+\end{equation}
+where the expansion coefficients now depend on the angular position.
 
 \subsection{Orientation-averaged properties}
 
@@ -638,12 +664,13 @@ Example Python code using MiePy
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item 30x performance for larger clusters
             \item T-matrix for non-spherical particles
-            \item Plane-wave/beams direction and polarization control
+            \item Plane-wave/beams arbitrary direction and polarization control
         \end{itemize}
     \item \textbf{version 0.4}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+            \item C++ implementation with OpenMP parallelization and Python bindings (using pybind11)
             \item Periodic boundary conditions (1D and 2D)
-            \item Symmetry relationships (mirror, anti-mirror, discrete rotation, inversion)
+            \item Symmetry relationships (mirror, discrete rotation)
             \item Additional performance: 
                         (i) A/B remainging symmetries, 
                         (ii) lmax per particle,
@@ -657,13 +684,14 @@ Example Python code using MiePy
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item Additional functions: 
                        (i) cluster T-matrix,
-                       (ii) Mueller matrix,
+                       (ii) S-matrix, Mueller/Jones matrix,
                        (iii) spin vs. orbital torque,
                        (iv) local density of states,
                        (v) energy and momentum density
+            \item ``unpolarized'' light
             \item Average over orientations calculations
             \item Existing TODO items
-            \item Better documentation, examples, tests, and tutorial/introduction for quick introduction
+            \item Improved documentation, examples, tests, and tutorial/introduction for quick start
         \end{itemize}
     \item \textbf{future}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
@@ -677,10 +705,10 @@ Example Python code using MiePy
             \item 3D periodic boundary conditions
             \item Band diagram calculations
             \item Performance:
-                      (i) parallelization (MPI, openMP, and/or GPU),
-                      (ii) C++ implementations,
+                      (i) MPI/GPU parallelization
+                      (ii) matrix-free solver and rotation-translation-rotation (RTR) coupling method,
                       (iii) approximation for long-range interactions in large systems,
-                      (iv) Preconditioner for iterative matrix solver
+                      (iv) preconditioner for iterative matrix solver based on spatial locality
             \item Scene visualization (3D)
             \item Prettier output for main classes using \_\_repr\_\_
             \item Time-domain via IFFT

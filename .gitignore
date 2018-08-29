@@ -51,6 +51,8 @@ tags
 *.gz
 *.bbl
 *.blg
+*.out
+*.toc
 
 # pytest
 .pytest_cache

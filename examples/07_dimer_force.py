@@ -11,7 +11,7 @@ nm = 1e-9
 
 Ag = miepy.materials. Ag()
 radius = 75*nm
-source = miepy.sources.rhc_polarized_plane_wave(amplitude=1)
+source = miepy.sources.plane_wave.from_string(polarization='rhc')
 separations = np.linspace(2*radius + 10*nm, 2*radius + 700*nm, 50)
 
 force = np.zeros((3,) + separations.shape)
