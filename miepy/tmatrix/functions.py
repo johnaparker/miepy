@@ -1,6 +1,5 @@
 import miepy
 import numpy as np
-import quaternion
 
 def tmatrix_reduce_lmax(tmatrix, lmax):
     """Reduce the dimensions of a tmatrix to lmax

@@ -4,7 +4,6 @@ VSH rotation functions
 
 import numpy as np
 import miepy
-import quaternion
 
 def wigner_D(n, m, mp, quat):
     """Wigner-D function

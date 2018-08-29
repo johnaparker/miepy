@@ -1,5 +1,4 @@
 import numpy as np
-import quaternion
 import miepy
 
 #TODO: lmax per particle
@@ -17,7 +16,7 @@ class particle:
         self._position = np.asarray(position, dtype=float)
 
         if orientation is None:
-            self._orientation = quaternion.one
+            self._orientation = miepy.quaternion.one
         else:
             self._orientation = orientation
 

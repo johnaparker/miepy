@@ -8,7 +8,6 @@ from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite, erfc
 from scipy.constants import physical_constants
-import quaternion
 
 Z0 = physical_constants['characteristic impedance of vacuum'][0]
 
@@ -67,7 +66,7 @@ class beam(source):
 
         self.theta = theta
         self.phi   = phi
-        self.orientation = quaternion.from_spherical_coords(self.theta, self.phi)
+        self.orientation = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
 
         ### TE and TM vectors
         self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
@@ -124,7 +123,7 @@ class beam(source):
     def structure(self, position, k, lmax, radius):
         #TODO: fix orientation_copy hack
         orientation_copy = self.orientation
-        self.orientation = quaternion.one
+        self.orientation = miepy.quaternion.one
         if self.is_paraxial(k):
             sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
             p_src = miepy.vsh.decomposition.near_field_point_matching(self, 

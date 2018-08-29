@@ -28,3 +28,8 @@ from .vsh import (mode_indices, vsh_mode, VSH, expand_E, expand_E_far, expand_H,
                   cluster_coefficients)
 from .particles import sphere, spheroid, cylinder
 from .cpp.interactions import solver
+
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import quaternion

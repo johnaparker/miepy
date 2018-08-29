@@ -6,7 +6,6 @@ import numpy as np
 import miepy
 from miepy.vsh.special import pi_func, tau_func
 from miepy.sources.source_base import source
-import quaternion
 
 class plane_wave(source):
     def __init__(self, polarization, theta=0, phi=0, amplitude=1, phase=0):
@@ -124,7 +123,7 @@ class plane_wave(source):
                 # + 1j*(tau_value*(self.polarization[0]*np.sin(self.phi) + self.polarization[1]*np.sin(self.phi - np.pi/2))))
 
         if self.theta != 0 or self.phi != 0:
-            quat = quaternion.from_spherical_coords(self.theta, self.phi)
+            quat = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, quat)
 
         return p_src

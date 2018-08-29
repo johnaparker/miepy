@@ -673,10 +673,8 @@ Example Python code using MiePy
             \item Symmetry relationships (mirror, discrete rotation)
             \item Additional performance: 
                         (i) A/B remainging symmetries, 
-                        (ii) lmax per particle,
-                        (iii) source=None for pre-computed aggregate T-matrix,
                         (iv) no T-matrix recomputation for identical geometries
-                        (v) transition from [[2,rmax]] $\rightarrow$ [[rmax]] shape
+                        (v) transition from [2, rmax] $\rightarrow$ [rmax] shape
                     \item Save solution so that it can be reloaded
             \item Any changes to T-matrix/sources
         \end{itemize}
@@ -688,8 +686,14 @@ Example Python code using MiePy
                        (iii) spin vs. orbital torque,
                        (iv) local density of states,
                        (v) energy and momentum density
+
+            \item Performance:
+                        (i) lmax per particle,
+                        (ii) cluster T-matrix re-usage with many sources
             \item ``unpolarized'' light
             \item Average over orientations calculations
+            \item Scene visualization (3D)
+            \item Prettier output for main classes using \_\_repr\_\_
             \item Existing TODO items
             \item Improved documentation, examples, tests, and tutorial/introduction for quick start
         \end{itemize}
@@ -709,8 +713,6 @@ Example Python code using MiePy
                       (ii) matrix-free solver and rotation-translation-rotation (RTR) coupling method,
                       (iii) approximation for long-range interactions in large systems,
                       (iv) preconditioner for iterative matrix solver based on spatial locality
-            \item Scene visualization (3D)
-            \item Prettier output for main classes using \_\_repr\_\_
             \item Time-domain via IFFT
         \end{itemize}
 \end{enumerate*}

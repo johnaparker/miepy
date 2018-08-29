@@ -2,8 +2,8 @@
 Defines functions used to construct basis vectors, convert between coordinate systems, build meshes, etc.
 """
 
+import miepy
 import numpy as np
-import quaternion
 
 def sph_to_cart(r, theta, phi, origin=None):
     """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
@@ -139,7 +139,7 @@ def rotate(x, y, z, quat, origin=None):
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
-    R = quaternion.as_rotation_matrix(quat)
+    R = miepy.quaternion.as_rotation_matrix(quat)
     p = np.asarray(translate(x, y, z, -origin))
     p_rotated = np.einsum('ij,j...->i...', R, p)
     p_final = translate(*p_rotated, origin)
