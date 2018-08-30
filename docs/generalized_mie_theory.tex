@@ -285,15 +285,18 @@ If the unit cell consists of a single particle,
 \begin{equation}
     p_{\alpha}^{\text{inc}} = 
     p_{\alpha}^{\text{src}} -
+    \Phi^l
     A_{\alpha \beta}^{(3)0l}
     \tmatrix_{\beta \gamma}
     p_{\gamma}^{\text{inc}}
 \end{equation}
-where $l$ enumerates the periodic lattice.
+where $l$ enumerates the unit cells and $\Phi^l$ is a phase factor.
+For a plane wave with a given $\bm{k}$ vector, $\Phi^l = \exp(-i\bm{k} \cdot \bm{r}^l)$.
 If the unit cell consists of $N$ particles, let $l$ enumerate the positions of the unit cell and $j$ enumerate the positions of the particles relative to the unit cell position
 \begin{equation}
     p_{\alpha}^{j,\text{inc}} = 
     p_{\alpha}^{j,\text{src}} -
+    \Phi^l
     A_{\alpha \beta}^{(3)j 0}
     A_{\beta \gamma}^{(3)0l}
     A_{\gamma \delta}^{(3)l j^\prime}
@@ -305,6 +308,7 @@ This loss of information can be avoided by performing the translation directly, 
 \begin{equation}
     p_{\alpha}^{j,\text{inc}} = 
     p_{\alpha}^{j,\text{src}} -
+    \Phi^{j^\prime}
     A_{\alpha \beta}^{(3)j j^\prime}
     \tmatrix_{\beta \gamma}^{j^\prime}
     p_{\gamma}^{j^\prime,\text{inc}}
@@ -315,7 +319,7 @@ Suppose that there is a mirror plane that passes through the origin and has a no
 Each particle at position $\bm{r}^j$ then has a corresponding mirror particle at position $\bm{r}^{\prime j}$.
 By symmetry, the expansion coefficients of the mirror particle are related to those of the original particle
 \begin{equation}
-    p^{\prime j,\text{inc}}_{mnr} = (-1)^{m+1} p^{j,\text{inc}}_{mnr}
+    p^{\prime j,\text{inc}}_{mnr} = \Phi (-1)^{m+1} p^{j,\text{inc}}_{mnr}
     \label{eqn:mirror_symmetry}
 \end{equation}
 i.e.\ modes with an even azimuthal order $m$ have their sign flipped by a mirror.

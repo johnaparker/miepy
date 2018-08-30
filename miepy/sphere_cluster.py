@@ -13,7 +13,7 @@ class sphere_cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
     def __init__(self, *, position, radius, material, lmax,
                  source=None, wavelength=None, medium=None, origin=None,
-                 interactions=True):
+                 symmetry=None, interactions=True):
         """Arguments:
                position[N,3] or [3]    sphere positions
                radius[N] or scalar     sphere radii
@@ -23,6 +23,7 @@ class sphere_cluster:
                wavelength    (optional) wavelength to solve the system at (default: defer wavelength until later)
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
                origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
+               symmetry      (optional) specify system symmetries (default: no symmetries)
                interactions  (optional) If True, include particle interactions (bool, default=True) 
         """
         ### sphere properties
@@ -32,6 +33,7 @@ class sphere_cluster:
         if (self.position.shape[0] != self.radius.shape[0] != self.material.shape[0]):
             raise ValueError("The shapes of position, radius, and material do not match")
         self.Nparticles = self.radius.shape[0]
+        self.symmetry = symmetry
 
         ### system properties
         self.source = source
@@ -477,8 +479,13 @@ class sphere_cluster:
             self.p_int[...,r] = self.p_inc[...,r]*self.mie_int[:,::-1,n-1]
 
     def _solve_interactions(self):
-        agg_tmatrix = miepy.interactions.sphere_aggregate_tmatrix(self.position, self.mie_scat,
-                                  self.material_data.k_b)
+        if self.symmetry is None:
+            agg_tmatrix = miepy.interactions.sphere_aggregate_tmatrix(self.position, self.mie_scat,
+                                      self.material_data.k_b)
+        else:
+            agg_tmatrix = miepy.interactions.sphere_aggregate_tmatrix_periodic(self.position, self.mie_scat,
+                                      self.material_data.k_b, self.symmetry, self.source.k_hat)
+
         self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
 
         for r,n,m in miepy.mode_indices(self.lmax):
