@@ -141,8 +141,10 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
 
     for (int n = 1; n < lmax+1; n++) {
         for (int m = -n; m < n+1; m++) {
-            for (int v = 1; v < lmax+1; v++) {
+            for (int v = 1; v < n+1; v++) {
                 for (int u = -v; u < v+1; u++) {
+                    if (n == v && u < -m)
+                        continue;
 
                     auto fn = vsh_translation_lambda(m, n, u, v, vsh_mode::outgoing);
 
@@ -163,12 +165,21 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
                                 complex<double> val = transfer[(a+b)%2];
                                 int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
                                 int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
-
                                 agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
 
                                 idx = j*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
                                 idy = i*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
                                 agg_tmatrix(idx, idy) = pow(-1, n+v+a+b)*val*mie(i, b*lmax + v-1);
+
+                                if ((n == v && u != -m) || (n != v)) {
+                                    idx = i*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
+                                    idy = j*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
+                                    agg_tmatrix(idx, idy) = pow(-1, m+u-a-b)*val*mie(j, a*lmax + n-1);
+
+                                    idx = j*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
+                                    idy = i*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
+                                    agg_tmatrix(idx, idy) = pow(-1, m+u+n+v)*val*mie(i, a*lmax + n-1);
+                                }
                             }
                         }
                     }

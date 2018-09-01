@@ -179,13 +179,17 @@ and $f^{(J)}$ is a $\pm 1$ sign term
 \end{equation}
 The translation coefficients have the following useful symmetry relationships \cite{hovenier1996light}
 \begin{subequations}
+    \label{eqn:vsh_symmetry}
     \begin{align}
         A_{mnruvs}^{ij} &= (-1)^{n+v+r+s} A_{mnruvs}^{ji} \\
-                        &= (-1)^{m+k} \frac{v(v+1)(2n+1)}{n(n+1)(2v+1)} A_{-uvs-mnr}^{ji} \\
-                        &= \frac{v(v+1)(2n+1)}{n(n+1)(2v+1)} 
-                           \frac{(n-m)!(v+u)!}{(n+m)!(v-u)!}[A_{uvsmnr}^{ji}]^*
+                        &= (-1)^{n+v+m+u} A_{-uvs-mnr}^{ji} \\
+                        &= (-1)^{m+u}[A_{uvsmnr}^{ji}]^* \label{eqn:vsh_symmetry_special} \footnotemark
     \end{align}
 \end{subequations}
+\footnotetext{
+The conjugate in \cref{eqn:vsh_symmetry_special} applies to everything but the radial function $z_n^{(J)}$ appearing in the sum found in the definition of $A^{ij}$.
+If $J=1$ or $J=2$ and the medium is non-absorbing, this exception can be ignored since $z_n$ is real.
+}
 
 \subsection{VSH rotation coefficients}
 The rotation of the expansion coefficients is given by the Wigner-D matrix
@@ -277,8 +281,10 @@ By setting $p_\alpha^{j,\text{inc}} = \delta_{\alpha\beta} \delta_{jl} p_\beta^{
 Symmetries in the system can be used to reduce the total number of interaction equations.
 It is important to remember that not only do the particles have to satisfy a given symmetry (their position, size, orientation, and material), but that the incident source field must also satisfy it.
 In many cases, a phase factor must be included with a given symmetry depending on the incident field.
-For example, if the incident field is right-hand-circularly polarized and a mirror symmetry is imposed, the mirrored fields will be left-hand-circularly polarized.
-This can be corrected by including a $\pi$ phase factor in the mirror symmetry.
+For example, if the incident field is $x$-polarized and the mirror is in the $yz$ plane, the mirrored fields will be $-x$-polarized.
+This can be corrected by including a $\pi$ phase factor in the mirror symmetry (multiplying by $-1$).
+On the other hand, if the incident field is right-hand-circularly polarized and a mirror symmetry is imposed, the mirrored fields will be left-hand-circularly polarized.
+This cannot be corrected by using a phase factor.
 
 \subsection{Translational symmetry (periodic boundary conditions)}
 If the unit cell consists of a single particle,
@@ -319,10 +325,10 @@ Suppose that there is a mirror plane that passes through the origin and has a no
 Each particle at position $\bm{r}^j$ then has a corresponding mirror particle at position $\bm{r}^{\prime j}$.
 By symmetry, the expansion coefficients of the mirror particle are related to those of the original particle
 \begin{equation}
-    p^{\prime j,\text{inc}}_{mnr} = \Phi (-1)^{m+1} p^{j,\text{inc}}_{mnr}
+    p^{\prime j,\text{inc}}_{mnr} = \Phi (-1)^{r+1} p^{j,\text{inc}}_{-mnr}
     \label{eqn:mirror_symmetry}
 \end{equation}
-i.e.\ modes with an even azimuthal order $m$ have their sign flipped by a mirror.
+i.e.\ the mirror negates the azimuthal index $m$ and negates the magnetic modes.
 
 \subsection{Rotational symmetry}
 Suppose the system has a discrete rotational symmetry of order $R$.
@@ -666,9 +672,9 @@ Example Python code using MiePy
 \begin{enumerate*}
     \item \textbf{version 0.3} (released)
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
-            \item 30x performance for larger clusters
-            \item T-matrix for non-spherical particles
-            \item Plane-wave/beams arbitrary direction and polarization control
+            \item 30$\times$ performance for larger clusters
+            \item T-matrix formulation for non-spherical particles
+            \item Plane-waves and beams can have arbitrary direction and polarization
         \end{itemize}
     \item \textbf{version 0.4}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
@@ -694,6 +700,7 @@ Example Python code using MiePy
             \item Performance:
                         (i) lmax per particle,
                         (ii) cluster T-matrix re-usage with many sources
+                        (iii) computing A/B for all modes using upwards recursion/symmetries
             \item ``unpolarized'' light
             \item Average over orientations calculations
             \item Scene visualization (3D)
@@ -720,9 +727,5 @@ Example Python code using MiePy
             \item Time-domain via IFFT
         \end{itemize}
 \end{enumerate*}
-
-
-\bibliographystyle{unsrt}
-\bibliography{generalized_mie_theory.bib}{}
 
 \end{document}
