@@ -7,8 +7,8 @@
 
 using std::complex;
 
-int factorial(int n) {
-    return (n == 0) ? 1 : factorial(n - 1) * n;
+double factorial(double n) {
+    return std::tgamma(n+1);
 }
 
 // if n>z, the iterative jn's may not converge
