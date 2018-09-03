@@ -52,7 +52,7 @@ std::function<complex<double>(int, double, bool)> get_zn(vsh_mode mode) {
 }
 
 complex<double> Emn(int m, int n) {
-    return pow(1i, n)*sqrt((2*n+1)*factorial(n-m)/double(n*(n+1)*factorial(n+m)));
+    return pow(1i, n)*sqrt((2*n+1)*factorial(n-m)/(n*(n+1)*factorial(n+m)));
 }
 
 cvec3 vsh_electric(int n, int m, vsh_mode mode, double rad,

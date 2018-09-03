@@ -34,6 +34,7 @@ for r,n,m in miepy.mode_indices(lmax):
                 r_ji, theta_ji, phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(m+u)*A, (-1)**(m+u+1)*B
 
+        print(A_calc, A_expect)
         assert np.allclose(A_calc, A_expect)
         assert np.allclose(B_calc, B_expect)
 

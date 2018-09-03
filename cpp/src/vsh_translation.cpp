@@ -36,7 +36,7 @@ std::function<std::array<complex<double>, 2> (double, double, double, double)> v
     auto zn = get_zn(mode);
 
     complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+            /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
 
     int qmax_A = std::min({n, v, (n + v - abs(m+u))/2});
     ComplexArray A(qmax_A+1);
@@ -95,7 +95,7 @@ AB_type vsh_translation_eigen(
     auto zn = get_zn(mode);
 
     double factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+            /v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m));
     
     ComplexArray exp_phi = exp(1i*double(u+m)*phi);
     Array cos_theta = cos(theta);
@@ -144,7 +144,7 @@ py::array_t<complex<double>> vsh_translation_numpy(
     auto zn = get_zn(mode);
 
     double factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+            /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
     
 
     py::array_t<complex<double>> exp_phi({int(buf_theta.shape(0))});
@@ -224,7 +224,7 @@ std::array<complex<double>, 2> vsh_translation(
     //complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
             ///(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(complex<double>(0, (u+m)*phi));
     complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            /double(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(1i*double(u+m)*phi);
+            /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(1i*double(u+m)*phi);
     double cos_theta = cos(theta);
 
     int qmax = std::min({n, v, (n + v - abs(m+u))/2});

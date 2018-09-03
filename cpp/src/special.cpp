@@ -142,7 +142,7 @@ double associated_legendre(int n, int m, double z, bool derivative) {
 
     if (m < 0) {
         //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
-        double factor = pow(-1, m)*factorial(n+m)/double(factorial(n-m));
+        double factor = pow(-1, m)*factorial(n+m)/factorial(n-m);
         return factor*leg;
     }
     else {
@@ -207,7 +207,7 @@ double tau_func(int n, int m, double theta) {
 
         if (m < 0) {
             //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
-            double factor = pow(-1, m)*factorial(n+m)/double(factorial(n-m));
+            double factor = pow(-1, m)*factorial(n+m)/factorial(n-m);
             return factor*leg_p;
         }
         else {
