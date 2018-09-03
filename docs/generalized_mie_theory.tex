@@ -20,7 +20,7 @@
     citecolor=blue,
     filecolor=black,
     linkcolor=blue,
-    urlcolor=black
+    urlcolor=blue
 }
 
 %\usepackage[nottoc,notlot,notlof]{tocbibind}
@@ -103,8 +103,8 @@ The table below outlines the physical interpretation of the VSHs
  $n$ & multipolar order (1: dipole, 2: quadrupole, etc.) \\
  $m$ & azimuthal order (from $-n$ to $n$) \\
  \hline
- $J=1$ & $z$-propagating mode \\ 
- $J=2$ & counter-$z$-propagating mode \\ 
+ $J=1$ & propagating incident mode \\ 
+ $J=2$ & counter-propagating incident mode \\ 
  $J=3$ & spherically outgoing mode \\ 
  $J=4$ & spherically ingoing mode \\
  \hline
@@ -145,7 +145,7 @@ The incident field includes the source field plus the incident field from all ot
 \end{align}
 \label{eqn:magnetic_field_expansion}
 \end{subequations}
-where $\bar r = 3-r$,  and $a_{mn}^j = a_n^j p_{mn}^j$, $b_{mn}^j = b_n^j q_{mn}^j$, $c_{mn}^j = c_n^j q_{mn}^j$, and $d_{mn}^j = d_n^j p_{mn}^j$; $a_n^j$, $b_n^j$, $c_n^j$, and $d_n^j$ are the ordinary Mie coefficients \cite{bohren2008absorption} of particle $j$, and $E_{mn}$ is a normalization factor
+where $\bar r = 3-r$ and $E_{mn}$ is a normalization factor
 \begin{equation}
     E_{mn} = i^n \sqrt{\frac{(2n+1)(n-m)!}{n(n+1)(n+m)!}}
 \end{equation}
@@ -328,7 +328,7 @@ By symmetry, the expansion coefficients of the mirror particle are related to th
     p^{\prime j,\text{inc}}_{mnr} = \Phi (-1)^{r+1} p^{j,\text{inc}}_{-mnr}
     \label{eqn:mirror_symmetry}
 \end{equation}
-i.e.\ the mirror negates the azimuthal index $m$ and negates the magnetic modes.
+i.e.\ the mirror negates the azimuthal index $m$ and negates the TM modes ($r=2$).
 
 \subsection{Rotational symmetry}
 Suppose the system has a discrete rotational symmetry of order $R$.
@@ -541,7 +541,7 @@ where $\Omega$ is a closed surface around particle $j$.
 For a plane wave, this decomposition can be carried out analytically.
 The direction of the incident $\bm{k}$ vector can be described by the two spherical angles $\theta$ and $\phi$.
 A linear polarization of the plane wave is either TE ($\bm{\hat \theta}$) or TM ($\bm{\hat \phi}$).
-Elliptically polarized light is then a complex linear combination of TE and TM polarizations.
+Elliptically polarized light is then a complex-valued linear combination of TE and TM polarizations.
 \begin{align}
 \begin{split}
 p_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \tau_{mn}(\cos \alpha) \exp(-im\beta) \exp(i\bm{k} \cdot \bm{r}_j) \\
@@ -554,7 +554,10 @@ q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) 
 \subsection{Focused beams}
 
 \section{Efficient numerical implementation}
-\subsection{Recursion relations}
+\subsection{Evaluation of VSH transition coefficients}
+\subsection{VSH rotation-translation-rotation algorithm}
+\subsection{Matrix-free iterative solver}
+\subsection{Preconditioner based on spatial locality}
 \subsection{Parallel execution}
 
 \section{Other conventions}
@@ -638,7 +641,24 @@ where $|E_0|$ is the amplitude of the source field.
 We have chosen to absorb this amplitude into the $a$, $b$, $p$, and $q$ coefficients.
 
 \section{MiePy: a GMMT Python library}
+
 \subsection{Installation}
+\noindent
+Install required dependencies:
+\begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
+    \item \href{https://cmake.org/install/}{CMake} (C++ build system)
+    \item \href{http://eigen.tuxfamily.org/index.php?title=Main_Page}{Eigen} (C++ linear algebra library)
+    \item \href{https://www.gnu.org/software/gsl/}{GNU Scientific Library (GSL)}
+\item GCC and GFORTRAN
+\item Python 3 and pip
+\end{itemize}
+Run the commands:
+\begin{lstlisting}
+git clone https://johnapark@bitbucket.org/johnapark/miepy.git --recurse-submodules
+cd miepy
+pip install . -e --user     # build and install
+pytest tests                # run tests
+\end{lstlisting}
 
 \subsection{Example script}
 
@@ -696,7 +716,6 @@ Example Python code using MiePy
                        (iii) spin vs. orbital torque,
                        (iv) local density of states,
                        (v) energy and momentum density
-
             \item Performance:
                         (i) lmax per particle,
                         (ii) cluster T-matrix re-usage with many sources
@@ -723,7 +742,8 @@ Example Python code using MiePy
                       (i) MPI/GPU parallelization
                       (ii) matrix-free solver and rotation-translation-rotation (RTR) coupling method,
                       (iii) approximation for long-range interactions in large systems,
-                      (iv) preconditioner for iterative matrix solver based on spatial locality
+                      (iv) preconditioner for iterative matrix solver based on spatial locality,
+                      (v) grid aggregation + FFT to obtain $\mathcal{O}(N \log N$) performance
             \item Time-domain via IFFT
         \end{itemize}
 \end{enumerate*}

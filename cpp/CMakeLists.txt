@@ -1,15 +1,17 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1)
 project(cpp)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mavx -std=c++17 -flto -fPIC")
-elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 #find_package(pybind11 REQUIRED)
 add_subdirectory(pybind11)
 
@@ -36,7 +38,7 @@ set(BINDINGS
 )
 
 add_library(cpp SHARED "${SOURCES}" "${BINDINGS}")
-target_link_libraries(cpp PUBLIC pybind11::module GSL::gsl OpenMP::OpenMP_CXX)
+target_link_libraries(cpp PUBLIC pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                      SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
