@@ -1,57 +1,50 @@
 MiePy
 ==============
-MiePy is a Python module to calculate scattering and absorption properties of spheres and core-shell structures. Mie theory is used, following the procedure in "Absorption and Scattering of Light by Small Particles" by Bohren & Huffman.
+MiePy is a Python module for the generalized multiparticle Mie theory (GMMT), also known as the aggregate T-matrix method. MiePy solves the electrodynamics of a collection of spherical or non-spherical scatterers with an arbitrary incident source.
 
-The material can be specified by a frequency dependent permittivity and permeability.
-
-
-Sample Output
+Features
 --------------
-In the image below, scattering intensity is shown for a 100 nm radius dielectric sphere with refractive index n = 3.7. Individual contributions from different multipoles are also shown (eD = electric dipole, etc.).
-
-<p align="center">
-  <img src="images/sphere_scattering.png?raw=true" width="600">
-</p>
-
++ **Non-spherical particles** using the T-matrix formulation via the null-field method with discrete sources (NFM-DS). Includes **cylinders, spheroids, ellipsoids, cubes and polygonal prisms
++ **Arbitrary incident sources** (plane waves, Gaussian beams, HG and LG beams, point dipoles) via near-field point matching or far-field integration
++ **Periodic boundary conditions** with various lattice types (square, hexagonal, etc.) and **mirror and discrete rotational symmetries** for faster calculations
++ Evaluation of cluster **cross-sections** and **optical force and torque** on individual particles
++ **OpenMP parallelization** for systems with larger numbers of particles
 
 Usage
 --------------
 
-For examples and use cases, see examples folder
+For examples and use cases, see examples folder.
 
-For full documentation, see docs folder
-
+For full documentation, see docs folder.
 
 Installation
 --------------
-First, clone (or download) this repository and cd into it:
+Install required dependencies:
 
++ [CMake](https://cmake.org/install/) (C++ build system)
++ [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (C++ linear algebra library)
++ [GNU Scientific Library (GSL)](https://www.gnu.org/software/gsl/)
++ GCC and GFORTRAN
++ Python 3 and pip
+
+Clone MiePy and its submodules:
 ```shell
-git clone https://github.com/johnaparker/MiePy && cd MiePy
+git clone https://johnapark@bitbucket.org/johnapark/miepy.git --recurse-submodules && cd miepy
 ```
 
-Then, install MiePy via pip (or use just setuptools):
-
+Build and install MiePy using pip:
 ```shell
-pip install .                    #using pip
-python setup.py install          #using just setuptools
+python setup.py build_ext
+pip install . -e --user
 ```
 
-To uninstall:
-
+Optionally, run tests to verify correctness:
 ```shell
-pip uninstall miepy 
+pytest tests
 ```
 
-To use MiePy without installation, add the MiePy directory to your PYTHONPATH
-
-
-Dependencies
+Sample Output
 --------------
-For installaltion: setuptools
-
-Required Python modules: numpy, scipy, matplotlib
-
 
 License
 --------------
