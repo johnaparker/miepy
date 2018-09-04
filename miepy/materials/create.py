@@ -36,14 +36,15 @@ class constant_material(material):
         """create a material with a constant eps and mu"""
         self.eps_value = eps
         self.mu_value = mu
+
+        self.f_eps = np.vectorize(lambda wav: self.eps_value)
+        self.f_mu  = np.vectorize(lambda wav: self.mu_value)
     
     def eps(self, wavelength):
-        f = np.vectorize(lambda wav: self.eps_value)
-        return f(wavelength)
+        return self.f_eps(wavelength)
 
     def mu(self, wavelength):
-        f = np.vectorize(lambda wav: self.mu_value)
-        return f(wavelength)
+        return self.f_mu(wavelength)
 
 class function_material(material):
     def __init__(self, eps_function, mu_function=None):
@@ -54,14 +55,15 @@ class function_material(material):
             self.mu_function = lambda wavelength: 1.0
         else:
             self.mu_function = mu_function
+
+        self.f_eps = np.vectorize(lambda wav: self.eps_function(wav))
+        self.f_mu = np.vectorize(lambda wav: self.mu_function(wav))
     
     def eps(self, wavelength):
-        f = np.vectorize(lambda wav: self.eps_function(wav))
-        return f(wavelength)
+        return self.f_eps(wavelength)
 
     def mu(self, wavelength):
-        f = np.vectorize(lambda wav: self.mu_function(wav))
-        return f(wavelength)
+        return self.f_mu(wavelength)
 
 class data_material(material):
     def __init__(self, wavelength, eps, mu=None):
@@ -78,13 +80,14 @@ class data_material(material):
         else:
             self.data['mu'] = np.asarray(mu, dtype=complex)
 
+        self.f_eps = interp1d(self.data['wavelength'], self.data['eps'], kind='linear')
+        self.f_mu  = interp1d(self.data['wavelength'], self.data['mu'], kind='linear')
+
     def eps(self, wavelength):
-        f = interp1d(self.data['wavelength'], self.data['eps'], kind='cubic')
-        return f(wavelength)
+        return self.f_eps(wavelength)
 
     def mu(self, wavelength):
-        f = interp1d(self.data['wavelength'], self.data['mu'], kind='cubic')
-        return f(wavelength)
+        return self.f_mu(wavelength)
 
 #TODO fix and test
 def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1):
