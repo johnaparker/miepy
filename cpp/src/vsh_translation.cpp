@@ -1,11 +1,130 @@
 #include "vsh_translation.hpp"
 #include "special.hpp"
+#include "indices.hpp"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
 
 using std::complex;
 using namespace std::complex_literals;
+
+vsh_cache::vsh_cache(int n, int m, int v, int u) {
+    factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
+            /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
+    qmax_A = std::min({n, v, (n + v - abs(m+u))/2});
+    qmax_B = std::min({n, v, (n + v + 1 - abs(m+u))/2});
+    A = ComplexArray(qmax_A+1);
+    B = ComplexArray(qmax_B+1);
+
+    for (int q = 0; q < qmax_A+1; q++) {
+        int p = n + v - 2*q;
+        double aq = a_func(m, n, u, v, p);
+        A(q) = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
+    }
+
+    B(0) = 0;
+    for (int q = 1; q < qmax_B+1; q++) {
+        int p = n + v - 2*q;
+        double bq = b_func(m, n, u, v, p);
+        B(q) = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
+    }
+}
+
+vsh_cache_map create_vsh_cache_map(int lmax) {
+    vsh_cache_map ret;
+
+    for (int n = 1; n < lmax+1; n++) {
+        for (int m = -n; m < n+1; m++) {
+            for (int v = 1; v < n+1; v++) {
+                for (int u = -v; u < v+1; u++) {
+                    std::array<int,4> key = {n, m, v, u};
+                    ret.insert(vsh_cache_map::value_type(key, vsh_cache(n, m, v, u)));
+                }
+            }
+        }
+    }
+
+    return ret;    
+}
+
+void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const Ref<const ComplexMatrix>& mie, int i, int j, 
+        double rad, double theta, double phi, double k, const vsh_cache_map& vsh_precompute) {
+
+    int lmax = mie.cols()/2;
+    int rmax = lmax_to_rmax(lmax);
+
+    int p_max = 2*lmax + 1;
+    ComplexArray zn = spherical_hn_recursion(p_max, k*rad);
+    Array Pnm = associated_legendre_recursion(p_max, cos(theta));
+
+    for (int n = 1; n < lmax+1; n++) {
+        for (int m = -n; m < n+1; m++) {
+            for (int v = 1; v < n+1; v++) {
+                for (int u = -v; u < v+1; u++) {
+                    if (n == v && u < -m)
+                        continue;
+
+                    m *= -1;
+
+                    std::array<int,4> key = {n, m, v, u};
+                    vsh_cache cache = vsh_precompute.at(key);
+                    complex<double> factor = cache.factor;
+                    int qmax_A = cache.qmax_A;
+                    int qmax_B = cache.qmax_B;
+                    ComplexArray A = cache.A;
+                    ComplexArray B = cache.B;
+
+                    complex<double> exp_phi = exp(1i*double(u+m)*phi);
+
+                    complex<double> sum_term = 0;
+                    for (int q = 0; q < qmax_A+1; q++) {
+                        int p = n + v - 2*q;
+                        int idx = p*(p+2) - p + (u+m);
+                        sum_term += A(q)*Pnm(idx)*zn(p);
+                    }
+
+                    complex<double> A_translation = factor*exp_phi*sum_term;
+
+                    sum_term = 0;
+                    for (int q = 1; q < qmax_B+1; q++) {
+                        int p = n + v - 2*q;
+                        int idx = (p+1)*((p+1)+2) - (p+1) + (u+m);
+                        sum_term += B(q)*Pnm(idx)*zn(p+1);
+                    }
+
+                    complex<double> B_translation = -factor*exp_phi*sum_term;
+                    std::array<complex<double>,2> transfer{A_translation, B_translation};
+
+                    m *= -1;
+
+                    for (int a = 0; a < 2; a++) {
+                        for (int b = 0; b < 2; b++) {
+                            complex<double> val = transfer[(a+b)%2];
+                            int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
+                            int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+                            agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
+
+                            idx = j*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
+                            idy = i*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+                            agg_tmatrix(idx, idy) = pow(-1, n+v+a+b)*val*mie(i, b*lmax + v-1);
+
+                            if ((n == v && u != -m) || (n != v)) {
+                                idx = i*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
+                                idy = j*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
+                                agg_tmatrix(idx, idy) = pow(-1, m+u-a-b)*val*mie(j, a*lmax + n-1);
+
+                                idx = j*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
+                                idy = i*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
+                                agg_tmatrix(idx, idy) = pow(-1, m+u+n+v)*val*mie(i, a*lmax + n-1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 py::array_t<complex<double>> vsh_translation_lambda_py(
         int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,

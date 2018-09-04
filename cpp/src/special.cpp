@@ -6,20 +6,13 @@
 //#include <omp.h>
 
 using std::complex;
+using namespace std::complex_literals;
 
 double factorial(double n) {
     return std::tgamma(n+1);
 }
 
 // if n>z, the iterative jn's may not converge
-
-//double spherical_jn(int n, double z, bool derivative) {
-    //if (derivative)
-        //return spherical_jn(n-1, z) - (n+1)/z*spherical_jn(n, z);
-
-    //return gsl_sf_bessel_jl(n, z);
-//}
-
 complex<double> spherical_jn(int n, complex<double> z, bool derivative) {
     if (!derivative) {
         //return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));
@@ -90,6 +83,30 @@ complex<double> spherical_hn(int n, double z, bool derivative) {
     }
 }
 
+ComplexArray spherical_hn_recursion(int nmax, double z) {
+    //return complex<double>(gsl_sf_bessel_jl(n, z), gsl_sf_bessel_yl(n, z));
+    double sin_z = sin(z);
+    double cos_z = cos(z);
+    Array jn(nmax+1);
+    Array yn(nmax+1);
+
+    jn(0) = sin_z/z;
+    yn(0) = -cos_z/z;
+
+    jn(1) = jn(0)/z + yn(0);
+    yn(1) = yn(0)/z - jn(0);
+
+    for (int i = 2; i <= nmax; i++) {
+        jn(i) = (2*i - 1)/z*jn(i-1) - jn(i-2);
+
+        yn(i) = (2*i - 1)/z*yn(i-1) - yn(i-2);
+    }
+
+    ComplexArray ret = jn + 1.0i*yn;
+    return ret;
+}
+
+
 complex<double> spherical_hn_2(int n, double z, bool derivative) {
     return std::conj(spherical_hn(n, z, derivative));
 }
@@ -148,6 +165,32 @@ double associated_legendre(int n, int m, double z, bool derivative) {
     else {
         return leg;
     }
+}
+
+Array associated_legendre_recursion(int nmax, double z) {
+    auto size = gsl_sf_legendre_array_n(nmax);
+    double *result = new double[size];
+    gsl_sf_legendre_array(GSL_SF_LEGENDRE_NONE, nmax, z, result);
+
+    Array ret(nmax*(nmax+2) + 1);
+
+    for (int n = 0; n <= nmax; n++) {
+        for (int m = -n; m <= n; m++) {
+            auto index = gsl_sf_legendre_array_index(n, abs(m));
+            double leg = result[index];
+
+            if (m < 0) {
+                double factor = pow(-1, m)*factorial(n+m)/factorial(n-m);
+                leg *= factor;
+            }
+
+            int idx = n*(n+2) - n + m;
+            ret(idx) = leg;
+        }
+    }
+
+    delete[] result;
+    return ret;
 }
 
 // combine below into pi_tau_func that computes both and returns as a tuple

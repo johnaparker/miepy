@@ -41,12 +41,11 @@ ComplexVector bicgstab(const Ref<const ComplexMatrix>& A, const Ref<const Comple
 
     // step 1
     ComplexVector x_prev = b;
+    ComplexVector r_prev = b - matrix_vector_product(A, x_prev);
 
-    double error = (A*x_prev - b).norm();
+    double error = (r_prev).norm();
     if (error < tolerance)
         return x_prev;
-
-    ComplexVector r_prev = b - A*x_prev;
 
     // step 2
     ComplexVector r_hat = r_prev;
@@ -116,12 +115,15 @@ ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
 ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
         const Ref<const ComplexMatrix>& mie, double k) {
 
-    int Nparticles = positions.rows();
     int lmax = mie.cols()/2;
     int rmax = lmax_to_rmax(lmax);
+    int Nparticles = positions.rows();
     int size = 2*rmax*Nparticles;
 
     ComplexMatrix agg_tmatrix = ComplexMatrix::Zero(size, size);
+
+    if (Nparticles == 1)
+        return agg_tmatrix;
     
     int N = Nparticles*(Nparticles-1)/2;
     Array ivals(N);
@@ -135,58 +137,23 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
             counter += 1;
         }
     }
+    
+    auto vsh_precompute = create_vsh_cache_map(lmax);
 
-    if (Nparticles == 1)
-        return agg_tmatrix;
+    #pragma omp parallel for
+    for (int ij = 0; ij < N; ij++) {
+        int i = ivals(ij);
+        int j = jvals(ij);
 
-    for (int n = 1; n < lmax+1; n++) {
-        for (int m = -n; m < n+1; m++) {
-            for (int v = 1; v < n+1; v++) {
-                for (int u = -v; u < v+1; u++) {
-                    if (n == v && u < -m)
-                        continue;
+        Vector3d dji = positions.row(i) - positions.row(j);
 
-                    auto fn = vsh_translation_lambda(m, n, u, v, vsh_mode::outgoing);
+        double rad = dji.norm();
+        double theta = acos(dji(2)/rad);
+        double phi = atan2(dji(1), dji(0));
 
-#pragma omp parallel for
-                    for (int ij = 0; ij < N; ij++) {
-                        int i = ivals(ij);
-                        int j = jvals(ij);
-
-                        Vector3d dji = positions.row(i) - positions.row(j);
-
-                        double rad = dji.norm();
-                        double theta = acos(dji(2)/rad);
-                        double phi = atan2(dji(1), dji(0));
-                        auto transfer = fn(rad, theta, phi, k);
-
-                        for (int a = 0; a < 2; a++) {
-                            for (int b = 0; b < 2; b++) {
-                                complex<double> val = transfer[(a+b)%2];
-                                int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
-                                int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
-                                agg_tmatrix(idx, idy) = val*mie(j, b*lmax + v-1);
-
-                                idx = j*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
-                                idy = i*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
-                                agg_tmatrix(idx, idy) = pow(-1, n+v+a+b)*val*mie(i, b*lmax + v-1);
-
-                                if ((n == v && u != -m) || (n != v)) {
-                                    idx = i*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
-                                    idy = j*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
-                                    agg_tmatrix(idx, idy) = pow(-1, m+u-a-b)*val*mie(j, a*lmax + n-1);
-
-                                    idx = j*(2*rmax) + b*(rmax) + v*(v+2) - v - u - 1;
-                                    idy = i*(2*rmax) + a*(rmax) + n*(n+2) - n - m - 1;
-                                    agg_tmatrix(idx, idy) = pow(-1, m+u+n+v)*val*mie(i, a*lmax + n-1);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        vsh_translation_insert_pair(agg_tmatrix, mie, i, j, rad, theta, phi, k, vsh_precompute);
     } 
 
     return agg_tmatrix;
 }
+
