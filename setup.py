@@ -51,9 +51,8 @@ class builder(build_ext):
         if not os.path.isdir('./miepy/materials/database'):
             command = ["./download_materials.sh"]
             print('Downloading material database')
-            if subprocess.call(protoc_command) != 0:
+            if subprocess.call(command) != 0:
                 sys.exit(-1)
-            install.run(self)
         else:
             print('Material database already downloaded')
 

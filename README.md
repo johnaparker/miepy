@@ -4,7 +4,7 @@ MiePy is a Python module for the generalized multiparticle Mie theory (GMMT), al
 
 Features
 --------------
-+ **Non-spherical particles** using the T-matrix formulation via the null-field method with discrete sources (NFM-DS). Includes **cylinders, spheroids, ellipsoids, cubes and polygonal prisms
++ **Non-spherical particles** using the T-matrix formulation via the null-field method with discrete sources (NFM-DS). Includes cylinders, spheroids, ellipsoids, cubes and polygonal prisms
 + **Arbitrary incident sources** (plane waves, Gaussian beams, HG and LG beams, point dipoles) via near-field point matching or far-field integration
 + **Periodic boundary conditions** with various lattice types (square, hexagonal, etc.) and **mirror and discrete rotational symmetries** for faster calculations
 + Evaluation of cluster **cross-sections** and **optical force and torque** on individual particles
@@ -29,13 +29,12 @@ Install required dependencies:
 
 Clone MiePy and its submodules:
 ```shell
-git clone https://johnapark@bitbucket.org/johnapark/miepy.git --recurse-submodules && cd miepy
+git clone https://github.com/johnaparker/miepy_private.git miepy --recurse-submodules && cd miepy
 ```
 
 Build and install MiePy using pip:
 ```shell
-python setup.py build_ext
-pip install . -e --user
+pip install -e . --user -v
 ```
 
 Optionally, run tests to verify correctness:
