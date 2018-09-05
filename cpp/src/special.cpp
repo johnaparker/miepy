@@ -142,28 +142,34 @@ double riccati_3(int n, double z, bool derivative) {
 // it may be worth included direct n=2 (still better than recursive)
 // z is always equal to cos(theta) -- simplifies the n=(1,2) equations
 double associated_legendre(int n, int m, double z, bool derivative) {
-    if (n == 1) {
-        if (m == 0)
-            return z;
-        if (m == 1)
-            return sqrt(1 - pow(z,2));
-        if (m == -1)
-            return -sqrt(1 - pow(z,2))/2;
-    }
-    auto size = gsl_sf_legendre_array_n(n);
-    auto index = gsl_sf_legendre_array_index(n, abs(m));
-    double *result = new double[size];
-    gsl_sf_legendre_array(GSL_SF_LEGENDRE_NONE, n, z, result);
-    double leg = result[index];
-    delete[] result;
+    if (!derivative) {
+        if (n == 1) {
+            if (m == 0)
+                return z;
+            if (m == 1)
+                return sqrt(1 - pow(z,2));
+            if (m == -1)
+                return -sqrt(1 - pow(z,2))/2;
+        }
+        auto size = gsl_sf_legendre_array_n(n);
+        auto index = gsl_sf_legendre_array_index(n, abs(m));
+        double *result = new double[size];
+        gsl_sf_legendre_array(GSL_SF_LEGENDRE_NONE, n, z, result);
+        double leg = result[index];
+        delete[] result;
 
-    if (m < 0) {
-        //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
-        double factor = pow(-1, m)*factorial(n+m)/factorial(n-m);
-        return factor*leg;
+        if (m < 0) {
+            //double factor = std::tgamma(n + m + 1)/std::tgamma(n - m + 1);
+            double factor = pow(-1, m)*factorial(n+m)/factorial(n-m);
+            return factor*leg;
+        }
+        else {
+            return leg;
+        }
     }
+    // TODO: implement
     else {
-        return leg;
+        return 0;
     }
 }
 
@@ -286,9 +292,11 @@ double b_func(int m, int n, int u, int v, int p) {
 }
 
 
-//#pragma omp declare reduction( + : std::complex<double> : \
-                       //std::plus< std::complex<double> >( )) \
-                       //initializer(omp_priv = omp_orig)
+/*
+#pragma omp declare reduction( + : std::complex<double> : \
+                       std::plus< std::complex<double> >( )) \
+                       initializer(omp_priv = omp_orig)
+                       */
 
 complex<double> test(int n, double z, bool derivative) {
     complex<double> total = 0;

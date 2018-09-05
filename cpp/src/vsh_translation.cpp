@@ -207,7 +207,7 @@ AB_type vsh_translation_eigen(
         int m, int n, int u, int v, const Ref<const Array>& rad, const Ref<const Array>& theta,
         const Ref<const Array>& phi, double k, vsh_mode mode) {
 
-    int size = rad.size();
+    size_t size = rad.size();
     AB_type result = AB_type::Zero(2, size);
 
     m *= -1;
@@ -266,13 +266,13 @@ py::array_t<complex<double>> vsh_translation_numpy(
             /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
     
 
-    py::array_t<complex<double>> exp_phi({int(buf_theta.shape(0))});
+    py::array_t<complex<double>> exp_phi(buf_theta.shape(0));
     auto buf_exp_phi = exp_phi.mutable_unchecked<1>();
 
-    py::array_t<double> cos_theta({int(buf_theta.shape(0))});
+    py::array_t<double> cos_theta(buf_theta.shape(0));
     auto buf_cos_theta = cos_theta.mutable_unchecked<1>();
 
-    for (size_t idx = 0; idx < buf_theta.shape(0); idx++) {
+    for (ssize_t idx = 0; idx < buf_theta.shape(0); idx++) {
         buf_exp_phi(idx)   = exp(1i*double(u+m)*buf_phi(idx));
         buf_cos_theta(idx) = cos(buf_theta(idx));
         buf(0,idx) = 0;
@@ -286,7 +286,7 @@ py::array_t<complex<double>> vsh_translation_numpy(
         double aq = a_func(m, n, u, v, p);
         complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
 
-        for (size_t idx = 0; idx < buf_theta.shape(0); idx++) {
+        for (ssize_t idx = 0; idx < buf_theta.shape(0); idx++) {
             double Pnm_val = associated_legendre(p, u+m, buf_cos_theta(idx));
             complex<double> zn_val  = zn(p, k*buf_rad(idx), false);
             buf(0,idx) += factor*buf_exp_phi(idx)*A*Pnm_val*zn_val;
@@ -300,7 +300,7 @@ py::array_t<complex<double>> vsh_translation_numpy(
         double bq = b_func(m, n, u, v, p);
         complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
 
-        for (size_t idx = 0; idx < buf_theta.shape(0); idx++) {
+        for (ssize_t idx = 0; idx < buf_theta.shape(0); idx++) {
             double Pnm_val = associated_legendre(p+1, u+m, buf_cos_theta(idx));
             complex<double> zn_val  = zn(p+1, k*buf_rad(idx), false);
             buf(1,idx) -= factor*buf_exp_phi(idx)*A*Pnm_val*zn_val;
@@ -325,7 +325,7 @@ py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b)
     double *ptr_a = (double *) buf_a.ptr,
            *ptr_b = (double *) buf_b.ptr;
 
-    for (size_t idx = 0; idx < buf_a.shape[0]; idx++) {
+    for (ssize_t idx = 0; idx < buf_a.shape[0]; idx++) {
         buf(0,idx) = ptr_a[idx];
         buf(1,idx) = ptr_b[idx];
     }
@@ -401,7 +401,7 @@ double test3(int size, int cores) {
 
     auto fn = vsh_translation_lambda(m, n, u, v, mode);
 
-//#pragma omp parallel for num_threads(cores)
+    #pragma omp parallel for num_threads(cores)
     for (int i = 0; i <size; i++) {
         auto AB = fn(rad, theta, phi, k);
         result(0,i) = AB[0];

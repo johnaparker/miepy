@@ -6,8 +6,8 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC -Wl,-O1")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -44,5 +44,6 @@ set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     add_executable(debug test/debug.cpp "${SOURCES}")
+    set_target_properties(debug PROPERTIES COMPILE_FLAGS "-w")
     target_link_libraries(debug cpp pybind11::embed)
 endif()

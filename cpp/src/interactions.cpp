@@ -103,6 +103,8 @@ ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
         interaction_matrix(i,i) += 1;
     
     switch (method) {
+        case solver::exact:  // TODO: implment
+        default:
         case solver::bicgstab:
             //Eigen::BiCGSTAB<ComplexMatrix> solver;
             //solver.setTolerance(1e-5);

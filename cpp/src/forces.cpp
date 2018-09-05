@@ -6,6 +6,8 @@
 vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         double k, double eps_b, double mu_b) {
 
+    (void) mu_b;    //TODO: mu_b not being used
+
     static double eps_0 = GSL_CONST_MKSA_VACUUM_PERMITTIVITY;
 
     std::complex<double> Fxy = 0;
@@ -85,6 +87,7 @@ vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector
 vec3 torque(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         double k, double eps_b, double mu_b) {
 
+    (void) mu_b;    //TODO: mu_b not being used
     static double eps_0 = GSL_CONST_MKSA_VACUUM_PERMITTIVITY;
 
     int rmax = p_scat.size()/2;

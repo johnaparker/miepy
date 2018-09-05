@@ -22,7 +22,7 @@ vec3 theta_hat(double theta, double phi) {
     return ret;
 }
 
-vec3 phi_hat(double theta, double phi) {
+vec3 phi_hat(double phi) {
     vec3 ret;
     ret << -sin(phi),
            cos(phi),
@@ -34,7 +34,7 @@ cvec3 vec_sph_to_cart(const Ref<const cvec3>& v, double theta, double phi) {
     cvec3 ret;
     ret << v.dot(rad_hat(theta, phi)),
            v.dot(theta_hat(theta, phi)),
-           v.dot(phi_hat(theta, phi));
+           v.dot(phi_hat(phi));
 
     return ret;
 }
@@ -48,6 +48,8 @@ std::function<complex<double>(int, double, bool)> get_zn(vsh_mode mode) {
         case vsh_mode::incident:
         case vsh_mode::interior:
             return spherical_jn;
+        default:
+            return spherical_hn_2;
     }
 }
 
