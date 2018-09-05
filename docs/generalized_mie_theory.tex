@@ -1,7 +1,16 @@
 \documentclass[11pt]{article}
 
-% standard header for all latex files
-\input{/home/john/.latex/standard_header.tex}
+\usepackage{amsmath,amsfonts,amssymb}   % basic math
+\usepackage{graphicx}  % images
+\usepackage{float}     % floating image support
+\usepackage{listings}  % code input
+\usepackage{color}     % colors
+\usepackage[super,comma]{natbib}    % citing
+\usepackage[T1]{fontenc}      % fonts
+\usepackage[utf8]{inputenc}   % fonts
+\usepackage{titling}   % title control
+\usepackage{microtype}
+\usepackage{bm}
 
 \usepackage[utf8]{inputenc}
 \usepackage[margin=.9in]{geometry}
@@ -23,8 +32,31 @@
     urlcolor=blue
 }
 
-%\usepackage[nottoc,notlot,notlof]{tocbibind}
+\bibliographystyle{unsrtnat}
 \renewcommand{\bibname}{References}
+
+% standard code colors
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% setup for python language
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{dkgreen},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
 \title{Generalized multiparticle Mie theory (GMMT)}
 \date{}
@@ -59,12 +91,16 @@ They are defined as
 \label{eqn:vsh_definition}
 \end{align}
 where $J= 1,2,3,4$. The radial functions $z_n^{(J)}$ are
-\begin{equation}
-\begin{align*}
-    z_n^{(1)}(x) &= j_n(x)  \qquad&  z_n^{(3)}(x) &= h_n^{(1)}(x) = j_n(x) + iy_n(x)   \\
-z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
-\end{align*}
-\end{equation}
+\begin{align}
+\begin{split}
+    \begin{aligned}
+        z_n^{(1)}(x) &= j_n(x)  \qquad&  z_n^{(3)}(x) &= h_n^{(1)}(x) = j_n(x) + iy_n(x)
+    \end{aligned}\\
+    \begin{aligned}
+        z_n^{(2)}(x) &= y_n(x)  \qquad&  z_n^{(4)}(x) &= h_n^{(2)}(x) = j_n(x) - iy_n(x)
+    \end{aligned}
+\end{split}
+\end{align}
 where $j_n$, $y_n$ are the spherical Bessel functions of the first and second kind, and $h_n^{(1)}$, $h_n^{(2)}$ are the spherical Hankel functions of the first and second kind.
 The angular functions $\pi_{mn}$ and $\tau_{mn}$ are
 \begin{align}
@@ -167,7 +203,7 @@ From the field expansions, \cref{eqn:electric_field_expansion}, the VSH translat
 \end{equation}
 where $A_{mnruvs}^{(J)jl}$ are the \emph{normalized} translation coefficients
 \begin{equation}
-    A_{mnruvs}^{(J)jl} &= \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mnruvs}^{(J)jl}
+    A_{mnruvs}^{(J)jl} = \frac{E_{uv}}{E_{mn}} \widetilde{A}_{mnruvs}^{(J)jl}
 \end{equation}
 and $f^{(J)}$ is a $\pm 1$ sign term
 \begin{equation}
@@ -256,7 +292,7 @@ Even more explicitly, the multi-index can be unraveled:
 \end{equation}
 If the system consists entirely of spheres, then using \cref{eqn:tmatrix_sphere}, the interaction equation becomes
 \begin{equation}
-    p_{mnr}^{j,\text{inc}} &= p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v} \sum_{s=1}^2
+    p_{mnr}^{j,\text{inc}} = p_{mn}^{j,\text{src}}  -  \sum_{l \neq j}^{(1,N)}\sum_{v=1}^{L_\text{max}} \sum_{u=-v}^{v} \sum_{s=1}^2
     A_{mnruvs}^{(3)jl} t_{sv}^l p_{uvs}^{l,\text{inc}}
     \label{eqn:sphere_interations}
 \end{equation}
@@ -384,10 +420,10 @@ The cross-sections can be computed via two methods: one that uses the cluster co
 \begin{subequations}
 \begin{align}
     C_\text{abs} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{\alpha}
-        \text{Re} \left\{p_\alpha^{j,\text{inc}}^* p_\alpha^{j,\text{scat}} \right\} 
+    \text{Re} \left\{(p_\alpha^{j,\text{inc}})^* p_\alpha^{j,\text{scat}} \right\} 
         - |p_\alpha^{j,\text{scat}}|^2\\
     C_\text{ext} &= \frac{4\pi}{k^2} \sum_{j=1}^N \sum_{\alpha}
-        \text{Re} \left\{p_\alpha^{j,\text{src}}^* p_\alpha^{j,\text{scat}} \right\} \\
+    \text{Re} \left\{(p_\alpha^{j,\text{src}})^* p_\alpha^{j,\text{scat}} \right\} \\
     C_\text{scat} &= C_\text{ext} - C_\text{abs}
 \end{align}
 \label{eqn:cross_sections}
@@ -403,7 +439,7 @@ Each term in the absorption/extinction cross-section sum can be interpreted as t
     C_\text{scat} &= \frac{4\pi}{k^2} \sum_{\alpha}
         |p_{\alpha}^\text{cluster}|^2 \\
     C_\text{ext} &= \frac{4\pi}{k^2} \sum_{\alpha}
-    \text{Re} \left\{ p_\alpha^{0,\text{src}}^* p_\alpha^\text{cluster} \right\} \\
+    \text{Re} \left\{ (p_\alpha^{0,\text{src}})^* p_\alpha^\text{cluster} \right\} \\
     C_\text{abs} &= C_\text{ext} - C_\text{scat}
 \end{align}
 \end{subequations}
@@ -533,7 +569,7 @@ where the expansion coefficients now depend on the angular position.
 To solve the particle interaction equation, \cref{eqn:particle_interactions}, the expansion coefficients of the source field must be known at each particle.
 Given the electric fields of the incident source, $\boldsymbol{E}^\text{src}(\boldsymbol{r})$, the source can be decomposed into expansion coefficients by integration around particle $j$
 \begin{equation}
-    p_{mnr}^{j,\text{src}} &= i\cfrac{\int_\Omega \boldsymbol{E}^\text{src} \cdot \boldsymbol{N}_{mnr}^{(1)*} \; d\Omega}
+    p_{mnr}^{j,\text{src}} = i\cfrac{\int_\Omega \boldsymbol{E}^\text{src} \cdot \boldsymbol{N}_{mnr}^{(1)*} \; d\Omega}
     {E_{mn} \langle \boldsymbol{N}_{mnr}^{(1)},\boldsymbol{N}_{mnr}^{(1)} \rangle} \\
 \end{equation}
 where $\Omega$ is a closed surface around particle $j$.
@@ -689,14 +725,14 @@ Example Python code using MiePy
 
 \subsection{Target features}
 
-\begin{enumerate*}
-    \item \textbf{version 0.3} (released)
+\begin{itemize}
+    \item[] \textbf{version 0.3} (released)
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item 30$\times$ performance for larger clusters
             \item T-matrix formulation for non-spherical particles
             \item Plane-waves and beams can have arbitrary direction and polarization
         \end{itemize}
-    \item \textbf{version 0.4}
+    \item[] \textbf{version 0.4}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item C++ implementation with OpenMP parallelization and Python bindings (using pybind11)
             \item Periodic boundary conditions (1D and 2D)
@@ -708,7 +744,7 @@ Example Python code using MiePy
                     \item Save solution so that it can be reloaded
             \item Any changes to T-matrix/sources
         \end{itemize}
-    \item \textbf{version 0.5}
+    \item[] \textbf{version 0.5}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item Additional functions: 
                        (i) cluster T-matrix,
@@ -727,7 +763,7 @@ Example Python code using MiePy
             \item Existing TODO items
             \item Improved documentation, examples, tests, and tutorial/introduction for quick start
         \end{itemize}
-    \item \textbf{future}
+    \item[] \textbf{future}
         \begin{itemize}[label={\tiny\raisebox{1ex}{\textbullet}}]
             \item Substrates, layered substrates
             \item Beyond the Rayleigh hypothesis for non-spherical particle interactions
@@ -746,6 +782,8 @@ Example Python code using MiePy
                       (v) grid aggregation + FFT to obtain $\mathcal{O}(N \log N$) performance
             \item Time-domain via IFFT
         \end{itemize}
-\end{enumerate*}
+\end{itemize}
+
+\bibliography{generalized_mie_theory}
 
 \end{document}
