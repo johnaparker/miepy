@@ -19,7 +19,17 @@ For full documentation, see docs folder.
 
 Installation
 --------------
-Install required dependencies:
+If numpy is not already installed, it must be installed prior to MiePy's installation
+```shell
+pip install numpy
+```
+Then install MiePy
+```shell
+pip install miepy
+```
+
+
+To build MiePy from source, first install the required dependencies:
 
 + [CMake](https://cmake.org/install/) (C++ build system)
 + [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) (C++ linear algebra library)
@@ -27,21 +37,17 @@ Install required dependencies:
 + GCC and GFORTRAN
 + Python 3 and pip
 
-Then, install MiePy using pip
-```shell
-pip install miepy
-```
+Then, install MiePy using pip.
 
-Alternatively, to get the latest development version, clone MiePy and its submodules:
+
+To build the latest development version, clone MiePy and its submodules:
 ```shell
 git clone https://github.com/johnaparker/miepy.git miepy --recurse-submodules && cd miepy
 ```
-
 and install MiePy using pip
 ```shell
 pip install .
 ```
-
 Optionally, run the tests to verify correctness:
 ```shell
 pytest tests
@@ -52,4 +58,4 @@ Sample Output
 
 License
 --------------
-MiePy is licensed under the terms of the MIT license.
+MiePy is licensed under the terms of the GPLv3 license.

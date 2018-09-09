@@ -19,7 +19,7 @@ AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
 # REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.3'
-LICENSE = 'MIT'
+LICENSE = 'GPLv3'
 
 REQUIRED = [
     'numpy', 
@@ -149,7 +149,7 @@ setup(
         'build_ext': builder_ext,
     },
     classifiers=[
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         'Programming Language :: Python',
         "Development Status :: 3 - Alpha",
         "Topic :: Scientific/Engineering :: Physics",
