@@ -1,7 +1,11 @@
-include download_materials.sh
-include miepy/materials/database
-include miepy/bin
+include miepy/materials/database.zip
+recursive-include miepy/materials/database *
 
-global-include cpp/CMakeLists.txt *.cmake
+include miepy/bin/*
+
+include cpp/CMakeLists.txt
+recursive-include cpp/pybind11 *
 recursive-include cpp/src *
-recursive-include cpp/pybind11/include *.h
+
+include miepy/tmatrix/nfmds/*.f90
+include miepy/tmatrix/nfmds/makefile

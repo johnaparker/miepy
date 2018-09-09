@@ -27,17 +27,22 @@ Install required dependencies:
 + GCC and GFORTRAN
 + Python 3 and pip
 
-Clone MiePy and its submodules:
+Then, install MiePy using pip
 ```shell
-git clone https://github.com/johnaparker/miepy_private.git miepy --recurse-submodules && cd miepy
+pip install miepy
 ```
 
-Build and install MiePy using pip:
+Alternatively, to get the latest development version, clone MiePy and its submodules:
 ```shell
-pip install -e . --user -v
+git clone https://github.com/johnaparker/miepy.git miepy --recurse-submodules && cd miepy
 ```
 
-Optionally, run tests to verify correctness:
+and install MiePy using pip
+```shell
+pip install .
+```
+
+Optionally, run the tests to verify correctness:
 ```shell
 pytest tests
 ```

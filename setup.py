@@ -5,58 +5,84 @@ import platform
 import subprocess
 
 from setuptools import setup, find_packages, Extension
+from distutils.command.build import build
 from setuptools.command.build_ext import build_ext
 from setuptools import Command
 from distutils.version import LooseVersion
 
+
+NAME = 'miepy'
+DESCRIPTION = "Python module to solve Maxwell's equations for a cluster of particles using the generalized multiparicle Mie theory (GMMT)"
+URL = ''
+EMAIL = 'japarker@uchicago'
+AUTHOR = 'John Parker'
+KEYWORDS = 'electrodynamics mie scattering'
+# REQUIRES_PYTHON = '>=3.6.0'
+VERSION = '0.3'
+LICENSE = 'MIT'
+
+REQUIRED = [
+    'numpy', 
+    'scipy',
+    'matplotlib',
+    'tqdm',
+    'sympy',
+    'pandas',
+    'pyyaml',
+    'numpy_quaternion',
+    'spherical_functions',
+]
+
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
-class nfmds(Command):
-    user_options = []
 
-    def initialize_options(self):
-        pass
+def unzip_material_database():
+    import zipfile
+    path = 'miepy/materials/database.zip'
+    with zipfile.ZipFile(path, 'r') as zip_ref:
+        zip_ref.extractall('miepy/materials')
 
-    def finalize_options(self):
-        pass
 
+def build_nfmds(build_direc, lib_dir):
+    import pathlib
+    src_dir = 'miepy/tmatrix/nfmds'
+    obj_dir = '../../../{direc}/nfmds'.format(direc=build_direc)
+    exe_dir = '../../../{direc}/miepy/bin'.format(direc=lib_dir)
+    exe_dir = '../../bin'
+
+    exe_dir_root = 'miepy/bin'
+    obj_dir_root = '{build_direc}/nfmds'.format(build_direc=build_direc)
+    pathlib.Path(exe_dir_root).mkdir(exist_ok=True) 
+    pathlib.Path(obj_dir_root).mkdir(exist_ok=True) 
+
+    command = ['make', 'objdir={obj_dir}'.format(obj_dir=obj_dir),
+           'exedir={exe_dir}'.format(exe_dir=exe_dir), 'precision=double']
+    subprocess.check_call([' '.join(command)], cwd=src_dir, shell=True)
+
+
+class builder(build):
     def run(self):
-        print('building nfmds...')
+        if not os.path.isdir('miepy/materials/database'):
+            unzip_material_database()
 
-class builder(build_ext):
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+
+        build_nfmds(self.build_temp, self.build_lib)
+
+        super().run()
+
+
+class builder_ext(build_ext):
     def run(self):
-        ### Fortran compile
-        if not os.path.isdir('miepy/bin'):
-            subprocess.call(['mkdir', 'miepy/bin'])
-
-        if not os.path.exists('miepy/bin/tmatrix'):
-            subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['make precision=double'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix', 'miepy/bin'])
-
-        if not os.path.exists('miepy/bin/tmatrix_extended'):
-            subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['make precision=quad'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['make clean'], cwd='./miepy/tmatrix/nfmds', shell=True)
-            subprocess.call(['mv', './miepy/tmatrix/nfmds/tmatrix_extended', 'miepy/bin'])
-
-        ### Material database
-        if not os.path.isdir('./miepy/materials/database'):
-            command = ["./download_materials.sh"]
-            print('Downloading material database')
-            if subprocess.call(command) != 0:
-                sys.exit(-1)
-        else:
-            print('Material database already downloaded')
-
-        ### CMake compile
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
@@ -96,37 +122,36 @@ class builder(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-        subprocess.call(['cp', f'{extdir}/cpp.cpython-37m-x86_64-linux-gnu.so', 'miepy'])
+
+# hack to install numpy if needed since numpy_quaternion needs it at pre-installation
+import importlib
+if importlib.util.find_spec('numpy') is None:
+    subprocess.call([sys.executable, '-m', 'pip', 'install', 'numpy'])
+
 
 setup(
-    name = "miepy",
-    version = "0.3",
-    author = "John Parker",
-    author_email = "japarker@uchicago.com",
-    description = ("Python module to solve Maxwell's equations for a cluster of particles using the generalized multiparicle Mie theory (GMMT)"),
-    license = "MIT",
-    keywords = "electrodynamics mie scattering",
-    url = "",
+    name=NAME,
+    version=VERSION,
+    author=AUTHOR,
+    author_email=EMAIL,
+    description=DESCRIPTION,
+    license=LICENSE,
+    keywords=KEYWORDS,
+    url=URL,
     packages=find_packages(),
     long_description=read('README.md'),
-    install_requires=['numpy', 
-                      'scipy',
-                      'matplotlib',
-                      'tqdm',
-                      'sympy',
-                      'pandas',
-                      'pyyaml',
-                      'numpy_quaternion',
-                      'spherical_functions'],
+    long_description_content_type='text/markdown',
+    install_requires=REQUIRED,
     include_package_data = True,
     ext_modules=[CMakeExtension('miepy/cpp', './cpp')],
     cmdclass={
-        'build_ext': builder,
-        'build_nfmds': nfmds,
+        'build': builder,
+        'build_ext': builder_ext,
     },
     classifiers=[
+        "License :: OSI Approved :: MIT License",
+        'Programming Language :: Python',
         "Development Status :: 3 - Alpha",
         "Topic :: Scientific/Engineering :: Physics",
-        "License :: OSI Approved :: MIT License",
     ],
 )
