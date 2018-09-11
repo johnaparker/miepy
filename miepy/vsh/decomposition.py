@@ -18,7 +18,7 @@ def sampling_from_lmax(lmax, method):
     elif method == 'near':
         return 2*N
     else:
-        raise ValueError(f"'{method}' is not a valid method. Use 'far' or 'near'")
+        raise ValueError("'{method}' is not a valid method. Use 'far' or 'near'".format(method=method))
 
 def sample_sphere_point_matching(position, radius, sampling):
     """Sample points on the surface of the sphere for the point matching method
@@ -186,7 +186,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     elif mode in (vsh.vsh_mode.incident, vsh.vsh_mode.ingoing):
         factor = -1/(1j*Emn_val)
     else:
-        raise ValueError(f'{mode} is not a valid type of mode')
+        raise ValueError('{mode} is not a valid type of mode'.format(mode=mode))
 
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 

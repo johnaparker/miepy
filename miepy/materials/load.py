@@ -13,7 +13,8 @@ import miepy
 def get_filepath(name, author):
     """get the absolute filepath to the material data of name and author"""
     root = miepy.__path__[0]
-    filepath = f"{root}/materials/database/main/{name}/{author}.yml"
+    filepath = "{root}/materials/database/main/{name}/{author}.yml".format(
+            root=root, name=name, author=author)
     return filepath
 
 def load_material(name, author):
@@ -60,7 +61,7 @@ def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
     markers = itertools.cycle(('o', 'v', '^', '<', '>', 's', '8', 'p', 'x'))
     markers = itertools.cycle(MarkerStyle.filled_markers)
-    colors = itertools.cycle([f'C{i}' for i in range(9)])
+    colors = itertools.cycle(['C{}'.format(i) for i in range(9)])
     authors = get_authors(material_name)
 
     for author in authors:
@@ -89,12 +90,13 @@ def material_info_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
     authors = get_authors(material_name)
 
-    print(f"Information of {material_name} by author between {wavelength_min*1e9} nm and {wavelength_max*1e9} nm:")
+    print("Information of {material_name} by author between {wavelength_min} nm and {wavelength_max} nm:".format(
+             material_name=material_name, wavelength_min=wavelength_min*1e9, wavelength_max=wavelength_max*1e9))
     for author in authors:
         mat = load_material(material_name, author)
         data = wavelength_filter(mat.data, wavelength_min, wavelength_max)
         if not data.empty:
-            print(f"\t{author}:  {len(data)} datapoints")
+            print("\t{author}:  {length} datapoints".format(author=author, length=len(data)))
 
             filepath = get_filepath(name, author)
             with open(filepath, 'r') as f:

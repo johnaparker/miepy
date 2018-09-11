@@ -58,7 +58,7 @@ class plane_wave(source):
             theta = np.pi/2
             phi = 3*np.pi/2
         else:
-            raise ValueError(f"'{direction}' is not a valid direction of propagation. Use one of ['x', 'y', 'z', '-x', '-y', '-z']")
+            raise ValueError("'{direction}' is not a valid direction of propagation. Use one of ['x', 'y', 'z', '-x', '-y', '-z']".format(direction=direction))
 
         if polarization == direction[-1]:
             raise ValueError('polarization cannot be the same as the direction of propagation')
@@ -80,7 +80,7 @@ class plane_wave(source):
         elif polarization == 'lhc':
             pol = [1, -1j]
         else:
-            raise ValueError(f"'{polarization}' is not a valid polarization. Use one of ['x', 'y', 'z', 'rhc', 'lhc']")
+            raise ValueError("'{polarization}' is not a valid polarization. Use one of ['x', 'y', 'z', 'rhc', 'lhc']".format(polarization=polarization))
 
         return cls(pol, theta, phi, amplitude, phase)
     

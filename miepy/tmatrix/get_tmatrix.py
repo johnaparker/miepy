@@ -29,40 +29,41 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
     ### create temporary directory tree
     with tempfile.TemporaryDirectory() as direc:
         ### create 4 sub-directories
-        input_files_dir = f'{direc}/INPUTFILES'
+        input_files_dir = '{direc}/INPUTFILES'.format(direc=direc)
         os.makedirs(input_files_dir)
 
-        out_dir = f'{direc}/OUTPUTFILES'
+        out_dir = '{direc}/OUTPUTFILES'.format(direc=direc)
         os.makedirs(out_dir)
 
-        tmatrix_output_dir = f'{direc}/TMATFILES'
+        tmatrix_output_dir = '{direc}/TMATFILES'.format(direc=direc)
         os.makedirs(tmatrix_output_dir)
 
-        sources_dir = f'{direc}/TMATSOURCES'
+        sources_dir = '{direc}/TMATSOURCES'.format(direc=direc)
         os.makedirs(sources_dir)
 
         ### write 3 input files
-        with open(f'{input_files_dir}/Input.dat', 'w') as f:
+        with open('{input_files_dir}/Input.dat'.format(input_files_dir=input_files_dir), 'w') as f:
             f.write(main_input_file())
 
-        with open(f'{input_files_dir}/InputSCT.dat', 'w') as f:
+        with open('{input_files_dir}/InputSCT.dat'.format(input_files_dir=input_files_dir), 'w') as f:
             f.write(sct_input_file())
 
-        with open(f'{input_files_dir}/InputAXSYM.dat', 'w') as f:
+        with open('{input_files_dir}/InputAXSYM.dat'.format(input_files_dir=input_files_dir), 'w') as f:
             f.write((solver.input_function(Nrank=lmax, **input_kwargs)))
 
         ### execute program and communicate
+        install_path = miepy.__path__[0]
         if extended_precision:
-            command = f'{miepy.__path__[0]}/bin/tmatrix_extended'
+            command = '{install_path}/bin/tmatrix_extended'.format(install_path=install_path)
         else:
-            command = f'{miepy.__path__[0]}/bin/tmatrix'
+            command = '{install_path}/bin/tmatrix'.format(install_path=install_path)
 
         proc = subprocess.Popen([command], cwd=sources_dir, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        proc.communicate(f'{solver.number}'.encode())
+        proc.communicate(str(solver.number).encode())
         proc.wait()
 
         ### read T-matrix dimensions
-        with open(f'{tmatrix_output_dir}/Infotmatrix.dat', 'r') as f:
+        with open('{tmatrix_output_dir}/Infotmatrix.dat'.format(tmatrix_output_dir=tmatrix_output_dir), 'r') as f:
             lines = f.readlines()
 
             ### last entries in the final two lines give Nrank, Mrank, respectively
@@ -74,7 +75,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
             n_rank = int(n_rank_str[:-1])
 
         ### read T-matrix output
-        tmatrix_file = f'{tmatrix_output_dir}/tmatrix.dat'
+        tmatrix_file = '{tmatrix_output_dir}/tmatrix.dat'.format(tmatrix_output_dir=tmatrix_output_dir)
         data = pandas.read_csv(tmatrix_file, skiprows=3,
                   delim_whitespace=True, header=None).values.flatten()  # read as flat array
         data = data[~np.isnan(data)]  # throw out the NaNs

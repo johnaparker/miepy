@@ -67,7 +67,7 @@ def multipole_label(T,L):
     if L <= 3:
         last = ['D', 'Q', 'O', 'H'][L]
     else:
-        last = f" (L = {L})" 
+        last = " (L = {L})".format(L=L)
     return first + last
 
 def scattered_E(an, bn, k):

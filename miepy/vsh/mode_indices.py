@@ -33,12 +33,12 @@ class mode_indices:
         elif len(args) == 2:
             n_start, n_stop = args
         else:
-            raise TypeError(f"mode_indices expected at most 2 positional arguments, got {len(args)}")
+            raise TypeError("mode_indices expected at most 2 positional arguments, got {}".format(len(args)))
 
         try:
             n_start, n_stop = int(n_start), int(n_stop)
         except ValueError:
-            raise TypeError(f'integer arguments are required')
+            raise TypeError('integer arguments are required')
 
         if n_start < 1:
             raise ValueError('n_start must be greater than 1')
@@ -51,11 +51,12 @@ class mode_indices:
 
     def __repr__(self):
         if self.n_start == 1 and self.m_start is None and self.m_stop is None:
-            return f'mode_indices(lmax={self.n_stop})'
+            return 'mode_indices(lmax={})'.format(self.n_stop)
         elif self.m_start is None and self.m_stop is None:
-            return f'mode_indices(Lmin={self.n_start}, lmax={self.n_stop})'
+            return 'mode_indices(Lmin={}, lmax={})'.format(self.n_start, self.n_stop)
         else:
-            return f'mode_indices(Lmin={self.n_start}, lmax={self.n_stop}, Mmin={self.m_start}, Mmax={self.m_stop})'
+            return 'mode_indices(Lmin={}, lmax={}, Mmin={}, Mmax={})'.format(
+                       self.n_start, self.n_stop, self.m_start, self.m_stop)
 
     def __iter__(self):
         idx = self.idx_start

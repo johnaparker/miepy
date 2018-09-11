@@ -52,4 +52,4 @@ for r,n,m in miepy.mode_indices(lmax):
                 r_ji, theta_ji, phi_ji, k, miepy.vsh.vsh_mode.outgoing)
         A_expect, B_expect = (-1)**(m+u)*A, (-1)**(m+u+1)*B
 
-        print(f'{(n,m)} -> {(v,u)}: A = {A_calc}, Ap = {A_expect}, B = {B_calc}, Bp = {B_expect}')
+        print('({n},{m}) -> ({v},{u}): A = {A_calc}, Ap = {A_expect}, B = {B_calc}, Bp = {B_expect}'.format(**locals()))

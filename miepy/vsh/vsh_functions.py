@@ -18,7 +18,7 @@ def get_zn(mode):
     elif mode in (vsh_mode.incident, vsh_mode.interior):
         return vsh.special.spherical_jn
     else:
-        raise TypeError(f'{mode} is not a valid type of mode')
+        raise TypeError('{mode} is not a valid type of mode'.format(mode=mode))
 
 def get_zn_far(mode):
     """determine the zn function for a given mode, in the far-field limit"""
@@ -29,7 +29,7 @@ def get_zn_far(mode):
     elif mode in (vsh_mode.incident, vsh_mode.interior):
         return lambda n, z: np.cos(z - (n+1)*np.pi/2)/z
     else:
-        raise TypeError(f'{mode} is not a valid type of mode')
+        raise TypeError('{mode} is not a valid type of mode'.format(mode=mode))
 
 #TODO: this whole interface could probably be nicer...
 #TODO: specify spherical flag (either in VSH or the N/M functions themselves)

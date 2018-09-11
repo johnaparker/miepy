@@ -16,7 +16,7 @@ def tmatrix_reduce_lmax(tmatrix, lmax):
     lmax_original = miepy.vsh.rmax_to_lmax(rmax_original)
 
     if lmax > lmax_original:
-        raise ValueError(f'cannot reduce tmatrix to lmax={lmax} since it is already smaller than this') 
+        raise ValueError('cannot reduce tmatrix to lmax={lmax} since it is already smaller than this'.format(lmax=lmax)) 
 
     rmax = miepy.vsh.lmax_to_rmax(lmax)
 

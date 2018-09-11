@@ -58,14 +58,14 @@ if __name__ == '__main__':
     for i in range(3):
         comp = ['x', 'y', 'z'][i]
 
-        axes[0,i].plot(separations/nm, mst_force[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
-        axes[1,i].plot(separations/nm, mst_torque[i], 'o', color=f'C{i}', label='Numerical Stress Tensor')
+        axes[0,i].plot(separations/nm, mst_force[i], 'o', color='C{}'.format(i), label='Numerical Stress Tensor')
+        axes[1,i].plot(separations/nm, mst_torque[i], 'o', color='C{}'.format(i), label='Numerical Stress Tensor')
 
-        axes[0,i].plot(separations/nm, analytic_force[i], color=f'C{i}', label='Analytic Equation')
-        axes[1,i].plot(separations/nm, analytic_torque[i], color=f'C{i}', label='Analytic Equation')
+        axes[0,i].plot(separations/nm, analytic_force[i], color='C{}'.format(i), label='Analytic Equation')
+        axes[1,i].plot(separations/nm, analytic_torque[i], color='C{}'.format(i), label='Analytic Equation')
 
-        axes[0,i].set_title(label=f'F{comp}', weight='bold')
-        axes[1,i].set_title(label=f'T{comp}', weight='bold')
+        axes[0,i].set_title(label='F{comp}'.format(comp=comp), weight='bold')
+        axes[1,i].set_title(label='T{comp}'.format(comp=comp), weight='bold')
 
     for ax in axes.flatten():
         ax.axhline(y=0, color='black', linestyle='--')
