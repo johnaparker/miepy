@@ -12,9 +12,9 @@ from distutils.version import LooseVersion
 
 
 NAME = 'miepy'
-DESCRIPTION = "Python module to solve Maxwell's equations for a cluster of particles using the generalized multiparicle Mie theory (GMMT)"
+DESCRIPTION = "Python module to solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
 URL = ''
-EMAIL = 'japarker@uchicago'
+EMAIL = 'japarker@uchicago.edu'
 AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
 # REQUIRES_PYTHON = '>=3.6.0'
@@ -149,9 +149,14 @@ setup(
         'build_ext': builder_ext,
     },
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python',
-        "Development Status :: 3 - Alpha",
-        "Topic :: Scientific/Engineering :: Physics",
+        'Programming Language :: C++',
+        'Programming Language :: Fortran',
+        'Operating System :: POSIX',
+        'Operating System :: MacOS',
+        'Development Status :: 3 - Alpha',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Intended Audience :: Science/Research',
     ],
 )

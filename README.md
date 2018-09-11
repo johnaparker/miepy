@@ -19,7 +19,7 @@ For full documentation, see docs folder.
 
 Installation
 --------------
-If numpy is not already installed, it must be installed prior to MiePy's installation
+If NumPy is not already installed, it must be installed prior to MiePy's installation
 ```shell
 pip install numpy
 ```
@@ -37,7 +37,10 @@ To build MiePy from source, first install the required dependencies:
 + GCC and GFORTRAN
 + Python 3 and pip
 
-Then, install MiePy using pip.
+Then, install MiePy using pip
+```shell
+pip install miepy --no-binary
+```
 
 
 To build the latest development version, clone MiePy and its submodules:
