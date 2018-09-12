@@ -7,7 +7,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC -Wl,-O1")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
