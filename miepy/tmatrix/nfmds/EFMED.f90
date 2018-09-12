@@ -201,7 +201,7 @@ subroutine EFMED
   implicit none 
   integer    :: Nint, Nbeta, Niter, p, pN, ios, N
   real(O)    :: xmax, xmin, dx, e, c, wavelength, epsX, epsY, ind_refMed,           &
-                lambdaMed, wavenumberMed, du, L, Lmax 
+                lambdaMed, wavenumberMed, du, L, lmax 
   complex(O) :: ind_refRel
   logical    :: RandomOrientation, ComputeQCA
 ! -----------------------------------------------------------------------------------
@@ -237,14 +237,14 @@ subroutine EFMED
   N    = 2**pN
   du   = Pi / 2**p
   L    = real(N - 1,O) * du  
-  Lmax = real(N - 1,O) * Pi / real(N,O) / du
+  lmax = real(N - 1,O) * Pi / real(N,O) / du
   write (iOutput,"(2x, a, i2, a, i2, a)")                                           &
  'parameters controlling the discretization process, p = ', p, ', pN = ', pN, ';'
   write (iOutput,"(2x,'number of discrete points, N = ',i6,';')") N
   write (iOutput,"(2x, a, 1pe10.3, a)")                                             &
  'upper limit for sintransform integration, L = ', L, ';'
   write (iOutput,"(2x, a, 1pe10.3, a)")                                             &
- 'upper limit for pair-distribution function integration, Xmax = ', Lmax, ';'
+ 'upper limit for pair-distribution function integration, Xmax = ', lmax, ';'
   write (iOutput,"(2x, a, i6, a)")                                                  &
  'maximum number of iterations for Mueller''s method, Niter = ', Niter, ';'
   write (iOutput,"(2x, a, 1pe10.3, a, 1pe10.3, a)")                                 &

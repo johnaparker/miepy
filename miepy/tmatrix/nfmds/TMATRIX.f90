@@ -1,14 +1,12 @@
 program TMATRIX
   implicit none
   integer  :: TypeCode 
-  
-  ! load parameters from command line (now only number of threads in OpenMP mode)
-  CALL load_params_command_line
 ! -----------------------------------------------------------------------------------
 !                           Select the type of T-matrix code                        ! 
 ! -----------------------------------------------------------------------------------   
-   print "(/,2x,'T-Matrix Code for Light Scattering Calculation')"      
-   print "(  2x,'- enter an integer specifying the scattering problem:                ')"
+   print "(/,2x,'T-Matrix Code for Light Scattering Calculation')"
+   print "(  2x,'----------------------------------------------')"       
+   print "(/,2x,'- enter an integer specifying the scattering problem:                ')"
    print "(  2x,'   1 - dielectric, perfectly conducting or chiral, axisymmetric particle;   ')"   
    print "(  2x,'   2 - dielectric, perfectly conducting or chiral, nonaxisymmetric particle;')"            
    print "(  2x,'   3 - axisymmetric, composite particle;                             ')"
@@ -22,17 +20,13 @@ program TMATRIX
    print "(  2x,'  11 - cluster of dielectric spheres;                                ')"      
    print "(  2x,'  12 - cluster of dielectric spheres (recursive algorithm);          ')"
    print "(  2x,'  13 - concentrically, layered sphere;                               ')"
-   print "(  2x,'  14 - axisymmetric particle on a plane surface;                     ')" 
-   print "(  2x,'  15 - axisymmetric particle on a plane surface coated with a film;  ')"
-   print "(  2x,'  16 - nonaxisymmetric particle on a plane surface;                  ')" 
-   print "(  2x,'  17 - nonaxisymmetric particle on a plane surface coated with a film;      ')" 
-   print "(  2x,'  18 - cluster of nonaxisymmetric particles on a plane surface;             ')"   
-   print "(  2x,'  19 - scattering characteristics using the previously calculated T matrix; ')" 
-   print "(  2x,'  20 - scattering characteristics of an ensemble of spherical particles;    ')" 
-   print "(  2x,'  21 - effective wave number of a medium with spherical particles;          ')"
-   call read_integer (TypeCode)
-   
-   if (TypeCode < 1 .or. TypeCode > 21) then
+   print "(  2x,'  14 - dielectric or perfectly conducting, axisymmetric particle     ')"
+   print "(  2x,'       on or near a plane surface;                                   ')"  
+   print "(  2x,'  15 - scattering characteristics using the previously calculated T matrix; ')" 
+   print "(  2x,'  16 - scattering characteristics of an ensemble of spherical particles;    ')" 
+   print "(  2x,'  17 - effective wave number of a medium with spherical particles;          ')"                    
+   call read_integer (TypeCode)   
+   if (TypeCode < 1 .or. TypeCode > 17) then
      print "(/,2x,'Input error: the integer specifying the type of the T-matrix    ')"
      print "(  2x,'code is out of bounds;                                          ')"
      stop
@@ -68,20 +62,12 @@ program TMATRIX
   case (13)    
     call TSPHERE      
   case (14)    
-    call TPARTSUB  
+    call TPARTSUB     
   case (15)    
-    call TPARTSUBFILM  
-  case (16)    
-    call TPARTSUB3D 
-  case (17)    
-    call TPARTSUB3DFILM
-  case (18)    
-    call TPARTSUB3DMULT 	 	 	   
-  case (19)    
     call SCT
-  case (20)    
+  case (16)    
     call SCTAVRGSPH
-  case (21)    
+  case (17)    
     call EFMED           
   end select
 end 

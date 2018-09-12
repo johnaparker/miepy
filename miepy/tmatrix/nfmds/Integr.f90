@@ -37,16 +37,11 @@ subroutine Gauss_Legendre (x1, x2, Np, wp, xp)
   use parameters
   implicit none
   integer       :: Np, i
-  real(O)       :: x1, x2, wp(Np), xp(Np), xs, xd
-  character(20), save :: TypeIntegr
+  real(O)       :: x1, x2, wp(Np), xp(Np), epsGauss, epsLaguerre, xs, xd
+  character(20) :: TypeIntegr
   real(O),allocatable :: work(:)
-  real(O),save  :: epsGauss, epsLaguerre
-  integer, save :: isIniEPS
 !   
-  if (isIniEPS.ne.1) then
-    call readinputIntegr ( TypeIntegr, epsGauss, epsLaguerre ) 
-    isIniEPS = 1
-  end if
+  call readinputIntegr ( TypeIntegr, epsGauss, epsLaguerre ) 
   call check_Integration (TypeIntegr) 
   if (TypeIntegr(1:4) == 'MET1') then
     call Gauss_Legendre1 (x1, x2, Np, wp, xp, epsGauss)
