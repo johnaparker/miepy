@@ -2,6 +2,7 @@
 #include <complex>
 #include <gsl/gsl_const_mksa.h>
 #include "indices.hpp"
+#define M_PI 3.14159265358979323846264338327950288
 
 vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         double k, double eps_b, double mu_b) {

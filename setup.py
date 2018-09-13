@@ -53,6 +53,10 @@ def unzip_material_database():
 
 def build_nfmds(build_direc, lib_dir):
     import pathlib
+    if platform.system() == "Windows":
+        build_direc = build_direc.replace('\\', r'/')
+        lib_dir = lib_dir.replace('\\', r'/')
+        
     src_dir = 'miepy/tmatrix/nfmds'
     obj_dir = '../../../{direc}/nfmds'.format(direc=build_direc)
     exe_dir = '../../../{direc}/miepy/bin'.format(direc=lib_dir)
@@ -64,8 +68,8 @@ def build_nfmds(build_direc, lib_dir):
     pathlib.Path(obj_dir_root).mkdir(exist_ok=True) 
 
     command = ['make', 'objdir={obj_dir}'.format(obj_dir=obj_dir),
-           'exedir={exe_dir}'.format(exe_dir=exe_dir), 'precision=double']
-    subprocess.check_call([' '.join(command)], cwd=src_dir, shell=True)
+           'exedir={exe_dir}'.format(exe_dir=exe_dir)]
+    subprocess.check_call(command, cwd=src_dir, shell=True)
 
 
 class builder(build):
@@ -124,9 +128,9 @@ class builder_ext(build_ext):
 
 
 # hack to install numpy if needed since numpy_quaternion needs it at pre-installation
-import importlib
-if importlib.util.find_spec('numpy') is None:
-    subprocess.call([sys.executable, '-m', 'pip', 'install', 'numpy'])
+#import importlib
+#if importlib.util.find_spec('numpy') is None:
+#    subprocess.call([sys.executable, '-m', 'pip', 'install', 'numpy'])
 
 
 setup(
@@ -159,4 +163,5 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Intended Audience :: Science/Research',
     ],
+    zip_safe=False,
 )

@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.1)
 project(cpp)
 
 if(NOT CMAKE_BUILD_TYPE)
+  message("BUILDING IN RELESE MODE")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
+set(CMAKE_CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -mavx -flto -fPIC")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -37,8 +38,8 @@ set(BINDINGS
     src/vsh_functions_pyb.cpp
 )
 
-add_library(cpp SHARED "${SOURCES}" "${BINDINGS}")
-target_link_libraries(cpp PUBLIC pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
+add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
+target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                      SUFFIX "${PYTHON_MODULE_EXTENSION}")
 

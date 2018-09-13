@@ -3,7 +3,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
-//#include <omp.h>
+#define M_PI 3.14159265358979323846264338327950288
 
 using std::complex;
 using namespace std::complex_literals;
