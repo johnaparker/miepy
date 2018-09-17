@@ -1,6 +1,7 @@
 #include "flux.hpp"
 #include "indices.hpp"
-#define M_PI 3.14159265358979323846264338327950288
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 std::array<Array,3> particle_cross_sections(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         const Ref<const ComplexVector>& p_src, double k) {

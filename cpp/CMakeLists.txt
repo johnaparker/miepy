@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.1)
 project(cpp)
 
 if(NOT CMAKE_BUILD_TYPE)
-  message("BUILDING IN RELESE MODE")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -mavx -flto -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -Werror")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -43,8 +42,8 @@ target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX E
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                      SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    add_executable(debug test/debug.cpp "${SOURCES}")
-    set_target_properties(debug PROPERTIES COMPILE_FLAGS "-w")
-    target_link_libraries(debug cpp pybind11::embed)
-endif()
+#if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    #add_executable(debug test/debug.cpp "${SOURCES}")
+    #set_target_properties(debug PROPERTIES COMPILE_FLAGS "-w")
+    #target_link_libraries(debug cpp pybind11::embed)
+#endif()

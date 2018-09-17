@@ -126,13 +126,6 @@ class builder_ext(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-
-# hack to install numpy if needed since numpy_quaternion needs it at pre-installation
-#import importlib
-#if importlib.util.find_spec('numpy') is None:
-#    subprocess.call([sys.executable, '-m', 'pip', 'install', 'numpy'])
-
-
 setup(
     name=NAME,
     version=VERSION,
