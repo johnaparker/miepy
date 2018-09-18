@@ -1,9 +1,0 @@
-conda activate py37
-conda install -c anaconda cmake
-conda install -c anaconda make
-conda install -c conda-forge gsl
-conda install -c conda-forge eigen
-
-cmake -G "Visual Studio 15 2017 Win64" ..
-cmake .. -A x64
-cmake --build . -- /m

@@ -17,4 +17,6 @@ using Eigen::Ref;
 using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using tmatrix_t  = std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
 
+const double PI = 3.14159265358979323846;
+
 #endif
