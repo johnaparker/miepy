@@ -69,7 +69,7 @@ def build_nfmds(build_direc, lib_dir):
 
     command = ['make', 'objdir={obj_dir}'.format(obj_dir=obj_dir),
            'exedir={exe_dir}'.format(exe_dir=exe_dir)]
-    subprocess.check_call(command, cwd=src_dir, shell=True)
+    subprocess.check_call(' '.join(command), cwd=src_dir, shell=True)
 
 
 class builder(build):

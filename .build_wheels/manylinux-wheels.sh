@@ -14,7 +14,7 @@ set -e -x
 export PATH=/opt/python/cp37-cp37m/bin/:$PATH
 
 # unzip  libraries to build
-cd root
+cd /root
 cp /io/.build_wheels/centos_build.zip .
 unzip centos_build.zip
 
