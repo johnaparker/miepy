@@ -159,3 +159,49 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
     return agg_tmatrix;
 }
 
+ComplexMatrix particle_aggregate_tmatrix(const Ref<const position_t>& positions,
+        const tmatrix_t& tmatrix, double k) {
+
+    int rmax = tmatrix.dimensions()[1]/2;
+    int lmax = rmax_to_lmax(rmax);
+
+    int Nparticles = positions.rows();
+    int size = 2*rmax*Nparticles;
+
+    ComplexMatrix agg_tmatrix = ComplexMatrix::Zero(size, size);
+
+    if (Nparticles == 1)
+        return agg_tmatrix;
+    
+    int N = Nparticles*(Nparticles-1)/2;
+    Array ivals(N);
+    Array jvals(N);
+    int counter = 0;
+
+    for (int i = 0; i < Nparticles; i++) {
+        for (int j = i+1; j < Nparticles; j++) {
+            ivals(counter) = i;
+            jvals(counter) = j;
+            counter += 1;
+        }
+    }
+    
+    auto vsh_precompute = create_vsh_cache_map(lmax);
+
+    #pragma omp parallel for
+    for (int ij = 0; ij < N; ij++) {
+        int i = ivals(ij);
+        int j = jvals(ij);
+
+        Vector3d dji = positions.row(i) - positions.row(j);
+
+        double rad = dji.norm();
+        double theta = acos(dji(2)/rad);
+        double phi = atan2(dji(1), dji(0));
+
+        vsh_translation_insert_pair(agg_tmatrix, tmatrix, i, j, rad, theta, phi, k, vsh_precompute);
+    } 
+
+    return agg_tmatrix;
+}
+

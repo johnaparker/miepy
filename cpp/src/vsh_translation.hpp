@@ -22,11 +22,16 @@ struct vsh_cache {
 
     vsh_cache(int n, int m, int v, int u);
 };
+
 using vsh_cache_map = std::map<std::array<int,4>, vsh_cache>;
+
 vsh_cache_map create_vsh_cache_map(int lmax);
-void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const Ref<const ComplexMatrix>& mie, int i, int j, 
+
+void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const tmatrix_t& tmatrix, int i, int j, 
         double rad, double theta, double phi, double k, const vsh_cache_map& vsh_precompute);
 
+void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const Ref<const ComplexMatrix>& mie, int i, int j, 
+        double rad, double theta, double phi, double k, const vsh_cache_map& vsh_precompute);
 
 py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b);
 

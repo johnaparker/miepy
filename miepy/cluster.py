@@ -477,6 +477,6 @@ class cluster:
     def _solve_interactions(self):
         agg_tmatrix = miepy.interactions.particle_aggregate_tmatrix(self.position, self.tmatrix,
                                   self.material_data.k_b)
-        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method='bicgstab')
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
 
         self.p_scat[...] = np.einsum('naibj,nbj->nai', self.tmatrix, self.p_inc)
