@@ -18,14 +18,9 @@ radius = 75*nm
 source = miepy.sources.plane_wave.from_string(polarization='rhc')
 separation = 165*nm
 
-def temp(gmt):
-    for r,n,m in miepy.mode_indices(gmt.lmax):
-        gmt.p_scat[...,r] = gmt.p_inc[...,r]*gmt.mie_scat[...,n-1]
-        gmt.p_int[...,r] = gmt.p_inc[...,r]*gmt.mie_int[:,::-1,n-1]
-
 def tests(Nmax, step=1):
     Nparticles = np.arange(1, Nmax+1, step)
-    t_force, t_flux, t_build, t_solve, t_expand, t_temp = [np.zeros_like(Nparticles, dtype=float) for i in range(6)]
+    t_force, t_flux, t_build, t_solve, t_expand = [np.zeros_like(Nparticles, dtype=float) for i in range(5)]
     for i,N in enumerate(Nparticles):
         print(N, Nmax)
         positions = [[n*separation, 0, 0] for n in range(N)]
@@ -43,9 +38,8 @@ def tests(Nmax, step=1):
 
         A = miepy.interactions.sphere_aggregate_tmatrix(mie.position, mie.mie_scat, k=mie.material_data.k_b)
         t_solve[i] = time_function(partial(solve_linear_system, A, mie.p_src, method=miepy.solver.bicgstab))
-        t_temp[i] = time_function(partial(temp, mie))
         
-        x = np.linspace(0, N*separation, 100)
+        x = np.linspace(0, N*separation, 1)
         y = 2*radius*np.ones_like(x)
         z = np.zeros_like(x)
 
@@ -58,11 +52,10 @@ def tests(Nmax, step=1):
     ax.plot(Nparticles, t_build, label='build')
     ax.plot(Nparticles, t_solve, label='solve')
     ax.plot(Nparticles, t_expand, label='expand')
-    ax.plot(Nparticles, t_temp, label='temp')
 
     ax.legend()
     ax.set(xlabel='number of particles', ylabel='runtime (s)')
 
     plt.show()
 
-tests(10, step=1)
+tests(50, step=5)
