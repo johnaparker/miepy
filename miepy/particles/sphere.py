@@ -19,7 +19,12 @@ class sphere(particle):
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
         self.tmatrix = miepy.tmatrix.tmatrix_sphere(self.radius, wavelength, 
                 self.material.eps(wavelength), eps_m, lmax)
+        self.tmatrix_fixed = self.tmatrix
+
         return self.tmatrix
 
     def enclosed_radius(self):
         return self.radius
+
+    def _dict_key(self, wavelength):
+        return (sphere, self.radius, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())

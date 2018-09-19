@@ -19,8 +19,19 @@ source = miepy.sources.plane_wave.from_string(polarization='rhc')
 separation = 165*nm
 
 def tmatrix_time(gmt):
+    tmatrices = {}
     for i in range(gmt.Nparticles):
-        gmt.tmatrix[i]  = gmt.particles[i].compute_tmatrix(gmt.lmax, gmt.wavelength, gmt.medium.eps(gmt.wavelength))
+        gmt.position[i] = gmt.particles[i].position
+        gmt.material[i] = gmt.particles[i].material
+        
+        key = gmt.particles[i]._dict_key(gmt.wavelength)
+        if key in tmatrices:
+            gmt.particles[i].tmatrix_fixed = tmatrices[key]
+            gmt.particles[i]._rotate_fixed_tmatrix()
+            gmt.tmatrix[i] = gmt.particles[i].tmatrix
+        else:
+            gmt.tmatrix[i]  = gmt.particles[i].compute_tmatrix(gmt.lmax, gmt.wavelength, gmt.medium.eps(gmt.wavelength))
+            tmatrices[key] = gmt.particles[i].tmatrix_fixed
 
 def tests(Nmax, step=1):
     Nparticles = np.arange(1, Nmax+1, step)

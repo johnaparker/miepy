@@ -42,3 +42,6 @@ class cylinder(particle):
 
     def enclosed_radius(self):
         return np.sqrt((self.height/2)**2 + self.radius**2)
+
+    def _dict_key(self, wavelength):
+        return (cylinder, self.radius, self.height, self.rounded, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())

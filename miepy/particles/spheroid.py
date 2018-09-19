@@ -35,3 +35,6 @@ class spheroid(particle):
 
     def enclosed_radius(self):
         return max(self.axis_xy, self.axis_z)
+
+    def _dict_key(self, wavelength):
+        return (spheroid, self.axis_xy, self.axis_z, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())

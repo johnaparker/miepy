@@ -63,3 +63,6 @@ class particle:
     def _rotate_fixed_tmatrix(self):
         if self.tmatrix_fixed is not None:
             self.tmatrix = miepy.tmatrix.rotate_tmatrix(self.tmatrix_fixed, self.orientation)
+
+    def _dict_key(self, wavelength):
+        pass

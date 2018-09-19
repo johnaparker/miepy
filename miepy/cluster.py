@@ -46,10 +46,20 @@ class cluster:
         self.material = np.empty([self.Nparticles], dtype=object)
         self.tmatrix  = np.empty([self.Nparticles, 2, self.rmax, 2, self.rmax], dtype=complex)
 
+        ### calculate T-matrices 
+        tmatrices = {}
         for i in range(self.Nparticles):
             self.position[i] = self.particles[i].position
             self.material[i] = self.particles[i].material
-            self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.medium.eps(wavelength))
+            
+            key = self.particles[i]._dict_key(wavelength)
+            if key in tmatrices:
+                self.particles[i].tmatrix_fixed = tmatrices[key]
+                self.particles[i]._rotate_fixed_tmatrix()
+                self.tmatrix[i] = self.particles[i].tmatrix
+            else:
+                self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.medium.eps(wavelength))
+                tmatrices[key] = self.particles[i].tmatrix_fixed
 
         ### set the origin
         self.auto_origin = False    
