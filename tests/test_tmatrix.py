@@ -45,3 +45,30 @@ def test_tmatrix_spheroid_is_sphere():
 
     print(np.max(np.abs(T1-T2)))
     assert np.allclose(T1, T2, rtol=0, atol=3e-4)
+
+def test_rotated_spheroid_equals_rotated_light():
+    """cross-sections are the same if a spheroid is rotated or if the light is rotated"""
+
+    theta = 1.3
+    phi = 0.7
+    q = miepy.quaternion.from_spherical_coords(theta, phi)
+
+    source = miepy.sources.plane_wave([1,0], theta=theta, phi=phi)
+    z_oriented = miepy.cluster(particles=miepy.spheroid([0,0,0], radius, 2*radius, material),
+                               source=source,
+                               wavelength=wavelength,
+                               lmax=lmax,
+                               medium=miepy.constant_material(eps_b))
+
+    C1 = z_oriented.cross_sections()
+
+    source = miepy.sources.plane_wave([1,0])
+    oriented = miepy.cluster(particles=miepy.spheroid([0,0,0], radius, 2*radius, material, orientation=q),
+                             source=source,
+                             wavelength=wavelength,
+                             lmax=lmax,
+                             medium=miepy.constant_material(eps_b))
+
+    C2 = oriented.cross_sections()
+
+    assert np.allclose(C1, C2, rtol=0, atol=5e-30)
