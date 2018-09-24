@@ -197,7 +197,7 @@ class gaussian_beam(beam):
         return U
 
     def is_paraxial(self, k):
-        return True
+        # return True
         wav = 2*np.pi/k
         return self.width > 4*wav
 
