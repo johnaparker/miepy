@@ -51,7 +51,7 @@ def power_numeric(beam, k):
 
     E = beam.scalar_potenital_ingoing(THETA, PHI, k, norm=False)
     S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
-    P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.real.T)/4
+    P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
 
     return P
 

@@ -1,4 +1,4 @@
 #include "vec.hpp"
 
-double trapz(const Ref<const Array>& x, const Ref<const Array>& y);
-double trapz_2d(const Ref<const Array>& x, const Ref<const Array>& y, const Ref<const Matrix>& f);
+std::complex<double> trapz(const Ref<const Array>& x, const Ref<const ComplexArray>& y);
+std::complex<double> trapz_2d(const Ref<const Array>& x, const Ref<const Array>& y, const Ref<const ComplexMatrix>& f);

@@ -191,7 +191,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
-    integrated = vsh.misc.simps_2d(tau, phi, proj_data)
+    integrated = vsh.misc.trapz_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 

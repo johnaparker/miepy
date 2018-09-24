@@ -1,22 +1,25 @@
 #include "decomposition.hpp"
 
-double trapz(const Ref<const Array>& x, const Ref<const Array>& y) {
+using std::complex;
+
+
+complex<double> trapz(const Ref<const Array>& x, const Ref<const ComplexArray>& y) {
     int n = y.size();
-    double sum = 0;
+    complex<double> sum = 0;
 
     for (int i=1; i < n; i++) {
-        sum += (y(i) + y(i-1))*(x(i) - x(i-1))/2;
+        sum += (y(i) + y(i-1))*(x(i) - x(i-1))/2.0;
     }
 
     return sum;
 }
 
-double trapz_2d(const Ref<const Array>& x, const Ref<const Array>& y, const Ref<const Matrix>& f) {
+complex<double> trapz_2d(const Ref<const Array>& x, const Ref<const Array>& y, const Ref<const ComplexMatrix>& f) {
     int n = y.size();
-    Array z(n);
+    ComplexArray z(n);
 
     for (int i=0; i < n; i++) {
-        z(i) = trapz(x, f.row(i));
+        z(i) = trapz(x, f.col(i));
     }
 
     return trapz(y, z);

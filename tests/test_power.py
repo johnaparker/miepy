@@ -87,7 +87,7 @@ def todo():
     Efunc = miepy.expand_E(p_src/2, k, miepy.vsh_mode.ingoing)
     E = Efunc(R, THETA, PHI)
     S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
-    P = radius**2*trapz_2d(theta, phi, S.real.T)
+    P = radius**2*trapz_2d(theta, phi, S.T).real
     print(P)
 
     E = Efunc(radius*np.ones_like(theta), theta, np.zeros_like(theta))
@@ -116,7 +116,7 @@ def todo():
     S = 0.5*np.cross(E, np.conjugate(H), axis=0)[2]
     # S = 0.5*np.sum(np.abs(E)**2, axis=0)
 
-    P = trapz_2d(x, y, S.real)
+    P = trapz_2d(x, y, S).real
     print(P)
 
     plt.show()
