@@ -49,6 +49,10 @@ void bind_torque(py::module &);
 void bind_particle_cross_sections(py::module &);
 void bind_cluster_cross_sections(py::module &);
 
+// decomposition submodule
+void bind_trapz(py::module &);
+void bind_trapz_2d(py::module &);
+
 // misc tests
 void bind_test(py::module &);
 void bind_test2(py::module &);
@@ -123,6 +127,12 @@ PYBIND11_MODULE(cpp, m) {
 
     bind_particle_cross_sections(flux_m);
     bind_cluster_cross_sections(flux_m);
+
+    // decomposition submodule
+    py::module decomposition_m = m.def_submodule("decomposition", "source decomposition module");
+
+    bind_trapz(decomposition_m);
+    bind_trapz_2d(decomposition_m);
 
     // misc tests
     bind_test(special_m);

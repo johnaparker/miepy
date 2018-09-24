@@ -25,6 +25,7 @@ set(SOURCES ${SOURCES}
     src/forces.cpp
     src/flux.cpp
     src/indices.cpp
+    src/decomposition.cpp
 )
 
 set(BINDINGS
@@ -35,6 +36,7 @@ set(BINDINGS
     src/forces_pyb.cpp
     src/flux_pyb.cpp
     src/vsh_functions_pyb.cpp
+    src/decomposition_pyb.cpp
 )
 
 add_library(cpp SHARED "${SOURCES}" "${BINDINGS}")
