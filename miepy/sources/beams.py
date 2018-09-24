@@ -55,6 +55,22 @@ def power_numeric(beam, k):
 
     return P
 
+def structure_function(src, k, lmax):
+    #TODO implement a better way of finding the maximum value... per source object
+    f = lambda theta: np.linalg.norm(src.spherical_ingoing(theta, 0, k))
+    g = lambda theta: np.linalg.norm(src.spherical_ingoing(theta, np.pi/2, k))
+    theta = np.linspace(np.pi/2, np.pi, 500)
+    f_max = np.max(f(theta))
+    g_max = np.max(g(theta))
+
+    if g_max > f_max:
+        cutoff = find_cutoff(lambda theta: g(theta)/g_max, 1e-6, tol=1e-9)
+    else:
+        cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
+
+    return miepy.vsh.decomposition.integral_project_source_far(src, 
+                           k, lmax, theta_0=cutoff)
+
 #TODO: implement .from_string constructors
 class beam(source):
     def __init__(self, polarization, theta=0, phi=0, power=None, 
@@ -77,6 +93,8 @@ class beam(source):
             raise ValueError('either power or amplitude must be specified')
         elif power is not None and amplitude is not None:
             raise ValueError('cannot specify power and amplitude simultaneously')
+
+        self.current_k = None
 
     def scalar_potenital(self, x, y, z, k): pass
 
@@ -129,20 +147,11 @@ class beam(source):
             p_src = miepy.vsh.decomposition.near_field_point_matching(self, 
                               position, 2*radius, k, lmax, sampling)
         else:
-            #TODO implement a better way of finding the maximum value... per source object
-            f = lambda theta: np.linalg.norm(self.spherical_ingoing(theta, 0, k))
-            g = lambda theta: np.linalg.norm(self.spherical_ingoing(theta, np.pi/2, k))
-            theta = np.linspace(np.pi/2, np.pi, 500)
-            f_max = np.max(f(theta))
-            g_max = np.max(g(theta))
+            if k != self.current_k:
+                self.current_k = k
+                self.p_src_func = structure_function(self, k, lmax)
 
-            if g_max > f_max:
-                cutoff = find_cutoff(lambda theta: g(theta)/g_max, 1e-6, tol=1e-9)
-            else:
-                cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
-
-            p_src = miepy.vsh.decomposition.integral_project_source_far(self, 
-                              k, lmax, origin=position, theta_0=cutoff)
+            p_src = self.p_src_func(position)
 
         self.orientation = orientation_copy
 
