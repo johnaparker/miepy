@@ -191,7 +191,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data  = np.sum(E*np.conj(vsh_data), axis=0)
-    integrated = vsh.misc.simps_2d(tau, phi, proj_data)
+    integrated = vsh.misc.trapz_2d(tau, phi, proj_data)
 
     return factor*integrated/norm
 
@@ -262,7 +262,7 @@ def integral_project_source(src, k, lmax, origin=[0,0,0], sampling=30, mode=vsh.
 
     return p
 
-def integral_project_source_far(src, k, lmax, origin=[0,0,0], sampling=20, theta_0=np.pi/2):
+def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
     """Decompose a source object into VSHs using integral method in the far-field
     Returns p[2,rmax]
 
@@ -270,12 +270,10 @@ def integral_project_source_far(src, k, lmax, origin=[0,0,0], sampling=20, theta
         src        source object
         k          wavenumber
         lmax       maximum number of multipoles
-        origin     origin around which to perform the expansion (default: [0,0,0])
         sampling   number of points to sample between 0 and pi (default: 20)
         theta_0    integral performed from theta_0 to pi (default: pi/2)
     """
     rmax = vsh.lmax_to_rmax(lmax)
-    p = np.zeros([2,rmax], dtype=complex)
 
     theta = np.linspace(theta_0, np.pi, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
@@ -284,9 +282,7 @@ def integral_project_source_far(src, k, lmax, origin=[0,0,0], sampling=20, theta
     rhat, *_ = coordinates.sph_basis_vectors(THETA, PHI)
     Esrc = src.spherical_ingoing(THETA, PHI, k)
 
-    delta = src.center - origin
-    phase = k*np.einsum('i...,i', rhat, delta)
-    Esrc *= np.exp(1j*phase)
+    p0 = np.zeros((2,rmax) + THETA.shape, dtype=complex)
 
     for i,n,m in vsh.mode_indices(lmax):
         Emn_val = vsh.Emn(m, n)
@@ -295,12 +291,25 @@ def integral_project_source_far(src, k, lmax, origin=[0,0,0], sampling=20, theta
 
         E = N(rad, THETA, PHI, k)
         U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
-        integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
-        p[0,i] = factor*integral
+        integrand = U*rad**2
+        p0[0,i] = factor*integrand
 
         E = M(rad, THETA, PHI, k)
         U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
-        integral = vsh.misc.trapz_2d(theta, phi, U)*rad**2
-        p[1,i] = factor*integral
+        integrand = U*rad**2
+        p0[1,i] = factor*integrand
 
-    return p
+    def f(origin):
+        p = np.zeros([2,rmax], dtype=complex)
+
+        delta = src.center - origin
+        phase = k*np.einsum('i...,i', rhat, delta)
+        exp_phase = np.exp(1j*phase)
+
+        for i in range(rmax):
+            p[0,i] = vsh.misc.trapz_2d(theta, phi, p0[0,i]*exp_phase)
+            p[1,i] = vsh.misc.trapz_2d(theta, phi, p0[1,i]*exp_phase)
+
+        return p
+
+    return f

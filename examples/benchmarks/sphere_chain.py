@@ -39,7 +39,7 @@ def tests(Nmax, step=1):
         A = miepy.interactions.sphere_aggregate_tmatrix(mie.position, mie.mie_scat, k=mie.material_data.k_b)
         t_solve[i] = time_function(partial(solve_linear_system, A, mie.p_src, method=miepy.solver.bicgstab))
         
-        x = np.linspace(0, N*separation, 100)
+        x = np.linspace(0, N*separation, 1)
         y = 2*radius*np.ones_like(x)
         z = np.zeros_like(x)
 

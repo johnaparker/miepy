@@ -46,10 +46,20 @@ class cluster:
         self.material = np.empty([self.Nparticles], dtype=object)
         self.tmatrix  = np.empty([self.Nparticles, 2, self.rmax, 2, self.rmax], dtype=complex)
 
+        ### calculate T-matrices 
+        tmatrices = {}
         for i in range(self.Nparticles):
             self.position[i] = self.particles[i].position
             self.material[i] = self.particles[i].material
-            self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.medium.eps(wavelength))
+            
+            key = self.particles[i]._dict_key(wavelength)
+            if key in tmatrices:
+                self.particles[i].tmatrix_fixed = tmatrices[key]
+                self.particles[i]._rotate_fixed_tmatrix()
+                self.tmatrix[i] = self.particles[i].tmatrix
+            else:
+                self.tmatrix[i]  = self.particles[i].compute_tmatrix(lmax, wavelength, self.medium.eps(wavelength))
+                tmatrices[key] = self.particles[i].tmatrix_fixed
 
         ### set the origin
         self.auto_origin = False    
@@ -353,8 +363,8 @@ class cluster:
         else:
             p_inc = self.p_inc - self.p_src
 
-        F = miepy.forces.force(self.p_scat[i], p_inc[i], self.material_data.k_b,
-                self.material_data.eps_b, self.material_data.mu_b)
+        F = miepy.forces.force(self.p_scat[i].reshape(-1), p_inc[i].reshape(-1),
+                self.material_data.k_b, self.material_data.eps_b, self.material_data.mu_b)
 
         return F
 
@@ -373,8 +383,8 @@ class cluster:
         else:
             p_inc = self.p_inc - self.p_src
 
-        T = miepy.forces.torque(self.p_scat[i], p_inc[i], self.material_data.k_b,
-                self.material_data.eps_b, self.material_data.mu_b)
+        T = miepy.forces.torque(self.p_scat[i].reshape(-1), p_inc[i].reshape(-1),
+                self.material_data.k_b, self.material_data.eps_b, self.material_data.mu_b)
 
         return T
 
@@ -477,6 +487,6 @@ class cluster:
     def _solve_interactions(self):
         agg_tmatrix = miepy.interactions.particle_aggregate_tmatrix(self.position, self.tmatrix,
                                   self.material_data.k_b)
-        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method='bicgstab')
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
 
         self.p_scat[...] = np.einsum('naibj,nbj->nai', self.tmatrix, self.p_inc)

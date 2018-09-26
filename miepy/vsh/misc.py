@@ -4,7 +4,8 @@ Miscellaneous functions related to vsh
 
 import numpy as np
 from scipy import special
-from scipy.integrate import simps, trapz
+from scipy.integrate import simps
+from miepy.cpp.decomposition import trapz, trapz_2d
 import miepy
 Z0 = miepy.sources.beams.Z0
 
@@ -18,17 +19,6 @@ def simps_2d(xd,yd,fd):
         xData[i] = simps(fd[i,:], yd)
 
     return simps(xData, xd)
-
-def trapz_2d(xd,yd,fd):
-    """1d trapezoidal rule extended to 2d"""
-    if np.iscomplexobj(fd):
-        return trapz_2d(xd, yd, fd.real) + 1j*trapz_2d(xd, yd, fd.imag)
-
-    xData = np.zeros(len(xd))
-    for i,x in enumerate(xd):
-        xData[i] = trapz(fd[i,:], yd)
-
-    return trapz(xData, xd)
 
 def power_through_aperature(source, center, radius, k, sampling=150):
     """Calculate the power through an aperature for a source
@@ -61,9 +51,9 @@ def power_through_aperature(source, center, radius, k, sampling=150):
     E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
     H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)/Z0
 
-    S = np.real(0.5*np.cross(E, np.conjugate(H), axis=0)[2])
+    S = 0.5*np.cross(E, np.conjugate(H), axis=0)[2]
 
-    P = trapz_2d(x, y, S)
+    P = trapz_2d(x, y, S).real
     return P
 
 ###### below are pi,tau,VSH used in Mie theory, which may differ from those defined in GMT ######

@@ -21,6 +21,6 @@ ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
         const Ref<const ComplexMatrix>& mie, double k);
 
 ComplexMatrix particle_aggregate_tmatrix(const Ref<const position_t>& positions,
-        tmatrix_t tmatrix, double k);
+        const tmatrix_t& tmatrix, double k);
 
 #endif

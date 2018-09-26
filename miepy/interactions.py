@@ -120,41 +120,9 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
            tmatrix[N,2,rmax,2,rmax]   single particle T-matrices
            k                   medium wavenumber
     """
+
     Nparticles = positions.shape[0]
     rmax = tmatrix.shape[-1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)
-    agg_tmatrix = np.zeros(shape=(Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
 
-    if Nparticles == 1:
-        return agg_tmatrix
-    
-    r_ji, theta_ji, phi_ji, zn_values = interactions_precomputation(positions, k, lmax)
-
-    for r,n,m in miepy.mode_indices(lmax):
-        for s,v,u in miepy.mode_indices(lmax):
-            # if s - 2*u < r: continue
-            A_transfer, B_transfer = vsh_translation(m, n, u, v, 
-                    r_ji, theta_ji, phi_ji, k, miepy.vsh_mode.outgoing)
-
-            upper_idx = np.triu_indices(Nparticles, 1)
-            lower_idx = upper_idx[::-1]
-
-            for a in range(2):
-                for b in range(2):
-                    val = (A_transfer, B_transfer)[(a+b)%2]
-
-                    agg_tmatrix[:,a,r,:,b,s][upper_idx] = val
-                    agg_tmatrix[:,a,r,:,b,s][lower_idx] = (-1)**(n+v+a+b)*val
-
-                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][upper_idx] = (-1)**(m+u+1)*B_transfer
-                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][upper_idx] = (-1)**(m+u)  *A_transfer
-
-                    # agg_tmatrix[:,0,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-                    # agg_tmatrix[:,0,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-                    # agg_tmatrix[:,1,s-2*u,:,0,r-2*m][lower_idx] = (-1)**(m+u+n+v)*B_transfer
-                    # agg_tmatrix[:,1,s-2*u,:,1,r-2*m][lower_idx] = (-1)**(m+u+n+v)*A_transfer
-
-    agg_tmatrix = np.einsum('iabjcd,jcdef->iabjef', agg_tmatrix, tmatrix)
-    return agg_tmatrix
+    return miepy.cpp.interactions.particle_aggregate_tmatrix(positions, tmatrix.reshape([Nparticles,-1]), k).reshape([Nparticles,2,rmax,Nparticles,2,rmax])

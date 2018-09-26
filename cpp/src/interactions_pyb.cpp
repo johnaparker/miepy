@@ -8,6 +8,20 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+void bind_particle_aggregate_tmatrix(py::module &m) {
+    m.def("particle_aggregate_tmatrix", [](const Ref<const position_t>& positions,
+                Ref<ComplexMatrix> tmatrix, double k) {
+
+                int Nparticles = tmatrix.rows();
+                int cols = int(sqrt(tmatrix.cols()));
+                const tmatrix_t tmatrix_map(tmatrix.data(), Nparticles, cols, cols);
+                return particle_aggregate_tmatrix(positions, tmatrix_map, k);
+            },
+        "positions"_a, "tmatrix"_a, "k"_a, R"pbdoc(
+        Obtain the particle-centered aggregate T-matrix for a cluster of particles
+    )pbdoc");
+}
+
 void bind_sphere_aggregate_tmatrix(py::module &m) {
     m.def("sphere_aggregate_tmatrix", sphere_aggregate_tmatrix, 
            "positions"_a, "mie"_a, "k"_a, R"pbdoc(

@@ -3,8 +3,7 @@ import numpy as np
 from .particle_base import particle
 
 class cylinder(particle):
-    def __init__(self, position, radius, height, material, orientation=None, rounded=False, extended_precision=False, Nint=200,
-            lmax=None):
+    def __init__(self, position, radius, height, material, orientation=None, rounded=False, extended_precision=False, Nint=200, tmatrix_lmax=0):
         """A cylinder object
 
         Arguments:
@@ -20,25 +19,27 @@ class cylinder(particle):
         self.extended_precision = extended_precision
         self.Nint = 200
         self.rounded = rounded
-        self.lmax = lmax
+
+        self.tmatrix_lmax = tmatrix_lmax
 
     def is_inside(self, pos):
         pass
 
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
-        if self.lmax is None:
-            lmax_compute = lmax
-        else:
-            lmax_compute = self.lmax
+        calc_lmax = max(lmax+2, self.tmatrix_lmax)
 
-        self.tmatrix = miepy.tmatrix.tmatrix_cylinder(self.radius, self.height, wavelength, 
-                self.material.eps(wavelength), eps_m, lmax_compute, rounded=self.rounded, extended_precision=self.extended_precision,
-                Nint=self.Nint)
+        self.tmatrix_fixed = miepy.tmatrix.tmatrix_cylinder(self.radius, self.height, wavelength, 
+                self.material.eps(wavelength), eps_m, calc_lmax, rounded=self.rounded, extended_precision=self.extended_precision, Nint=self.Nint)
 
-        if self.lmax is not None:
-            self.tmatrix = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix, lmax)
+        if lmax < calc_lmax:
+            self.tmatrix_fixed = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix_fixed, lmax)
+
+        self._rotate_fixed_tmatrix()
 
         return self.tmatrix
 
     def enclosed_radius(self):
         return np.sqrt((self.height/2)**2 + self.radius**2)
+
+    def _dict_key(self, wavelength):
+        return (cylinder, self.radius, self.height, self.rounded, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())
