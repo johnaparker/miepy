@@ -8,24 +8,73 @@ from miepy.sources.source_base import source
 
 #TODO: implement for any polarization
 class point_dipole(source):
-    def __init__(self, location, polarization, amplitude=1, phase=0):
+    def __init__(self, position, direction, amplitude=1, phase=0, mode='electric'):
         super().__init__(amplitude, phase)
 
-        self.location = location
+        self.position = np.asarray(position)
 
-        polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization = polarization
-        self.polarization /= np.linalg.norm(polarization)
+        direction = np.asarray(direction, dtype=np.complex)
+        self.direction = direction
+        self.direction /= np.linalg.norm(direction)
+
+        self.mode = mode
+
+        self.weight = {}
+        self.weight[1] = (self.direction[0] + self.direction[1])/2
+        self.weight[0] = self.direction[2]
+        self.weight[-1] = -(self.direction[0] - self.direction[1])/2
+
+    def structure(self, position, k, lmax, radius=None):
+        rmax = miepy.vsh.lmax_to_rmax(lmax)
+        p_src = np.zeros([2, rmax], dtype=complex)
+        factor = self.amplitude*np.exp(1j*self.phase)
+
+        dr = position - self.position
+        rad, theta, phi = miepy.coordinates.cart_to_sph(*dr)
+
+        for r,n,m in miepy.mode_indices(lmax):
+            for u in [-1,0,1]:
+                A, B = miepy.cpp.vsh_translation.vsh_translation(m, n, u, 1, rad, theta, phi, k, miepy.vsh_mode.ingoing)
+                p_src[0,r] += A*self.weight[u]
+                p_src[1,r] += B*self.weight[u]
+
+        if self.mode == 'magnetic':
+            p_src = p_src[::-1]
+
+        return factor*p_src
     
-    #TODO: VSH should allow spherical=False or cartesian=True
     def E_field(self, x, y, z, k):
-        N, _ = miepy.vsh.VSH(1,0)
-        r, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.location)
-        N_cart = miepy.coordinates.vec_sph_to_cart(N(r, theta, phi, k), theta, phi) 
-        return self.amplitude*N_cart*np.exp(1j*self.phase)
+        r, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position)
+
+        Esph = np.zeros((3,) + x.shape, dtype=complex)
+
+        p_src = np.zeros([2,3], dtype=complex)
+        p_src[0] = (self.weight[-1], self.weight[0], self.weight[1])
+
+        if self.mode == 'magnetic':
+            p_src = p_src[::-1]
+
+        Efunc = miepy.vsh.expand_E(p_src, k, miepy.vsh_mode.outgoing)
+
+        Esph = Efunc(r, theta, phi)
+        Ecart = miepy.coordinates.vec_sph_to_cart(Esph, theta, phi) 
+
+        return self.amplitude*Ecart*np.exp(1j*self.phase)
 
     def H_field(self, x, y, z, k):
-        _, M = miepy.vsh.VSH(1,0)
-        r, theta, phi = miepy.coordinates.cart_to_sph(x, y , z, origin=self.location)
-        M_cart = miepy.coordinates.vec_sph_to_cart(M(r, theta, phi, k), theta, phi) 
-        return self.amplitude*M_cart*np.exp(1j*self.phase)
+        r, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position)
+
+        Esph = np.zeros((3,) + x.shape, dtype=complex)
+
+        p_src = np.zeros([2,3], dtype=complex)
+        p_src[0] = (self.weight[-1], self.weight[0], self.weight[1])
+
+        if self.mode == 'magnetic':
+            p_src = p_src[::-1]
+
+        Efunc = miepy.vsh.expand_H(p_src, k, miepy.vsh_mode.outgoing)
+
+        Esph = Efunc(r, theta, phi)
+        Ecart = miepy.coordinates.vec_sph_to_cart(Esph, theta, phi) 
+
+        return self.amplitude*Ecart*np.exp(1j*self.phase)
