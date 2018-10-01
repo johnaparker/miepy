@@ -416,6 +416,30 @@ class cluster:
 
         return T
 
+    def local_density_of_states(self, enhancement=True):
+        """Compute the local density of states (LDOS)
+
+        Arguments:
+            enhancement      (bool) if True, return the relative enhancement LDOS (default: True)
+        """
+        if type(self.source) != miepy.sources.point_dipole:
+            raise ValueError("The source must be a single point dipole to compute the local density of states, not of type '{}'".format(
+                            type(self.source)))
+
+        factor = -2/np.pi*self.material_data.eps_b
+        pos = self.source.position + np.array([1e-12, 0, 0])
+        E = self.E_field(*pos)
+        p = 1j*self.source.E_field(*pos, self.material_data.k_b)
+
+        projection = self.source.direction
+        E_comp = np.dot(E, projection)
+        p_comp = np.dot(p, projection)
+
+        if enhancement:
+            return np.real(1j*E_comp)/np.real(p_comp)
+        else:
+            return factor*np.real(E_comp*np.conj(p_comp))/np.abs(p_comp)**2
+
     def update(self, position=None, orientation=None):
         """Update properties of the particles
 
