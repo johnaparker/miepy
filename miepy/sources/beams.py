@@ -208,7 +208,7 @@ class gaussian_beam(beam):
     def is_paraxial(self, k):
         # return True
         wav = 2*np.pi/k
-        return self.width > 4*wav
+        return self.width > 8*wav
 
 class bigaussian_beam(beam):
     def __init__(self, width_x, width_y, polarization, theta=0, phi=0,

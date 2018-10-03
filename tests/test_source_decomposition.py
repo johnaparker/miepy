@@ -43,3 +43,26 @@ def test_paraxial_gaussian_beam_approx_plane_wave():
     print(L2/avg)
 
     assert L2 < 6e-3*avg
+
+def test_point_dipole_point_matching():
+    """point matching a point dipole agrees with analytic results"""
+
+    wav = 1
+    k = 2*np.pi/wav
+    lmax = 4
+
+    pos = [.3, .2, .1]
+    sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
+
+    source = miepy.sources.point_dipole([0,0,0], direction=[1,0,0])
+
+    p1 = source.structure(pos, k, lmax)
+    p2 = miepy.vsh.decomposition.near_field_point_matching(source, pos, .1, k, lmax, sampling)
+
+    p1 = p1[0, :8]
+    p2 = p2[0, :8]
+    L2 = np.linalg.norm(p1 - p2)/p1.shape[0]
+    avg = np.average(np.abs(p1) + np.abs(p2))/2
+    print(L2/avg)
+
+    assert np.all(L2 < 8e-4*avg)
