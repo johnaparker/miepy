@@ -38,7 +38,7 @@ class particle:
 
     @orientation.setter
     def orientation(self, n):
-        self.orientation = n
+        self._orientation = n
         self._rotate_fixed_tmatrix()
 
     def is_inside(self, pos):

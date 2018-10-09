@@ -455,7 +455,7 @@ class cluster:
                 self.origin = np.average(self.position, axis=0)
 
         if orientation is not None:
-            for i in raneg(self.Nparticles):
+            for i in range(self.Nparticles):
                 self.particles[i].orientation = orientation[i]
                 self.tmatrix[i] = self.particles[i].tmatrix
 

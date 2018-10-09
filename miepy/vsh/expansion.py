@@ -94,6 +94,6 @@ def expand_H_far(p_scat, k, eps, mu):
         mu      medium permeability
     """
     factor = -1j*np.sqrt(eps/mu)
-    E_func = expand_E_far(p[::-1], k)
+    E_func = expand_E_far(p_scat[::-1], k)
     return lambda *args: factor*E_func(*args)
 
