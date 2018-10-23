@@ -20,7 +20,8 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
     """
 
     Nparticles = positions.shape[0]
-    lmax_in = vsh.rmax_to_lmax(p_scat.shape[-1])
+    rmax_in = p_scat.shape[-1]
+    lmax_in = vsh.rmax_to_lmax(rmax_in)
 
     if lmax is None:
         lmax = lmax_in
@@ -30,7 +31,7 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
 
     for i in range(Nparticles):
         if np.all(positions[i] == origin):
-            p_cluster[...] = p_scat[i]
+            p_cluster[:,:rmax_in] = p_scat[i]
             continue
 
         rij = origin - positions[i]
