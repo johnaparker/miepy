@@ -198,7 +198,10 @@ class gaussian_beam(beam):
             if self.is_paraxial(k):
                 U0 = 2*k*self.width*np.sqrt(Z0*self.power/np.pi)/r
             else:
-                U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+                if c < 700:
+                    U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+                else:
+                    U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))/r
         else:
             U0 = k*self.width**2*self.amplitude/r/2
 
@@ -206,9 +209,9 @@ class gaussian_beam(beam):
         return U
 
     def is_paraxial(self, k):
-        # return True
-        wav = 2*np.pi/k
-        return self.width > 8*wav
+        return False
+        # wav = 2*np.pi/k
+        # return self.width > 8*wav
 
 class bigaussian_beam(beam):
     def __init__(self, width_x, width_y, polarization, theta=0, phi=0,
@@ -348,6 +351,7 @@ class laguerre_gaussian_beam(beam):
         return amp*np.exp(1j*phase)
 
     def is_paraxial(self, k):
+        return False
         wav = 2*np.pi/k
         return self.width > 4*wav
 
