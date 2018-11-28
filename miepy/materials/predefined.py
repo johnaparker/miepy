@@ -3,10 +3,13 @@ from miepy.materials.create import constant_material
 
 ### mediums
 def vacuum():
-    return constant_material(1)
+    return constant_material(1, name='vacuum')
+
+def air():
+    return constant_material(1, name='air')
 
 def water():
-    return constant_material(1.33**2)
+    return constant_material(1.33**2, name='water')
 
 ### metals
 def Ag(author='Johnson'):

@@ -22,8 +22,8 @@ class material:
     """material interface base class"""
     __metaclass__ = ABCMeta
 
-    def __init__(self):
-        pass
+    def __init__(self, name=None):
+        self.name = name
 
     @abstractmethod
     def eps(self, wavelength): pass
@@ -32,8 +32,10 @@ class material:
     def mu(self, wavelength): pass
 
 class constant_material(material):
-    def __init__(self, eps, mu=1.0):
+    def __init__(self, eps, mu=1.0, name=None):
         """create a material with a constant eps and mu"""
+        super().__init__(name)
+
         self.eps_value = eps
         self.mu_value = mu
 
@@ -47,8 +49,10 @@ class constant_material(material):
         return self.f_mu(wavelength)
 
 class function_material(material):
-    def __init__(self, eps_function, mu_function=None):
+    def __init__(self, eps_function, mu_function=None, name=None):
         """create a material with an eps and mu function"""
+        super().__init__(name)
+
         self.eps_function = eps_function
 
         if mu_function is None:
@@ -66,8 +70,10 @@ class function_material(material):
         return self.f_mu(wavelength)
 
 class data_material(material):
-    def __init__(self, wavelength, eps, mu=None):
+    def __init__(self, wavelength, eps, mu=None, name=None):
         """create a material with raw wavelength, eps, and mu data"""
+        super().__init__(name)
+
         if np.isscalar(wavelength):
             raise ValueError("Material has only 1 data point. Use constant_material instead")
 
@@ -90,7 +96,7 @@ class data_material(material):
         return self.f_mu(wavelength)
 
 #TODO fix and test
-def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1):
+def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1, name=None):
     """Create a function_material using a Drude-Lorentz function.
        All arguments must be in eV units
 
@@ -104,7 +110,6 @@ def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1):
             gam   =  damping factors       (eV), [2, #poles] array
             magnetic_only   =  True if 1D array is to specify mu
     """
-
     #convert iterable input to numpy arrays if necessary
     sig = np.asarray(sig)
     f = np.asarray(f)
@@ -131,4 +136,4 @@ def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1):
         eps += eps_add
         mu += mu_add
 
-    return data_material(wav,eps,mu)
+    return data_material(wav,eps,mu, name=name)

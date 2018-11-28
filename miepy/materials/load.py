@@ -40,7 +40,7 @@ def load_material(name, author):
         k = data[:,2]
         eps = (n + 1j*k)**2
 
-    return miepy.data_material(wav, eps)
+    return miepy.data_material(wav, eps, name=name)
 
 def get_authors(material_name):
     """Get a list of possible authors for a given material"""
