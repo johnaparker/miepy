@@ -72,6 +72,7 @@ class Example(QMainWindow):
         # self.setStyleSheet("background-color: white;")
         QShortcut(QKeySequence("Ctrl+W"), self, QApplication.instance().quit)
         QShortcut(QKeySequence("Ctrl+Q"), self, QApplication.instance().quit)
+# Qt.Key_Return
         # self.setGeometry(0,0, 640, 440)
 
         bottom_layout = QHBoxLayout()
@@ -186,14 +187,14 @@ class Example(QMainWindow):
         self.absorption_box = QCheckBox('Absorption')
         self.absorption_box.setChecked(True)
         self.multipole_box =  QCheckBox('Multipoles')
-        self.autoplot_box =  QCheckBox('Auto compute')
+        self.autocompute_box =  QCheckBox('Auto compute')
 
         layout = QGridLayout()
         layout.addWidget(self.extinction_box, 0, 0)
         layout.addWidget(self.scattering_box, 1, 0)
         layout.addWidget(self.absorption_box, 2, 0)
         layout.addWidget(self.multipole_box,  3, 0)
-        layout.addWidget(self.autoplot_box,  4, 0)
+        layout.addWidget(self.autocompute_box,  4, 0)
         layout.setColumnStretch(1, 1)
         layout.setRowStretch(5, 1)
 
@@ -203,21 +204,19 @@ class Example(QMainWindow):
         compute_layout = QHBoxLayout()
         compute_layout.addStretch(1)
 
-        progress = QProgressBar(minimumWidth=200)
-        progress.setRange(0, 100)
-        progress.setValue(100)
-        pal = progress.palette()
-        compute_layout.addWidget(progress)
+        self.progress = QProgressBar(minimumWidth=200)
+        self.progress.setRange(0, self.Nwav-1)
+        self.progress.setValue(self.Nwav-1)
+        compute_layout.addWidget(self.progress)
 
         self.compute_button = QPushButton('Compute')
         self.compute_button.setDefault(True)
-        self.compute_button.clicked.connect(lambda: print(2))
+        self.compute_button.clicked.connect(self.compute)
         compute_layout.addWidget(self.compute_button)
 
-        self.autoplot_box.toggled.connect(self.compute_button.setDisabled)
-        progress.setDisabled(True)
-        self.autoplot_box.setChecked(True)
-
+        self.autocompute_box.toggled.connect(self.compute_button.setDisabled)
+        self.progress.hide()
+        self.autocompute_box.setChecked(True)
 
         menubar = self.menuBar()
         theme_menu = menubar.addMenu('Theme')
@@ -232,6 +231,7 @@ class Example(QMainWindow):
         self.vbox.addLayout(bottom_layout)
         self.vbox.addLayout(compute_layout)
         self.setWindowTitle('Mie Calculator')
+        QShortcut(Qt.Key_Return, self, lambda: self.compute() if not self.autocompute_box.isChecked() else None)
         self.show()
 
     def set_theme(self, dark):
@@ -243,7 +243,9 @@ class Example(QMainWindow):
     def set_light_theme(self):
         QApplication.setPalette(QApplication.style().standardPalette())
 
-        mpl.rcdefaults()
+        # mpl.rcdefaults()
+        mpl.rc('text', color='black')
+        mpl.rc('legend', facecolor='white', edgecolor=[0.8]*3)
         self.fig.ax.set_facecolor([240/255]*3)
         self.fig.ax.figure.patch.set_facecolor([240/255]*3)
         self.fig.ax.tick_params(axis='both', labelcolor='black')
@@ -304,13 +306,15 @@ class Example(QMainWindow):
 
     def set_diameter(self, diameter):
         self.mie.radius = diameter/2*nm
-        sol = self.mie.solve()
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_dielectric_index(self, index):
         self.mie.material = miepy.constant_material(index**2)
-        sol = self.mie.solve()
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_material(self, name):
         if name != 'Dielectric':
@@ -323,53 +327,74 @@ class Example(QMainWindow):
             eps = self.dielectric_box.value()**2
             self.mie.material = miepy.constant_material(eps)
 
-        sol = self.mie.solve()
-        self.fig.update_ydata(sol)
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_medium(self, index):
         self.mie.medium = miepy.constant_material(index**2)
-        sol = self.mie.solve()
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_min_wavelength(self, wmin):
         self.mie.wavelengths[...] = np.linspace(wmin*nm, self.mie.wavelengths[-1], self.Nwav)
-        sol = self.mie.solve()
-        self.fig.update_xdata(self.mie.wavelengths, draw=False)
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_max_wavelength(self, wmax):
         self.mie.wavelengths[...] = np.linspace(self.mie.wavelengths[0], wmax*nm, self.Nwav)
-        sol = self.mie.solve()
-        self.fig.update_xdata(self.mie.wavelengths, draw=False)
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_beam_width(self, width):
         self.mie.source.width = width*nm
-        sol = self.mie.solve()
-        self.fig.update_ydata(sol)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
 
     def set_source(self, name):
         if name != 'Plane wave':
             self.beam_width_label.show()
             self.beam_width_box.show()
+            self.autocompute_box.setChecked(False)
+            self.autocompute_box.setDisabled(True)
         else:
             self.beam_width_label.hide()
             self.beam_width_box.hide()
+            self.autocompute_box.setDisabled(False)
+            self.autocompute_box.setChecked(True)
 
         width = self.beam_width_box.value()
 
         if name == 'Plane wave':
             source = miepy.sources.plane_wave([1, 0])
         elif name == 'Gaussian beam':
-            source = miepy.sources.gaussian_beam(polarization=[1, 0], width=width*nm, power=1)
+            source = miepy.sources.gaussian_beam(polarization=[1, 0], width=width*nm, amplitude=1)
         elif name == 'Azimuthal beam':
-            source = miepy.sources.azimuthal_beam(width=width*nm, power=1)
+            source = miepy.sources.azimuthal_beam(width=width*nm, amplitude=1)
         elif name == 'Radial beam':
-            source = miepy.sources.radial_beam(width=width*nm, power=1)
+            source = miepy.sources.radial_beam(width=width*nm, amplitude=1)
 
         self.mie.source = source
-        sol = self.mie.solve()
+
+        if self.autocompute_box.isChecked():
+            self.compute()
+
+    def compute(self):
+        if not self.autocompute_box.isChecked():
+            self.progress.setValue(0)
+            self.progress.show()
+            progress = self.progress
+        else:
+            progress = None
+
+        sol = self.mie.solve(progress=progress)
+        self.fig.update_xdata(self.mie.wavelengths, draw=False)
         self.fig.update_ydata(sol)
+
+        self.progress.hide()
 
 def get_multipole_label(i, j):
     label = 'e' if i == 0 else 'm'
@@ -382,7 +407,7 @@ def get_multipole_label(i, j):
 
 class plot_region:
     def __init__(self):
-        self.canvas = FigureCanvas(Figure(figsize=(8, 5.3), constrained_layout=True))
+        self.canvas = FigureCanvas(Figure(figsize=(8, 6), constrained_layout=True))
         self.ax = self.canvas.figure.subplots()
         self.ax.set(xlabel='wavelength (nm)', ylabel=r'cross-section ($\mu m^2$)')
         self.ax.grid(lw=.2, color='gray')
@@ -480,7 +505,7 @@ class mie_sphere:
         self.source = source
         self.medium = medium
 
-    def solve(self):
+    def solve(self, progress=None):
         C, A, E = [np.full(self.wavelengths.shape, np.nan, dtype=float) for i in range(3)]
         multi = np.full(self.wavelengths.shape + (2, 2), np.nan, dtype=float)
 
@@ -500,6 +525,9 @@ class mie_sphere:
 
             C[i], A[i], E[i] = sol.cross_sections()
             multi[i] = sol.cross_sections_per_multipole().scattering
+
+            if progress is not None:
+                progress.setValue(i)
 
         return dict(scattering=C, absorption=A, extinction=E, multipoles=multi)
         
