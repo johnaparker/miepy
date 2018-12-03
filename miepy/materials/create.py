@@ -7,7 +7,6 @@ import numpy as np
 import miepy
 from scipy import constants
 from scipy.interpolate import interp1d
-import pandas as pd
 from abc import ABCMeta, abstractmethod
 
 def wavelength_to_energy(wavelength):
@@ -77,17 +76,15 @@ class data_material(material):
         if np.isscalar(wavelength):
             raise ValueError("Material has only 1 data point. Use constant_material instead")
 
-        self.data = pd.DataFrame()
-        
-        self.data['wavelength'] = np.asarray(wavelength, dtype=float)
-        self.data['eps'] = np.asarray(eps, dtype=complex)
+        self.wavelength = np.asarray(wavelength, dtype=float)
+        self.eps_data = np.asarray(eps, dtype=complex)
         if mu is None:
-            self.data['mu'] = np.ones_like(self.data['eps'])
+            self.mu_data = np.ones_like(self.eps_data)
         else:
-            self.data['mu'] = np.asarray(mu, dtype=complex)
+            self.mu_data = np.asarray(mu, dtype=complex)
 
-        self.f_eps = interp1d(self.data['wavelength'], self.data['eps'], kind='linear')
-        self.f_mu  = interp1d(self.data['wavelength'], self.data['mu'], kind='linear')
+        self.f_eps = interp1d(self.wavelength, self.eps_data, kind='linear')
+        self.f_mu  = interp1d(self.wavelength, self.mu_data,  kind='linear')
 
     def eps(self, wavelength):
         return self.f_eps(wavelength)
