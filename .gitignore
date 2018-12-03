@@ -20,7 +20,6 @@ miepy/tmatrix/nfmds/input
 build
 dist
 *.egg-info
-bin
 
 # material database
 miepy/materials/database
@@ -67,6 +66,8 @@ miepy/tmatrix/nfmds/input
 miepy/tmatrix/nfmds/old
 miepy/tmatrix/nfmds/tmatrix
 miepy/tmatrix/nfmds/tmatrix_extended
+miepy/bin/tmatrix
+miepy/bin/tmatrix_extended
 
 # c++ code
 *.so
