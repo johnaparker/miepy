@@ -172,11 +172,19 @@ class paraxial_beam(beam):
     def is_paraxial(self, k):
         return True
 
+    def __repr__(self):
+        return f'paraxial_beam(Ufunc={self.Ufunc.__name__}, polarization={self.polarization}, power={self.power}, ' \
+               f'center={self.center}, ptheta={self.theta}, phi={self.phi})'
+
 class gaussian_beam(beam):
     def __init__(self, width, polarization, theta=0, phi=0, 
                   power=None, amplitude=None, phase=0, center=np.zeros(3)):
         super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width = width
+
+    def __repr__(self):
+        return f'gaussian_beam(width={self.width}, polarization={self.polarization}, power={self.power}, ' \
+               f'center={self.center}, theta={self.theta}, phi={self.phi})'
     
     def scalar_potenital(self, x, y, z, k):
         if self.amplitude is None:
@@ -219,6 +227,10 @@ class bigaussian_beam(beam):
         super().__init__(polarization, theta, phi, power, amplitude, phase, center)
         self.width_x = width_x
         self.width_y = width_y
+
+    def __repr__(self):
+        return f'bigaussian_beam(width_x={self.width_x}, width_y={self.width_y}, polarization={self.polarization}, ' \
+               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
     
     def scalar_potenital(self, x, y, z, k):
         if self.amplitude is None:
@@ -247,6 +259,10 @@ class hermite_gaussian_beam(beam):
         self.width = width
         self.l = l
         self.m = m
+
+    def __repr__(self):
+        return f'HG_beam(width={self.width}, l={self.l}, m={self.m}, polarization={self.polarization}, ' \
+               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
     
     def scalar_potenital(self, x, y, z, k):
         if self.amplitude is None:
@@ -304,6 +320,10 @@ class laguerre_gaussian_beam(beam):
         self.width = width
         self.p = p
         self.l = l
+
+    def __repr__(self):
+        return f'LG_beam(width={self.width}, p={self.p}, l={self.l}, polarization={self.polarization}, ' \
+               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
     
     def scalar_potenital(self, x, y, z, k):
         if self.amplitude is None:

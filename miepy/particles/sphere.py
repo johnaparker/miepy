@@ -13,6 +13,12 @@ class sphere(particle):
         super().__init__(position, None, material)
         self.radius = radius
 
+    def __repr__(self):
+        return f'''{self.__class__.__name__}:
+    position = {self.position} m
+    radius = {self.radius:.2e} m
+    material = {self.material}'''
+
     def is_inside(self, pos):
         pass
 

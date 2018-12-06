@@ -86,6 +86,16 @@ class cluster:
         ### solve the interactions
         self.solve()
 
+    def __repr__(self):
+        return f'''{self.__class__.__name__}:
+    Nparticles = {self.Nparticles}
+    source = {self.source}
+    wavelength = {self.wavelength:.2e}
+    medium = {self.medium}
+    lmax = {self.lmax}
+    origin = {self.origin}
+    '''
+
     #TODO: interface more like E_field
     def E_field_from_particle(self, i, x, y, z, source=True):
         """Compute the electric field around particle i

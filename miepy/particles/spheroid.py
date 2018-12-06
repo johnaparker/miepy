@@ -18,6 +18,14 @@ class spheroid(particle):
 
         self.tmatrix_lmax = tmatrix_lmax
 
+    def __repr__(self):
+        return f'''{self.__class__.__name__}:
+    position = {self.position} m
+    orientation = {self.orientation}
+    axis_xy = {self.axis_xy:.2e} m
+    axis_z = {self.axis_z:.2e} m
+    material = {self.material}'''
+
     def is_inside(self, pos):
         pass
 

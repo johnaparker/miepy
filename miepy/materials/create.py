@@ -30,6 +30,9 @@ class material:
     @abstractmethod
     def mu(self, wavelength): pass
 
+    def __repr__(self):
+        return self.name
+
 class constant_material(material):
     def __init__(self, eps, mu=1.0, name=None):
         """create a material with a constant eps and mu"""
@@ -46,6 +49,12 @@ class constant_material(material):
 
     def mu(self, wavelength):
         return self.f_mu(wavelength)
+
+    def __repr__(self):
+        if self.name is None:
+            return f'constant_material(eps={self.eps_value}, mu={self.mu_value})'
+        else:
+            return super().__repr__()
 
 class function_material(material):
     def __init__(self, eps_function, mu_function=None, name=None):
@@ -67,6 +76,12 @@ class function_material(material):
 
     def mu(self, wavelength):
         return self.f_mu(wavelength)
+
+    def __repr__(self):
+        if self.name is None:
+            return f'function_material(eps={self.eps_function.__name__}, mu={self.mu_function.__name__})'
+        else:
+            return super().__repr__()
 
 class data_material(material):
     def __init__(self, wavelength, eps, mu=None, name=None):
@@ -91,6 +106,12 @@ class data_material(material):
 
     def mu(self, wavelength):
         return self.f_mu(wavelength)
+
+    def __repr__(self):
+        if self.name is None:
+            return f'date_material(wavelengh_range=[{self.wavelength[0]:.2e}, {self.wavelength[-1]:.2e}])'
+        else:
+            return super().__repr__()
 
 #TODO fix and test
 def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1, name=None):

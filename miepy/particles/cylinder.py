@@ -22,6 +22,15 @@ class cylinder(particle):
 
         self.tmatrix_lmax = tmatrix_lmax
 
+    def __repr__(self):
+        return f'''{self.__class__.__name__}:
+    position = {self.position} m
+    orientation = {self.orientation}
+    radius = {self.radius:.2e} m
+    height = {self.height:.2e} m
+    material = {self.material}
+    rounded = {self.rounded}'''
+
     def is_inside(self, pos):
         pass
 

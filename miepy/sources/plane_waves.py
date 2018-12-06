@@ -29,6 +29,9 @@ class plane_wave(source):
         ### TE and TM vectors
         self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
 
+    def __repr__(self):
+        return f'plane_wave(polarization={self.polarization}, amplitude={self.amplitude}, theta={self.theta}, phi={self.phi})'
+
     @classmethod
     def from_string(cls, polarization, direction='z', amplitude=1, phase=0):
         """Create a plane wave from string values for the polarization and direction
