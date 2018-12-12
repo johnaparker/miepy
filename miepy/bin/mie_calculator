@@ -3,7 +3,7 @@
 import sys
 from PyQt5.QtWidgets import (QWidget, QPushButton, QGroupBox, QSpinBox, QDoubleSpinBox,
     QGridLayout, QHBoxLayout, QVBoxLayout, QApplication, QMainWindow, QShortcut, QLabel,
-    QComboBox, QCheckBox, QProgressBar, QAction)
+    QComboBox, QCheckBox, QProgressBar, QAction, QStackedWidget)
 
 from PyQt5.QtGui import QKeySequence, QColor, QPalette
 from PyQt5.QtCore import Qt
@@ -28,6 +28,90 @@ mpl.rc('mathtext', default='regular')
 nm = 1e-9
 tab = ' '*6
 
+class dynamic_labels:
+    def __init__(self, group_names):
+        self.layout = QGridLayout()
+        self.row = 0
+        self.col = 0
+        self.col_max = 2
+
+        self.static_labels = []
+        self.group_names = group_names
+        self.groups = {name: [] for name in group_names}
+
+    def add_static(self, label, widget, same_row=False):
+        qlabel = QLabel(label)
+        if same_row:
+            self._add_column(qlabel, widget)
+        else:
+            self._add(qlabel, widget)
+
+    def add_dynamic(self, label, widget, group, hide=True, same_row=False):
+        qlabel = QLabel(label)
+        self.groups[group].extend([qlabel, widget])
+
+        if same_row:
+            self._add_column(qlabel, widget)
+        else:
+            self._add(qlabel, widget)
+
+        if hide:
+            qlabel.hide()
+            widget.hide()
+
+    def show_group(self, group):
+        for widget in self.groups[group]:
+            widget.show()
+
+    def hide_group(self, group):
+        for widget in self.groups[group]:
+            widget.hide()
+
+    def show_only(self, group):
+        for wlist in self.groups.values():
+            for widget in wlist:
+                widget.hide()
+
+        for widget in self.groups[group]:
+            widget.show()
+
+    def add_stretch(self):
+        self.layout.setColumnStretch(self.col_max, 1)
+        self.layout.setRowStretch(self.row, 1)
+
+    def _add(self, label, widget):
+        self.col = 0
+        self.layout.addWidget(label, self.row, self.col)
+        self.layout.addWidget(widget, self.row, self.col + 1)
+
+        self.row += 1
+        self.col += 2
+
+    def _add_column(self, label, widget):
+        self.layout.addWidget(label, self.row-1, self.col)
+        self.layout.addWidget(widget, self.row-1, self.col + 1)
+        self.col += 2
+        self.col_max = max(self.col, self.col_max)
+
+class spheroid_box:
+    def __init__(self, parent):
+        self.Q = QWidget()
+        self.box = QGridLayout(self.Q)
+
+        self.axis_xy = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.axis_xy.setValue(150)
+        self.axis_xy.setSingleStep(10)
+
+        self.axis_z = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.axis_z.setValue(100)
+        self.axis_z.setSingleStep(10)
+
+        self.box.addWidget(QLabel('axis a'), 0, 0)
+        self.box.addWidget(self.axis_xy, 0, 1)
+        self.box.addWidget(QLabel('axis b'), 1, 0)
+        self.box.addWidget(self.axis_z, 1, 1)
+
+
 class Example(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -42,6 +126,8 @@ class Example(QMainWindow):
                           'TiO2': miepy.materials.TiO2(),
                           'Silica': miepy.materials.silica(),}
 
+        self.particles = ['Sphere', 'Spheroid', 'Cylinder'] # Core-shell
+
         ### central widget
         self._main = QtWidgets.QWidget()
         self.setCentralWidget(self._main)
@@ -52,7 +138,7 @@ class Example(QMainWindow):
         self.vbox.setContentsMargins(*[20]*4)
         self.fig = plot_region()
 
-        self.Nwav = 300
+        self.Nwav = 50
         wavelengths = np.linspace(300*nm, 1000*nm, self.Nwav)
         source = miepy.sources.plane_wave([1, 0])
         medium = miepy.materials.water()
@@ -61,9 +147,6 @@ class Example(QMainWindow):
         self.fig.initialize_plot(self.mie.wavelengths, sol)
 
         QApplication.setStyle("Fusion")
-
-        self.fig.ax.set_facecolor([240/255]*3)
-        self.fig.ax.figure.patch.set_facecolor([240/255]*3)
 
         self.initUI()
         self.initWidgets()
@@ -80,49 +163,64 @@ class Example(QMainWindow):
         ### Particle properties widgets
         particle_box = QGroupBox('Particle properties')
 
-        self.geometry_box = QComboBox(particle_box)
-        self.geometry_box.addItem('Sphere')
-        self.geometry_box.addItem('Core-shell')
-        self.geometry_box.addItem('Spheroid')
-        self.geometry_box.addItem('Cylinder')
+        self.particle_layout = dynamic_labels(self.particles + ['Nonsphere', 'Dielectric'])
 
-        self.diameter_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
-        self.diameter_box.setValue(150)
-        self.diameter_box.setSingleStep(10)
+        self.geometry_box = QComboBox(particle_box)
+        for particle in self.particles:
+            self.geometry_box.addItem(particle)
+        self.particle_layout.add_static('particle type', self.geometry_box)
+        self.current_geometry = 'Sphere'
+
+        self.sphere_diameter_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.sphere_diameter_box.setValue(150)
+        self.sphere_diameter_box.setSingleStep(10)
+        self.particle_layout.add_dynamic(tab + 'diameter (nm)', self.sphere_diameter_box, group='Sphere', hide=False)
+
+        self.cylinder_diameter_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.cylinder_diameter_box.setValue(150)
+        self.cylinder_diameter_box.setSingleStep(10)
+        self.particle_layout.add_dynamic(tab + 'diameter (nm)', self.cylinder_diameter_box, group='Cylinder', hide=True)
+
+        self.cylinder_height_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.cylinder_height_box.setValue(100)
+        self.cylinder_height_box.setSingleStep(10)
+        self.particle_layout.add_dynamic(tab + 'height (nm)', self.cylinder_height_box, group='Cylinder', hide=True)
+
+        self.spheroid_axis_a_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.spheroid_axis_a_box.setValue(150)
+        self.spheroid_axis_a_box.setSingleStep(10)
+        self.particle_layout.add_dynamic(tab + 'axis 2a (nm)', self.spheroid_axis_a_box, group='Spheroid', hide=True)
+
+        self.spheroid_axis_b_box = QDoubleSpinBox(particle_box, minimum=1, maximum=2000)
+        self.spheroid_axis_b_box.setValue(100)
+        self.spheroid_axis_b_box.setSingleStep(10)
+        self.particle_layout.add_dynamic(tab + 'axis 2b (nm)', self.spheroid_axis_b_box, group='Spheroid', hide=True)
+
+        self.orientation_box = QComboBox(particle_box)
+        for comp in ['X', 'Y', 'Z']:
+            self.orientation_box.addItem(comp)
+        self.particle_layout.add_dynamic(tab + 'orientation', self.orientation_box, group='Nonsphere', hide=True)
 
         self.material_box = QComboBox(particle_box)
         self.material_box.addItem('Dielectric')
         for name in self.materials.keys():
             self.material_box.addItem(name)
         self.material_box.setCurrentIndex(1)
+        self.particle_layout.add_static(tab + 'material', self.material_box)
 
         self.dielectric_box = QDoubleSpinBox(particle_box, minimum=.01, maximum=100)
         self.dielectric_box.setValue(3.7)
         self.dielectric_box.setSingleStep(.1)
+        self.particle_layout.add_dynamic('index', self.dielectric_box, group='Dielectric', same_row=True)
 
         self.medium_box = QDoubleSpinBox(particle_box, minimum=.01, maximum=100)
         self.medium_box.setValue(1.33)
         self.medium_box.setSingleStep(.1)
+        self.particle_layout.add_static('medium index', self.medium_box)
 
-        layout = QGridLayout()
-        layout.addWidget(QLabel('particle type'), 0, 0)
-        layout.addWidget(self.geometry_box, 0, 1)
-        layout.addWidget(QLabel(tab + 'diameter (nm)'), 1, 0)
-        layout.addWidget(self.diameter_box, 1, 1)
-        layout.addWidget(QLabel(tab + 'material'), 2, 0)
-        layout.addWidget(self.material_box, 2, 1)
-        self.dielectric_label = QLabel('index')
-        layout.addWidget(self.dielectric_label, 2, 2)
-        layout.addWidget(self.dielectric_box, 2, 3)
-        layout.addWidget(QLabel('medium index'), 3, 0)
-        layout.addWidget(self.medium_box, 3, 1)
-        layout.setColumnStretch(2, 1)
-        layout.setRowStretch(4, 1)
+        self.particle_layout.add_stretch()
 
-        self.dielectric_label.hide()
-        self.dielectric_box.hide()
-
-        particle_box.setLayout(layout)
+        particle_box.setLayout(self.particle_layout.layout)
         bottom_layout.addWidget(particle_box)
 
         ### Source widgets
@@ -202,6 +300,8 @@ class Example(QMainWindow):
         bottom_layout.addWidget(options_box)
 
         compute_layout = QHBoxLayout()
+        self.note = QLabel('')
+        compute_layout.addWidget(self.note)
         compute_layout.addStretch(1)
 
         self.progress = QProgressBar(minimumWidth=200)
@@ -232,6 +332,7 @@ class Example(QMainWindow):
         self.vbox.addLayout(compute_layout)
         self.setWindowTitle('Mie Calculator')
         QShortcut(Qt.Key_Return, self, lambda: self.compute() if not self.autocompute_box.isChecked() else None)
+        self.set_light_theme()
         self.show()
 
     def set_theme(self, dark):
@@ -279,7 +380,9 @@ class Example(QMainWindow):
 
         self.fig.ax.set_facecolor([53/255]*3)
         mpl.rc('text', color=[230/255]*3)
-        mpl.rc('legend', facecolor=[53/255]*3, edgecolor='black')
+        mpl.rc('legend', facecolor=[53/255]*3, edgecolor=[100/255]*3)
+        for label in ['top', 'bottom', 'left', 'right']:
+            self.fig.ax.spines[label].set_color([100/255]*3)
         self.fig.ax.tick_params(axis='both', labelcolor=[230/255]*3)
         self.fig.ax.figure.patch.set_facecolor([53/255]*3)
         self.fig.ax.set_xlabel(self.fig.ax.get_xlabel(), color=[230/255]*3)
@@ -293,7 +396,7 @@ class Example(QMainWindow):
         self.multipole_box.toggled.connect(partial(self.fig.set_multipoles_visible,
                                   boxes=[self.absorption_box, self.extinction_box]))
 
-        self.diameter_box.valueChanged.connect(self.set_diameter)
+        self.sphere_diameter_box.valueChanged.connect(self.set_diameter)
         self.material_box.currentTextChanged.connect(self.set_material)
         self.dielectric_box.valueChanged.connect(self.set_dielectric_index)
         self.medium_box.valueChanged.connect(self.set_medium)
@@ -303,6 +406,9 @@ class Example(QMainWindow):
 
         self.sources_box.currentTextChanged.connect(self.set_source)
         self.beam_width_box.valueChanged.connect(self.set_beam_width)
+
+        self.geometry_box.currentTextChanged.connect(self.set_geometry)
+        self.orientation_box.currentTextChanged.connect(self.set_orientation)
 
     def set_diameter(self, diameter):
         self.mie.radius = diameter/2*nm
@@ -319,11 +425,9 @@ class Example(QMainWindow):
     def set_material(self, name):
         if name != 'Dielectric':
             self.mie.material = self.materials[name]
-            self.dielectric_box.hide()
-            self.dielectric_label.hide()
+            self.particle_layout.hide_group('Dielectric')
         else:
-            self.dielectric_box.show()
-            self.dielectric_label.show()
+            self.particle_layout.show_group('Dielectric')
             eps = self.dielectric_box.value()**2
             self.mie.material = miepy.constant_material(eps)
 
@@ -354,17 +458,67 @@ class Example(QMainWindow):
         if self.autocompute_box.isChecked():
             self.compute()
 
+    def set_geometry(self, name):
+        self.particle_layout.hide_group(self.current_geometry)
+        self.particle_layout.show_group(name)
+        self.current_geometry = name
+
+        if name == 'Sphere':
+            if self.should_autocompute():
+                self.enable_autocompute()
+            self.particle_layout.hide_group('Nonsphere')
+        else:
+            self.disable_autocompute()
+            self.particle_layout.show_group('Nonsphere')
+
+        if name == 'Sphere':
+            self.note.setText("")
+            radius = self.sphere_diameter_box.value()*nm/2
+            self.mie = mie_sphere(radius, self.mie.material, self.mie.wavelengths, self.mie.source, self.mie.medium)
+
+        elif name == 'Cylinder':
+            self.note.setText("The light is Z-propagating. The cylinder's orientation is its axis of symmetry (height)")
+            height = self.cylinder_height_box.value()*nm
+            diameter = self.cylinder_diameter_box.value()*nm
+            particle = miepy.cylinder(radius=diameter/2, height=height, material=self.mie.material,
+                                   position=[0,0,0], orientation=miepy.quaternion.from_spherical_coords(np.pi/2, 0))
+            self.mie = non_sphere(particle, self.mie.wavelengths, self.mie.source, self.mie.medium)
+
+        elif name == 'Spheroid':
+            self.note.setText("The light is Z-propagating. The spheroid's orientation is its axis of symmetry (axis b)")
+            axis_xy = self.spheroid_axis_a_box.value()*nm
+            axis_z = self.spheroid_axis_b_box.value()*nm
+            particle = miepy.spheroid(axis_xy=axis_xy, axis_z=axis_z, material=self.mie.material,
+                                   position=[0,0,0], orientation=miepy.quaternion.from_spherical_coords(np.pi/2, 0))
+            self.mie = non_sphere(particle, self.mie.wavelengths, self.mie.source, self.mie.medium)
+
+        if self.autocompute_box.isChecked():
+            self.compute()
+
+        if name != 'Sphere':
+            self.set_orientation(self.orientation_box.currentText())
+
+
+    def set_orientation(self, name):
+        if name == 'X':
+            orientation = miepy.quaternion.from_spherical_coords(np.pi/2, 0)
+        elif name == 'Y':
+            orientation = miepy.quaternion.from_spherical_coords(np.pi/2, np.pi/2)
+        elif name == 'Z':
+            orientation = miepy.quaternion.from_spherical_coords(0, 0)
+
+        self.mie.particle.orientation = orientation
+
     def set_source(self, name):
         if name != 'Plane wave':
             self.beam_width_label.show()
             self.beam_width_box.show()
-            self.autocompute_box.setChecked(False)
-            self.autocompute_box.setDisabled(True)
+            self.disable_autocompute()
         else:
             self.beam_width_label.hide()
             self.beam_width_box.hide()
-            self.autocompute_box.setDisabled(False)
-            self.autocompute_box.setChecked(True)
+            if self.should_autocompute():
+                self.enable_autocompute()
 
         width = self.beam_width_box.value()
 
@@ -396,6 +550,18 @@ class Example(QMainWindow):
 
         self.progress.hide()
 
+    def should_autocompute(self):
+        return ((self.sources_box.currentText() == 'Plane wave') and (self.geometry_box.currentText() == 'Sphere'))
+
+    def disable_autocompute(self):
+        self.autocompute_box.setChecked(False)
+        self.autocompute_box.setDisabled(True)
+
+    def enable_autocompute(self):
+        self.autocompute_box.setChecked(True)
+        self.autocompute_box.setDisabled(False)
+
+
 def get_multipole_label(i, j):
     label = 'e' if i == 0 else 'm'
     if j < 4:
@@ -408,6 +574,7 @@ def get_multipole_label(i, j):
 class plot_region:
     def __init__(self):
         self.canvas = FigureCanvas(Figure(figsize=(8, 6), constrained_layout=True))
+        self.canvas.setMinimumHeight(200)
         self.ax = self.canvas.figure.subplots()
         self.ax.set(xlabel='wavelength (nm)', ylabel=r'cross-section ($\mu m^2$)')
         self.ax.grid(lw=.2, color='gray')
@@ -522,6 +689,39 @@ class mie_sphere:
                                        wavelength=wavelength,
                                        lmax=2,
                                        medium=self.medium)
+
+            C[i], A[i], E[i] = sol.cross_sections()
+            multi[i] = sol.cross_sections_per_multipole().scattering
+
+            if progress is not None:
+                progress.setValue(i)
+
+        return dict(scattering=C, absorption=A, extinction=E, multipoles=multi)
+
+class non_sphere:
+    def __init__(self, particle, wavelengths, source, medium=None):
+        self.particle = particle
+        self.wavelengths = wavelengths
+        self.source = source
+        self.medium = medium
+        self.material = particle.material
+
+    def solve(self, progress=None):
+        self.particle.material = self.material
+        C, A, E = [np.full(self.wavelengths.shape, np.nan, dtype=float) for i in range(3)]
+        multi = np.full(self.wavelengths.shape + (2, 2), np.nan, dtype=float)
+
+        for i, wavelength in enumerate(self.wavelengths):
+            if type(self.material) is miepy.materials.create.data_material:
+                wav_range = self.material.wavelength
+                if wavelength < wav_range[0] or wavelength > wav_range[-1]:
+                    continue
+
+            sol = miepy.cluster(particles=self.particle,
+                                source=self.source,
+                                wavelength=wavelength,
+                                lmax=2,
+                                medium=self.medium)
 
             C[i], A[i], E[i] = sol.cross_sections()
             multi[i] = sol.cross_sections_per_multipole().scattering
