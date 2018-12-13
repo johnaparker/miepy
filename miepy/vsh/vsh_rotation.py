@@ -33,7 +33,10 @@ def vsh_rotation_matrix(n, quat):
     l = 2*n + 1
     R = Wigner_D_matrices(quat, n, n).reshape((l,l))
 
-    return R
+    m = np.arange(-n, n+1)
+    R *= np.power(-1.0, np.subtract.outer(m, m))
+
+    return np.conj(R)
 
 def rotate_expansion_coefficients(p_exp, quat):
     """Rotate a set of expansion coefficients to a new reference frame
@@ -53,6 +56,6 @@ def rotate_expansion_coefficients(p_exp, quat):
         R = vsh_rotation_matrix(n, quat)
         rmax = miepy.vsh.lmax_to_rmax(n)
         idx = np.s_[rmax-(2*n+1):rmax]
-        p_rot[:,idx] = np.einsum('ab,pa->pb', R, p_exp[:,idx])
+        p_rot[:,idx] = np.einsum('ab,pb->pa', R, p_exp[:,idx])
 
     return p_rot

@@ -51,7 +51,6 @@ def test_rotated_spheroid_equals_rotated_light():
 
     theta = 1.3
     phi = 0.7
-    q = miepy.quaternion.from_spherical_coords(theta, phi)
 
     source = miepy.sources.plane_wave([1,0], theta=theta, phi=phi)
     z_oriented = miepy.cluster(particles=miepy.spheroid([0,0,0], radius, 2*radius, material),
@@ -63,6 +62,7 @@ def test_rotated_spheroid_equals_rotated_light():
     C1 = z_oriented.cross_sections()
 
     source = miepy.sources.plane_wave([1,0])
+    q = miepy.quaternion.from_spherical_coords(theta, phi).inverse()
     oriented = miepy.cluster(particles=miepy.spheroid([0,0,0], radius, 2*radius, material, orientation=q),
                              source=source,
                              wavelength=wavelength,
@@ -71,4 +71,4 @@ def test_rotated_spheroid_equals_rotated_light():
 
     C2 = oriented.cross_sections()
 
-    assert np.allclose(C1, C2, rtol=0, atol=5e-30)
+    assert np.allclose(C1, C2, rtol=0, atol=7e-29)

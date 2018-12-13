@@ -40,8 +40,8 @@ def rotate_tmatrix(tmatrix, quat):
     for i,n,m in miepy.mode_indices(lmax):
         r = miepy.vsh.lmax_to_rmax(n)
         idx = np.s_[r-(2*n+1):r]
-        R[idx,idx] = miepy.vsh.vsh_rotation_matrix(n, quat).T
+        R[idx,idx] = miepy.vsh.vsh_rotation_matrix(n, quat)
 
-    tmatrix_rot = np.einsum('sm,wu,asbw->ambu', R, np.conjugate(R), tmatrix)
+    tmatrix_rot = np.einsum('ms,uw,asbw->ambu', R, np.conjugate(R), tmatrix)
 
     return tmatrix_rot
