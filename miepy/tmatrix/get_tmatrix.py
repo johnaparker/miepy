@@ -8,11 +8,13 @@ import pandas
 from functools import namedtuple
 from .required_files import main_input_file, sct_input_file
 from .axisymmetric_file import axisymmetric_file
+from .non_axisymmetric_file import non_axisymmetric_file
 
 
-tmatrix_input = namedtuple('TmatrixInput', 'number, input_function')
+tmatrix_input = namedtuple('TmatrixInput', 'number, name, input_function')
 class tmatrix_solvers:
-    axisymmetric = tmatrix_input(number=1, input_function=axisymmetric_file)
+    axisymmetric     = tmatrix_input(number=1, name='AXSYM', input_function=axisymmetric_file)
+    non_axisymmetric = tmatrix_input(number=2, name='NONAXSYM', input_function=non_axisymmetric_file)
 
 
 def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extended_precision=False):
@@ -48,7 +50,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         with open('{input_files_dir}/InputSCT.dat'.format(input_files_dir=input_files_dir), 'w') as f:
             f.write(sct_input_file())
 
-        with open('{input_files_dir}/InputAXSYM.dat'.format(input_files_dir=input_files_dir), 'w') as f:
+        with open('{input_files_dir}/Input{name}.dat'.format(input_files_dir=input_files_dir, name=solver.name), 'w') as f:
             f.write((solver.input_function(Nrank=lmax, **input_kwargs)))
 
         ### execute program and communicate

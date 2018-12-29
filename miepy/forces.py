@@ -70,7 +70,11 @@ def _gmt_force_and_torque_from_mst(gmt, i, sampling=30):
     """FOR TESTING ONLY!
     Given GMT object and particle number i, return F,T using MST
     """
-    radius = gmt.radius[i]
+    if type(gmt) is miepy.cluster:
+        radius = gmt.particles[i].enclosed_radius()
+    else:
+        radius = gmt.radius[i]
+
     X,Y,Z,THETA,PHI,tau,phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.position[i], sampling)
 
     E = gmt.E_field_from_particle(i, X, Y, Z)

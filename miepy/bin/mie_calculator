@@ -138,7 +138,7 @@ class Example(QMainWindow):
         self.vbox.setContentsMargins(*[20]*4)
         self.fig = plot_region()
 
-        self.Nwav = 50
+        self.Nwav = 300
         wavelengths = np.linspace(300*nm, 1000*nm, self.Nwav)
         source = miepy.sources.plane_wave([1, 0])
         medium = miepy.materials.water()
