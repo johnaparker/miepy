@@ -868,37 +868,9 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
         if (.not. anisotropic) then          
           call SurfaceElemNint (k, TypeGeom, Nparam, Nsurf, surf, miror,            &
                Nazimutsym, Nint1, Nint2)
-          if (icall == 1) then
-            print "(/,2x, a)",                                                      &
-           '- enter true to perform an integration test over specific matrix '	                             
-            print "(  2x,'elements and false otherwise;')"
-            call read_logical (IntTest)
-          end if           
-          if (IntTest) then            
-            call ConvergenceMatrixElem (3, 1, TypeGeom, Nsurf, Nparam, Mrank,       &
-                 Mrank, Nrank, 5, Nint1, Nint2, Nazimutsym, k, surf, kb,            &
-                 ind_refRel, miror, perfectcond, chiral)
-            call ConvergenceMatrixElem (3, 1, TypeGeom, Nsurf, Nparam, 1, Mrank,    &
-                 Nrank, 5, Nint1, Nint2, Nazimutsym, k, surf, kb, ind_refRel,       &
-                 miror, perfectcond, chiral)
-          end if
         else
           call SurfaceElemNint (k, TypeGeom, Nparam, Nsurf, surf, .false., 0,       &
           Nint1, Nint2)
-          if (icall == 1) then
-            print "(/,2x, a)",                                                      &
-           '- enter true to perform an integration test over specific matrix '	                      
-            print "(  2x,'elements and false otherwise;')"
-            call read_logical (IntTest)
-          end if           
-          if (IntTest) then                  
-            call ConvergenceMatrixElemAnis (TypeGeom, 3, 1, k, ind_refRel,          &
-                 ind_refRelZ, alphaPR, betaPR, gammaPR, Nsurf, surf, Mrank, Mrank,  &
-                 Nrank, 5, Nint1, Nint2, Nbeta, Nparam)
-            call ConvergenceMatrixElemAnis (TypeGeom, 3, 1, k, ind_refRel,          &
-                 ind_refRelZ, alphaPR, betaPR, gammaPR, Nsurf, surf, 1, Mrank,      &
-                 Nrank, 5, Nint1, Nint2, Nbeta, Nparam)     
-          end if
         end if 
         print "(2x,'- enter true for a new input of number of integration points')"
         print "(2x,'or false to continue;')"        
@@ -930,31 +902,9 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
       if (.not. anisotropic) then
         call SurfaceElemNint (k, TypeGeom, Nparam, Nsurf, surf, miror, Nazimutsym,  &
              Nint1, Nint2)        
-        print "(/,2x,'- enter true to perform an integration test over')"                  
-        print "(  2x,'specific matrix elements and false otherwise;')"
-        call read_logical (IntTest)                        
-        if (IntTest) then       
-          call ConvergenceMatrixElem (3, 1, TypeGeom, Nsurf, Nparam, Mrank, Mrank,  &
-               Nrank, 5, Nint1, Nint2, Nazimutsym, k, surf, kb, ind_refRel, miror,  &
-               perfectcond, chiral )
-          call ConvergenceMatrixElem (3, 1, TypeGeom, Nsurf, Nparam, 1, Mrank,      &
-               Nrank, 5, Nint1, Nint2, Nazimutsym, k, surf, kb, ind_refRel, miror,  &
-               perfectcond, chiral )                                                         
-        end if
       else
         call SurfaceElemNint (k, TypeGeom, Nparam, Nsurf, surf, .false., 0,         &
              Nint1, Nint2)
-        print "(/,2x,'- enter true to perform an integration test over')"                  
-        print "(  2x,'specific matrix elements and false otherwise;')"
-        call read_logical (IntTest)                        
-        if (IntTest) then                          
-          call ConvergenceMatrixElemAnis (TypeGeom, 3, 1, k, ind_refRel,            &
-               ind_refRelZ, alphaPR, betaPR, gammaPR, Nsurf, surf, Mrank, Mrank,    &
-               Nrank, 5, Nint1, Nint2, Nbeta, Nparam)
-          call ConvergenceMatrixElemAnis (TypeGeom, 3, 1, k, ind_refRel,            &
-               ind_refRelZ, alphaPR, betaPR, gammaPR, Nsurf, surf, 1, Mrank,        &
-               Nrank, 5, Nint1, Nint2, Nbeta, Nparam)       
-        end if
       end if
     end if
   end if
