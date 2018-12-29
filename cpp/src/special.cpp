@@ -3,7 +3,6 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
-//#include <omp.h>
 
 using std::complex;
 using namespace std::complex_literals;
@@ -211,7 +210,7 @@ double pi_func(int n, int m, double theta) {
         else
             return 0;
     }
-    else if (theta == M_PI) {
+    else if (theta == PI) {
         if (m == 1)
             return pow(-1, n+1)*n*(n+1)/2.0;
         else if (m == -1)
@@ -235,7 +234,7 @@ double tau_func(int n, int m, double theta) {
         else
             return 0;
     }
-    else if (theta == M_PI) {
+    else if (theta == PI) {
         if (m == 1)
             return pow(-1, n)*n*(n+1)/2.0;
         else if (m == -1)

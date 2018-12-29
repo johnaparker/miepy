@@ -376,7 +376,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
     wavelength = 0.1_O * 2._O * Pi 
     string     = 'OptProp'
     if (XFindPar (iInputSCT, string)) then
-      call fread_real(iInputSCT, wavelength, "wavelength" // char(0))
+      read (iInputSCT, *, iostat = ios) wavelength
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable wavelength;')"
+        stop
+      end if            
     else
       print "(/,2x,'Group name OptProp not found;')"
       stop  
@@ -391,12 +395,36 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
     chiral = .false.
     string = 'Tmat'
     if (XFindPar (iInputSCT, string)) then
-	  call fread_character(iInputSCT, FileTmat, "FileTmat" // char(0))
-	  call fread_int(iInputSCT, Nrank, "Nrank" // char(0))
-	  call fread_int(iInputSCT, Mrank, "Mrank" // char(0))
-	  call fread_logic(iInputSCT, axsym, "axsym" // char(0))
-	  call fread_logic(iInputSCT, sphere, "sphere" // char(0))
-	  call fread_logic(iInputSCT, chiral, "chiral" // char(0))
+      read (iInputSCT, *, iostat = ios) FileTmat
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable FileTmat;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) Nrank
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nrank;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) Mrank
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Mrank;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) axsym
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable axsym;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) sphere
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable sphere;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) chiral
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable chiral;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name Tmat not found;')"
       stop  
@@ -476,7 +504,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 ! ..................................................................................
   string = 'TypePDF'
   if (XFindPar (iInputSCT, string)) then
-	call fread_logic(iInputSCT, RandomOrientation, "RandomOrientation" // char(0))
+    read (iInputSCT, *, iostat = ios) RandomOrientation
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable RandomOrientation;')"
+      stop
+    end if
   else
     print "(/,2x,'Group name TypePDF not found;')"
     stop  
@@ -492,7 +524,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
   if (RandomOrientation) then
     string = 'CompletePDF - TypeMedium'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, MirorSym, "MirorSym" // char(0))
+      read (iInputSCT, *, iostat = ios) MirorSym
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable MirorSym;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name CompletePDF - TypeMedium not found;')"
       stop  
@@ -504,8 +540,16 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
     string = 'CompletePDF - AvrgMtrSS'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, DoNumAvrg, "DoNumAvrg" // char(0))
-      call fread_int  (iInputSCT, NthetaGS, "NthetaGS" // char(0))
+      read (iInputSCT, *, iostat = ios) DoNumAvrg
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable DoNumAvrg;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) NthetaGS
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable NthetaGS;')"
+        stop
+      end if                                                                                                  
     else
       print "(/,2x,'Group name CompletePDF - AvrgMtrSS not found;')"
       stop  
@@ -515,9 +559,17 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
     if (.not. DoNumAvrg) then
       string = 'CompletePDF - AnalytComputAvrgMtrSS'
       if (XFindPar (iInputSCT, string)) then      
-        call fread_logic(iInputSCT, ReducedOrder, "ReducedOrder" // char(0))
+        read (iInputSCT, *, iostat = ios) ReducedOrder
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable ReducedOrder;')"
+          stop
+        end if
         if (ReducedOrder) then
-          call fread_real(iInputSCT, deltaOrder, "deltaOrder" // char(0))
+          read (iInputSCT, *, iostat = ios) deltaOrder
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable deltaOrder;')"
+            stop
+          end if                                                                                                
         end if	
       else
         print "(/,2x,'Group name CompletePDF - AnalytComputAvrgMtrSS not found;')"
@@ -528,11 +580,26 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
     if (DoNumAvrg) then
       string = 'CompletePDF - NumComputAvrgMtrSS'
       if (XFindPar (iInputSCT, string)) then      
-        call fread_logic(iInputSCT, UseSimpson, "UseSimpson" // char(0))
-        call fread_int(iInputSCT, Nalpha, "Nalpha" // char(0))
-        call fread_int(iInputSCT, Nbeta, "Nbeta" // char(0))
-        call fread_int(iInputSCT, Ngamma, "Ngamma" // char(0))
-
+        read (iInputSCT, *, iostat = ios) UseSimpson
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable UseSimpson;')"
+          stop
+        end if             
+        read (iInputSCT, *, iostat = ios) Nalpha
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nalpha;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) Nbeta
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nbeta;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) Ngamma
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Ngamma;')"
+          stop
+        end if 
         call check_NalphaNbetaNgamma (1, Nalpha)
         call check_NalphaNbetaNgamma (2, Nbeta)
         if (.not. axsym) call check_NalphaNbetaNgamma (3, Ngamma)
@@ -547,7 +614,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
     string = 'CompletePDF - NormConst'
     if (XFindPar (iInputSCT, string)) then
-      call fread_real(iInputSCT, anorm, "anorm" // char(0))
+      read (iInputSCT, *, iostat = ios) anorm
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable anorm;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name CompletePDF - NormConst not found;')"
       stop  
@@ -555,13 +626,37 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
     string  = 'CompletePDF - DSCS'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, ComputeDSCS, "ComputeDSCS" // char(0))
+      read (iInputSCT, *, iostat = ios) ComputeDSCS 
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComputeDSCS;')"
+        stop
+      end if
       if (ComputeDSCS) then      
-        call fread_comp (iInputSCT, epol_beta, "epol_beta" // char(0))
-        call fread_comp (iInputSCT, epol_alpha, "epol_alpha" // char(0))
-        call fread_real (iInputSCT, phiGS, "phiGS" // char(0))
-        call fread_logic(iInputSCT, normalized, "normalized" // char(0))
-        call fread_character(iInputSCT, FileDSCS, "FileDSCS" // char(0))
+        read (iInputSCT, *, iostat = ios) epol_beta
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable epol_beta;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) epol_alpha
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable epol_alpha;')"
+          stop
+        end if                  
+        read (iInputSCT, *, iostat = ios) phiGS
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable phiGS;')"
+          stop
+        end if            
+        read (iInputSCT, *, iostat = ios) normalized
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable normalized;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) FileDSCS
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable FileDSCS;')"
+          stop
+        end if
         call check_azimuthal_plane (phiGS)      
         phiGS = phiGS  * grd	
       end if	
@@ -572,15 +667,43 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
     string = 'CompletePDF - ScatPars'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, ComputeScatPar, "ComputeScatPar" // char(0))
+      read (iInputSCT, *, iostat = ios) ComputeScatPar 
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComputeScatPar;')"
+        stop
+      end if
       if (ComputeScatPar) then            
-        call fread_int(iInputSCT, NthetaRND, "NthetaRND" // char(0))
-        call fread_real(iInputSCT, thetaminRND, "thetaminRND" // char(0))
-        call fread_real(iInputSCT, thetamaxRND, "thetamaxRND" // char(0))
-        call fread_character(iInputSCT, FileScat, "FileScat" // char(0))
-        call fread_int(iInputSCT, Nelem, "Nelem" // char(0))
+        read (iInputSCT, *, iostat = ios) NthetaRND
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable NthetaRND;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) thetaminRND
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable thetaminRND;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) thetamaxRND
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable thetamaxRND;')"
+          stop
+        end if                                         
+        read (iInputSCT, *, iostat = ios) FileScat
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable FileScat;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) Nelem
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nelem;')"
+          stop
+        end if                    
         do i = 1, Nelem
-          call fread_int(iInputSCT, MatrixElem(i), "MatrixElem " // char(48+i) // char(0))
+          read (iInputSCT, *, iostat = ios) MatrixElem(i)                        
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable MatrixElem;')"
+            stop
+          end if
         end do
         call check_tetaminmax (thetaminRND, thetamaxRND, NthetaRND)
         thetaminRND = thetaminRND * grd
@@ -600,7 +723,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
   else
     string = 'IncompletePDF - TypeIntegration'
     if (XFindPar (iInputSCT, string)) then      
-      call fread_logic(iInputSCT, UseSimpson, "UseSimpson" // char(0))
+      read (iInputSCT, *, iostat = ios) UseSimpson
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable UseSimpson;')"
+        stop
+      end if      
     else
       print "(/,2x,'Group name IncompletePDF - TypeIntegration not found;')"
       stop  
@@ -608,15 +735,51 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !      
     string  = 'IncompletePDF - OrientationAngles'
     if (XFindPar (iInputSCT, string)) then
-      call fread_real(iInputSCT, alphamin, "alphamin" // char(0))
-      call fread_real(iInputSCT, alphamax, "alphamax" // char(0))
-      call fread_int (iInputSCT, Nalpha, "Nalpha" // char(0))
-      call fread_real(iInputSCT, betamin, "betamin" // char(0))
-      call fread_real(iInputSCT, betamax, "betamax" // char(0))
-      call fread_int (iInputSCT, Nbeta, "Nbeta" // char(0))
-      call fread_real(iInputSCT, gammamin, "gammamin" // char(0))
-      call fread_real(iInputSCT, gammamax, "gammamax" // char(0))
-      call fread_int (iInputSCT, Ngamma, "Ngamma" // char(0))
+      read (iInputSCT, *, iostat = ios) alphamin
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable alphamin;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) alphamax
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable alphamax;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) Nalpha
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nalpha;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) betamin
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable betamin;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) betamax
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable betamax;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) Nbeta
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nbeta;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) gammamin
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable gammamin;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) gammamax
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable gammamax;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) Ngamma
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Ngamma;')"
+        stop
+      end if
       if (sphere) then    
         alphamin = 0._O
         alphamax = 0._O
@@ -653,7 +816,11 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !              
     string = 'IncompletePDF - NormConst'
     if (XFindPar (iInputSCT, string)) then
-      call fread_real(iInputSCT, anorm, "anorm" // char(0))
+      read (iInputSCT, *, iostat = ios) anorm
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable anorm;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name IncompletePDF - NormConst not found;')"
       stop  
@@ -661,14 +828,42 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !              
     string = 'IncompletePDF - IncWave'
     if (XFindPar (iInputSCT, string)) then
-      call fread_character (iInputSCT, TypeExcit, "TypeExcit" // char(0))
-      call fread_real(iInputSCT, thetaGI, "thetaGI" // char(0))
-      call fread_real(iInputSCT, phiGI, "phiGI" // char(0))
+      read (iInputSCT, *, iostat = ios) TypeExcit
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable TypeExcit;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) thetaGI
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable thetaGI;')"
+        stop
+      end if
+      read (iInputSCT, *, iostat = ios) phiGI
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable phiGI;')"
+        stop
+      end if
       if (TypeExcit(1:5) == 'GAUSS') then       
-        call fread_real(iInputSCT, x0, "x0" // char(0))
-        call fread_real(iInputSCT, y0, "y0" // char(0))
-        call fread_real(iInputSCT, z0, "z0" // char(0))
-        call fread_real(iInputSCT, w0, "w0" // char(0))
+        read (iInputSCT, *, iostat = ios) x0
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable x0;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) y0
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable y0;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) z0
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable z0;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) w0
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable w0;')"
+          stop
+        end if 
       end if	
       call check_TypeExcit (TypeExcit) 
       call check_incident_direction (thetaGI, phiGI)  
@@ -681,19 +876,54 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
     string = 'IncompletePDF - DSCS'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, ComputeDSCS, "ComputeDSCS" // char(0))
+      read (iInputSCT, *, iostat = ios) ComputeDSCS 
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComputeDSCS;')"
+        stop
+      end if                                                            
       if (ComputeDSCS) then   	
-        call fread_comp(iInputSCT, epol_beta, "epol_beta" // char(0))
-        call fread_comp(iInputSCT, epol_alpha, "epol_alpha" // char(0))
-        call fread_real(iInputSCT, alphapGauss, "alphapGauss" // char(0))
-        call fread_real(iInputSCT, phiGS, "phiGS" // char(0))
-        call fread_int (iInputSCT, NthetaGS, "NthetaGS" // char(0))
-        call fread_logic(iInputSCT, ExtThetaDom, "ExtThetaDom" // char(0))
-        call fread_logic(iInputSCT, normalized, "normalized" // char(0))
-        call fread_character(iInputSCT, FileDSCS, "FileDSCS" // char(0))
-	    
-	    call check_azimuthal_plane (phiGS)
-	    phiGS = phiGS  * grd        		
+        read (iInputSCT, *, iostat = ios) epol_beta
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable epol_beta;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) epol_alpha
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable epol_alpha;')"
+          stop
+        end if                    
+        read (iInputSCT, *, iostat = ios) alphapGauss
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable alphapGauss;')"
+          stop
+        end if        	        
+	read (iInputSCT, *, iostat = ios) phiGS
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable phiGS;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) NthetaGS
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable NthetaGS;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) ExtThetaDom
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable ExtThetaDom;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) normalized
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable normalized;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) FileDSCS
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable FileDSCS;')"
+          stop
+        end if									
+	call check_azimuthal_plane (phiGS)
+	phiGS = phiGS  * grd        		
         call check_polarization_angle (alphapGauss)        
         alphapGauss = alphapGauss * grd			
       end if                                                	
@@ -704,21 +934,57 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !    
     string = 'IncompletePDF - ScatPars'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, ComputeScatPar, "ComputeScatPar" // char(0))
+      read (iInputSCT, *, iostat = ios) ComputeScatPar 
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComputeScatPar;')"
+        stop
+      end if            
       if (ComputeScatPar) then              
-        call fread_int(iInputSCT, Nphi, "Nphi" // char(0))
+        read (iInputSCT, *, iostat = ios) Nphi
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nphi;')"
+          stop
+        end if
         do iphi = 1, Nphi
-          call fread_real(iInputSCT, phi(iphi), "phi(iphi)" // char(0))
-          call fread_int(iInputSCT, Ntheta(iphi), "Ntheta(iphi)" // char(0))
-          call fread_real(iInputSCT, thetamin(iphi), "thetamin(iphi)" // char(0))
-          call fread_real(iInputSCT, thetamax(iphi), "thetamax(iphi)" // char(0))
+          read (iInputSCT, *, iostat = ios) phi(iphi)
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable phi;')"
+            stop
+          end if      
+          read (iInputSCT, *, iostat = ios) Ntheta(iphi)
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable Ntheta;')"
+            stop
+          end if      
+          read (iInputSCT, *, iostat = ios) thetamin(iphi)
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable thetamin;')"
+            stop
+          end if        
+          read (iInputSCT, *, iostat = ios) thetamax(iphi)
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable thetamax;')"
+            stop
+          end if                
         end do                    
-        call fread_character(iInputSCT, FileScat, "FileScat" // char(0))
-        call fread_int (iInputSCT, Nelem, "Nelem" // char(0))
+        read (iInputSCT, *, iostat = ios) FileScat
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable FileScat;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) Nelem
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nelem;')"
+          stop
+        end if                    
         do i = 1, Nelem
-          call fread_int(iInputSCT, MatrixElem(i), "MatrixElem " // char(48+i) // char(0))
+          read (iInputSCT, *, iostat = ios) MatrixElem(i)                        
+          if (ios /= 0) then
+            print "(/,2x,'Error by reading the input variable MatrixElem;')"
+            stop
+          end if
         end do        	
-	    call check_Nphi (Nphi)
+	call check_Nphi (Nphi)
         call check_teta_phiminmax (.true., Nphi, phi, Ntheta, thetamin, thetamax)
         do iphi = 1, Nphi    
           phi(iphi)      = phi(iphi)      * grd
@@ -726,8 +992,8 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
           thetamax(iphi) = thetamax(iphi) * grd      
         end do
         call check_MatrixElem (Nelem, MatrixElem)  
-	    deallocate (indI, indJ, NameElem)
-	    allocate (IndI(Nelem), IndJ(Nelem), NameElem(Nelem))    
+	deallocate (indI, indJ, NameElem)
+	allocate (IndI(Nelem), IndJ(Nelem), NameElem(Nelem))    
         call IndexElements (Nelem, MatrixElem, IndI, IndJ, NameElem)	
       end if      	
     else
@@ -737,15 +1003,27 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !           
     string = 'IncompletePDF - MeanDirPropagatScatWave'
     if (XFindPar (iInputSCT, string)) then
-      call fread_logic(iInputSCT, ComputeAsymPar, "ComputeAsymPar" // char(0))
+      read (iInputSCT, *, iostat = ios) ComputeAsymPar
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComputeAsymPar;')"
+        stop
+      end if
       if (ComputeAsymPar .and. .not. ComputeScatPar) then
         ComputeAsymPar = .false.         
         print                                                                       &
        "(/,2x,'Warning: the variable ComputeAsymPar has been setted to .false.')"	
       end if
       if (ComputeAsymPar) then
-        call fread_int(iInputSCT, NthetaAsym, "NthetaAsym" // char(0))
-        call fread_int(iInputSCT, NphiAsym, "NphiAsym" // char(0))
+        read (iInputSCT, *, iostat = ios) NthetaAsym
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable NthetaAsym;')"
+          stop
+        end if
+        read (iInputSCT, *, iostat = ios) NphiAsym
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable NphiAsym;')"
+          stop
+        end if
         call check_NSimpson (NphiAsym)
         if (UseSimpson)  call check_NSimpson (NthetaAsym) 	
       end if   	
@@ -760,8 +1038,16 @@ subroutine readinputSCT ( CompleteFile, wavelength, k, FileTmat, Nrank, Mrank,  
 !
   string = 'PrintInfo'
   if (XFindPar (iInputSCT, string)) then
-    call fread_logic(iInputSCT, PrnProgress, "PrnProgress" // char(0))
-    call fread_logic(iInputSCT, WriteInputInfo, "WriteInputInfo" // char(0))
+    read (iInputSCT, *, iostat = ios) PrnProgress
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable PrnProgress;')"
+      stop
+    end if
+    read (iInputSCT, *, iostat = ios) WriteInputInfo
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable WriteInputInfo;')"
+      stop
+    end if
   else
     print "(/,2x,'Group name PrintInfo not found;')"
     stop  
@@ -1860,7 +2146,6 @@ subroutine DiffScatCrossSectPARTSUB (TypeScat, k, ind_ref_s, z0, snorm, Nrank,  
   logical       :: ComputeDSCS, ComputeFields, normalized, WriteInputInfo
   real(O),allocatable    :: h(:), v(:)
   complex(O),allocatable :: t(:,:), c(:), c1(:), cc(:), em(:,:), emf(:,:,:)
-  complex(O),allocatable :: S1(:), S2(:),S3(:),S4(:)
 ! -----------------------------------------------------------------------------------
 !                                 Read the input file                               !
 ! -----------------------------------------------------------------------------------               
@@ -1916,7 +2201,7 @@ subroutine DiffScatCrossSectPARTSUB (TypeScat, k, ind_ref_s, z0, snorm, Nrank,  
   close (unit = iTmat)
   deallocate (t, c, c1) 
   if (ComputeDSCS) then
-    open (unit = iDSCS, file = FileDSCS, status = 'replace')
+    open (unit = iDSCS, file = FileDSCS, status = "replace")
     allocate (h(NthetaGS), v(NthetaGS), em(3,NthetaGS)) 
     do i = 1, 3
       do itheta = 1, NthetaGS
@@ -1932,145 +2217,6 @@ subroutine DiffScatCrossSectPARTSUB (TypeScat, k, ind_ref_s, z0, snorm, Nrank,  
                              FileTmat)
     call write_DSCSPARTSUB1 (NthetaGS, normalized, h, v)                    
     close (unit = iDSCS) 
-    
-!__________________________________________________________________________________________________
-! EINFÜGUNG VON NORBERT RIEFLER
-    open (unit=40,file='../OUTPUTFILES/AmpScatMat.out',status='replace')
-    write(*,*) '__________________________________________________'
-    write(*,*) 'Hier soll das Ding die Amplitudenmatrix errechnen!'
-    allocate (S1(NthetaGS),S2(NthetaGS),S3(NthetaGS),S4(NthetaGS)) 
-
-!First Polarization Direction:
-    alphap=0
-  allocate (c(2*Nrank), c1(2*Nrank))        
-  open (unit = iTmat, file = FileTmat, status = "old",  position = "rewind")   
-  call read_HeadFileTmat (ntl, mtl)
-  call check_dimensionMat (ntl, mtl, Nrank)             
-  allocate (t(2*ntl, 2*mtl))
-  Mstart = 0
-  do m = Mstart, Mrank    
-    if (m == 0) then
-      Nmax = Nrank
-    else
-      Nmax = Nrank - m + 1
-    end if    
-    call read_FileTmat (ntl, mtl, t)
-    if (TypeScat == 1) then                      
-      call PWcoefficientsPARTSUB (beta, alphap, m, Nrank, Nmax, c)
-      call PWcoefficientsPARTSUBrefl (beta, alphap, z0, k, ind_ref_s, m, Nrank,     &
-           Nmax, c1)
-      call sum_vectors (c, c1, 2*Nmax)     
-    else
-      call PWcoefficientsPARTSUBtrans (beta, alphap, z0, k, ind_ref_s, m, Nrank,    &
-           Nmax, c)
-    end if
-    call product_matrix_vector (2*Nmax, 2*Nmax, t, 2*ntl, 2*mtl, c, c1)
-    call extend_vector_positive (c1, cc, m, Mstart, Nrank, Nmax, Nmaxmax)         
-    if (m /= 0) then
-      call matrix_m_negativ (Nmax, Nmax, t, ntl, mtl)  
-      if (TypeScat == 1) then    
-        call PWcoefficientsPARTSUB (beta, alphap, - m, Nrank, Nmax, c)
-        call PWcoefficientsPARTSUBrefl (beta, alphap, z0, k, ind_ref_s, - m, Nrank, &
-             Nmax, c1)
-        call sum_vectors (c, c1, 2*Nmax)      
-      else
-        call PWcoefficientsPARTSUBtrans (beta, alphap, z0, k, ind_ref_s, - m, Nrank,&
-             Nmax, c)
-      end if
-      call product_matrix_vector (2*Nmax, 2*Nmax, t, 2*ntl, 2*mtl, c, c1)
-      call extend_vector_negative (c1, cc, m, Nrank, Nmax, Nmaxmax)                                          
-    end if
-  end do
-  close (unit = iTmat)
-  deallocate (t, c, c1) 
-    do i = 1, 3
-      do itheta = 1, NthetaGS
-        em(i,itheta) = zero
-      end do
-    end do         
-    call DSCSPARTSUB (1, cc, k, z0, ind_ref_s, Mrank, Nrank, Nmaxmax, NthetaGS,     &
-         phiGS, snorm, em, normalized, h, v)
-    call DSCSPARTSUB (2, cc, k, z0, ind_ref_s, Mrank, Nrank, Nmaxmax, NthetaGS,     &
-         phiGS, snorm, em, normalized, h, v)                                
-    if (WriteInputInfo) call inputDSCS_EMF (.true., TypeScat, k, ind_ref_s, z0,     &
-                             Mrank, Nrank, phiGS, beta, alphap, snorm, normalized,  &
-                             FileTmat)
-    do itheta = 1, NthetaGS
-      S1(itheta)=em(2,itheta)
-      S3(itheta)=em(3,itheta)
-    end do
-    
-!Next Polarization Direction:
-    alphap=pi/2
-  allocate (c(2*Nrank), c1(2*Nrank))        
-  open (unit = iTmat, file = FileTmat, status = "old",  position = "rewind")   
-  call read_HeadFileTmat (ntl, mtl)
-  call check_dimensionMat (ntl, mtl, Nrank)             
-  allocate (t(2*ntl, 2*mtl))
-  Mstart = 0
-  do m = Mstart, Mrank    
-    if (m == 0) then
-      Nmax = Nrank
-    else
-      Nmax = Nrank - m + 1
-    end if    
-    call read_FileTmat (ntl, mtl, t)
-    if (TypeScat == 1) then                      
-      call PWcoefficientsPARTSUB (beta, alphap, m, Nrank, Nmax, c)
-      call PWcoefficientsPARTSUBrefl (beta, alphap, z0, k, ind_ref_s, m, Nrank,     &
-           Nmax, c1)
-      call sum_vectors (c, c1, 2*Nmax)     
-    else
-      call PWcoefficientsPARTSUBtrans (beta, alphap, z0, k, ind_ref_s, m, Nrank,    &
-           Nmax, c)
-    end if
-    call product_matrix_vector (2*Nmax, 2*Nmax, t, 2*ntl, 2*mtl, c, c1)
-    call extend_vector_positive (c1, cc, m, Mstart, Nrank, Nmax, Nmaxmax)         
-    if (m /= 0) then
-      call matrix_m_negativ (Nmax, Nmax, t, ntl, mtl)  
-      if (TypeScat == 1) then    
-        call PWcoefficientsPARTSUB (beta, alphap, - m, Nrank, Nmax, c)
-        call PWcoefficientsPARTSUBrefl (beta, alphap, z0, k, ind_ref_s, - m, Nrank, &
-             Nmax, c1)
-        call sum_vectors (c, c1, 2*Nmax)      
-      else
-        call PWcoefficientsPARTSUBtrans (beta, alphap, z0, k, ind_ref_s, - m, Nrank,&
-             Nmax, c)
-      end if
-      call product_matrix_vector (2*Nmax, 2*Nmax, t, 2*ntl, 2*mtl, c, c1)
-      call extend_vector_negative (c1, cc, m, Nrank, Nmax, Nmaxmax)                                          
-    end if
-  end do
-  close (unit = iTmat)
-  deallocate (t, c, c1) 
-    do i = 1, 3
-      do itheta = 1, NthetaGS
-        em(i,itheta) = zero
-      end do
-    end do         
-    call DSCSPARTSUB (1, cc, k, z0, ind_ref_s, Mrank, Nrank, Nmaxmax, NthetaGS,     &
-         phiGS, snorm, em, normalized, h, v)
-    call DSCSPARTSUB (2, cc, k, z0, ind_ref_s, Mrank, Nrank, Nmaxmax, NthetaGS,     &
-         phiGS, snorm, em, normalized, h, v)                                
-    if (WriteInputInfo) call inputDSCS_EMF (.true., TypeScat, k, ind_ref_s, z0,     &
-                             Mrank, Nrank, phiGS, beta, alphap, snorm, normalized,  &
-                             FileTmat)
-    do itheta = 1, NthetaGS
-      S4(itheta)=em(2,itheta)
-      S2(itheta)=em(3,itheta)
-    end do
-    
-    do itheta = 1, NthetaGS
-     write(40,'(i4,8e13.5)') itheta,S1(itheta),S2(itheta),S3(itheta),S4(itheta)
-    end do
-    
-    deallocate (S1,S2,S3,S4) 
-    close(40)
-! ENDE DER EINFÜGUNG
-!__________________________________________________________________________________________________
-
-
-    
     deallocate (h, v, em)
   end if
   if (ComputeFields) then

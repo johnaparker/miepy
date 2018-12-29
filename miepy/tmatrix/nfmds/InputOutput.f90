@@ -9,49 +9,6 @@
 ! *     read_real,                read_logical,             read_char80,           *
 ! *     LenString,                XFindPar,                 LcString               *
 ! **********************************************************************************
-module inputoutput
-	interface 
-		subroutine read_integerN (count, int1, int2, int3)
-			integer, intent(out) :: int1, int2, int3
-			integer, intent(in)	 :: count
-		end subroutine
-		subroutine read_integerbound (int, imin, imax)
-			integer, intent(out) :: int
-			integer, intent(in)	 :: imin, imax
-		end subroutine
-		subroutine read_realN (count, real1, real2, real3)
-			use parameters
-			real(O), intent(out) :: real1, real2, real3
-			integer, intent(in)	 :: count
-		end subroutine
-		subroutine read_logical (log)
-			logical, intent(out) :: log
-		end subroutine
-		subroutine read_char80 (TypePath, char)
-			character(80), intent(out) :: char
-			integer, intent(in), optional :: TypePath
-		end subroutine
-    	subroutine fread_real (iMyInput, ral, name)
-			use parameters
-			character(*), intent(in) :: name
-			real(O), intent(out):: ral
-			integer, intent(in) :: iMyInput
-		end subroutine
-		subroutine fread_real2 (iMyInput, ral, name, ral2)
-			use parameters
-			character(*), intent(in) :: name
-			real(O), intent(out):: ral, ral2
-			integer, intent(in) :: iMyInput
-		end subroutine
-        subroutine fread_character (iMyInput, str, name)
-			use parameters
-	        character(*), intent(in)   :: name
-	        character(*), intent(inout):: str
-        	integer, intent(in)        :: iMyInput
-		end subroutine
-	end interface
-end module
-
 subroutine read_FileFEM (filein_name, face_num, face_point, face_normal, face_area)
 !-----------------------------------------------------------------------------------
 ! The routine read the surface parameters from the file filein_name.               !
@@ -351,230 +308,107 @@ subroutine read_Tmatrix (chiral, Nrank, Mrank, Nmaxmax, TG, ntg, mtg)
     end if                                                                                           
   end do
   deallocate (TL)
-end subroutine read_Tmatrix	
-
+end subroutine read_Tmatrix
 ! **********************************************************************************
-subroutine read_integerN (count, int1, int2, int3)
-	use parameters
-	implicit none
-	! in/out
-	integer, intent(out) :: int1, int2, int3
-	integer, intent(in)  :: count
-	! local
-	integer :: ierr, imax = 20
-	! code
-	if (InputCurrentUnit .eq. InputConUnit) then ! from console
-		do while (imax > 0)
-		    select case (count)
-		    case(1)
-		        read (*, *, iostat = ierr) int1
-		    case(2)
-		        read (*, *, iostat = ierr) int1, int2
-		    case(3)
-		        read (*, *, iostat = ierr) int1, int2, int3
-		    end select
-			
-			if (ierr /= 0) then
-				print "(/,2x,'Input error during the read statement;')"
-				print "(  2x,'- enter the integer variable(s) again;')"
-			else
-				return
-			end if
-			imax = imax - 1
-		end do
-		stop
-	else  ! from file
-	    select case (count)
-	    case(1)
-	        read (InputCurrentUnit, *, iostat = ierr) int1
-		    write (*, *, iostat = ierr) int1
-	    case(2)
-	        read (InputCurrentUnit, *, iostat = ierr) int1, int2
-		    write (*, *, iostat = ierr) int1, int2
-	    case(3)
-	        read (InputCurrentUnit, *, iostat = ierr) int1, int2, int3
-		    write (*, *, iostat = ierr) int1, int2, int3
-        end select
-		if (ierr /= 0) then
-			print "(  2x,'Error during the read statement (integer)')"
-			stop
-		end if
-	end if
-end subroutine read_integerN
-! **********************************************************************************
-subroutine read_integer (int)
-	integer, intent(out) :: int
-	call read_integerN(1, int, int, int)
-!	write (*,*) "DEBUG : INT = ", int
+recursive subroutine read_integer (int)
+  implicit none
+  integer  :: int, ierr
+!
+  read (*, *, iostat = ierr) int
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the integer variable again;')"
+    call read_integer (int)
+  end if
 end subroutine read_integer
 ! **********************************************************************************
-subroutine read_integer2 (int1, int2)
-	integer, intent(out) :: int1, int2
-	call read_integerN(2, int1, int2, int2)
-!	write (*,*) "DEBUG : INT1 = ", int1, ", INT2 = ", int2
-end subroutine read_integer2
-! **********************************************************************************
-subroutine read_integer3 (int1, int2, int3)
-	integer, intent(out) :: int1, int2, int3
-	call read_integerN(3, int1, int2, int3)
-end subroutine read_integer3
-! **********************************************************************************
-subroutine read_integerbound (int, imin, imax)
-	use parameters
-	implicit none
-	! in/out
-	integer, intent(out) :: int
-	integer, intent(in)  :: imin, imax
-	! local
-	integer :: ierr, nmax = 20
-	! code
-
-	if (InputCurrentUnit .eq. InputConUnit) then ! from console
-		do while (nmax > 0)
-			call read_integerN(1, int, int, int)
-			if (int < imin .or. int > imax) then
-				print "(/,2x,'Input error: the integer variable is out of bounds;')"
-				print "(  2x,'- enter the integer variable again;')"
-			else
-				return
-			end if
-			nmax = nmax - 1
-		end do
-		stop
-	else  ! from file
-		call read_integerN(1, int, int, int)
-		if (int < imin .or. int > imax) then
-			print "(/,2x,'Input error: the integer variable is out of bounds (input stream not correct);')"
-			stop
-		end if
-	end if
+recursive subroutine read_integerbound (int, imin, imax)
+  implicit none
+  integer  :: int, imin, imax, ierr
+!
+  read (*, *, iostat = ierr) int
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the integer variable again;')"
+    call read_integer (int)
+  end if
+  if (int < imin .or. int > imax) then
+    print "(/,2x,'Input error: the integer variable is out of bounds;')"
+    print "(  2x,'- enter the integer variable again;')"
+    call read_integer (int)
+  end if
 end subroutine read_integerbound
 ! **********************************************************************************
-subroutine read_realN (count, real1, real2, real3)
-	use parameters
-	implicit none
-	! in/out
-	real(O), intent(out) :: real1, real2, real3
-	integer, intent(in)  :: count
-	! local
-	integer :: ierr, imax = 20
-	! code
-	if (InputCurrentUnit .eq. InputConUnit) then ! from console
-		do while (imax > 0)
-	        select case (count)
-	        case(1)
-	            read (*, *, iostat = ierr) real1
-	        case(2)
-    	        read (*, *, iostat = ierr) real1, real2
-	        case(3)
-	            read (*, *, iostat = ierr) real1, real2, real3
-            end select
-			if (ierr /= 0) then
-				print "(/,2x,'Input error during the read statement;')"
-				print "(  2x,'- enter the real variable(s) again;')"
-			else
-				return
-			end if
-			imax = imax - 1
-		end do
-		stop
-	else  ! from file
-	    select case (count)
-	    case(1)
-	        read (InputCurrentUnit, *, iostat = ierr) real1
-		    write (*, *, iostat = ierr) real1
-	    case(2)
-	        read (InputCurrentUnit, *, iostat = ierr) real1, real2
-		    write (*, *, iostat = ierr) real1, real2
-	    case(3)
-	        read (InputCurrentUnit, *, iostat = ierr) real1, real2, real3
-		    write (*, *, iostat = ierr) real1, real2, real3
-        end select
-		if (ierr /= 0) then
-			print "(  2x,'Error during the read statement (real)')"
-			stop
-		end if
-	end if
-end subroutine read_realN
+recursive subroutine read_integer2 (int1, int2)
+  implicit none
+  integer  :: int1, int2, ierr
+!
+  read (*, *, iostat = ierr) int1, int2
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the integer variables again;')"
+    call read_integer2 (int1, int2)
+  end if
+end subroutine read_integer2
 ! **********************************************************************************
-subroutine read_real (ral)
-	use parameters
-	real(O), intent(out) :: ral
-	call read_realN(1, ral, ral, ral)
-!	write (*,*) "DEBUG : REAL = ", ral
+recursive subroutine read_integer3 (int1, int2, int3)
+  implicit none
+  integer  :: int1, int2, int3, ierr
+!
+  read (*, *, iostat = ierr) int1, int2, int3
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the integer variables again;')"
+    call read_integer3 (int1, int2, int3)
+  end if
+end subroutine read_integer3
+! **********************************************************************************
+recursive subroutine read_real (ral)
+  use parameters
+  implicit none
+  integer  :: ierr
+  real(O)  :: ral
+!
+  read (*, *, iostat = ierr) ral
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the real variable again;')"
+    call read_real (ral)
+  end if
 end subroutine read_real
 ! **********************************************************************************
-subroutine read_logical (log)
-	use parameters
-	implicit none
-	! in/out
-	logical, intent(out) :: log
-	! local
-	integer :: ierr, imax = 20
-	! code
-	if (InputCurrentUnit .eq. InputConUnit) then ! from console
-		do while (imax > 0)
-			read (*, *, iostat = ierr) log
-			if (ierr /= 0) then
-				print "(/,2x,'Input error during the read statement;')"
-				print "(  2x,'- enter the logical variable(s) again;')"
-			else
-				return
-			end if
-			imax = imax - 1
-		end do
-		stop
-	else  ! from file
-		read (InputCurrentUnit, *, iostat = ierr) log
-		write (*, *, iostat = ierr) log
-		if (ierr /= 0) then
-			print "(  2x,'Error during the read statement (logical)')"
-			stop
-		end if
-	end if
+recursive subroutine read_logical (log)
+  implicit none
+  integer  :: ierr
+  logical  :: log
+!
+  read (*, *, iostat = ierr) log
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the logical variable again;')"
+    call read_logical (log)
+  end if
 end subroutine read_logical
 ! **********************************************************************************
-subroutine read_char80 (TypePath, char)
-	use parameters
-	implicit none
-	! in/out
-	character(80), intent(out) :: char
-	integer, intent(in), optional :: TypePath
-	! local
-	integer :: ierr, imax = 20
-	integer        :: LenString
-	character(80)  :: charend
-	! code
-	if (InputCurrentUnit .eq. InputConUnit) then ! from console
-		do while (imax > 0)
-			read (*, *, iostat = ierr) charend
-			if (ierr /= 0) then
-				print "(/,2x,'Input error during the read statement;')"
-				print "(  2x,'- enter the character type variable(s) again;')"
-			else
-				exit
-			end if
-			imax = imax - 1
-		end do
-		if (imax == 0) then
-			stop
-		end if
-	else  ! from file
-		read (InputCurrentUnit, *, iostat = ierr) charend
-		write (*, *, iostat = ierr) charend
-		if (ierr /= 0) then
-			print "(  2x,'Error during the read statement (logical)')"
-			stop
-		end if
-	end if
-
-	if (TypePath == 1) then
-		char = PathOUTPUT(1:LenString(PathOUTPUT)) // charend(1:LenString(charend))
-	else if (TypePath == 2) then
-		char = PathTEMP(1:LenString(PathTEMP)) // charend(1:LenString(charend))
-	else if (TypePath == 3) then
-		char = PathGEOM(1:LenString(PathGEOM)) // charend(1:LenString(charend))
-	end if
+recursive subroutine read_char80 (TypePath, char)
+  use parameters
+  implicit none
+  integer        :: TypePath, ierr, LenString
+  character(80)  :: char, charend
+!
+  read (*, *, iostat = ierr) charend
+  if (ierr /= 0) then
+    print "(/,2x,'Input error during the read statement;')"
+    print "(  2x,'- enter the character type variable again;')"
+    call read_char80 (TypePath, char)
+  end if
+  if (TypePath == 1) then
+    char = PathOUTPUT(1:LenString(PathOUTPUT)) // charend(1:LenString(charend))
+  else if (TypePath == 2) then
+    char = PathTEMP(1:LenString(PathTEMP)) // charend(1:LenString(charend))
+  else if (TypePath == 3) then
+    char = PathGEOM(1:LenString(PathGEOM)) // charend(1:LenString(charend))
+  end if
 end subroutine read_char80
 ! **********************************************************************************
 integer function LenString (str) 
@@ -1481,155 +1315,15 @@ subroutine write_EMF (Nphi, phi, Ntheta, thetamin, thetamax, emf, NphiAL, Ntheta
   end do
 end subroutine write_EMF         
 
-! **********************************************************************************
-subroutine fread_general (iMyInput, value, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	!
-	character(*), intent(in)  :: name
-	character(*), intent(out) :: value
-	integer, intent(in) :: iMyInput
-	!
-	integer i, j, k, len_value, len_from, len_to, ios
-	character(MAXLENGTH_PARAM_VALUE) :: str_from, str_to, str_name
-	logical is_replace
-	complex(O) tmp_complex
-	real(O) tmp_real
-	!
-    
-	read (iMyInput, '(A)', iostat = ios) value
-    if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // ";')"
-      stop
-    end if
 
-    call evaluate(value, len(trim(value)))
-end subroutine fread_general
 
-subroutine fread_int (iMyInput, int, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in) :: name
-	integer, intent(out)     :: int
-	integer, intent(in)      :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-	read (value, *, iostat = ios) int
-    if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (integer);')"
-      stop
-    end if
-end subroutine fread_int
 
-subroutine fread_real (iMyInput, ral, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in) :: name
-	real(O), intent(out):: ral
-	integer, intent(in) :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-    read (value, *, iostat = ios) ral
-	if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (real);')"
-      stop
-    end if
-end subroutine fread_real
+     
+  
 
-subroutine fread_real2 (iMyInput, ral, name, ral2)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in) :: name
-	real(O), intent(out):: ral, ral2
-	integer, intent(in) :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-    write (*,*) ral, ral2, value
-	if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (real);')"
-      stop
-    end if
-end subroutine fread_real2
 
-subroutine fread_comp (iMyInput, clx, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in):: name
-	complex(O), intent(out) :: clx
-	integer, intent(in)     :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-	read (value, *, iostat = ios) clx
-    if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (complex);')"
-      stop
-    end if
-end subroutine fread_comp
 
-subroutine fread_logic (iMyInput, log, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in):: name
-	logical, intent(out)    :: log
-	integer, intent(in)     :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-	read (value, *, iostat = ios) log
-    if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (logical);')"
-      stop
-    end if
-end subroutine fread_logic
 
-subroutine fread_character (iMyInput, str, name)
-	use parameters
-	use intepretator
-    use utils_str
-	implicit none
-	! in/out
-	character(*), intent(in)   :: name
-	character(*), intent(inout):: str
-	integer, intent(in)        :: iMyInput
-	! local
-	character(MAXLENGTH_PARAM_VALUE) :: value
-	integer :: ios
-	! code
-	call fread_general (iMyInput, value, name)
-	read (value, *, iostat = ios) str
-    if (ios /= 0) then
-      print "(/,2x,'Error by reading the input variable " // name(1:len_c(name)) // " (string);')"
-      stop
-    end if
-end subroutine fread_character
+
+
+

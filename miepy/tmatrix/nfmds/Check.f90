@@ -1139,7 +1139,6 @@ recursive subroutine check_MatrixSolver (TypeMatrSolv)
   if (TypeMatrSolv(1:3) /= 'LU1'   .and.                                            &
       TypeMatrSolv(1:3) /= 'LU2'   .and.                                            &
       TypeMatrSolv(1:3) /= 'LU3'   .and.                                            &
-      TypeMatrSolv(1:3) /= 'LU4'   .and.                                            &
       TypeMatrSolv(1:4) /= 'BICG'        )  then
     print "(/,2x,'Error in the general input file:')"
     print "(  2x,'incorrect value of the variable TypeMatrSolv;')"

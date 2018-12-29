@@ -2016,7 +2016,7 @@ subroutine convergence_MrankDSLAY (TypeGeom, k, ind_ref, snorm, Nsurfmax, surf, 
            'the number of discrete sources for the first layer exceeds the number'	    
             print "(  2x, a)",                                                      &
            'of discrete sources corresponding to the initial configuration;'            
-            stop
+            stop   
 	  end if                                     
           deallocate (zReL, zImL)	   	   
           allocate (zReL(Npart,NrankpmaxL), zImL(Npart,NrankpmaxL))               

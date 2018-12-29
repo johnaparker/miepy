@@ -1,5 +1,6 @@
 #include "flux.hpp"
 #include "indices.hpp"
+#include <cmath>
 
 std::array<Array,3> particle_cross_sections(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector>& p_inc,
         const Ref<const ComplexVector>& p_src, double k) {
@@ -10,7 +11,7 @@ std::array<Array,3> particle_cross_sections(const Ref<const ComplexVector>& p_sc
     Array Cext = Array::Zero(2*lmax);
     Array Cabs = Array::Zero(2*lmax);
 
-    double factor = 4*M_PI/pow(k,2);
+    double factor = 4*PI/pow(k,2);
 
     for (int n = 1; n < lmax + 1; n++) {
         for (int m = -n; m < n+1; m++) {
@@ -37,7 +38,7 @@ std::array<Array,3> cluster_cross_sections(const Ref<const ComplexVector>& p_clu
     Array Cscat = Array::Zero(2*lmax);
     Array Cext  = Array::Zero(2*lmax);
 
-    double factor = 4*M_PI/pow(k,2);
+    double factor = 4*PI/pow(k,2);
 
     for (int n = 1; n < lmax + 1; n++) {
         for (int m = -n; m < n+1; m++) {

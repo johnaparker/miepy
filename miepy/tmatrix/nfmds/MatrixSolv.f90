@@ -31,7 +31,6 @@ subroutine inverse_matrix (a, nap, map, b, nbp, mbp, n)
 !   - 'LU2'  - LU decomposition method from Lapack library,                         !
 !   - 'LU3'  - LU decomposition method from Lapack library with solution            !
 !      improvement,                                                                 !
-!   - 'LU4'  - LU decomposition method (parallel algorithm)                         !
 !   - 'BICG' - Bi-Conjugate-Gradients method.                                       !
 !   The recommended value of the parameter TypeMatrSolv is 'LU2'.                   !
 !                                                                                   !
@@ -110,23 +109,6 @@ subroutine inverse_matrix (a, nap, map, b, nbp, mbp, n)
       end do
     end do      
     deallocate (row, column)
-  else if (TypeMatrSolv(1:3) == 'LU4') then ! copy of LU2
-    call identity_matrix (n, b, nbp, mbp)
-    allocate (indx(n), row(n), column(n))
-    call equilibrate (a, nap, map, n, n, row, column)
-    call LUDCMP1 (a, nap, map, n, indx)
-    do j = 1, n
-      do i = 1, n
-        b(i,j) = row(i) * b(i,j)
-      end do
-    end do
-    call LUBKSB1 (a, nap, map, n, n, indx, b, nbp, mbp)
-    do j = 1, n
-      do i = 1, n
-        b(i,j) = column(i) * b(i,j)
-      end do
-    end do
-    deallocate (indx, row, column)                                                  
   else if (TypeMatrSolv(1:4) == 'BICG') then   
     call identity_matrix (n, b, nbp, mbp)           
     call BICGSTAB (TypePrecond, NPrecOrder, itmax, epsilon, n, n, a, nap, map,      &
@@ -225,11 +207,6 @@ subroutine LU_SYSTEM (a, nap, map, b, nbp, mbp, n)
     end do   
     call transpose (b, nbp, mbp, n) 
     deallocate (row, column)
-  else if (TypeMatrSolv(1:3) == 'LU4') then
-    !call transpose (a, nap, map, n)
-    !call transpose (b, nbp, mbp, n)
-	call LU_parallel (a, nap, map, b, nbp, mbp, n)
-    !call transpose (b, nbp, mbp, n) 
   else if (TypeMatrSolv(1:4) == 'BICG') then    
     call transpose (a, nap, map, n)
     call transpose (b, nbp, mbp, n)    
@@ -321,22 +298,6 @@ subroutine LU_SYSTEM_DIRECT (a, nap, map, b, nbp, mbp, n, m)
       end do
     end do      
     deallocate (row, column)
-  else if (TypeMatrSolv(1:3) == 'LU4') then ! copy of LU2
-    allocate (indx(n), row(n), column(n))
-    call equilibrate (a, nap, map, n, n, row, column)
-    call LUDCMP1 (a, nap, map, n, indx)
-    do j = 1, m
-      do i = 1, n
-        b(i,j) = row(i) * b(i,j)
-      end do
-    end do
-    call LUBKSB1 (a, nap, map, n, m, indx, b, nbp, mbp)
-    do j = 1, m
-      do i = 1, n
-        b(i,j) = column(i) * b(i,j)
-      end do
-    end do
-    deallocate (indx, row, column)                        
   else if (TypeMatrSolv(1:4) == 'BICG') then                
   call BICGSTAB (TypePrecond, NPrecOrder, itmax, epsilon, n, m, a, nap, map,      &
        b, nbp, mbp)                                                                   
@@ -1090,102 +1051,7 @@ subroutine MatSolve (n, a, nap, map, p, npp, mpp, y, x)
   deallocate (z)
 end subroutine MatSolve
 
-! LU decomposision (parallel algorithm) test version by Vladimir Schmidt
-!------------------------------------------------------------------------------------
-! Given the square matrices a and b, the routine computes                           !
-!             x(n,n) = b(n,n) * a(n,n)^(-1)                                         !
-!------------------------------------------------------------------------------------
-subroutine LU_parallel (a, nap, map, b, nbp, mbp, n)
-	use parameters
-	implicit none
-	integer,intent(in)      :: n, nap, map, nbp, mbp
-	complex(O), intent(inout) :: a(nap,map), b(nbp,mbp)
-	!
-    integer i, j, k, l, k1, ii, thread_count, ni
-    complex(O), dimension(1:n) :: tmp
-	complex(O) :: tmp1, tmp_ii
-	complex(O) :: c(nap,map)
-	
-    thread_count= OMP_thread_cnt
-	c(1:nap,1:map) = a(1:nap,1:map)
 
-    ! diagonalise A
-    i = 1
-    do while (i <= n)       
-		! element with maximal value in array (i,i:Nmax) (k - index of element)
-        tmp(i:n) = abs(a(i,i:n))
 
-        k = i
-        do j = i, n
-            if (real(tmp(j)) > real(tmp(k))) then
-              k = j
-            end if
-        end do
-        
-        ! change rows
-        !$OMP PARALLEL NUM_THREADS(thread_count) PRIVATE(j, tmp1) FIRSTPRIVATE(i,k,n)
-        !$OMP DO
-        do j = 1, n
-          tmp1   = B(j,i)
-          B(j,i) = B(j,k)
-          B(j,k) = tmp1
-        end do
-        !$OMP END DO
 
-        !$OMP DO
-        do j = 1, n
-          tmp1   = A(j,i)
-          A(j,i) = A(j,k)
-          A(j,k) = tmp1
-        end do
-        !$OMP END DO
-        !$OMP END PARALLEL
-
-        ! add rows
-        ni = n - i + 1
-        tmp(i:n) = A(i,i:n)
-        !$OMP PARALLEL DO NUM_THREADS(thread_count) PRIVATE(k,j,l) FIRSTPRIVATE(n,ni)
-        do l = 0, n*(ni-1)-1
-            j = INT(l / n) + i + 1
-            k = MOD(l,n) + 1
-            B(k,j) = B(k,j) - B(k,i) * tmp(j) / tmp(i)
-        end do
-        !$OMP END PARALLEL DO
-        !$OMP PARALLEL DO NUM_THREADS(thread_count) PRIVATE(k,j,l) FIRSTPRIVATE(n,ni)
-        do l = 0, (n-i)*ni-1
-            j = INT(l / ni) + i + 1
-            k = MOD(l,ni) + i
-            A(k,j) = A(k,j) - A(k,i) * tmp(j) / tmp(i)
-        end do
-        !$OMP END PARALLEL DO
-
-        i = i + 1
-    end do
-
-    ! solve A, B
-    i = n
-    do while (i > 0)
-        tmp_ii = A(i,i)
-
-        ! rows j < i
-        tmp(1:n) = B(1:n,i)
-       !$OMP PARALLEL DO NUM_THREADS(thread_count) PRIVATE(k,j,l)
-        do l = 0, (i-1)*n-1
-            j = INT(l / n) + 1
-            k = MOD(l,n) + 1
-            B(k,j) = B(k,j) - tmp(k) * A(i,j) / A(i,i)
-        end do
-        !$OMP END PARALLEL DO
-
-        ! row j = i
-        B(1:n,i) = B(1:n,i) / A(i,i)
-
-        ! matrix A equal to E
-        A(i,1:i-1) = 0._O
-        A(i,i)     = 1._O
-
-        i = i - 1
-    end do
-
-	a(1:nap,1:map) = c(1:nap,1:map)
-end subroutine
+ 

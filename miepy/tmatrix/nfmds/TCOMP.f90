@@ -1932,7 +1932,7 @@ subroutine convergence_MrankDSCOMP (TypeGeom, k, ind_ref, snorm, Nsurfmax, surf,
             print "(  2x, a)",                                                      &
            'the number of discrete sources exceeds the number of discrete'	    
             print "(  2x,'sources corresponding to the initial configuration;')"
-            stop
+            stop  
 	  end if	  	  	  	  	  	  	  
           deallocate (zReL, zImL)	   	   
           allocate (zReL(Npart,NrankpmaxL), zImL(Npart,NrankpmaxL))

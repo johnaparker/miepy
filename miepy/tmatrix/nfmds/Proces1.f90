@@ -6,80 +6,90 @@
 ! *      matrix_Q,                   matrix_Q_sym,          matrix_Q_m,            *
 ! *      incident_matrix_m,          AzimMirSym,            ConvergenceMatrixElem  *
 ! **********************************************************************************
-module matrix_Q_all
-
-contains
-
-subroutine matrix_Q (index1, index2, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, &
-           A, nap, map, mesh)
+subroutine matrix_Q (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, surf,   &
+           rp, np, area, Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam,      &
+           paramG1, paramG2, weightsG, mirror, Nazimutsym, perfectcond, chiral, kb, &
+           A, nap, map)
 !------------------------------------------------------------------------------------
 ! The routine computes the Q matrix of a nonaxisymmetric particle.                  !
 !------------------------------------------------------------------------------------
   use parameters
-  use surface
   implicit none
-  integer, intent(in)    :: index1, index2, Mrank, Nrank, Nmax, nap, map      
-  real(O), intent(in)    :: k, kb
-  logical, intent(in)    :: perfectcond, chiral
-  complex(O), intent(in) :: ind_ref
-  complex(O), intent(inout):: A(2*nap,2*map)
-  type(t_mesh), intent(in) :: mesh
+  integer    :: Nface, Mrank, Nrank, Nmax, Nsurf, NintAL, Nparam, Nintparam(Nparam),&
+                TypeGeom, index1, index2, Nazimutsym, nap, map      
+  real(O)    :: k, surf(Nsurf), paramG1(Nparam,NintAL*NintAL),                      &
+                paramG2(Nparam,NintAL*NintAL), weightsG(Nparam,NintAL*NintAL),      &
+                rp(3,NfacePD), np(3,NfacePD), area(NfacePD), kb
+  complex(O) :: ind_ref, A(2*nap,2*map)
+  logical    :: FileGeom, mirror, perfectcond, chiral
 !
   integer    :: NmaxL, NmaxC, i, j, pint, iparam, Nintl
   real(O)    :: r, theta, phi, dA, param1, param2, pondere, nuv(3), sign, x, y, z 
   complex(O) :: ki, zc, zl, zcl, zcr, fact, f
-  complex(O),allocatable, save :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:), A_temp(:,:)
+  complex(O),allocatable :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:)  
 !
-!$OMP THREADPRIVATE(mv1, nv1, mv3, nv3, a_temp)
-
   NmaxL = Nmax
   NmaxC = Nmax                
-
-  A(1:2*nap,1:2*map) = zero
-  !$OMP PARALLEL NUM_THREADS (OMP_thread_cnt)
-  allocate (A_temp(2*nap,2*map))
   allocate (mv1(3,NmaxC), nv1(3,NmaxC), mv3(3,NmaxL), nv3(3,NmaxL))
-  A_temp(1:2*nap,1:2*map) = zero
-  !$OMP END PARALLEL
-   
+  do i = 1, 2*NmaxL
+    do j = 1, 2*NmaxC
+      A(i,j) = zero
+    end do
+  end do  
   ki   = k * ind_ref
   sign = 1._O
   if (index1 == 3 .and. index2 == 1) sign = - 1._O
-  f = sign * im * k * k / Pi
-
-  !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt) PRIVATE (pint,x,y,z,r,theta,phi,dA,nuv,zc,zl,zcl,zcr,fact)
-  do pint = 1, mesh%items_count
-	call mesh_item_get(mesh, pint, theta, phi, r, nuv(1), nuv(2), nuv(3), dA)
-
-    fact = f * dA
-
-    zc = ki * r
-    zl = cmplx(k * r,0.0,O)	
-    if (chiral) then
-		zcl = zc / (1._O - kb)
+  f = sign * im * k * k / Pi      
+  if (.not. FileGeom) then
+    do iparam = 1, Nparam
+      Nintl = Nintparam(iparam)
+      do pint = 1, Nintl
+        param1  = paramG1(iparam,pint)
+        param2  = paramG2(iparam,pint)
+        pondere = weightsG(iparam,pint)       
+        call elem_geom3D (TypeGeom, Nsurf, surf, param1, param2, iparam, r, theta,  &
+             phi, dA, nuv, mirror, Nazimutsym)                       
+        zc = ki * r
+        zl = cmplx(k * r,0.0,O)
+        if (chiral) then
+          zcl = zc / (1._O - kb)
+          zcr = zc / (1._O + kb)
+        end if      
+        call mvnv (index1, index2, chiral, zl, zc, zcl, zcr, theta, phi, Mrank,     &
+             Nrank, Nmax, NmaxC, NmaxL, mv3, nv3, mv1, nv1)
+        fact = f * dA * pondere
+        call matQ (NmaxC, NmaxL, chiral, perfectcond, ind_ref, fact, mv3, nv3,      &
+             mv1, nv1, nuv, A, nap, map)      
+      end do
+    end do 
+  else
+    do pint = 1, Nface
+      x = rp(1,pint)
+      y = rp(2,pint)
+      z = rp(3,pint)
+      call T_cartesian_spherical (x, y, z, r, theta, phi)
+      dA = area(pint)                        
+      nuv(1) =   sin(theta) * cos(phi) * np(1,pint) +                               &
+                 sin(theta) * sin(phi) * np(2,pint) + cos(theta) * np(3,pint) 
+      nuv(2) =   cos(theta) * cos(phi) * np(1,pint) +                               &
+                 cos(theta) * sin(phi) * np(2,pint) - sin(theta) * np(3,pint)
+      nuv(3) = - sin(phi) * np(1,pint) + cos(phi) * np(2,pint)
+      zc = ki * r
+      zl = cmplx(k * r,0.0,O)
+      if (chiral) then
+        zcl = zc / (1._O - kb)
         zcr = zc / (1._O + kb)
-	end if      
-    call mvnv (index1, index2, chiral, zl, zc, zcl, zcr, theta, phi, Mrank,       &
-		 Nrank, Nmax, NmaxC, NmaxL, mv3, nv3, mv1, nv1)
-    fact = f * dA
-    call matQ (NmaxC, NmaxL, chiral, perfectcond, ind_ref, fact, mv3, nv3,        &
-         mv1, nv1, nuv, A_temp, nap, map)   
-  end do
-  !$OMP END PARALLEL DO  
-
-  !$OMP PARALLEL NUM_THREADS(OMP_thread_cnt) PRIVATE(i,j)
-  deallocate (mv1, nv1, mv3, nv3)
-  !$OMP CRITICAL
-  A(1:2*nap,1:2*map) = A(1:2*nap,1:2*map) + A_temp(1:2*nap,1:2*map)
-  !$OMP END CRITICAL 
-  deallocate (A_temp)
-  !$OMP END PARALLEL
-
-  call AzimMirSym (mesh%symmetry_rotN, mesh%symmetry_z, Mrank, Nrank, NmaxC, NmaxL, A, nap, map)
+      end if      
+      call mvnv (index1, index2, chiral, zl, zc, zcl, zcr, theta, phi, Mrank,       &
+           Nrank, Nmax, NmaxC, NmaxL, mv3, nv3, mv1, nv1)
+      fact = f * dA
+      call matQ (NmaxC, NmaxL, chiral, perfectcond, ind_ref, fact, mv3, nv3,        &
+           mv1, nv1, nuv, A, nap, map)   
+    end do
+  end if
+  call AzimMirSym (Nazimutsym, mirror, Mrank, Nrank, NmaxC, NmaxL, A, nap, map)  
+  deallocate (mv1, nv1, mv3, nv3) 
 end subroutine matrix_Q 
-
-end module
-
 !***********************************************************************************
 subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mrank,  &
            Nrank, Nmax, Nint, Nparam, Nintparam, paramG, weightsG, mirror,          &
@@ -90,7 +100,6 @@ subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mran
 ! calculation.                                                                      !
 !------------------------------------------------------------------------------------
   use parameters
-  !use omp_lib
   implicit none
   integer    :: Mrank, Nrank, Nmax, Nsurf, Nint, Nparam, Nintparam(Nparam),         &
                 TypeGeom, index1, index2, nap, map
@@ -102,22 +111,18 @@ subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mran
   real(O)    :: r, theta, phi, dA, param, pondere, nuv(3), s
   complex(O) :: ki, zc, zl, mvl(3), nvl(3), mvc(3), nvc(3), v1, v2, fact, f,        &
                 mixt_product
-  complex(O),allocatable,save :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:), A_temp(:,:)
+  complex(O),allocatable :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:)
 !
-!$OMP THREADPRIVATE(mv1, nv1, mv3, nv3, a_temp)
-
-  A(1:2*Nmax,1:2*Nmax) = zero
-  !$OMP PARALLEL NUM_THREADS (OMP_thread_cnt)
-  allocate (A_temp(2*Nmax,2*Nmax))
   allocate (mv1(3,Nmax), nv1(3,Nmax), mv3(3,Nmax), nv3(3,Nmax))
-  A_temp(1:2*Nmax,1:2*Nmax) = zero
-  !$OMP END PARALLEL
-  
+  do i = 1, 2*Nmax
+    do j = 1, 2*Nmax
+      A(i,j) = zero
+    end do
+  end do      
   ki = k * ind_ref
   f  = im * 2._O * k * k
   do iparam = 1, Nparam
-    Nintl = Nintparam(iparam)   
-    !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt)
+    Nintl = Nintparam(iparam)
     do pint = 1, Nintl
       param   = paramG(iparam,pint)
       pondere = weightsG(iparam,pint)    
@@ -169,21 +174,21 @@ subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mran
               v1 = mixt_product (nuv, mvc, nvl)
               v2 = mixt_product (nuv, nvc, mvl)
               if (.not. perfectcond) then
-                A_temp(i,j) = A_temp(i,j) + (v1 + ind_ref * v2) * fact
-                if(mirror) A_temp(i,j) = A_temp(i,j) + s * (v1 + ind_ref * v2) * fact
+                A(i,j) = A(i,j) + (v1 + ind_ref * v2) * fact
+                if(mirror) A(i,j) = A(i,j) + s * (v1 + ind_ref * v2) * fact
               else 
-                A_temp(i,j) = A_temp(i,j) + v2 * fact
-                if (mirror) A_temp(i,j) = A_temp(i,j) + s * v2 * fact
+                A(i,j) = A(i,j) + v2 * fact
+                if (mirror) A(i,j) = A(i,j) + s * v2 * fact
               end if                                                                                                 
               v1 = mixt_product (nuv, nvc, mvl)
               v2 = mixt_product (nuv, mvc, nvl)
               if (.not. perfectcond) then
-                A_temp(i+Nmax,j+Nmax) = A_temp(i+Nmax,j+Nmax) + (v1 + ind_ref * v2) * fact
-                if (mirror) A_temp(i+Nmax,j+Nmax) = A_temp(i+Nmax,j+Nmax) +                   &
+                A(i+Nmax,j+Nmax) = A(i+Nmax,j+Nmax) + (v1 + ind_ref * v2) * fact
+                if (mirror) A(i+Nmax,j+Nmax) = A(i+Nmax,j+Nmax) +                   &
                                               s * (v1 + ind_ref * v2) * fact
               else 
-                A_temp(i+Nmax,j+Nmax) = A_temp(i+Nmax,j+Nmax) + v2*fact
-                if (mirror) A_temp(i+Nmax,j+Nmax) = A_temp(i+Nmax,j+Nmax) + s * v2 * fact
+                A(i+Nmax,j+Nmax) = A(i+Nmax,j+Nmax) + v2*fact
+                if (mirror) A(i+Nmax,j+Nmax) = A(i+Nmax,j+Nmax) + s * v2 * fact
               end if                                              
             end do
           end do
@@ -209,43 +214,43 @@ subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mran
               v1 = mixt_product (nuv, mvc, nvl)
               v2 = mixt_product (nuv, nvc, mvl)
               if (.not. perfectcond) then
-                A_temp(i+N0,j+N0) = A_temp(i+N0,j+N0) + (v1 + ind_ref * v2) * fact
-                if(mirror) A_temp(i+N0,j+N0) = A_temp(i+N0,j+N0) +                            &
+                A(i+N0,j+N0) = A(i+N0,j+N0) + (v1 + ind_ref * v2) * fact
+                if(mirror) A(i+N0,j+N0) = A(i+N0,j+N0) +                            &
                                          s * (v1 + ind_ref * v2) * fact
               else 
-                A_temp(i+N0,j+N0) = A_temp(i+N0,j+N0) + v2 * fact
-                if(mirror) A_temp(i+N0,j+N0) = A_temp(i+N0,j+N0) + s * v2 * fact
+                A(i+N0,j+N0) = A(i+N0,j+N0) + v2 * fact
+                if(mirror) A(i+N0,j+N0) = A(i+N0,j+N0) + s * v2 * fact
               end if                                                                        
               v1 = mixt_product (nuv, nvc, nvl)
               v2 = mixt_product (nuv, mvc, mvl)
               if (.not. perfectcond) then
-                A_temp(i+N0,j+N0+Nmax) = A_temp(i+N0,j+N0+Nmax) + (v1 + ind_ref * v2) * fact
-                if (mirror) A_temp(i+N0,j+N0+Nmax) = A_temp(i+N0,j+N0+Nmax) -                 &
+                A(i+N0,j+N0+Nmax) = A(i+N0,j+N0+Nmax) + (v1 + ind_ref * v2) * fact
+                if (mirror) A(i+N0,j+N0+Nmax) = A(i+N0,j+N0+Nmax) -                 &
                                                s * (v1 + ind_ref * v2) * fact
               else 
-                A_temp(i+N0,j+N0+Nmax) = A_temp(i+N0,j+N0+Nmax) + v2 * fact
-                if (mirror) A_temp(i+N0,j+N0+Nmax) = A_temp(i+N0,j+N0+Nmax) - s * v2 * fact
+                A(i+N0,j+N0+Nmax) = A(i+N0,j+N0+Nmax) + v2 * fact
+                if (mirror) A(i+N0,j+N0+Nmax) = A(i+N0,j+N0+Nmax) - s * v2 * fact
               end if                                              
               v1 = mixt_product (nuv, mvc, mvl)
               v2 = mixt_product (nuv, nvc, nvl)
               if (.not. perfectcond) then 
-                A_temp(i+N0+Nmax,j+N0) = A_temp(i+N0+Nmax,j+N0) + (v1 + ind_ref * v2) * fact
-                if (mirror) A_temp(i+N0+Nmax,j+N0) = A_temp(i+N0+Nmax,j+N0) -                 &
+                A(i+N0+Nmax,j+N0) = A(i+N0+Nmax,j+N0) + (v1 + ind_ref * v2) * fact
+                if (mirror) A(i+N0+Nmax,j+N0) = A(i+N0+Nmax,j+N0) -                 &
                                                s * (v1 + ind_ref * v2) * fact
               else 
-                A_temp(i+N0+Nmax,j+N0) = A_temp(i+N0+Nmax,j+N0) + v2 * fact
-                if (mirror) A_temp(i+N0+Nmax,j+N0) = A_temp(i+N0+Nmax,j+N0) - s * v2 * fact
+                A(i+N0+Nmax,j+N0) = A(i+N0+Nmax,j+N0) + v2 * fact
+                if (mirror) A(i+N0+Nmax,j+N0) = A(i+N0+Nmax,j+N0) - s * v2 * fact
               end if                                                              
               v1 = mixt_product (nuv, nvc, mvl)
               v2 = mixt_product (nuv, mvc, nvl)
               if (.not. perfectcond) then 
-                A_temp(i+N0+Nmax,j+N0+Nmax) = A_temp(i+N0+Nmax,j+N0+Nmax) +                   &
+                A(i+N0+Nmax,j+N0+Nmax) = A(i+N0+Nmax,j+N0+Nmax) +                   &
                                         (v1 + ind_ref * v2) * fact
-                if (mirror) A_temp(i+N0+Nmax,j+N0+Nmax) = A_temp(i+N0+Nmax,j+N0+Nmax) +       &
+                if (mirror) A(i+N0+Nmax,j+N0+Nmax) = A(i+N0+Nmax,j+N0+Nmax) +       &
                                                     s * (v1+ind_ref * v2) * fact
               else 
-                A_temp(i+N0+Nmax,j+N0+Nmax) = A_temp(i+N0+Nmax,j+N0+Nmax) + v2 * fact
-                if (mirror) A_temp(i+N0+Nmax,j+N0+Nmax) = A_temp(i+N0+Nmax,j+N0+Nmax) +       &
+                A(i+N0+Nmax,j+N0+Nmax) = A(i+N0+Nmax,j+N0+Nmax) + v2 * fact
+                if (mirror) A(i+N0+Nmax,j+N0+Nmax) = A(i+N0+Nmax,j+N0+Nmax) +       &
                                                     s * v2 * fact
               end if                                              
             end do
@@ -253,25 +258,17 @@ subroutine matrix_Q_sym (TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, Mran
           N1 = N0 + Nrank - m + 1
           do i = 1, Nrank - m + 1
             do j = 1, Nrank - m + 1
-              A_temp(i+N1,j+N1) = A_temp(i+N0,j+N0)
-              A_temp(i+N1,j+N1+Nmax) = - A_temp(i+N0,j+N0+Nmax)
-              A_temp(i+N1+Nmax,j+N1) = - A_temp(i+N0+Nmax,j+N0)
-              A_temp(i+N1+Nmax,j+N1+Nmax) = A_temp(i+N0+Nmax,j+N0+Nmax)
+              A(i+N1,j+N1) = A(i+N0,j+N0)
+              A(i+N1,j+N1+Nmax) = - A(i+N0,j+N0+Nmax)
+              A(i+N1+Nmax,j+N1) = - A(i+N0+Nmax,j+N0)
+              A(i+N1+Nmax,j+N1+Nmax) = A(i+N0+Nmax,j+N0+Nmax)
             end do
           end do
         end if
       end do 
     end do
-    !$OMP END PARALLEL DO
   end do
-
-  !$OMP PARALLEL NUM_THREADS(OMP_thread_cnt) PRIVATE(i,j)
-  deallocate (mv1, nv1, mv3, nv3)
-  !$OMP CRITICAL
-  A(1:2*Nmax,1:2*Nmax) = A(1:2*Nmax,1:2*Nmax) + A_temp(1:2*Nmax,1:2*Nmax)
-  !$OMP END CRITICAL 
-  deallocate (A_temp)
-  !$OMP END PARALLEL
+  deallocate (mv1, nv1, mv3, nv3)       
 end subroutine matrix_Q_sym 
 !***********************************************************************************
 subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, surf, &
@@ -294,10 +291,8 @@ subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, su
   integer    :: NmaxL, NmaxC, i, j, pint, iparam, Nintl
   real(O)    :: r, theta, phi, dA, param, pondere, nuv(3), sign, x, z, za, thetaA
   complex(O) :: kc, ki, kil, kir, zc, zl, zcl, zcr, fact, f
-  complex(O),allocatable,save :: mv1(:,:),nv1(:,:),mv3(:,:),nv3(:,:), A_temp(:,:)
+  complex(O),allocatable :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:)
 !
-!$OMP THREADPRIVATE(mv1, nv1, mv3, nv3, A_temp)
-
   NmaxL = Nmax
   NmaxC = Nmax
   if (DS) then
@@ -308,15 +303,13 @@ subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, su
       NmaxL = Nmax    
     end if
   end if  
-
-  A(1:2*nap,1:2*map) = zero
-  !$OMP PARALLEL NUM_THREADS (OMP_thread_cnt)
-  allocate (A_temp(2*nap,2*map))
   allocate (mv1(3,NmaxC), nv1(3,NmaxC), mv3(3,NmaxL), nv3(3,NmaxL))
-  A_temp(1:2*nap,1:2*map) = zero
-  !$OMP END PARALLEL
-
-  kc = cmplx(k,0.0,O)      
+  kc = cmplx(k,0.0,O)
+  do i = 1, 2*NmaxL
+    do j = 1, 2*NmaxC
+      A(i,j) = zero
+    end do
+  end do      
   ki = k * ind_ref
   if (chiral) then
     kil = ki / (1._O - kb)
@@ -328,7 +321,6 @@ subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, su
   if (.not. FileGeom) then
     do iparam = 1, Nparam
       Nintl = Nintparam(iparam)
-      !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt) PRIVATE (pint,r,theta,phi,dA,nuv,param,pondere,zc,zl,zcl,zcr,fact)
       do pint = 1, Nintl
         param   = paramG(iparam,pint)
         pondere = weightsG(iparam,pint)   
@@ -344,12 +336,10 @@ subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, su
              r, theta, m, Nrank, Nmax, NmaxC, NmaxL, zRe, zIm, mv3, nv3, mv1, nv1)                   
         fact = f * dA * pondere 
         call matQ_m (m, NmaxC, NmaxL, chiral, perfectcond, mirror, ind_ref, fact,   &
-             mv3, nv3, mv1, nv1, nuv, A_temp, nap, map)       
+             mv3, nv3, mv1, nv1, nuv, A, nap, map)       
       end do
-      !$OMP END PARALLEL DO 
     end do
-  else    
-    !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt) PRIVATE (pint,x,z,za,r,theta,thetaA,dA,nuv,zc,zl,zcl,zcr,fact)
+  else
     do pint = 1, Nface
       x  = rp(1,pint)     
       z  = rp(2,pint)
@@ -381,16 +371,8 @@ subroutine matrix_Q_m (FileGeom, TypeGeom, index1, index2, k, ind_ref, Nsurf, su
       call matQ_m (m, NmaxC, NmaxL, chiral, perfectcond, mirror, ind_ref, fact,     &
            mv3, nv3, mv1, nv1, nuv, A, nap, map)            
     end do  
-    !$OMP END PARALLEL DO   
-  end if
-    
-  !$OMP PARALLEL NUM_THREADS(OMP_thread_cnt) PRIVATE(i,j)
-  deallocate (mv1, nv1, mv3, nv3)
-  !$OMP CRITICAL
-  A(1:2*nap,1:2*map) = A(1:2*nap,1:2*map) + A_temp(1:2*nap,1:2*map)
-  !$OMP END CRITICAL 
-  deallocate (A_temp)
-  !$OMP END PARALLEL
+  end if            
+  deallocate (mv1, nv1, mv3, nv3)       
 end subroutine matrix_Q_m
 !***********************************************************************************
 subroutine incident_matrix_m (FileGeom, TypeGeom, k, Nsurf, surf, rp, np, area,     &
@@ -413,23 +395,19 @@ subroutine incident_matrix_m (FileGeom, TypeGeom, k, Nsurf, surf, rp, np, area, 
   integer    :: i, j, pint, iparam, Nintl
   real(O)    :: r, theta, phi, dA, param, pondere, nuv(3), x, z, za, thetaA
   complex(O) :: kc, zl, fact, f
-  complex(O),allocatable,save :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:), A_temp(:,:)
+  complex(O),allocatable :: mv1(:,:), nv1(:,:), mv3(:,:), nv3(:,:)
 !
-!$OMP THREADPRIVATE(mv1, nv1, mv3, nv3, A_temp)
-
-  A(1:2*nap,1:2*map) = zero
-  !$OMP PARALLEL NUM_THREADS (OMP_thread_cnt)
-  allocate (A_temp(2*nap,2*map))
   allocate (mv1(3,Nmax), nv1(3,Nmax), mv3(3,Nrank), nv3(3,Nrank))
-  A_temp(1:2*nap,1:2*map) = zero
-  !$OMP END PARALLEL
-    
   kc = cmplx(k,0.0,O)
+  do i = 1, 2*Nrank
+    do j = 1, 2*Nmax
+      A(i,j) = zero
+    end do
+  end do
   f = - im * 2._O * k * k
   if (.not. FileGeom) then
     do iparam = 1, Nparam
       Nintl = Nintparam(iparam)
-      !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt) PRIVATE (pint,r,theta,phi,dA,nuv,param,pondere,zl,fact)
       do pint = 1, Nintl
         param   = paramG(iparam,pint)
         pondere = weightsG(iparam,pint)
@@ -439,12 +417,10 @@ subroutine incident_matrix_m (FileGeom, TypeGeom, k, Nsurf, surf, rp, np, area, 
         call mvnvinc_m (zl, kc, r, theta, m, Nrank, Nmax, zRe, zIm, mv3, nv3,       &
              mv1, nv1)          
         fact = f * dA * pondere
-        call matQinc_m (m, Nmax, Nrank, fact, mv3, nv3, mv1, nv1, nuv, A_temp, nap, map)       
+        call matQinc_m (m, Nmax, Nrank, fact, mv3, nv3, mv1, nv1, nuv, A, nap, map)       
       end do
-      !$OMP END PARALLEL DO
     end do
   else
-    !$OMP PARALLEL DO NUM_THREADS (OMP_thread_cnt) PRIVATE (pint,x,z,r,za,theta,thetaA,dA,nuv,zl,fact)
     do pint = 1, Nface
       x  = rp(1,pint)     
       z  = rp(2,pint)
@@ -468,18 +444,10 @@ subroutine incident_matrix_m (FileGeom, TypeGeom, k, Nsurf, surf, rp, np, area, 
       call mvnvinc_m (zl, kc, r, theta, m, Nrank, Nmax, zRe, zIm, mv3, nv3,         &
            mv1, nv1)          
       fact = f * dA 
-      call matQinc_m (m, Nmax, Nrank, fact, mv3, nv3, mv1, nv1, nuv, A_temp, nap, map) 
+      call matQinc_m (m, Nmax, Nrank, fact, mv3, nv3, mv1, nv1, nuv, A, nap, map) 
     end do
-    !$OMP END PARALLEL DO 
-  end if
-  
-  !$OMP PARALLEL NUM_THREADS(OMP_thread_cnt) PRIVATE(i,j)
-  deallocate (mv1, nv1, mv3, nv3)
-  !$OMP CRITICAL
-  A(1:2*nap,1:2*map) = A(1:2*nap,1:2*map) + A_temp(1:2*nap,1:2*map)
-  !$OMP END CRITICAL 
-  deallocate (A_temp)
-  !$OMP END PARALLEL
+  end if            
+  deallocate (mv1, nv1, mv3, nv3)     
 end subroutine incident_matrix_m
 !***********************************************************************************
 subroutine AzimMirSym (Nazimutsym, mirror, Mrank, Nrank, NmaxC, NmaxL, A, nap, map)
@@ -829,4 +797,6 @@ subroutine ConvergenceMatrixElem ( index1, index2, TypeGeom, Nsurf, Nparam, ml, 
   end do
   deallocate (mv1, nv1, mv3, nv3)
   if (chiral) deallocate (mvl1, nvl1, mvr1, nvr1) 
-end subroutine ConvergenceMatrixElem
+end subroutine ConvergenceMatrixElem            
+   
+  

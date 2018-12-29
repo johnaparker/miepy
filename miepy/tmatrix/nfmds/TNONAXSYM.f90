@@ -494,7 +494,6 @@ subroutine TNONAXSYM
 ! 3. < scattering characteristics calculation >                                     !    
 !------------------------------------------------------------------------------------
   use parameters  
-  use parser
   implicit none 
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Nazimutsym, TypeConvTest, Mrank, &
                    Nrank, Nbeta, Nint1, Nint2, dNint1, dNint2                     
@@ -505,7 +504,6 @@ subroutine TNONAXSYM
   logical       :: FileGeom, miror, perfectcond, chiral, anisotropic, DoConvTest,   &
                    ExtThetaDom, PrnProgress
   character(80) :: FileTmat, FileFEM  
-  type(t_tree_item) :: GeomTree
 ! -----------------------------------------------------------------------------------
 !                              Read the input file                                  ! 
 ! -----------------------------------------------------------------------------------  
@@ -514,7 +512,7 @@ subroutine TNONAXSYM
        TypeGeom, FileFEM, Nsurf, surf, Nparam, anorm, Rcirc, miror, Nazimutsym,     &   
        DoConvTest, ExtThetaDom, Nbeta, Nint1, Nint2, Nrank, Mrank, epsNint,         &
        epsNrank, epsMrank, dNint1, dNint2, FileTmat, PrnProgress, k, gammaPR,       &
-       snorm, rp, np, area, Nface, TypeConvTest, GeomTree)    
+       snorm, rp, np, area, Nface, TypeConvTest )    
 ! -----------------------------------------------------------------------------------
 !                                      Main                                         !
 ! -----------------------------------------------------------------------------------                            
@@ -523,30 +521,30 @@ subroutine TNONAXSYM
     call printinputNONAXSYM (FileGeom, TypeGeom, FileFEM, Nsurf, Nparam, Nazimutsym,&
          dNint1, dNint2, ind_refMed, wavelength, anorm, Rcirc, surf, kb, epsNint,   &
          epsNrank, epsMrank,  ind_refRel, ind_refRelZ, alphaPR, betaPR, anisotropic,&
-         miror, perfectcond, chiral, GeomTree) 
+         miror, perfectcond, chiral) 
     if (TypeConvTest == 1) then  
       if (.not. anisotropic) then             
         call convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_refRel, snorm,    &
              Nsurf, surf, rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1, Nint2,  &
              dNint1, dNint2, miror, Nazimutsym, perfectcond, chiral, kb, epsNint,   &
-             ExtThetaDom, PrnProgress, GeomTree)      
+             ExtThetaDom, PrnProgress)      
       else
         call convergence_NintAnis (FileGeom, TypeGeom, k, ind_refRel, ind_refRelZ,  &
              alphaPR, betaPR, gammaPR, snorm, Nsurf, surf, rp, np, area, Nface,     &
              Nparam, Mrank, Nrank, Nbeta, Nint1, Nint2, dNint1, dNint2, epsNint,    &
-             ExtThetaDom, PrnProgress, GeomTree) 
+             ExtThetaDom, PrnProgress) 
       end if
     else if (TypeConvTest == 2) then      
       if (.not. anisotropic) then
         call convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_refRel,    &
              snorm, Nsurf, surf, rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1,  &
              Nint2, miror, Nazimutsym, perfectcond, chiral, kb, epsNrank, epsMrank, &
-             ExtThetaDom, FileTmat, PrnProgress, GeomTree)             
+             ExtThetaDom, FileTmat, PrnProgress)             
       else
         call convergence_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_refRel,        &
              ind_refRelZ, alphaPR, betaPR, gammaPR, snorm, Nsurf, surf, rp, np,     &
              area, Nface, Nparam, Mrank, Nrank, Nbeta, Nint1, Nint2, epsNrank,      &
-             epsMrank, ExtThetaDom, FileTmat, PrnProgress, GeomTree)  
+             epsMrank, ExtThetaDom, FileTmat, PrnProgress)  
         end if
     end if
     close (unit = iOutput)           
@@ -554,11 +552,11 @@ subroutine TNONAXSYM
     if (.not. anisotropic) then          
       call TMatrix_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_refRel, Nsurf,   &
            surf, rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, miror,    &
-           Nazimutsym, perfectcond, chiral, kb, FileTmat, PrnProgress, GeomTree)                                                     
+           Nazimutsym, perfectcond, chiral, kb, FileTmat, PrnProgress)                                                     
     else
       call TMatrix_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_refRel, ind_refRelZ, &
            alphaPR, betaPR, gammaPR, Nsurf, surf, rp, np, area, Nface, Nparam,      &
-           Mrank, Nrank, Nbeta, Nint1, Nint2, FileTmat, PrnProgress, GeomTree) 
+           Mrank, Nrank, Nbeta, Nint1, Nint2, FileTmat, PrnProgress) 
     end if 
   end if    
 end subroutine TNONAXSYM
@@ -568,12 +566,9 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
            TypeGeom, FileFEM, Nsurf, surf, Nparam, anorm, Rcirc, miror, Nazimutsym, &   
            DoConvTest, ExtThetaDom, Nbeta, Nint1, Nint2, Nrank, Mrank, epsNint,     &
            epsNrank, epsMrank, dNint1, dNint2, FileTmat, PrnProgress, k, gammaPR,   &
-           snorm, rp, np, area, Nface, TypeConvTest, GeomTree)
+           snorm, rp, np, area, Nface, TypeConvTest )
   use parameters
-  use intepretator
   use derived_parameters
-  use parser
-  use parser_surface
   implicit none 
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Nazimutsym, TypeConvTest, Mrank, &
                    Nrank, NrankW, Nbeta, Nint1, Nint2, dNint1, dNint2, i, j, ios,   &
@@ -582,16 +577,12 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
                    kb, epsNint, epsNrank, epsMrank, Rcirc, x, rp(3,NfacePD),        &
                    np(3,NfacePD), area(NfacePD), dp, alphaPR, betaPR, gammaPR, grd
   complex(O)    :: ind_refRel, ind_RefRelZ
-  logical       :: FileGeom, miror, perfectcond, chiral, anisotropic, DoConvTest,&
-                   ExtThetaDom, PrnProgress, more, continuare, IntTest, XFindPar,&
-                   end_of_file
+  logical       :: FileGeom, miror, perfectcond, chiral, anisotropic, DoConvTest,   &
+                   ExtThetaDom, PrnProgress, more, continuare, IntTest, XFindPar
   character(80) :: FileTmat, FileFEM, string    
-  type(t_tree_item) :: GeomTree
 ! -----------------------------------------------------------------------------------
 !                        Read the input file FileInputNONAXSYM                      ! 
 ! ----------------------------------------------------------------------------------- 
-  character(200)    :: buf
-  
   call DrvParameters   
   open (unit = iInputNONAXSYM, file = FileInputNONAXSYM, status = "old",            &
         position = "rewind")   
@@ -600,13 +591,21 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   ind_refRel  = (1.5_O,0._O)  
   string  = 'OptProp'
   if (XFindPar (iInputNONAXSYM, string)) then
-    call fread_real(iInputNONAXSYM, wavelength, "wavelength" // char(0))
-
-	i = parameter_list_add("@" // trim("$wavelength") // "@" // char(0), char(0))
-	write (parameter_list(i)%value%value, '(F20.10)') wavelength
-
-    call fread_real(iInputNONAXSYM, ind_refMed, "ind_refMed" // char(0))
-	call fread_comp(iInputNONAXSYM, ind_refRel, "ind_refRel" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) wavelength
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable wavelength;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) ind_refMed
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable ind_refMed;')"
+      stop
+    end if    
+    read (iInputNONAXSYM, *, iostat = ios) ind_refRel
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable ind_refRel;')"
+      stop
+    end if        
   else
     print "(/,2x,'Group name OptProp not found;')"
     stop  
@@ -620,10 +619,26 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   kb     = 0._O
   string = 'MatProp'    
   if (XFindPar (iInputNONAXSYM, string)) then
-    call fread_logic(iInputNONAXSYM, perfectcond, "perfectcond" // char(0))
-    call fread_logic(iInputNONAXSYM, anisotropic, "anisotropic" // char(0))
-    call fread_logic(iInputNONAXSYM, chiral, "chiral" // char(0))
-    call fread_real (iInputNONAXSYM, kb, "kb" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) perfectcond
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable perfectcond;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) anisotropic
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable anisotropic;')"
+      stop
+    end if    
+    read (iInputNONAXSYM, *, iostat = ios) chiral
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable chiral;')"
+      stop
+    end if    
+    read (iInputNONAXSYM, *, iostat = ios) kb
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable kb;')"
+      stop
+    end if              
   else
     print "(/,2x,'Group name MatProp not found;')"
     stop  
@@ -631,8 +646,7 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   call check_MatPropNONAXSYM (perfectcond, anisotropic, chiral, kb) 
   if (chiral) call check_chirality (kb) 
 !
-  FileGeom = .false.
-  call tree_clear(GeomTree%children)
+  FileGeom = .false.  
   FileFEM  = ' '
   TypeGeom = 1  
   Nsurf = 3
@@ -645,43 +659,63 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   miror  = .true.
   Nazimutsym = 0
   string = 'GeomProp'    
-  end_of_file = .false.
   if (XFindPar (iInputNONAXSYM, string)) then
-    call fread_character(iInputNONAXSYM, buf, "FileGeom" // char(0))
-    if (trim(buf) == ".ext.") then
-        call parser_buffer_clear()       
-  	    read (iInputNONAXSYM, '(A)', iostat = ios) buf
-        do while ( (trim(buf) .ne. ".ext.") .or. end_of_file )
-            ios = parser_add(trim(buf) // char(10))
-	        buf = repeat(" ", len(buf))
-    	    read (iInputNONAXSYM, '(A)', iostat = ios) buf
-            end_of_file = (ios /= 0)
-	    end do
-	    i = read_main(GeomTree, 1)
-        FileGeom = .true.
-        FileFEM  = ".ext."
-    else
-	    read (buf, *, iostat = ios) FileGeom
-        if (ios /= 0) then
-        print "(/,2x,'Error by reading the input variable " // "FileGeom" // " (logical);')"
-          stop
-        end if
-        call fread_character(iInputNONAXSYM, FileFEM, "FileFEM" // char(0))
-        call fread_int(iInputNONAXSYM, TypeGeom, "TypeGeom" // char(0))
-        call fread_int(iInputNONAXSYM, Nsurf, "Nsurf" // char(0))
-        if (Nsurf > NsurfPD) then
-            print "(/,2x,'Input error: Nsurf exceeds NsurfPD;')"                                    
-            stop
-        end if
-        do i = 1, Nsurf
-	        call fread_real (iInputNONAXSYM, surf(i), "Surf #" // char(48+i) // char(0))
-        end do 
-        call fread_int(iInputNONAXSYM, Nparam, "Nparam" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) FileGeom
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileGeom;')"
+      stop
+    end if      
+    read (iInputNONAXSYM, *, iostat = ios) FileFEM
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileFEM;')"
+      stop
     end if
-	call fread_real (iInputNONAXSYM, anorm, "anorm" // char(0))
-	call fread_real (iInputNONAXSYM, Rcirc, "Rcirc" // char(0))
-    call fread_logic(iInputNONAXSYM, miror, "miror" // char(0))
-    call fread_int  (iInputNONAXSYM, Nazimutsym, "Nazimutsym" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) TypeGeom
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable TypeGeom;')"
+      stop
+    end if          
+    read (iInputNONAXSYM, *, iostat = ios) Nsurf
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Nsurf;')"
+      stop
+    end if
+    if (Nsurf > NsurfPD) then
+      print "(/,2x,'Input error: Nsurf exceeds NsurfPD;')"                                    
+      stop
+    end if
+    do i = 1, Nsurf
+      read (iInputNONAXSYM, *, iostat = ios) surf(i)
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable surf;')"
+        stop
+      end if
+    end do 
+    read (iInputNONAXSYM, *, iostat = ios) Nparam
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Nparam;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) anorm
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable anorm;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) Rcirc
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Rcirc;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) miror
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable miror;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) Nazimutsym
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Nazimutsym;')"
+      stop
+    end if
   else
     print "(/,2x,'Group name GeomProp not found;')"
     stop  
@@ -700,7 +734,7 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
     end do
     area(i) = 0._O
   end do 
-  if (FileGeom .and. FileFEM .ne. ".ext.") then    
+  if (FileGeom) then    
     call read_FileFEM (FileFEM, Nface, rp, np, area) 
     Rcirc = 0._O
     do i = 1, Nface
@@ -713,8 +747,16 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   ExtThetaDom  = .true.
   string = 'ConvTest'    
   if (XFindPar (iInputNONAXSYM, string)) then
-    call fread_logic(iInputNONAXSYM, DoConvTest, "DoConvTest" // char(0))
-    call fread_logic(iInputNONAXSYM, ExtThetaDom, "ExtThetaDom" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) DoConvTest
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable DoConvTest;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) ExtThetaDom
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable ExtThetaDom;')"
+      stop
+    end if                     
   else
     print "(/,2x,'Group name ConvTest not found;')"
     stop  
@@ -727,10 +769,26 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   if (anisotropic) then
     string = 'AnSVWF'    
     if (XFindPar (iInputNONAXSYM, string)) then
-      call fread_comp(iInputNONAXSYM, ind_refRelZ, "ind_refRelZ" // char(0))
-      call fread_real(iInputNONAXSYM, alphaPR, "alphaPR" // char(0))
-      call fread_real(iInputNONAXSYM, betaPR, "betaPR" // char(0))
-      call fread_int (iInputNONAXSYM, Nbeta, "Nbeta" // char(0))
+      read (iInputNONAXSYM, *, iostat = ios) ind_refRelZ
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ind_refRelZ;')"
+        stop
+      end if    
+      read (iInputNONAXSYM, *, iostat = ios) alphaPR
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable alphaPR;')"
+        stop
+      end if    
+      read (iInputNONAXSYM, *, iostat = ios) betaPR
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable betaPR;')"
+        stop
+      end if            
+      read (iInputNONAXSYM, *, iostat = ios) Nbeta
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nbeta;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name AnSVWF not found;')"
       stop  
@@ -763,8 +821,16 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   if (.not. DoConvTest) then
     string = 'NrankMrank'    
     if (XFindPar (iInputNONAXSYM, string)) then
-	  call fread_int (iInputNONAXSYM, Nrank, "Nrank" // char(0))
-	  call fread_int (iInputNONAXSYM, Mrank, "Mrank" // char(0))
+      read (iInputNONAXSYM, *, iostat = ios) Nrank
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nrank;')"
+        stop
+      end if
+      read (iInputNONAXSYM, *, iostat = ios) Mrank
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Mrank;')"
+        stop
+      end if
     else
       print "(/,2x,'Group name NrankMrank not found;')"
       stop  
@@ -842,8 +908,16 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
     else
       string = 'Nint'    
       if (XFindPar (iInputNONAXSYM, string)) then
-	    call fread_int (iInputNONAXSYM, Nint1, "Nint1" // char(0))
-	    call fread_int (iInputNONAXSYM, Nint2, "Nint2" // char(0))
+        read (iInputNONAXSYM, *, iostat = ios) Nint1
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nint1;')"
+          stop
+        end if
+        read (iInputNONAXSYM, *, iostat = ios) Nint2
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variable Nint2;')"
+          stop
+        end if
       else
         print "(/,2x,'Group name Nint not found;')"
         stop  
@@ -904,11 +978,31 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   dNint2 = 4
   string   = 'Errors'
   if (XFindPar (iInputNONAXSYM, string)) then
-	call fread_real(iInputNONAXSYM, epsNint, "epsNint" // char(0))
-	call fread_real(iInputNONAXSYM, epsNrank, "epsNrank" // char(0))
-	call fread_real(iInputNONAXSYM, epsMrank, "epsMrank" // char(0))
-	call fread_int (iInputNONAXSYM, dNint1, "dNint1" // char(0))
-	call fread_int (iInputNONAXSYM, dNint2, "dNint2" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) epsNint
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsNint;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) epsNrank
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsNrank;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) epsMrank
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsMrank;')"
+      stop
+    end if 
+    read (iInputNONAXSYM, *, iostat = ios) dNint1
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable dNint1;')"
+      stop
+    end if
+    read (iInputNONAXSYM, *, iostat = ios) dNint2
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable dNint2;')"
+      stop
+    end if         
   else
     print "(/,2x,'Group name Errors not found;')"
     stop  
@@ -917,7 +1011,11 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   FileTmat = '../TMATFILES/T.dat'
   string   = 'Tmat' 
   if (XFindPar (iInputNONAXSYM, string)) then
-	call fread_character (iInputNONAXSYM, FileTmat, "FileTmat" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) FileTmat
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileTmat;')"
+      stop
+    end if             
   else
     print "(/,2x,'Group name Tmat not found;')"
     stop  
@@ -926,7 +1024,11 @@ subroutine readinputNONAXSYM (wavelength, ind_refMed, ind_refRel, ind_RefRelZ,  
   PrnProgress = .true.
   string   = 'PrintProgress' 
   if (XFindPar (iInputNONAXSYM, string)) then
-	call fread_logic(iInputNONAXSYM, PrnProgress, "PrnProgress" // char(0))
+    read (iInputNONAXSYM, *, iostat = ios) PrnProgress
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable PrnProgress;')"
+      stop
+    end if             
   else
     print "(/,2x,'Group name PrintProgress not found;')"
     stop  
@@ -937,9 +1039,8 @@ end subroutine readinputNONAXSYM
 subroutine printinputNONAXSYM (FileGeom, TypeGeom, FileFEM, Nsurf, Nparam,          &
            Nazimutsym, dNint1, dNint2, ind_refMed, wavelength, anorm, Rcirc, surf,  &
            kb, epsNint, epsNrank, epsMrank, ind_refRel, ind_refRelZ, alphaPR,       &
-           betaPR, anisotropic, miror, perfectcond, chiral, GeomTree)
+           betaPR, anisotropic, miror, perfectcond, chiral)
   use parameters
-  use parser
   implicit none
   integer        :: TypeGeom, Nsurf, Nparam, Nazimutsym, dNint1, dNint2, i, LenString                     
   real(O)        :: ind_refMed, wavelength, anorm, surf(Nsurf), kb, epsNint,        &
@@ -947,7 +1048,6 @@ subroutine printinputNONAXSYM (FileGeom, TypeGeom, FileFEM, Nsurf, Nparam,      
   complex(O)     :: ind_refRel, ind_refRelZ
   character(80)  :: FileFEM, FileFEMWrite
   logical        :: FileGeom, miror, perfectcond, chiral, anisotropic
-  type(t_tree_item) :: GeomTree
 !
   write (iOutput,"(/,2x,'Input Parameters of the Scattering Problem:',/)")
   write (iOutput,"(2x,'wavelength of the free space, wavelength = ',1pe13.4,';')")  &
@@ -1039,12 +1139,8 @@ end subroutine printinputNONAXSYM
 subroutine convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsurf,  &
            surf, rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, dNint1,   &
            dNint2, miror, Nazimutsym, perfectcond, chiral, kb, epsNint, ExtThetaDom,&
-           PrnProgress, GeomTree)
+           PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
-  use parser_surface
-  use surface
   implicit none
   integer    :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, dNint1, &
                 dNint2, Nazimutsym                  
@@ -1052,15 +1148,14 @@ subroutine convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsur
                 kb, epsNint
   complex(O) :: ind_ref
   logical    :: FileGeom, miror, perfectcond, chiral, ExtThetaDom, PrnProgress
-  type(t_tree_item) :: GeomTree
 !      
-  integer    :: Nmax, Nteta, i, j, l, kk, NthetaConv, iNint, NintAL   
+  integer    :: Nmax, Nteta, i, NthetaConv, iNint, NintAL   
   real(O)    :: alfa, beta, gama, alfap, tetaGI, phiGI, phiGS, Cscat, Qscat,        &
                 Cext, Qext
-  real(O),allocatable    :: h(:), v(:), oldh(:), oldv(:)
-  complex(O),allocatable :: a(:,:), c(:), b(:,:), c1(:), a1(:,:), b1(:,:)
-  complex(O) :: tmp, tmp1
-  type(t_mesh) :: mesh 
+  integer,allocatable    :: Nintparam(:)
+  real(O),allocatable    :: paramG1(:,:), paramG2(:,:), weightsG(:,:), h(:), v(:),  &
+                            oldh(:), oldv(:)
+  complex(O),allocatable :: a(:,:), c(:), b(:,:), c1(:)   
 !
   tetaGI = 0._O
   phiGI  = 0._O
@@ -1072,7 +1167,7 @@ subroutine convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsur
   alfap  = Pi / 4._O
   Nmax   = Nrank + Mrank * (2 * Nrank - Mrank + 1) 
   call write_TypeConvHead (1)
-  allocate (a(2*Nmax,2*Nmax), a1(2*Nmax,2*Nmax), b1(2*Nmax,2*Nmax), c(2*Nmax), b(2*Nmax,2*Nmax), c1(2*Nmax))
+  allocate (a(2*Nmax,2*Nmax), c(2*Nmax), b(2*Nmax,2*Nmax), c1(2*Nmax))
   allocate (h(Nteta), v(Nteta), oldh(Nteta), oldv(Nteta))
   do i = 1, Nteta
     oldh(i) = 0._O
@@ -1081,11 +1176,18 @@ subroutine convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsur
   if (PrnProgress) call write_progress (.true., 1, 7)
   do iNint = 1, 2
     NintAL = max(Nint1,Nint2)                            
-    call parser_surface_do(mesh, FileGeom, TypeGeom, Nsurf, surf, rp, np, area, &
-  		 Nface, NintAL, Nint1, Nint2, Nparam, miror, Nazimutsym, GeomTree)
-    call matrix_Q (3, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, a, Nmax, Nmax, mesh)  
+    allocate (paramG1(Nparam,NintAL*NintAL), paramG2(Nparam,NintAL*NintAL),         &
+              weightsG(Nparam,NintAL*NintAL))
+    allocate (Nintparam(Nparam))
+    call interpolation_list3D (TypeGeom, Nsurf, surf, Nint1, Nint2, NintAL, Nparam, &
+         Nintparam, paramG1, paramG2, weightsG, miror, Nazimutsym) 
+    call matrix_Q (FileGeom, TypeGeom, 3, 1, k, ind_ref, Nsurf, surf, rp, np, area, &
+         Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,    &
+         weightsG, miror, Nazimutsym, perfectcond, chiral, kb, a, Nmax, Nmax)  
     if (PrnProgress) call write_progress (.false., 2+3*(iNint-1), 7)
-    call matrix_Q (1, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, b, Nmax, Nmax, mesh)  
+    call matrix_Q (FileGeom, TypeGeom, 1, 1, k, ind_ref, Nsurf, surf, rp, np, area, &
+         Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,    &
+         weightsG, miror, Nazimutsym, perfectcond, chiral, kb, b, Nmax, Nmax)
     if (PrnProgress) call write_progress (.false., 3+3*(iNint-1), 7)
     call LU_SYSTEM (a, 2*Nmax, 2*Nmax, b, 2*Nmax, 2*Nmax, 2*Nmax)
     if (PrnProgress) call write_progress (.false., 4+3*(iNint-1), 7)
@@ -1103,20 +1205,17 @@ subroutine convergence_NintNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsur
     call write_Effic (Qscat, Qext)
     Nint1 = Nint1 + dNint1
     Nint2 = Nint2 + dNint2
+    deallocate (paramG1, paramG2, weightsG, Nintparam)
   end do
   call write_NintConvRes (NthetaConv, Nteta, epsNint)
-  deallocate (a, b, c, c1, h, v, oldh, oldv)
+  deallocate (a, b, c, c1, h, v, oldh, oldv)    
 end subroutine convergence_NintNONAXSYM 
 !***********************************************************************************
 subroutine convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm,  &
            Nsurf, surf, rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1, Nint2,    &
            miror, Nazimutsym, perfectcond, chiral, kb, epsNrank, epsMrank,          &
-           ExtThetaDom, FileTmat, PrnProgress, GeomTree)
+           ExtThetaDom, FileTmat, PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
-  use parser_surface
-  !use ifport
   implicit none
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nint1, Nint2,      &
                    Nazimutsym                   
@@ -1125,15 +1224,14 @@ subroutine convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snor
   complex(O)    :: ind_ref
   logical       :: FileGeom, miror, perfectcond, chiral, ExtThetaDom, PrnProgress 
   character(80) :: FileTmat
-  type(t_tree_item) :: GeomTree
 !      
   integer       :: Nmax, Nteta, i, j, NthetaConvN, NthetaConvM, NintAL
   real(O)       :: alfa, beta, gama, alfap, tetaGI, phiGI, phiGS, Cscat, Qscat,     &
                    Cext, Qext
-  real(O),allocatable    :: h(:), v(:), oldh(:), oldv(:), oldh0(:), oldv0(:)
+  integer,allocatable    :: Nintparam(:) 
+  real(O),allocatable    :: paramG1(:,:), paramG2(:,:), weightsG(:,:), h(:), v(:),  &
+                            oldh(:), oldv(:), oldh0(:), oldv0(:)
   complex(O),allocatable :: a(:,:), c(:), b(:,:), c1(:), a1(:,:), b1(:,:)   
-  type(t_mesh) :: mesh 
-  real(O) :: t0, t1, t2
 !
   tetaGI = 0._O
   phiGI  = 0._O
@@ -1151,14 +1249,32 @@ subroutine convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snor
   allocate (a1(2*Nmax,2*Nmax), b1(2*Nmax,2*Nmax))  
   allocate (a(2*Nmax,2*Nmax), c(2*Nmax), b(2*Nmax,2*Nmax), c1(2*Nmax))
   allocate (h(Nteta), v(Nteta), oldh(Nteta), oldv(Nteta), oldh0(Nteta),             &
-            oldv0(Nteta))
-  call parser_surface_do(mesh, FileGeom, TypeGeom, Nsurf, surf, rp, np, area, &
-		Nface, NintAL, Nint1, Nint2, Nparam, miror, Nazimutsym, GeomTree)
+            oldv0(Nteta))                        
+  allocate (paramG1(Nparam,NintAL*NintAL), paramG2(Nparam,NintAL*NintAL),           &
+            weightsG(Nparam,NintAL*NintAL))
+  allocate (Nintparam(Nparam))
+  if (.not. FileGeom) then    
+    call interpolation_list3D (TypeGeom, Nsurf, surf, Nint1, Nint2, NintAL, Nparam, &
+         Nintparam, paramG1, paramG2, weightsG, miror, Nazimutsym)                            
+  else
+    do i = 1, Nparam
+      do j = 1, NintAL*NintAL
+        paramG1(i,j)  = 0._O
+        paramG2(i,j)  = 0._O
+        weightsG(i,j) = 0._O
+      end do
+      Nintparam(i) = 1
+    end do   
+  end if
   if (PrnProgress) call write_progress (.true., 1, 4)
-  call matrix_Q (3, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, a, Nmax, Nmax, mesh)
+  call matrix_Q (FileGeom, TypeGeom, 3, 1, k, ind_ref, Nsurf, surf, rp, np, area,   &
+       Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,      &
+       weightsG, miror, Nazimutsym, perfectcond, chiral, kb, a, Nmax, Nmax)
   if (PrnProgress) call write_progress (.false., 2, 4)    
   call copy_matrix (2*Nmax, 2*Nmax, a, 2*Nmax, 2*Nmax, a1, 2*Nmax, 2*Nmax)  
-  call matrix_Q (1, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, b, Nmax, Nmax, mesh)
+  call matrix_Q (FileGeom, TypeGeom, 1, 1, k, ind_ref, Nsurf, surf, rp, np, area,   &
+       Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,      &
+       weightsG, miror, Nazimutsym, perfectcond, chiral, kb, b, Nmax, Nmax)
   if (PrnProgress) call write_progress (.false., 3, 4)    
   call copy_matrix (2*Nmax, 2*Nmax, b, 2*Nmax, 2*Nmax, b1, 2*Nmax, 2*Nmax) 
   call LU_SYSTEM (a, 2*Nmax, 2*Nmax, b, 2*Nmax, 2*Nmax, 2*Nmax)
@@ -1179,6 +1295,7 @@ subroutine convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snor
   end if
   call write_DSCS (Nteta, ExtThetaDom, h, v)
   call write_Effic (Qscat, Qext)
+  deallocate (paramG1, paramG2, weightsG, Nintparam)
   do i = 1, Nteta
     oldh(i)  = h(i)
     oldv(i)  = v(i)
@@ -1243,20 +1360,15 @@ subroutine convergence_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, snor
   print "(/,2x,'T matrix is stored in ',a50)", FileTmat
   print "(  2x,'The dimensions of the T matrix are given by:')"
   print "(  2x,'- maximum expansion order,   Nrank = ',i3,',')", Nrank
-  print "(  2x,'- number of azimuthal modes, Mrank = ',i3,';')", Mrank
-  deallocate (a1, b1)
-  deallocate (a, b, c, c1)
-  deallocate (h, v, oldh, oldv, oldh0, oldv0)
-  call mesh_clear(mesh)
+  print "(  2x,'- number of azimuthal modes, Mrank = ',i3,';')", Mrank    
+  deallocate (a1, b1)  
+  deallocate (a, b, c, c1, h, v, oldh, oldv, oldh0, oldv0)      
 end subroutine convergence_Nrank_MrankNONAXSYM 
 !***********************************************************************************
 subroutine TMatrix_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, Nsurf, surf,&
            rp, np, area, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, miror,          &
-           Nazimutsym, perfectcond, chiral, kb, FileTmat, PrnProgress, GeomTree)
+           Nazimutsym, perfectcond, chiral, kb, FileTmat, PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
-  use parser_surface
   implicit none
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nint1, Nint2,      &
                    Nazimutsym                   
@@ -1264,13 +1376,11 @@ subroutine TMatrix_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, Nsurf, s
   complex(O)    :: ind_ref
   logical       :: FileGeom, miror, perfectcond, chiral, PrnProgress 
   character(80) :: FileTmat
-  type(t_tree_item) :: GeomTree
 !      
   integer       :: Nmax, i, j, NintAL
   integer,allocatable    :: Nintparam(:) 
   real(O),allocatable    :: paramG1(:,:), paramG2(:,:), weightsG(:,:)
   complex(O),allocatable :: a(:,:), b(:,:)
-  type(t_mesh) :: mesh 
 !  
   Nmax   = Nrank + Mrank * (2 * Nrank - Mrank + 1)
   NintAL = max(Nint1,Nint2)  
@@ -1294,11 +1404,13 @@ subroutine TMatrix_Nrank_MrankNONAXSYM (FileGeom, TypeGeom, k, ind_ref, Nsurf, s
     end do   
   end if
   if (PrnProgress) call write_progress (.true., 1, 4)
-  call parser_surface_do(mesh, FileGeom, TypeGeom, Nsurf, surf, rp, np, area, &
-		Nface, NintAL, Nint1, Nint2, Nparam, miror, Nazimutsym, GeomTree)
-  call matrix_Q (3, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, a, Nmax, Nmax, mesh)
+  call matrix_Q (FileGeom, TypeGeom, 3, 1, k, ind_ref, Nsurf, surf, rp, np, area,   &
+       Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,      &
+       weightsG, miror, Nazimutsym, perfectcond, chiral, kb, a, Nmax, Nmax)
   if (PrnProgress) call write_progress (.false., 2, 4)  
-  call matrix_Q (1, 1, k, ind_ref, Mrank, Nrank, Nmax, perfectcond, chiral, kb, a, Nmax, Nmax, mesh)
+  call matrix_Q (FileGeom, TypeGeom, 1, 1, k, ind_ref, Nsurf, surf, rp, np, area,   &
+       Nface, Mrank, Nrank, Nmax, NintAL, Nparam, Nintparam, paramG1, paramG2,      &
+       weightsG, miror, Nazimutsym, perfectcond, chiral, kb, b, Nmax, Nmax)
   if (PrnProgress) call write_progress (.false., 3, 4)  
   call LU_SYSTEM (a, 2*Nmax, 2*Nmax, b, 2*Nmax, 2*Nmax, 2*Nmax)
   if (PrnProgress) call write_progress (.false., 4, 4)
@@ -1318,10 +1430,8 @@ end subroutine TMatrix_Nrank_MrankNONAXSYM
 subroutine convergence_NintAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ, alfaPR,  &
            betaPR, gamaPR, snorm, Nsurf, surf, rp, np, area, Nface, Nparam, Mrank,  &
            Nrank, Nbeta, Nint1, Nint2, dNint1, dNint2, epsNint, ExtThetaDom,        &
-           PrnProgress, GeomTree)
+           PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
   implicit none
   integer    :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nbeta, Nint1, Nint2,  &
                 dNint1, dNint2
@@ -1329,7 +1439,6 @@ subroutine convergence_NintAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ, alfaP
                 epsNint, alfaPR, betaPR, gamaPR
   complex(O) :: ind_ref, ind_refZ  
   logical    :: FileGeom, ExtThetaDom, PrnProgress
-  type(t_tree_item) :: GeomTree
 !      
   integer    :: Nmax, Nteta, i, NthetaConv, iNint, NintAL  
   real(O)    :: alfa, beta, gama, alfap, tetaGI, phiGI, phiGS, Cscat, Qscat,        &
@@ -1396,10 +1505,8 @@ end subroutine convergence_NintAnis
 subroutine convergence_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ,   &
            alfaPR, betaPR, gamaPR, snorm, Nsurf, surf, rp, np, area, Nface, Nparam, &
            Mrank, Nrank, Nbeta, Nint1, Nint2, epsNrank, epsMrank, ExtThetaDom,      &
-           FileTmat, PrnProgress, GeomTree)
+           FileTmat, PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
   implicit none
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, Nbeta
   real(O)       :: k, snorm, surf(Nsurf), rp(3,NfacePD), np(3,NfacePD),             &
@@ -1407,7 +1514,6 @@ subroutine convergence_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ
   complex(O)    :: ind_ref, ind_refZ
   character(80) :: FileTmat
   logical       :: FileGeom, ExtThetaDom, PrnProgress
-  type(t_tree_item) :: GeomTree
 !        
   integer       :: Nmax, Nteta, i, NthetaConvN, NthetaConvM, NintAL
   real(O)       :: alfa, beta, gama, alfap, tetaGI, phiGI, phiGS, Cscat, Qscat,     &
@@ -1528,10 +1634,8 @@ end subroutine convergence_Nrank_MrankAnis
 !***********************************************************************************
 subroutine TMatrix_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ,       &
            alfaPR, betaPR, gamaPR, Nsurf, surf, rp, np, area, Nface, Nparam, Mrank, &
-           Nrank, Nbeta, Nint1, Nint2, FileTmat, PrnProgress, GeomTree)
+           Nrank, Nbeta, Nint1, Nint2, FileTmat, PrnProgress)
   use parameters
-  use matrix_Q_all
-  use parser
   implicit none
   integer       :: TypeGeom, Nsurf, Nface, Nparam, Mrank, Nrank, Nint1, Nint2, Nbeta
   real(O)       :: k, surf(Nsurf), rp(3,NfacePD), np(3,NfacePD), area(NfacePD),     &
@@ -1539,7 +1643,6 @@ subroutine TMatrix_Nrank_MrankAnis (FileGeom, TypeGeom, k, ind_ref, ind_refZ,   
   complex(O)    :: ind_ref, ind_refZ
   character(80) :: FileTmat
   logical       :: FileGeom, PrnProgress
-  type(t_tree_item) :: GeomTree
 !        
   integer       :: Nmax, NintAL  
   integer,allocatable    :: Nintparam(:)

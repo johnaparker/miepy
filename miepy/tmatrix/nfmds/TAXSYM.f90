@@ -850,8 +850,6 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
            epsMrank, dNint, dNintMrank, FileTmat, PrnProgress, k, snorm, Nface,     &
            rp, np, area )
   use parameters
-  use intepretator
-  use inputoutput
   use derived_parameters
   implicit none 
   integer       :: TypeGeom, Nsurf, Nparam, dNint, Nrank, Nint, i, dNintMrank, ios, &
@@ -875,12 +873,21 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   ind_refRel = (1.5_O,0._O) 
   string     = 'OptProp'    
   if (XFindPar (iInputAXSYM, string)) then
-    call fread_real(iInputAXSYM, wavelength, "wavelength" // char(0))
-	i = parameter_list_add("@" // trim("$wavelength") // "@" // char(0), char(0))
-	write (parameter_list(i)%value%value, '(F20.10)') wavelength
-
-    call fread_real(iInputAXSYM, ind_refMed, "ind_refMed" // char(0))
-	call fread_comp(iInputAXSYM, ind_refRel, "ind_refRel" // char(0))
+    read (iInputAXSYM, *, iostat = ios) wavelength
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable wavelength;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) ind_refMed
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable ind_refMed;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) ind_refRel
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable ind_refRel;')"
+      stop
+    end if      
   else
     print "(/,2x,'Group name OptProp not found;')"
     stop  
@@ -893,9 +900,21 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   kb     = 0._O  
   string = 'MatProp'
   if (XFindPar (iInputAXSYM, string)) then
-    call fread_logic(iInputAXSYM, perfectcond, "perfectcond" // char(0))
-    call fread_logic(iInputAXSYM, chiral, "chiral" // char(0))
-    call fread_real (iInputAXSYM, kb, "kb" // char(0))
+    read (iInputAXSYM, *, iostat = ios) perfectcond
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable perfectcond;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) chiral
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable chiral;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) kb
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable kb;')"
+      stop
+    end if      
   else
     print "(/,2x,'Group name MatProp not found;')"
     stop  
@@ -905,30 +924,68 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
 !
   FileGeom = .false.
   FileFEM  = ' '  
-  TypeGeom = 1
+  TypeGeom = 1  
   Nsurf    = 2
-  surf(1:NsurfPD)= 1._O
+  do i = 1, NsurfPD
+    surf(i)= 1._O
+  end do
   Nparam = 1
   anorm  = 1._O
   Rcirc  = 1._O 
   miror  = .false.
   string = 'GeomProp'
   if (XFindPar (iInputAXSYM, string)) then
-    call fread_logic(iInputAXSYM, FileGeom, "FileGeom" // char(0))
-    call fread_character(iInputAXSYM, FileFEM, "FileFEM" // char(0))
-    call fread_int(iInputAXSYM, TypeGeom, "TypeGeom" // char(0))
-    call fread_int(iInputAXSYM, Nsurf, "Nsurf" // char(0))
+    read (iInputAXSYM, *, iostat = ios) FileGeom
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileGeom;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) FileFEM
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileFEM;')"
+      stop
+    end if       
+    read (iInputAXSYM, *, iostat = ios) TypeGeom
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable TypeGeom;')"
+      stop
+    end if       
+    read (iInputAXSYM, *, iostat = ios) Nsurf
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Nsurf;')"
+      stop
+    end if
     if (Nsurf > NsurfPD) then
       print "(/,2x,'Input error: Nsurf exceeds NsurfPD;')"                                    
       stop
     end if            
     do i = 1, Nsurf
-	  call fread_real (iInputAXSYM, surf(i), "Surf #" // char(48+i) // char(0))
-    end do
-    call fread_int(iInputAXSYM, Nparam, "Nparam" // char(0))
-	call fread_real (iInputAXSYM, anorm, "anorm" // char(0))
-	call fread_real (iInputAXSYM, Rcirc, "Rcirc" // char(0))
-    call fread_logic(iInputAXSYM, miror, "miror" // char(0))
+      read (iInputAXSYM, *, iostat = ios) surf(i)
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable surf;')"
+        stop
+      end if
+    end do    
+    read (iInputAXSYM, *, iostat = ios) Nparam
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Nparam;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) anorm
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable anorm;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) Rcirc
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable Rcirc;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) miror
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable miror;')"
+      stop
+    end if                                                
   else
     print "(/,2x,'Group name GeomProp not found;')"
     stop  
@@ -959,8 +1016,16 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   MishConvTest = .true.
   string       = 'ConvTest'
   if (XFindPar (iInputAXSYM, string)) then
-    call fread_logic(iInputAXSYM, DoConvTest, "DoConvTest" // char(0))
-    call fread_logic(iInputAXSYM, MishConvTest, "MishConvTest" // char(0))
+    read (iInputAXSYM, *, iostat = ios) DoConvTest
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable DoConvTest;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) MishConvTest
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable MishConvTest;')"
+      stop
+    end if         
   else
     print "(/,2x,'Group name ConvTest not found;')"
     stop  
@@ -972,8 +1037,16 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   autGenDS = .true.
   string   = 'Sources'
   if (XFindPar (iInputAXSYM, string)) then
-    call fread_logic(iInputAXSYM, DS, "DS" // char(0))
-    call fread_logic(iInputAXSYM, autGenDS, "autGenDS" // char(0))
+    read (iInputAXSYM, *, iostat = ios) DS
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable DS;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) autGenDS
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable autGenDS;')"
+      stop
+    end if         
   else
     print "(/,2x,'Group name Sources not found;')"
     stop  
@@ -988,8 +1061,16 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   if (DS .and. autGenDS) then
     string = 'SourcePosAut'
     if (XFindPar (iInputAXSYM, string)) then
-	  call fread_logic(iInputAXSYM, ComplexPlane, "ComplexPlane" // char(0))
-	  call fread_real (iInputAXSYM, epsZReIm, "epsZReIm" // char(0))
+      read (iInputAXSYM, *, iostat = ios) ComplexPlane
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable ComplexPlane;')"
+        stop
+      end if
+      read (iInputAXSYM, *, iostat = ios) epsZReIm
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable epsZReIm;')"
+        stop
+      end if         
     else
       print "(/,2x,'Group name SourcePosAut not found;')"
       stop  
@@ -1001,8 +1082,16 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   if (.not. DoConvTest .or. InputDS) then       
     string = 'NintNrank'
     if (XFindPar (iInputAXSYM, string)) then
-	  call fread_int (iInputAXSYM, Nint, "Nint" // char(0))
-	  call fread_int (iInputAXSYM, Nrank, "Nrank" // char(0))
+      read (iInputAXSYM, *, iostat = ios) Nint
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nint;')"
+        stop
+      end if
+      read (iInputAXSYM, *, iostat = ios) Nrank
+      if (ios /= 0) then
+        print "(/,2x,'Error by reading the input variable Nrank;')"
+        stop
+      end if         
     else
       print "(/,2x,'Group name NintNrank not found;')"
       stop  
@@ -1020,11 +1109,19 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
     string = 'SourcePosInp'
     if (XFindPar (iInputAXSYM, string)) then
       do i = 1, Nrank
-		call fread_real2 (iInputAXSYM, zRe(i), "zRe and zIm" // char(0), zIm(i))
+        read (iInputAXSYM, *, iostat = ios) zRe(i), zIm(i)
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variables zRe and zIm;')"
+          stop
+        end if
       end do      
       read (iInputAXSYM, *)
       do i = 1, Nrank - 1
-		call fread_real2 (iInputAXSYM, zRe1(i), "zRe1 and zIm1" // char(0), zIm1(i))
+        read (iInputAXSYM, *, iostat = ios) zRe1(i), zIm1(i)
+        if (ios /= 0) then
+          print "(/,2x,'Error by reading the input variables zRe1 and zIm1;')"
+          stop
+        end if
       end do
     else
       print "(/,2x,'Group name SourcePosInp not found;')"
@@ -1039,11 +1136,31 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   dNintMrank = 10
   string   = 'Errors'
   if (XFindPar (iInputAXSYM, string)) then
-	call fread_real(iInputAXSYM, epsNint, "epsNint" // char(0))
-	call fread_real(iInputAXSYM, epsNrank, "epsNrank" // char(0))
-	call fread_real(iInputAXSYM, epsMrank, "epsMrank" // char(0))
-	call fread_int (iInputAXSYM, dNint, "dNint" // char(0))
-	call fread_int (iInputAXSYM, dNintMrank, "dNintMrank" // char(0))
+    read (iInputAXSYM, *, iostat = ios) epsNint
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsNint;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) epsNrank
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsNrank;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) epsMrank
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable epsMrank;')"
+      stop
+    end if 
+    read (iInputAXSYM, *, iostat = ios) dNint
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable dNint;')"
+      stop
+    end if
+    read (iInputAXSYM, *, iostat = ios) dNintMrank
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable dNintMrank;')"
+      stop
+    end if         
   else
     print "(/,2x,'Group name Errors not found;')"
     stop  
@@ -1052,7 +1169,11 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   FileTmat = '../TMATFILES/T.dat'
   string   = 'Tmat' 
   if (XFindPar (iInputAXSYM, string)) then
-	call fread_character (iInputAXSYM, FileTmat, "FileTmat" // char(0))
+    read (iInputAXSYM, *, iostat = ios) FileTmat
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable FileTmat;')"
+      stop
+    end if             
   else
     print "(/,2x,'Group name Tmat not found;')"
     stop  
@@ -1061,7 +1182,11 @@ subroutine readinputAXSYM ( wavelength, ind_refMed, ind_refRel, perfectcond,    
   PrnProgress = .true.
   string   = 'PrintProgress' 
   if (XFindPar (iInputAXSYM, string)) then
-	call fread_logic(iInputAXSYM, PrnProgress, "PrnProgress" // char(0))
+    read (iInputAXSYM, *, iostat = ios) PrnProgress
+    if (ios /= 0) then
+      print "(/,2x,'Error by reading the input variable PrnProgress;')"
+      stop
+    end if             
   else
     print "(/,2x,'Group name PrintProgress not found;')"
     stop  
@@ -1280,7 +1405,7 @@ subroutine convergence_NintAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsurf, 
     Nint = Nint + dNint
     deallocate (paramG, weightsG, Nintparam)
   end do  
-  call write_NintConvRes (NthetaConv, Nteta, epsNint)
+  call write_NintConvRes (NthetaConv, Nteta, epsNint)                 
   deallocate (a, b, c, c1, cc, h, v, oldh, oldv)
 end subroutine convergence_NintAXSYM 
 !***********************************************************************************
@@ -1672,7 +1797,7 @@ subroutine convergence_NintDSAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsurf
     Nint = Nint + dNint
     deallocate (paramG, weightsG, Nintparam)
   end do
-  call write_NintConvRes (NthetaConv, Nteta, epsNint)
+  call write_NintConvRes (NthetaConv, Nteta, epsNint)                 
   deallocate (a, b, c, c1, cc, h, v, oldh, oldv)
 end subroutine convergence_NintDSAXSYM
 !***********************************************************************************
@@ -1796,7 +1921,6 @@ subroutine convergence_NrankDSAXSYM (FileGeom, TypeGeom, k, ind_ref, snorm, Nsur
   call matrix_Q_m (FileGeom, TypeGeom, 3, 1, k, ind_ref, Nsurf, surf, rp, np, area, &
        Nface, zRe1, zIm1, m, Nrank1, Nmax, Nint, Nparam, Nintparam, paramG,         &
        weightsG, miror, perfectcond, DS, chiral, kb, a, Nrank, Nrank)
-!  stop
   if (PrnProgress) call write_progress (.false., iprog+1, Nprog)
   call incident_matrix_m (FileGeom, TypeGeom, k, Nsurf, surf, rp, np, area, Nface,  &
        zRe1, zIm1, m, Nrank1, Nmax, Nint, Nparam, Nintparam, paramG, weightsG, b,   &

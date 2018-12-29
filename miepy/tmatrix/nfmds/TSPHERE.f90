@@ -329,7 +329,7 @@ subroutine printinputSPHERE (wavelength, ind_refMed, Npart, r, ind_ref, epsNrank
   write (iOutput,*)     
   write (iOutput,"(2x, a, 1pe10.3, a)")                                             &
  'maximum expansion order tolerance, epsNrank = ', epsNrank, '.'              
-  write (iOutput,"(/)")                       
+  write (iOutput,"(/)")  
 end subroutine printinputSPHERE
 ! **********************************************************************************
 subroutine convergence_NrankSPHERE (k, Npart, ind_ref, r, snorm, Nrank, epsNrank,   &
@@ -427,7 +427,7 @@ subroutine convergence_NrankSPHERE (k, Npart, ind_ref, r, snorm, Nrank, epsNrank
   print "(/,2x,'The T vector is stored in ',a50)", FileTmat
   print "(  2x,'The dimension of the T vector is given by:')"
   print "(  2x,'- maximum expansion order, Nrank = ',i3,';')", Nrank                      
-  deallocate (t, c, c1, cc, h, v, oldh, oldv)        
+  deallocate (t, c, c1, cc, h, v, oldh, oldv)   
 end subroutine convergence_NrankSPHERE 
 ! **********************************************************************************
 subroutine Tvector_NrankSPHERE (k, Npart, ind_ref, r, Nrank, FileTmat, PrnProgress)   
@@ -457,5 +457,5 @@ subroutine Tvector_NrankSPHERE (k, Npart, ind_ref, r, Nrank, FileTmat, PrnProgre
   print "(/,2x,'The T vector is stored in ',a50)", FileTmat
   print "(  2x,'The dimension of the T vector is given by:')"
   print "(  2x,'- maximum expansion order, Nrank = ',i3,';')", Nrank                      
-  deallocate (t)        
-end subroutine Tvector_NrankSPHERE           
+  deallocate (t)      
+end subroutine Tvector_NrankSPHERE     

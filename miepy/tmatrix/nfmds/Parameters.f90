@@ -1,10 +1,6 @@
 module parameters
   implicit none
-#ifdef PRECISION_QUAD
-  integer,parameter       :: O = kind(1.q0)
-#else
   integer,parameter       :: O = kind(1.d0)
-#endif
 !
   real(O),parameter       :: Pi    = 3.1415926535897932384626433832795028841971_O
   complex(O),parameter    :: im    = (0._O,1._O),                                        &
@@ -57,13 +53,11 @@ module parameters
                              iInputSCT         = 39,                                     &
                              iInputSCTAVRGSPH  = 40
 !
-  character(80) :: FileOutput        = "../OUTPUTFILES/Output.dat"
-
-  character(80), parameter ::                                                            &
+  character(80),parameter ::                                                             &
+                FileOutput           = "../OUTPUTFILES/Output.dat",                      &
                 FileInput            = "../INPUTFILES/Input.dat",                        &
                 FileInputAXSYM       = "../INPUTFILES/InputAXSYM.dat",                   &
                 FileInputNONAXSYM    = "../INPUTFILES/InputNONAXSYM.dat",                &
-                FileInputNONAXSYMBIAXIAL = "../INPUTFILES/InputNONAXSYMBIAXIAL.dat",     &
                 FileInputNONAXSYMFEM = "../INPUTFILES/InputNONAXSYMFEM.dat",             &
                 FileInputCOMP        = "../INPUTFILES/InputCOMP.dat",                    &
                 FileInputLAY         = "../INPUTFILES/InputLAY.dat",                     &
@@ -80,10 +74,6 @@ module parameters
 !               									
                 FileInputSPHERE      = "../INPUTFILES/InputSPHERE.dat",                  &
                 FileInputPARTSUB     = "../INPUTFILES/InputPARTSUB.dat",                 &
-                FileInputPARTSUB3D   = "../INPUTFILES/InputPARTSUB3D.dat",               &
-                FileInputPARTSUB3DMULT="../INPUTFILES/InputPARTSUB3DMULT.dat",           &
-                FileInputPARTSUB3DFILM="../INPUTFILES/InputPARTSUB3DFILM.dat",           &
-                FileInputPARTSUBFILM = "../INPUTFILES/InputPARTSUBFILM.dat",             &
                 FileInputANIS        = "../INPUTFILES/InputANIS.dat",                    &
                 FileInputEFMED       = "../INPUTFILES/InputEFMED.dat",                   &
 !
@@ -93,10 +83,6 @@ module parameters
   character(15),parameter :: PathOUTPUT = "../OUTPUTFILES/",                             &
                              PathTEMP   = "../TEMPFILES/",                               &
                              PathGEOM   = "../GEOMFILES/"                       
-  integer                 :: OMP_thread_cnt = 1                                          ! number of threads in OpenMP mode
-  integer,parameter		  :: InputFileUnit = 4
-  integer,parameter		  :: InputConUnit  = 0
-  integer				  :: InputCurrentUnit  = InputConUnit
 end module parameters
 ! **************************************************************************************
 module derived_parameters

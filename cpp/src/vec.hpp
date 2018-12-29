@@ -19,4 +19,6 @@ using Eigen::Ref;
 using position_t = Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>;
 using tmatrix_t = Eigen::TensorMap<ComplexTensor3>;
 
+const double PI = 3.14159265358979323846;
+
 #endif
