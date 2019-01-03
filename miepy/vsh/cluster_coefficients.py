@@ -31,8 +31,8 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
 
     for i in range(Nparticles):
         if np.all(positions[i] == origin):
-            p_cluster[0] += p_scat[i,0,:rmax]
-            p_cluster[1] += p_scat[i,1,:rmax]
+            p_cluster[0,:rmax_in] += p_scat[i,0,:rmax_in]
+            p_cluster[1,:rmax_in] += p_scat[i,1,:rmax_in]
             continue
 
         rij = origin - positions[i]
