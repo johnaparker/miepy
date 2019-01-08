@@ -4,6 +4,8 @@ import numpy as np
 from itertools import count
 import matplotlib.colors as cm
 
+nm = 1e-9
+
 def get_paint(material):
     """Return a (texture, color, shininess) tuple for a given material"""
     import vpython
@@ -23,8 +25,8 @@ def draw_particle(particle, paint, **kwargs):
     vec = vpython.vec
 
     if type(particle) is miepy.sphere:
-        return vpython.sphere(pos=vec(*particle.position),
-                              radius=particle.radius,
+        return vpython.sphere(pos=vec(*particle.position)/nm,
+                              radius=particle.radius/nm,
                               texture=paint.texture,
                               color=paint.color, **kwargs)
 
@@ -34,25 +36,59 @@ def draw_particle(particle, paint, **kwargs):
         axis = vec(np.sin(theta)*np.cos(phi),
                    np.sin(theta)*np.sin(phi),
                    np.cos(theta))
+        rot_vec = miepy.quaternion.as_rotation_vector(q)
+        angle = np.linalg.norm(rot_vec)
+        if angle != 0:
+            axis_rot = rot_vec/angle
+        else:
+            axis_rot = [0,0,1]
 
         if type(particle) is miepy.cylinder:
-            return vpython.cylinder(pos=vec(*particle.position) - particle.height/2*axis,
-                                    radius=particle.radius,
-                                    length=particle.height,
+            return vpython.cylinder(pos=(vec(*particle.position) - particle.height/2*axis)/nm,
+                                    radius=particle.radius/nm,
+                                    length=particle.height/nm,
                                     texture=paint.texture,
                                     axis=axis,
                                     color=paint.color,
                                     shininess=paint.shininess, **kwargs)
 
         elif type(particle) is miepy.spheroid:
-            return vpython.ellipsoid(pos=vec(*particle.position),
-                                    width=2*particle.axis_xy,
-                                    height=2*particle.axis_xy,
-                                    length=2*particle.axis_z,
+            return vpython.ellipsoid(pos=vec(*particle.position)/nm,
+                                    width=2*particle.axis_xy/nm,
+                                    height=2*particle.axis_xy/nm,
+                                    length=2*particle.axis_z/nm,
                                     texture=paint.texture,
                                     axis=axis,
                                     color=paint.color,
                                     shininess=paint.shininess, **kwargs)
+
+        elif type(particle) is miepy.ellipsoid:
+            obj = vpython.ellipsoid(pos=vec(*particle.position)/nm,
+                                    width=2*particle.rx/nm,
+                                    height=2*particle.ry/nm,
+                                    length=2*particle.rz/nm,
+                                    texture=paint.texture,
+                                    color=paint.color,
+                                    axis=vec(0,0,1),
+                                    shininess=paint.shininess, **kwargs)
+
+            obj.rotate(angle=angle, axis=vec(*axis_rot))
+            return obj
+
+        elif type(particle) is miepy.regular_prism:
+            shape = vpython.shapes.ngon(np=particle.N, length=particle.width/nm)
+            shape = [[-v[0], v[1]] for v in shape]
+            path = [vec(0,0,0), vec(0,0,particle.height/nm)]
+
+            obj = vpython.extrusion(pos=vec(*particle.position)/nm,
+                                    path=path,
+                                    shape=shape,
+                                    texture=paint.texture,
+                                    color=paint.color,
+                                    shininess=paint.shininess, **kwargs)
+
+            obj.rotate(angle=angle, axis=vec(*axis_rot))
+            return obj
 
 #TODO: scale bar: auto-detect position and size
 #TODO: center: COM + FOV. Options: 'origin', 'auto', np.array
@@ -72,18 +108,18 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin='a
     # scene = vpython.canvas(width=750, height=600, background=vec(1,1,1))
 
     if origin == 'auto':
-        origin = vec(*np.average(cluster.position, axis=0))
+        origin = vec(*np.average(cluster.position, axis=0))/nm
     elif origin == 'cluster':
-        origin = vec(*cluster.origin)
+        origin = vec(*cluster.origin)/nm
     else:
-        origin = vec(*origin)
+        origin = vec(*origin)/nm
 
     scene = vpython.canvas(width=500, height=325, background=vec(1,1,1), center=origin)
 
     if type(cluster) == miepy.sphere_cluster:
         for i in range(cluster.Nparticles):
-            position = cluster.position[i]
-            radius = cluster.radius[i]
+            position = cluster.position[i]/nm
+            radius = cluster.radius[i]/nm
             paint = get_paint(cluster.material[i])
 
             sphere = vpython.sphere(pos=vec(*position), radius=radius, texture=paint.texture, color=paint.color, shininess=paint.shininess)
