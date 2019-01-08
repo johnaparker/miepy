@@ -27,7 +27,7 @@ from .mie_single.mie_sphere import single_mie_sphere
 from .mie_single.mie_core_shell import single_mie_core_shell
 from .vsh import (mode_indices, vsh_mode, VSH, expand_E, expand_E_far, expand_H, expand_H_far,
                   cluster_coefficients)
-from .particles import sphere, spheroid, cylinder, ellipsoid
+from .particles import sphere, spheroid, cylinder, ellipsoid, regular_prism, cube
 from .cpp.interactions import solver
 from .visual.view3d import visualize
 from .microscope.microscope import microscope

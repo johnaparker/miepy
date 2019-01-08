@@ -60,7 +60,7 @@ GeomProp
 {Nparam}
 1.0
 1.0
-.false.
+.true.
 {R_symmetry}
 Variables:
 - FileGeom   - if FileGeom = t, the particle geometry is supplied by the 
