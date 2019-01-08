@@ -83,27 +83,72 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         data = data[~np.isnan(data)]  # throw out the NaNs
         data_real = data[::2]  # every other element is the real part
         data_imag = data[1::2]
-        T_nfmds = np.reshape(data_real, (-1, 2*n_rank)) \
-                  + 1j*np.reshape(data_imag, (-1, 2*n_rank))  # reshape the final result to have 2*n_rank columns
 
         ### restructure T-matrix
         T = np.zeros((2, rmax, 2, rmax), dtype=complex)
-        for r1,n1,m1 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
-            for r2,n2,m2 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
-                if m1 != m2:
-                    continue
 
-                n_max = n_rank - max(1, abs(m1)) + 1
-                l1 = n1 - max(1, abs(m1)) 
-                l2 = n2 - max(1, abs(m2)) 
+        if solver == tmatrix_solvers.axisymmetric:
+            T_nfmds = np.reshape(data_real, (-1, 2*n_rank)) \
+                      + 1j*np.reshape(data_imag, (-1, 2*n_rank))  # reshape the final result to have 2*n_rank columns
 
-                x = 2*n_rank*abs(m1) + l1
-                y = l2
+            for r1,n1,m1 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
+                for r2,n2,m2 in miepy.mode_indices(lmax, m_start=-m_rank, m_stop=m_rank):
+                    if m1 != m2:
+                        continue
 
-                factor = -1j**(n2-n1)
-                T[1,r1,1,r2] = T_nfmds[x, y]*factor
-                T[0,r1,0,r2] = T_nfmds[x+n_max, y+n_max]*factor
-                T[0,r1,1,r2] = T_nfmds[x+n_max, y]*factor*np.sign(m1)
-                T[1,r1,0,r2] = T_nfmds[x, y+n_max]*factor*np.sign(m2)
+                    n_max = n_rank - max(1, abs(m1)) + 1
+                    l1 = n1 - max(1, abs(m1)) 
+                    l2 = n2 - max(1, abs(m2)) 
+
+                    x = 2*n_rank*abs(m1) + l1
+                    y = l2
+
+                    factor = -1j**(n2-n1)
+                    T[1,r1,1,r2] = T_nfmds[x, y]*factor
+                    T[0,r1,0,r2] = T_nfmds[x+n_max, y+n_max]*factor
+                    T[0,r1,1,r2] = T_nfmds[x+n_max, y]*factor*np.sign(m1)
+                    T[1,r1,0,r2] = T_nfmds[x, y+n_max]*factor*np.sign(m2)
+        else:
+            def rindex(n, m):
+                return (n-1)*(n+2) + m + 1
+
+            M = (data_real + 1j*data_imag).reshape([2*rmax, 2*rmax])
+
+            m1p, n1p = 0, 1
+            for i in range(rmax):
+                if n1p > n_rank:
+                    if m1p >= 0:
+                        m1p = -(m1p + 1)
+                    else:
+                        m1p = -m1p
+                    n1p = abs(m1p)
+
+                m2p, n2p = 0, 1
+                for j in range(rmax):
+                    if n2p > n_rank:
+                        if m2p >= 0:
+                            m2p = -(m2p + 1)
+                        else:
+                            m2p = -m2p
+                        n2p = abs(m2p)
+
+                    r1 = rindex(n1p, m1p)
+                    r2 = rindex(n2p, m2p)
+
+                    factor = -1j**(n2p-n1p)
+                    f1 = 1
+                    f2 = 1
+                    if m1p % 2 == 1 and m2p % 2 == 1:
+                        f1 *= np.sign(m1p*m2p)**(n1p+n2p+1)
+                        f2 *= np.sign(m1p*m2p)**(n1p+n2p)
+
+                    T[0,r1,0,r2] = M[rmax+i, rmax+j]*factor*f1
+                    T[1,r1,1,r2] = M[i, j]*factor*f1
+                    T[0,r1,1,r2] = -M[i+rmax, j]*factor*f2
+                    T[1,r1,0,r2] = -M[i, j+rmax]*factor*f2
+
+                    n2p += 1
+
+                n1p += 1
 
         return T

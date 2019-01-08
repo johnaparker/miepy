@@ -1,6 +1,6 @@
 def non_axisymmetric_file(geometry_type, geometry_parameters, Nrank, Mrank, 
         wavelength, index, index_m, R_symmetry=0, kb=None, conducting=False,
-        Nparam=1, Nint_1=200, Nint_2=200):
+        Nparam=1, Nint_1=50, Nint_2=50):
     """Create input file for non-axisymmetric particles
 
     Arguments:
