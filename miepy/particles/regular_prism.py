@@ -3,21 +3,32 @@ from .particle_base import particle
 import numpy as np
 
 class regular_prism(particle):
-    def __init__(self, position, N, width, height, material, orientation=None, tmatrix_lmax=0):
+    def __init__(self, position, N, height, material, width=None, radius=None, orientation=None, tmatrix_lmax=0):
         """A regular prism object
 
         Arguments:
             position[3]   x,y,z position of particle
             N             number of vertices
-            width         width (side length) of prism
             height        height of prism
             material      particle material (miepy.material object)
+            width         width (side length) of prism (specifiy width or radius)
+            radius        radius of prism, from center to vertex (specifiy radius or width)
             orientation   particle orientation
         """
+        if width is None and radius is None:
+            raise ValueError('A width or a radius must be specified')
+
         super().__init__(position, orientation, material)
         self.N = N
-        self.width = width
         self.height = height
+
+        factor = np.sqrt(2*(1 - np.cos(2*np.pi/N)))
+        if width is None:
+            self.radius = radius
+            self.width = radius*factor
+        else:
+            self.radius = width/factor
+            self.width = width
 
         self.tmatrix_lmax = tmatrix_lmax
 
@@ -46,8 +57,7 @@ class regular_prism(particle):
         return self.tmatrix
 
     def enclosed_radius(self):
-        r = self.width/np.sqrt(2*(1 - np.cos(2*np.pi/self.N)))
-        return np.sqrt(r**2 + (self.height/2)**2)
+        return np.sqrt(self.radius**2 + (self.height/2)**2)
 
     def _dict_key(self, wavelength):
         return (regular_prism, self.N, self.width, self.height, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())
