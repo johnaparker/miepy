@@ -212,6 +212,7 @@ and $f^{(J)}$ is a $\pm 1$ sign term
         +1 \qquad \text{if } J = 3 \\
         -1 \qquad \text{otherwise}
     \end{cases}
+    \label{eqn:outgoing_factor}
 \end{equation}
 The translation coefficients have the following useful symmetry relationships \cite{hovenier1996light}
 \begin{subequations}
@@ -255,8 +256,16 @@ where $t_{1n}^j = a_n^j$ and $t_{2n}^j = b_n^j$ are the classical Mie theory coe
 Once a particle's T-matrix is known, it does not have to be recomputed for a new orientation of the particle, provided the geometrical and material properties of the particle remain the same.
 Given a particle T-matrix in one coordinate system, the T-matrix in a rotated coordinate system is
 \begin{equation}
-    T_{m^\prime nr u^\prime vs}^\prime = D_{m^\prime m}^n(\hat q) \lbrack D_{u^\prime u}^v(\hat q) \rbrack^* T_{mnruvs}
+    \tmatrix_{m^\prime nr u^\prime vs}^\prime = D_{m^\prime m}^n(\hat q) \lbrack D_{u^\prime u}^v(\hat q) \rbrack^* \tmatrix_{mnruvs}
 \end{equation}
+
+A particle also has an \emph{internal} T-matrix, $\tmatrix^\text{int}$, that relates the internal expansion coefficients to the incident coefficients
+\begin{equation}
+\begin{equation}
+    p_\alpha^{j,\text{int}} = \tmatrix_{\alpha\beta}^{j,\text{int}} p_\beta^{j,\text{inc}}
+\label{eqn:tmatrix_internal_defintion}
+\end{equation}
+
 
 \subsection{Interaction equations}
 The interaction equation among $N$ particles can be written as
@@ -590,6 +599,27 @@ q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) 
 \subsection{Focused beams}
 
 \section{Efficient numerical implementation}
+\subsection{T-matrix evaluation}
+The T-matrix can be numerically evaluated using the so-called extended boundary condition method (EBCM). \cite{waterman1965matrix, barber1975scattering, mishchenko1996t}
+In this method, the expansion coefficients are related to one another by the equivalence principle
+\begin{align}
+\begin{split}
+    p^\text{inc}_\alpha &= iQ^{31}_{\alpha\beta} p^\text{int}_\beta \\
+    p^\text{scat}_\alpha &= -iQ^{11}_{\alpha\beta} p^\text{int}_\beta
+\end{split}
+\end{align}
+where the $Q$ matrices are given by integrals of the VSHW functions over the particle's surface
+\begin{equation}
+    Q_{\alpha \beta}^{pq} = -f^{(p)}\frac{ik_m^2}{\pi} 
+    \left[ \int_S (d\bm{S} \times \bm{N}_{\beta}^{(q)}(k\bm{r})) \cdot \bm{N}_{\hat\alpha}^{(p)}(k_m \bm{r})
+       + \sqrt{\frac{\varepsilon}{\varepsilon_m}}\int_S (d\bm{S} \times \bm{N}_{\hat\beta}^{(q)}(k\bm{r})) \cdot \bm{N}_{\alpha}^{(p)}(k_m \bm{r}) \right]
+\end{equation}
+where $f^{(p)}$ is defined in \cref{eqn:outgoing_factor} and the index notation $\hat \alpha$ means to swap electric and magnetic mode indices, i.e. if $\alpha = (m, n, r)$, then $\hat \alpha = (m, n, 3-r)$.
+The T-matrices are then determined
+\begin{align}
+    \tmatrix_{\alpha\beta} &= -Q^{11}_{\alpha\gamma} \left[ Q^{31}_{\gamma\beta} \right]^{-1} \\
+    \tmatrix_{\alpha\beta}^\text{int} &= -i\left[ Q^{31}_{\alpha\beta} \right]^{-1}
+\end{align}
 \subsection{Evaluation of VSH transition coefficients}
 \subsection{VSH rotation-translation-rotation algorithm}
 \subsection{Matrix-free iterative solver}
