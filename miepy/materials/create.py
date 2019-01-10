@@ -34,7 +34,7 @@ class material:
         return self.name
 
 class constant_material(material):
-    def __init__(self, eps, mu=1.0, name=None):
+    def __init__(self, eps=1.0, mu=1.0, index=None, name=None):
         """create a material with a constant eps and mu"""
         super().__init__(name)
 
@@ -43,6 +43,9 @@ class constant_material(material):
 
         self.f_eps = np.vectorize(lambda wav: self.eps_value)
         self.f_mu  = np.vectorize(lambda wav: self.mu_value)
+
+        if index is not None:
+            self.eps_value = index**2
     
     def eps(self, wavelength):
         return self.f_eps(wavelength)

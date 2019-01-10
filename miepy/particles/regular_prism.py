@@ -72,4 +72,5 @@ def cube(position, width, material, orientation=None, tmatrix_lmax=0):
         material      particle material (miepy.material object)
         orientation   particle orientation
     """
-    return regular_prism(position, 4, width, width, material, orientation, tmatrix_lmax)
+    return regular_prism(position, N=4, width=width, height=width, material=material,
+            orientation=orientation, tmatrix_lmax=tmatrix_lmax)

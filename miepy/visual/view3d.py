@@ -76,8 +76,8 @@ def draw_particle(particle, paint, **kwargs):
             return obj
 
         elif type(particle) is miepy.regular_prism:
-            shape = vpython.shapes.ngon(np=particle.N, length=particle.width/nm)
-            shape = [[-v[0], v[1]] for v in shape]
+            rotate = -(2*np.pi - (particle.N-2)*np.pi/(particle.N))/2
+            shape = vpython.shapes.ngon(np=particle.N, length=particle.width/nm, rotate=rotate)
             path = [vec(0,0,0), vec(0,0,particle.height/nm)]
 
             obj = vpython.extrusion(pos=vec(*particle.position)/nm,
