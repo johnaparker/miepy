@@ -25,7 +25,6 @@ dist
 miepy/materials/database
 
 # misc example folders
-examples/fdtd_compare
 examples/compare
 examples/temp
 examples/old
