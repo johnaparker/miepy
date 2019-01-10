@@ -4,7 +4,8 @@ import numpy as np
 
 class regular_prism(particle):
     def __init__(self, position, N, height, material, width=None, radius=None, orientation=None, tmatrix_lmax=0):
-        """A regular prism object
+        """A regular prism object (an extruded regular polygon). By convention, the initial orientation is such that
+        the bottom edge is parallel to the x-axis.
 
         Arguments:
             position[3]   x,y,z position of particle
