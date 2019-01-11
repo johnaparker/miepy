@@ -191,15 +191,17 @@ The VSH functions computed in one coordinate system ($\bm{r}_l$) can be converte
 \begin{equation}
     \bm{N}_{mnr}^{(J)}(k\bm{r}_j) = \sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
     \widetilde{A}_{mnruvs}^{(J)jl} \bm{N}_{uvs}^{(1)}(k\bm{r}_l)
+    \label{eqn:VSHW_translation}
 \end{equation}
-Here, the fields being translated from are scattered fields (hence $J=1$), and the fields being translated to can correspond to any $J$ value.
-If $J=1$, $\widetilde{A}$ translates scattered fields to scattered fields, and if $J=3$, $\widetilde{A}$ translates scattered fields to incident fields.
+Here, the fields being translated from are incident fields (hence $J=1$), and the fields being translated to can correspond to any $J$ value.
+If $J=1$, $\widetilde{A}$ translates incident fields to scattered fields, and if $J=3$, $\widetilde{A}$ translates incident fields to incident fields.
 Explicit formula for the translation coefficients can be found elsewhere. \cite{Xu_1998}
 
-From the field expansions, \cref{eqn:electric_field_expansion}, the VSH translation coefficients can be used to relate the scattered expansion coefficients of particle $l$ to the expansion coefficients around particle $j$,
+From the field expansions, \cref{eqn:electric_field_expansion}, the VSH translation coefficients can be used to relate the incident expansion coefficients of particle $l$ to the expansion coefficients around particle $j$,
 \begin{equation}
     p_{mnr}^{j,(J)} = f^{(J)}\sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
-    A_{mnruvs}^{(J)jl} p_{uvs}^{l,\text{scat}}
+    A_{mnruvs}^{(J)jl} p_{uvs}^{l,\text{inc}}
+    \label{eqn:VSHW_translation_normalized}
 \end{equation}
 where $A_{mnruvs}^{(J)jl}$ are the \emph{normalized} translation coefficients
 \begin{equation}
@@ -322,6 +324,37 @@ By setting $p_\alpha^{j,\text{inc}} = \delta_{\alpha\beta} \delta_{jl} p_\beta^{
     p_{\alpha}^{j,\text{src}}
 \end{equation}
 
+\subsection{Interactions with a substrate}
+The interactions of the particles with the interface of a substrate can be included in the GMMT.
+This is done by simultaneously matching the boundary conditions on the surface of the particles (using VSHW functions) and on the interface (using a plane wave expansion). \cite{mackowski2008exact}
+We introduce a reflection matrix $\widetilde{R}_{\alpha\beta}^{jl}$ from particle $l$ to $j$, similar to that of direct translations in \cref{eqn:VSHW_translation}
+\begin{equation}
+    \bm{N}_{\alpha}^{(3),\text{ref}}(k\bm{r}_j) = 
+    \widetilde{R}_{\alpha\beta}^{jl} \bm{N}_{\beta}^{(1)}(k\bm{r}_l)
+    \label{eqn:VSHW_reflection_translation}
+\end{equation}
+This equation relates the scattered, reflected VSHW functions in terms of incident VSHW functions around a different coordinate system.
+Expressions for the $\widetilde{R}_{\alpha\beta}^{jl}$ matrix in terms of substrate material and particle location is provided elsewhere. \cite{mackowski2008exact}
+
+As before, these reflection coefficients are normalized to relate to the expansion coefficients
+\begin{equation}
+    p_{\alpha}^{j,\text{ref,scat}} = f^{(J)}\sum_{v=1}^\infty \sum_{u=-v}^{u=v} \sum_{s=1}^2
+    R_{\alpha\beta}^{(J)jl} p_{\beta}^{l,\text{inc}}
+    \label{eqn:VSHW_reflection_translation_normalized}
+\end{equation}
+The interaction equations then become
+\begin{equation}
+    p_{\alpha}^{j,\text{inc}}= 
+    p_{\alpha}^{j,\text{src}} + p_{\alpha}^{j,\text{src,ref}}  -
+    \left( A_{\alpha \beta}^{(3)jl} + R_{\alpha \beta}^{jl} \right)
+    \tmatrix_{\beta \gamma}^l
+    p_{\gamma}^{l,\text{inc}}
+\label{eqn:particle_interactions}
+\end{equation}
+where $p_{\alpha}^{j,\text{src,ref}}$ are the expansion coefficients of the source reflected off of the substrate.
+
+This approach can be extended to multiple substrates (layered media) \cite{egel2014dipole}.
+It can also be extended to non-spherical particles very close to the substrate where the Rayleigh hypothesis fails. \cite{egel2016light}
 \section{Symmetries}
 Symmetries in the system can be used to reduce the total number of interaction equations.
 It is important to remember that not only do the particles have to satisfy a given symmetry (their position, size, orientation, and material), but that the incident source field must also satisfy it.
@@ -383,6 +416,7 @@ By symmetry,
     p^{jr,\text{inc}}_{mnr} = D_{mun}(\theta_r) p^{j1,\text{inc}}_{mur}
     \label{eqn:rotational_symmetry}
 \end{equation}
+Note that this requires the polarization of the light to be circular.
 
 \section{Cluster properties}
 
@@ -594,9 +628,12 @@ q_{mn}^{j,\text{src}} &= E_0 i^{-n} E_{mn} \pi_{mn}(\cos \alpha) \exp(-im\beta) 
 \end{split}
 \end{align}
 
+
 \subsection{Far-field integration}
 \subsection{Near-field point matching}
 \subsection{Focused beams}
+
+\subsection{Reflection off of an interface}
 
 \section{Efficient numerical implementation}
 \subsection{T-matrix evaluation}
