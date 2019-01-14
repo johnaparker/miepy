@@ -126,3 +126,19 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
     lmax = miepy.vsh.rmax_to_lmax(rmax)
 
     return miepy.cpp.interactions.particle_aggregate_tmatrix(positions, tmatrix.reshape([Nparticles,-1]), k).reshape([Nparticles,2,rmax,Nparticles,2,rmax])
+
+def reflection_matrix_nia(positions, mie, k, reflected):
+    """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
+       Returns T[N,2,rmax,N,2,rmax]
+    
+       Arguments:
+           positions[N,3]      particles positions
+           mie[N,2,lmax]       mie scattering coefficients
+           k                   medium wavenumber
+    """
+    Nparticles = positions.shape[0]
+    lmax = mie.shape[-1]
+    rmax = miepy.vsh.lmax_to_rmax(lmax)
+    R = miepy.cpp.interactions.reflection_matrix_nia(positions, mie.reshape([Nparticles,-1]), k, reflected).reshape([Nparticles,2,rmax,Nparticles,2,rmax])
+    return R
+

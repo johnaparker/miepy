@@ -15,7 +15,7 @@ from . import particles
 from . import forces
 from . import flux
 from . import coordinates
-from . import interface
+from . import utils
 from . import symmetry
 
 from .materials.create import constant_material, function_material, data_material
@@ -29,6 +29,7 @@ from .vsh import (mode_indices, vsh_mode, VSH, expand_E, expand_E_far, expand_H,
                   cluster_coefficients)
 from .particles import sphere, spheroid, cylinder, ellipsoid, regular_prism, cube
 from .cpp.interactions import solver
+from .interface import interface
 from .visual.view3d import visualize
 from .microscope.microscope import microscope
 

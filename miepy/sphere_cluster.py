@@ -4,7 +4,7 @@ The Generalized Mie Theory (GMT) for a collection of spheres.
 import numpy as np
 import miepy
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
-from miepy.interface import atleast
+from miepy.utils import atleast
 
 #TODO: make several properties... such as wavelength, source, position, etc.
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
@@ -13,7 +13,7 @@ class sphere_cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
     def __init__(self, *, position, radius, material, lmax,
                  source=None, wavelength=None, medium=None, origin=None,
-                 symmetry=None, interactions=True):
+                 symmetry=None, interface=None, interactions=True):
         """Arguments:
                position[N,3] or [3]    sphere positions
                radius[N] or scalar     sphere radii
@@ -24,6 +24,7 @@ class sphere_cluster:
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
                origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
                symmetry      (optional) specify system symmetries (default: no symmetries)
+               interface     (optional) include an infinite interface (default: no interface)
                interactions  (optional) If True, include particle interactions (bool, default=True) 
         """
         ### sphere properties
@@ -34,6 +35,10 @@ class sphere_cluster:
             raise ValueError("The shapes of position, radius, and material do not match")
         self.Nparticles = self.radius.shape[0]
         self.symmetry = symmetry
+
+        self.interface = interface
+        if self.interface is not None and type(source) is not miepy.sources.plane_wave:
+            raise ValueError("Cannot use a non-planewave source with an interface")
 
         ### system properties
         self.source = source
@@ -505,6 +510,14 @@ class sphere_cluster:
             pos = self.position[i]
             self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
 
+        if self.interface is not None:
+            reflected = self.interface.reflected_plane_wave(self.source, self.wavelength, self.medium)
+
+            for i in range(self.Nparticles):
+                pos = self.position[i]
+                self.p_src[i] += reflected.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
+
+
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
@@ -519,6 +532,12 @@ class sphere_cluster:
         else:
             agg_tmatrix = miepy.interactions.sphere_aggregate_tmatrix_periodic(self.position, self.mie_scat,
                                       self.material_data.k_b, self.symmetry, self.source.k_hat)
+
+        if self.interface is not None:
+            r0 = self.interface.reflection_coefficients(theta=0, wavelength=self.wavelength, medium=self.medium)[0]
+            R_matrix = miepy.interactions.reflection_matrix_nia(self.position, self.mie_scat, self.material_data.k_b, r0)
+            agg_tmatrix -= R_matrix
+
 
         self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
 

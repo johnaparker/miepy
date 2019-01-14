@@ -150,7 +150,8 @@ The table below outlines the physical interpretation of the VSHs
 \subsection{Field expansions}
 The source, incident, scattered, and interior electric and magnetic fields of particle $j$ can be expanded in terms of the VSHs.
 The incident field includes the source field plus the incident field from all other particles in the system.
-\newline
+
+\hfill
 
 \textit{Electric field}
 \begin{subequations}
@@ -263,7 +264,6 @@ Given a particle T-matrix in one coordinate system, the T-matrix in a rotated co
 
 A particle also has an \emph{internal} T-matrix, $\tmatrix^\text{int}$, that relates the internal expansion coefficients to the incident coefficients
 \begin{equation}
-\begin{equation}
     p_\alpha^{j,\text{int}} = \tmatrix_{\alpha\beta}^{j,\text{int}} p_\beta^{j,\text{inc}}
 \label{eqn:tmatrix_internal_defintion}
 \end{equation}
@@ -349,7 +349,7 @@ The interaction equations then become
     \left( A_{\alpha \beta}^{(3)jl} + R_{\alpha \beta}^{jl} \right)
     \tmatrix_{\beta \gamma}^l
     p_{\gamma}^{l,\text{inc}}
-\label{eqn:particle_interactions}
+\label{eqn:particle_interactions_substrate}
 \end{equation}
 where $p_{\alpha}^{j,\text{src,ref}}$ are the expansion coefficients of the source reflected off of the substrate.
 
@@ -503,7 +503,7 @@ For instance, the area $A$ may be a circular aperture (power striking a structur
 \subsection{Force and torque}
 \newcommand{\mst}{\langle \boldsymbol{T} \rangle}
 
-The time-average force $\langle \bm{F} \rangle$ and torque $\langle \bm{\tau} \rangle$ on a particle can be determined by integrating the Maxwell stress tensor $\mst$ over a closed surface surrounding the particle: \cite{mst}
+The time-average force $\langle \bm{F} \rangle$ and torque $\langle \bm{\tau} \rangle$ on a particle can be determined by integrating the Maxwell stress tensor $\mst$ over a closed surface surrounding the particle:
 \begin{subequations}
 \begin{align}
     \mst &= \frac{1}{2} \text{Re} \left[ \varepsilon_b  \boldsymbol{E} \otimes \boldsymbol{E^*} + \mu_b \boldsymbol{H} \otimes \boldsymbol{H^*}
@@ -666,7 +666,8 @@ The T-matrices are then determined
 \section{Other conventions}
 A different convention for the field expansions used in other work \cite{barton1989theoretical} is presented here.
 These field expansions were used to evaluate analytic expressions for the force and torque.
-\newline
+
+\hfill
 
 \textit{Electric field}
 \begin{subequations}

@@ -38,7 +38,8 @@ void bind_vsh_translation_lambda_py(py::module &);
 void bind_enum_solver(py::module &);
 void bind_bicgstab(py::module &);
 void bind_sphere_aggregate_tmatrix(py::module &);
-void bind_particle_aggregate_tmatrix(py::module &m);
+void bind_particle_aggregate_tmatrix(py::module &);
+void bind_reflection_matrix_nia(py::module &);
 void bind_solve_linear_system(py::module &);
 
 // forces submodule
@@ -113,6 +114,7 @@ PYBIND11_MODULE(cpp, m) {
     bind_enum_solver(interactions_m);
     bind_bicgstab(interactions_m);
     bind_sphere_aggregate_tmatrix(interactions_m);
+    bind_reflection_matrix_nia(interactions_m);
     bind_particle_aggregate_tmatrix(interactions_m);
     bind_solve_linear_system(interactions_m);
 

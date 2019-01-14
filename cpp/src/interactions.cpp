@@ -205,3 +205,48 @@ ComplexMatrix particle_aggregate_tmatrix(const Ref<const position_t>& positions,
     return agg_tmatrix;
 }
 
+ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
+        const Ref<const ComplexMatrix>& mie, double k, complex<double> reflection) {
+
+    int lmax = mie.cols()/2;
+    int rmax = lmax_to_rmax(lmax);
+    int Nparticles = positions.rows();
+    int size = 2*rmax*Nparticles;
+
+    ComplexMatrix R_matrix = ComplexMatrix::Zero(size, size);
+    
+    for (int i = 0; i < Nparticles; i++) {
+        Vector3d pi = positions.row(i);
+        for (int j = 0; j < Nparticles; j++) {
+            Vector3d pj = positions.row(j);
+            pj(2) *= -1;
+            Vector3d dji = pi - pj;
+
+            double rad = dji.norm();
+            double theta = acos(dji(2)/rad);
+            double phi = atan2(dji(1), dji(0));
+
+            for (int n = 1; n < lmax+1; n++) {
+                for (int m = -n; m < n+1; m++) {
+                    for (int v = 1; v < lmax+1; v++) {
+                        for (int u = -v; u < v+1; u++) {
+                            auto transfer = vsh_translation(m, n, u, v, rad, theta, phi, k, vsh_mode::outgoing);
+                            for (int a = 0; a < 2; a++) {
+                                for (int b = 0; b < 2; b++) {
+                                    complex<double> factor = -reflection*pow(-1, m + n + a + 1);
+                                    complex<double> val = transfer[(a+b)%2];
+                                    int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
+                                    int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
+                                    R_matrix(idx, idy) = factor*val;
+                                } 
+                            } 
+                        } 
+                    } 
+                } 
+            } 
+        } 
+    } 
+
+    return R_matrix;
+}
+
