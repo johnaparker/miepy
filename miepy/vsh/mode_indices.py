@@ -12,6 +12,10 @@ def lmax_to_rmax(lmax):
     rmax = lmax*(lmax + 2)
     return rmax
 
+def reduced_index(n, m):
+    r = n*(n+2) - n - m - 1;
+    return r
+
 class mode_indices:
     """iterable to produce (r, n, m) mode indices in the order expected by MiePy"""
 
