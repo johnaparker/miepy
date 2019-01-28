@@ -237,7 +237,7 @@ ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
                                     complex<double> val = transfer[(a+b)%2];
                                     int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
                                     int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
-                                    R_matrix(idx, idy) = factor*val;
+                                    R_matrix(idy, idx) = factor*val*mie(i, a*lmax + n-1);
                                 } 
                             } 
                         } 

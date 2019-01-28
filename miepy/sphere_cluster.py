@@ -505,7 +505,6 @@ class sphere_cluster:
         self.p_cluster = None
 
     def _solve_source_decomposition(self):
-        pos = self.position.T
         for i in range(self.Nparticles):
             pos = self.position[i]
             self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
