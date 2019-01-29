@@ -217,9 +217,9 @@ ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
     
     for (int i = 0; i < Nparticles; i++) {
         Vector3d pi = positions.row(i);
+        pi(2) *= -1;
         for (int j = 0; j < Nparticles; j++) {
             Vector3d pj = positions.row(j);
-            pj(2) *= -1;
             Vector3d dji = pi - pj;
 
             double rad = dji.norm();
@@ -237,7 +237,7 @@ ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
                                     complex<double> val = transfer[(a+b)%2];
                                     int idx = i*(2*rmax) + a*(rmax) + n*(n+2) - n + m - 1;
                                     int idy = j*(2*rmax) + b*(rmax) + v*(v+2) - v + u - 1;
-                                    R_matrix(idy, idx) = factor*val*mie(i, a*lmax + n-1);
+                                    R_matrix(idx, idy) = factor*val*mie(j, b*lmax + v-1);
                                 } 
                             } 
                         } 

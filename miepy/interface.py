@@ -9,7 +9,7 @@ class interface:
     def get_relative_index(self, wavelength, medium):
         eps_m = medium.eps(wavelength)
         eps = self.material.eps(wavelength)
-        return np.sqrt(eps/eps_m)
+        return np.sqrt(complex(eps/eps_m))
 
     def reflection_coefficients(self, theta, wavelength, medium):
         m = self.get_relative_index(wavelength, medium)
