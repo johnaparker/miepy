@@ -33,6 +33,8 @@ from .interface import interface
 from .visual.view3d import visualize
 from .microscope.microscope import microscope
 
+from .vsh.mode_indices import reduced_index
+
 import warnings
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
