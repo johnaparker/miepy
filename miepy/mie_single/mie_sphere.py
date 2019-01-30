@@ -111,10 +111,16 @@ class single_mie_sphere:
         mt = m*self.material_data['mu_b']/self.material_data['mu']
 
         jn = riccati_1(self.lmax,xvals)
-        jnm = riccati_1(self.lmax,m*xvals)
         yn = riccati_2(self.lmax,xvals)
-        a = (mt*jnm[0]*jn[1] - jn[0]*jnm[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
-        b = (jnm[0]*jn[1] - mt*jn[0]*jnm[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+
+        if self.material.name == 'metal':
+            a = jn[1]/yn[1]
+            b = jn[0]/yn[0]
+        else:
+            jnm = riccati_1(self.lmax,m*xvals)
+            a = (mt*jnm[0]*jn[1] - jn[0]*jnm[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+            b = (jnm[0]*jn[1] - mt*jn[0]*jnm[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+
         self.an[...] = np.nan_to_num(a.T)
         self.bn[...] = np.nan_to_num(b.T)
 
@@ -129,10 +135,17 @@ class single_mie_sphere:
         mt = m*self.material_data['mu_b']/self.material_data['mu']
 
         jn = riccati_1(self.lmax,xvals)
-        jnm = riccati_1(self.lmax,m*xvals)
         yn = riccati_2(self.lmax,xvals)
-        c = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
-        d = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+
+        if self.material.name == 'metal':
+            f = self.material_data['mu_b']/self.material_data['mu']
+            c = (jn[0]*yn[1] - yn[0]*jn[1])/(f*yn[0]*jnm[1])
+            d = (jn[0]*yn[1] - yn[0]*jn[1])/(f*jnm[0]*yn[1])
+        else:
+            jnm = riccati_1(self.lmax,m*xvals)
+            c = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+            d = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+
         self.cn[...] = np.nan_to_num(c.T)
         self.dn[...] = np.nan_to_num(d.T)
 

@@ -21,7 +21,6 @@ class interface:
 
     def transmission_coefficients(self, theta, wavelength, medium):
         m = self.get_relative_index(wavelength, medium)
-
         theta_t = np.arcsin(np.sin(theta)/m)
         t_parallel = 2*np.cos(theta)/(m*np.cos(theta) + np.cos(theta_t))
         t_perp     = 2*np.cos(theta)/(np.cos(theta) + m*np.cos(theta_t))

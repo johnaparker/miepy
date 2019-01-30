@@ -1,5 +1,6 @@
 from miepy.materials.load import load_material
 from miepy.materials.create import constant_material
+import numpy as np
 
 ### mediums
 def vacuum():
@@ -12,6 +13,9 @@ def water():
     return constant_material(1.33**2, name='water')
 
 ### metals
+def metal():
+    return constant_material(1 + 1j*1e40, name='metal')
+
 def Ag(author='Johnson'):
     """Return silver material from MiePy data"""
     return load_material("Ag", author)
