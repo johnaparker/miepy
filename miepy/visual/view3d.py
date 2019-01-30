@@ -134,6 +134,14 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin='a
     if transparent:
         for obj in scene.objects:
             obj.opacity = .5
+            
+    if cluster.interface is not None:
+        scene.autoscale = False
+        length = height = 1e-3/nm
+        width = 1e-3/nm
+        z = cluster.interface.z
+        box = vpython.box(pos=vec(0,0,-z-width/2), width=width, height=height, length=length,
+        color=vec(0.6,0.6,0.6), shininess=0)
 
     if animation:
         T = 300
