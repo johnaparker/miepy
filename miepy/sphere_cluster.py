@@ -513,7 +513,8 @@ class sphere_cluster:
             reflected = self.interface.reflected_plane_wave(self.source, self.wavelength, self.medium)
 
             for i in range(self.Nparticles):
-                pos = self.position[i]
+                pos = np.copy(self.position[i])
+                pos[2] -= 2*self.interface.z
                 self.p_src[i] += reflected.structure(pos, self.material_data.k_b, self.lmax, self.radius[i])
 
 
@@ -534,7 +535,8 @@ class sphere_cluster:
 
         if self.interface is not None:
             r0 = self.interface.reflection_coefficients(theta=0, wavelength=self.wavelength, medium=self.medium)[0]
-            R_matrix = miepy.interactions.reflection_matrix_nia(self.position, self.mie_scat, self.material_data.k_b, r0)
+            z = self.interface.z
+            R_matrix = miepy.interactions.reflection_matrix_nia(self.position, self.mie_scat, self.material_data.k_b, r0, z)
             agg_tmatrix -= R_matrix
 
 

@@ -24,6 +24,6 @@ ComplexMatrix particle_aggregate_tmatrix(const Ref<const position_t>& positions,
         const tmatrix_t& tmatrix, double k);
 
 ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
-        const Ref<const ComplexMatrix>& mie, double k, std::complex<double> reflection);
+        const Ref<const ComplexMatrix>& mie, double k, std::complex<double> reflection, double z);
 
 #endif

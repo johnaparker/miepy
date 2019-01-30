@@ -51,7 +51,7 @@ void bind_solve_linear_system(py::module &m) {
 
 void bind_reflection_matrix_nia(py::module &m) {
     m.def("reflection_matrix_nia", reflection_matrix_nia, 
-           "positions"_a, "mie"_a, "k"_a, "reflection"_a R"pbdoc(
+           "positions"_a, "mie"_a, "k"_a, "reflection"_a, "z"_a, R"pbdoc(
         Obtain the reflection matrix for a cluster of spheres
     )pbdoc");
 }

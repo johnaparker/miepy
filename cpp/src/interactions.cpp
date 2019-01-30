@@ -206,7 +206,7 @@ ComplexMatrix particle_aggregate_tmatrix(const Ref<const position_t>& positions,
 }
 
 ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
-        const Ref<const ComplexMatrix>& mie, double k, complex<double> reflection) {
+        const Ref<const ComplexMatrix>& mie, double k, complex<double> reflection, double z) {
 
     int lmax = mie.cols()/2;
     int rmax = lmax_to_rmax(lmax);
@@ -217,7 +217,7 @@ ComplexMatrix reflection_matrix_nia(const Ref<const position_t>& positions,
     
     for (int i = 0; i < Nparticles; i++) {
         Vector3d pi = positions.row(i);
-        pi(2) *= -1;
+        pi(2) -= 2*(pi(2) - z);
         for (int j = 0; j < Nparticles; j++) {
             Vector3d pj = positions.row(j);
             Vector3d dji = pi - pj;
