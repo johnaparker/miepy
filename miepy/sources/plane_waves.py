@@ -97,37 +97,19 @@ class plane_wave(source):
         pol = self.n_tm*self.polarization[0] - self.n_te*self.polarization[1]
         return np.einsum('i...,...->i...', pol, amp)
 
-    #TODO: use analytic expressions (commented) instead of using vsh_rotation 
     def structure(self, position, k, lmax, radius=None):
         rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.zeros([2, rmax], dtype=complex)
         phase = k*(self.k_hat[0]*position[0] + self.k_hat[1]*position[1] + self.k_hat[2]*position[2]) + self.phase
 
         for i,n,m in miepy.mode_indices(lmax):
-            pi_value = pi_func(n, m, 0)
-            tau_value = tau_func(n, m, 0)
+            pi_value = pi_func(n, m, self.theta)
+            tau_value = tau_func(n, m, self.theta)
+            Emn = np.abs(miepy.vsh.Emn(m, n))
+            factor = self.amplitude*np.exp(1j*(self.phase - m*self.phi))*Emn
 
-            p_src[0,i] = self.amplitude*np.exp(1j*phase)*np.sqrt(2*n+1)*tau_value*(self.polarization[0] - 1j*m*self.polarization[1])
-            p_src[1,i] = self.amplitude*np.exp(1j*phase)*np.sqrt(2*n+1)*pi_value*(self.polarization[0] - 1j*m*self.polarization[1])
-
-            if m == 1:
-                p_src[:,i] /= (n*(n+1))
-
-            # pi_value = pi_func(n, m)(self.theta)
-            # tau_value = tau_func(n, m)(self.theta)
-            # Emn = np.abs(miepy.vsh.Emn(m, n))
-
-            # p_src[0,i] = -1*self.amplitude*np.exp(1j*phase)*Emn*(
-                      # (tau_value*(self.polarization[0]*np.cos(self.phi) + self.polarization[1]*np.cos(self.phi - np.pi/2))) \
-                  # + 1j*(pi_value*(self.polarization[0]*np.sin(self.phi) + self.polarization[1]*np.sin(self.phi - np.pi/2))))
-
-            # p_src[1,i] = -1*self.amplitude*np.exp(1j*phase)*Emn*(
-                      # (pi_value*(self.polarization[0]*np.cos(self.phi) + self.polarization[1]*np.cos(self.phi - np.pi/2))) \
-                # + 1j*(tau_value*(self.polarization[0]*np.sin(self.phi) + self.polarization[1]*np.sin(self.phi - np.pi/2))))
-
-        if self.theta != 0 or self.phi != 0:
-            quat = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
-            p_src = miepy.vsh.rotate_expansion_coefficients(p_src, quat)
+            p_src[0,i] = factor*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+            p_src[1,i] = factor*(pi_value*self.polarization[0]  - 1j*tau_value*self.polarization[1])
 
         return p_src
 

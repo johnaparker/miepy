@@ -71,4 +71,4 @@ def test_rotated_spheroid_equals_rotated_light():
 
     C2 = oriented.cross_sections()
 
-    assert np.allclose(C1, C2, rtol=0, atol=7e-29)
+    assert np.allclose(C1, C2, rtol=0, atol=8e-29)
