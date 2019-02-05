@@ -34,8 +34,8 @@ class interface:
 
         r_parallel, r_perp = self.reflection_coefficients(plane_wave.theta, wavelength, medium)
 
-        a_theta = -r_parallel*plane_wave.polarization[0]*np.cos(theta) + r_perp*plane_wave.polarization[1]*np.sin(theta)
-        a_phi = -r_parallel*plane_wave.polarization[1]
+        a_theta = r_parallel*plane_wave.polarization[0] + r_perp*plane_wave.polarization[1]*np.sin(theta)
+        a_phi = -r_parallel*plane_wave.polarization[1]*np.cos(theta)
         polarization = [a_theta, a_phi]
         amplitude = np.linalg.norm(polarization)*plane_wave.amplitude
 

@@ -106,7 +106,7 @@ class plane_wave(source):
             pi_value = pi_func(n, m, self.theta)
             tau_value = tau_func(n, m, self.theta)
             Emn = np.abs(miepy.vsh.Emn(m, n))
-            factor = self.amplitude*np.exp(1j*(self.phase - m*self.phi))*Emn
+            factor = self.amplitude*np.exp(1j*(phase - m*self.phi))*Emn
 
             p_src[0,i] = factor*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
             p_src[1,i] = factor*(pi_value*self.polarization[0]  - 1j*tau_value*self.polarization[1])
