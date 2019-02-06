@@ -38,7 +38,8 @@ class cylinder(particle):
         calc_lmax = max(lmax+2, self.tmatrix_lmax)
 
         self.tmatrix_fixed = miepy.tmatrix.tmatrix_cylinder(self.radius, self.height, wavelength, 
-                self.material.eps(wavelength), eps_m, calc_lmax, rounded=self.rounded, extended_precision=self.extended_precision, Nint=self.Nint)
+                self.material.eps(wavelength), eps_m, calc_lmax, rounded=self.rounded, extended_precision=self.extended_precision, Nint=self.Nint,
+                conducting=self.conducting)
 
         if lmax < calc_lmax:
             self.tmatrix_fixed = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix_fixed, lmax)

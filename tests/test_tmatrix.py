@@ -1,17 +1,25 @@
 import numpy as np
 import miepy
+import pytest
 
 nm = 1e-9
 
+Ag = miepy.materials.Ag()
+metal = miepy.materials.metal()
+eps_b = 1.5
+medium = miepy.constant_material(index=eps_b**2)
+
 radius = 75*nm
-material = miepy.materials.Ag()
 source = miepy.sources.plane_wave([1,0])
 wavelength = 600*nm
 lmax = 2
-eps_b = 1.5
 
 
-def test_tmatrix_sphere_is_sphere():
+@pytest.mark.parametrize("material,atol", [
+    (Ag, 2e-16),
+    (metal, 2e-17),
+])
+def test_tmatrix_sphere_is_sphere(material, atol):
     """tmatrix method with spheres should be equivalent to sphere cluster"""
 
     position = [[-300*nm, 0, 0], [300*nm, 0, 0]]
@@ -22,7 +30,7 @@ def test_tmatrix_sphere_is_sphere():
                                    source=source,
                                    wavelength=wavelength,
                                    lmax=lmax,
-                                   medium=miepy.constant_material(eps_b))
+                                   medium=medium)
 
     particles = [miepy.sphere(pos, radius, material) for pos in position]
 
@@ -30,12 +38,17 @@ def test_tmatrix_sphere_is_sphere():
                             source=source,
                             wavelength=wavelength,
                             lmax=lmax,
-                            medium=miepy.constant_material(eps_b))
+                            medium=medium)
 
     print(np.max(np.abs(spheres.p_inc - cluster.p_inc)))
-    assert np.allclose(spheres.p_inc, cluster.p_inc, rtol=0, atol=2e-16)
+    assert np.allclose(spheres.p_inc, cluster.p_inc, rtol=0, atol=atol)
 
-def test_tmatrix_spheroid_is_sphere():
+
+@pytest.mark.parametrize("material,atol", [
+    (Ag, 3e-4),
+    (metal, 5e-9),
+])
+def test_tmatrix_spheroid_is_sphere(material, atol):
     """tmatrix of spheroid with aspect ratio 1 is equal to tmatrix of sphere"""
     sphere   = miepy.sphere([0,0,0], radius, material)
     spheroid = miepy.spheroid([0,0,0], radius, radius, material, tmatrix_lmax=4)
@@ -44,9 +57,14 @@ def test_tmatrix_spheroid_is_sphere():
     T2 = spheroid.compute_tmatrix(lmax, wavelength, eps_b)
 
     print(np.max(np.abs(T1-T2)))
-    assert np.allclose(T1, T2, rtol=0, atol=3e-4)
+    assert np.allclose(T1, T2, rtol=0, atol=atol)
 
-def test_rotated_spheroid_equals_rotated_light():
+
+@pytest.mark.parametrize("material,atol", [
+    (Ag, 8e-29),
+    (metal, 5e-29),
+])
+def test_rotated_spheroid_equals_rotated_light(material, atol):
     """cross-sections are the same if a spheroid is rotated or if the light is rotated"""
 
     theta = 1.3
@@ -57,7 +75,7 @@ def test_rotated_spheroid_equals_rotated_light():
                                source=source,
                                wavelength=wavelength,
                                lmax=lmax,
-                               medium=miepy.constant_material(eps_b))
+                               medium=medium)
 
     C1 = z_oriented.cross_sections()
 
@@ -67,8 +85,8 @@ def test_rotated_spheroid_equals_rotated_light():
                              source=source,
                              wavelength=wavelength,
                              lmax=lmax,
-                             medium=miepy.constant_material(eps_b))
+                             medium=medium)
 
     C2 = oriented.cross_sections()
 
-    assert np.allclose(C1, C2, rtol=0, atol=8e-29)
+    assert np.allclose(C1, C2, rtol=0, atol=atol)

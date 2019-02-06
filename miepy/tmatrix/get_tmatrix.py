@@ -28,6 +28,9 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
     """
     rmax = miepy.vsh.lmax_to_rmax(lmax)
 
+    if 'conducting' in input_kwargs and input_kwargs['conducting']:
+        input_kwargs['index'] = 1
+
     ### create temporary directory tree
     with tempfile.TemporaryDirectory() as direc:
         ### create 4 sub-directories

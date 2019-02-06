@@ -49,7 +49,7 @@ class regular_prism(particle):
         calc_lmax = max(lmax+2, self.tmatrix_lmax)
 
         self.tmatrix_fixed = miepy.tmatrix.tmatrix_regular_prism(self.N, self.width, self.height, wavelength, 
-                self.material.eps(wavelength), eps_m, calc_lmax, extended_precision=False)
+                self.material.eps(wavelength), eps_m, calc_lmax, extended_precision=False, conducting=self.conducting)
 
         if lmax < calc_lmax:
             self.tmatrix_fixed = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix_fixed, lmax)

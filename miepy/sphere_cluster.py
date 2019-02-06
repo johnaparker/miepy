@@ -74,16 +74,19 @@ class sphere_cluster:
         self.mie_int = np.zeros([self.Nparticles, 2, self.lmax], dtype=complex)
 
         for i in range(self.Nparticles):
+            conducting = (self.material[i].name == 'metal')
             for n in range(1, self.lmax+1):
                 self.mie_scat[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_scattering_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
-                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b)
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b,
+                    conducting=conducting)
 
                 self.mie_int[i,:,n-1] = \
                     miepy.mie_single.mie_sphere_interior_coefficients(self.radius[i],
                     n, self.material_data.eps[i], self.material_data.mu[i],
-                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b)
+                    self.material_data.eps_b, self.material_data.mu_b, self.material_data.k_b,
+                    conducting=conducting)
 
         ### modified coefficients
         self.p_inc  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)

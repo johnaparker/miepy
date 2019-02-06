@@ -23,8 +23,9 @@ class sphere(particle):
         pass
 
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
+        print(self.conducting)
         self.tmatrix = miepy.tmatrix.tmatrix_sphere(self.radius, wavelength, 
-                self.material.eps(wavelength), eps_m, lmax)
+                self.material.eps(wavelength), eps_m, lmax, conducting=self.conducting)
         self.tmatrix_fixed = self.tmatrix
 
         return self.tmatrix

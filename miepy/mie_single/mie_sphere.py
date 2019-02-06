@@ -8,53 +8,64 @@ from miepy.special_functions import (riccati_1, riccati_2, riccati_1_single,
 from miepy.mie_single.scattering import scattered_E,scattered_H,interior_E,interior_H
 from scipy import constants
 
-def mie_sphere_scattering_coefficients(radius, n, eps, mu, eps_b, mu_b, k):
+def mie_sphere_scattering_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conducting=False):
     """Solve for the exterior of the sphere, the an and bn coefficients
         
        Arguments:
-           radius    sphere radius
-           n         coefficient order (n=1,2,...)
-           eps       sphere permitivitty
-           mu        sphere permeability
-           eps_b     medium permitivitty
-           mu_b      medium permeability
-           k         medium wavenumber
+           radius      sphere radius
+           n           coefficient order (n=1,2,...)
+           eps         sphere permitivitty
+           mu          sphere permeability
+           eps_b       medium permitivitty
+           mu_b        medium permeability
+           k           medium wavenumber
+           conducting  if True, calculate for conducting sphere (default: False)
     """
     xvals = k*radius
     m = (eps/eps_b)**0.5
-    mt = m*mu_b/mu
-
     jn = riccati_1_single(n, xvals)
-    jnm = riccati_1_single(n, m*xvals)
     yn = riccati_3_single(n, xvals)
 
-    a = (mt*jnm[0]*jn[1] - jn[0]*jnm[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
-    b = (jnm[0]*jn[1] - mt*jn[0]*jnm[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+    if conducting:
+        a = jn[1]/yn[1]
+        b = jn[0]/yn[0]
+    else:
+        jnm = riccati_1_single(n, m*xvals)
+        m = (eps/eps_b)**0.5
+        mt = m*mu_b/mu
+
+        a = (mt*jnm[0]*jn[1] - jn[0]*jnm[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+        b = (jnm[0]*jn[1] - mt*jn[0]*jnm[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
 
     return a, b
 
-def mie_sphere_interior_coefficients(radius, n, eps, mu, eps_b, mu_b, k):
-    """Solve for the interior of the sphere, the cn and dn coefficients
+def mie_sphere_interior_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conducting=False):
+    """Solve for the exterior of the sphere, the an and bn coefficients
         
        Arguments:
-           radius    sphere radius
-           n         coefficient order (n=1,2,...)
-           eps       sphere permitivitty
-           mu        sphere permeability
-           eps_b     medium permitivitty
-           mu_b      medium permeability
-           k         medium wavenumber
+           radius      sphere radius
+           n           coefficient order (n=1,2,...)
+           eps         sphere permitivitty
+           mu          sphere permeability
+           eps_b       medium permitivitty
+           mu_b        medium permeability
+           k           medium wavenumber
+           conducting  if True, calculate for conducting sphere (default: False)
     """
     xvals = k*radius
     m = (eps/eps_b)**0.5
     mt = m*mu_b/mu
 
     jn = riccati_1_single(n, xvals)
-    jnm = riccati_1_single(n, m*xvals)
     yn = riccati_3_single(n, xvals)
+    jnm = riccati_1_single(n, m*xvals)
 
-    c = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
-    d = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
+    if conducting:
+        c = 0.0
+        d = 0.0
+    else:
+        c = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(jnm[0]*yn[1] - mt*yn[0]*jnm[1])
+        d = (m*jn[0]*yn[1] - m*yn[0]*jn[1])/(mt*jnm[0]*yn[1] - yn[0]*jnm[1])
 
     return c, d
 

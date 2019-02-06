@@ -24,6 +24,11 @@ class particle:
         self.tmatrix_fixed = None
         self.tmatrix = None
 
+        if self.material.name == 'metal':
+            self.conducting = True
+        else:
+            self.conducting = False
+
     @property
     def position(self):
         return self._position
