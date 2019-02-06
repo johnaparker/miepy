@@ -34,8 +34,8 @@ class interface:
 
         r_parallel, r_perp = self.reflection_coefficients(plane_wave.theta, wavelength, medium)
 
-        a_theta = r_parallel*plane_wave.polarization[0] + r_perp*plane_wave.polarization[1]*np.sin(theta)
-        a_phi = -r_parallel*plane_wave.polarization[1]*np.cos(theta)
+        a_theta = r_parallel*plane_wave.polarization[0]
+        a_phi = r_perp*plane_wave.polarization[1]
         polarization = [a_theta, a_phi]
         amplitude = np.linalg.norm(polarization)*plane_wave.amplitude
 
@@ -48,8 +48,12 @@ class interface:
         phi = plane_wave.phi
         phase = plane_wave.phase
 
-        polarization = self.transmission_coefficients(plane_wave.theta, wavelength, medium)
-        amplitude = np.linalg.norm(polarization)*plane_wave.amplitude/np.sqrt(2)
+        t_parallel, t_perp = self.transmission_coefficients(plane_wave.theta, wavelength, medium)
+
+        a_theta = t_parallel*plane_wave.polarization[0]
+        a_phi = t_perp*plane_wave.polarization[1]
+        polarization = [a_theta, a_phi]
+        amplitude = np.linalg.norm(polarization)*plane_wave.amplitude
 
         return miepy.sources.plane_wave(polarization, theta, phi, amplitude, phase)
 
