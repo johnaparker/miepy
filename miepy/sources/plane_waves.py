@@ -13,7 +13,7 @@ class plane_wave(source):
         Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave
 
         Arguments:
-            polarization[2]      (TE, TM) values representing the polarization
+            polarization[2]      (TM, TE) values representing the polarization
             theta                theta spherical angle of k-vector
             phi                  phi spherical angle of k-vector
             amplitude            electric field amplitude E0
@@ -26,8 +26,8 @@ class plane_wave(source):
         self.theta = theta
         self.phi   = phi
 
-        ### TE and TM vectors
-        self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
+        ### TM and TE vectors
+        self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
 
     def __repr__(self):
         return f'plane_wave(polarization={self.polarization}, amplitude={self.amplitude}, theta={self.theta}, phi={self.phi})'
@@ -89,7 +89,7 @@ class plane_wave(source):
     
     def E_field(self, x, y, z, k):
         amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x + self.k_hat[1]*y + self.k_hat[2]*z))*np.exp(1j*self.phase)
-        pol = self.n_te*self.polarization[0] + self.n_tm*self.polarization[1]
+        pol = self.n_tm*self.polarization[0] + self.n_te*self.polarization[1]
         return np.einsum('i...,...->i...', pol, amp)
 
     def H_field(self, x, y, z, k):

@@ -84,8 +84,8 @@ class beam(source):
         self.phi   = phi
         self.orientation = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
 
-        ### TE and TM vectors
-        self.k_hat, self.n_te, self.n_tm = miepy.coordinates.sph_basis_vectors(theta, phi)
+        ### TM and TE vectors
+        self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
 
         self.amplitude = amplitude
         self.power = power
@@ -110,7 +110,7 @@ class beam(source):
         E = np.zeros((3,) + U.shape, dtype=complex)
         amp = U*np.exp(1j*self.phase)
 
-        pol = self.n_te*self.polarization[0] + self.n_tm*self.polarization[1]
+        pol = self.n_tm*self.polarization[0] + self.n_te*self.polarization[1]
         return np.einsum('i...,...->i...', pol, amp)
 
     def H_field(self, x, y, z, k):
@@ -121,7 +121,7 @@ class beam(source):
         H = np.zeros((3,) + U.shape, dtype=complex)
         amp = U*np.exp(1j*self.phase)
 
-        pol = self.n_tm*self.polarization[0] - self.n_te*self.polarization[1]
+        pol = self.n_te*self.polarization[0] - self.n_tm*self.polarization[1]
         return np.einsum('i...,...->i...', pol, amp)
 
     def spherical_ingoing(self, theta, phi, k):

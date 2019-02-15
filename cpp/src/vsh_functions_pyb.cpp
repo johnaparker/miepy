@@ -24,14 +24,14 @@ void bind_Emn(py::module &m) {
 void bind_vsh_electric(py::module &m) {
     m.def("vsh_electric", vsh_electric, "n"_a, "m"_a,
             "mode"_a, "rad"_a, "theta"_a, "phi"_a, "k"_a, R"pbdoc(
-        VSH electric (TE) mode
+        VSH electric (TM) mode
     )pbdoc");
 }
 
 void bind_vsh_magnetic(py::module &m) {
     m.def("vsh_magnetic", vsh_magnetic, "n"_a, "m"_a,
             "mode"_a, "rad"_a, "theta"_a, "phi"_a, "k"_a, R"pbdoc(
-        VSH magnetic (TM) mode
+        VSH magnetic (TE) mode
     )pbdoc");
 }
 
