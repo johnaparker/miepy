@@ -94,7 +94,7 @@ class plane_wave(source):
 
     def H_field(self, x, y, z, k):
         amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x + self.k_hat[1]*y + self.k_hat[2]*z))*np.exp(1j*self.phase)
-        pol = self.n_tm*self.polarization[0] - self.n_te*self.polarization[1]
+        pol = self.n_te*self.polarization[0] - self.n_tm*self.polarization[1]
         return np.einsum('i...,...->i...', pol, amp)
 
     def structure(self, position, k, lmax, radius=None):
