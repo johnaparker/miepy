@@ -8,6 +8,7 @@ from miepy.sources.source_base import source, combined_source
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite, erfc
 from scipy.constants import physical_constants
+from copy import deepcopy
 
 Z0 = physical_constants['characteristic impedance of vacuum'][0]
 
@@ -140,7 +141,7 @@ class beam(source):
 
     def structure(self, position, k, lmax, radius):
         #TODO: fix orientation_copy hack
-        orientation_copy = self.orientation
+        orientation_copy = deepcopy(self.orientation)
         self.orientation = miepy.quaternion.one
         if self.is_paraxial(k):
             sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
@@ -151,7 +152,8 @@ class beam(source):
                 self.current_k = k
                 self.p_src_func = structure_function(self, k, lmax)
 
-            p_src = self.p_src_func(position)
+            pos_r = miepy.coordinates.rotate(*position, orientation_copy.inverse())
+            p_src = self.p_src_func(pos_r)
 
         self.orientation = orientation_copy
 
@@ -310,6 +312,7 @@ class hermite_gaussian_beam(beam):
         return amp
 
     def is_paraxial(self, k):
+        return False
         wav = 2*np.pi/k
         return self.width > 4*wav
 
