@@ -152,7 +152,7 @@ class beam(source):
                 self.current_k = k
                 self.p_src_func = structure_function(self, k, lmax)
 
-            pos_r = miepy.coordinates.rotate(*position, orientation_copy.inverse())
+            pos_r = miepy.coordinates.rotate(*(position - self.center), orientation_copy.inverse())
             p_src = self.p_src_func(pos_r)
 
         self.orientation = orientation_copy
