@@ -159,4 +159,4 @@ def translate(x, y, z, dr):
     yp = y + dr[1]
     zp = z + dr[2]
 
-    return xp, yp, zp
+    return np.asarray([xp, yp, zp])

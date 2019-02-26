@@ -37,7 +37,6 @@ class beam(propagating_source):
         E = self.angular_spectrum(THETA, PHI, k)
         S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
         P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
-
         return np.sqrt(P)
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
@@ -56,7 +55,7 @@ class beam(propagating_source):
 
         @partial(np.vectorize, signature='(),(),()->(n)')
         def far_to_near(rho, angle, z):
-            integrand = np.exp(1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+            integrand = np.exp(-1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
                         * E_inf*np.sin(THETA)
             return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
 
@@ -64,8 +63,8 @@ class beam(propagating_source):
         E = np.moveaxis(E, source=-1, destination=0)
         E = miepy.coordinates.rotate_vec(E, self.orientation)
 
-        E0 = self.E0(k)*np.exp(1j*self.phase)
-        return E0*E
+        A = self.E0(k)*np.exp(1j*self.phase)
+        return 1e6*A*E/2
 
     def H_field(self, x, y, z, k):
         x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)

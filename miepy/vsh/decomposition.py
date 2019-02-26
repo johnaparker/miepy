@@ -303,8 +303,7 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
     def f(origin):
         p = np.zeros([2,rmax], dtype=complex)
 
-        delta = src.center - origin
-        phase = k*np.einsum('i...,i', rhat, delta)
+        phase = k*np.einsum('i...,i', rhat, -origin)
         exp_phase = np.exp(1j*phase)
 
         for i in range(rmax):
