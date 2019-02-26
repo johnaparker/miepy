@@ -90,29 +90,12 @@ class hermite_gaussian_beam(polarized_beam):
 
         # return amp*np.exp(1j*phase)
 
-    # def scalar_potenital_ingoing(self, theta, phi, k, norm=True):
-        # if norm:
-            # if self.amplitude is None:
-                # U0 = np.sqrt(self.power/power_numeric(self, k))
-            # else:
-                # U0 = self.amplitude
-        # else:
-            # U0 = 1
+    def scalar_angular_spectrum(self, theta, phi, k):
+        HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.tan(theta)*np.cos(phi))
+        HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.tan(theta)*np.sin(phi))
+        exp = np.exp(-(k*self.width*np.tan(theta)/2)**2)
 
-        # wav = 2*np.pi/k
-        # r = 1e6*wav
-        # x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
-        
-        # rho_sq = x**2 + y**2
-
-        # wz = w(z, self.width, wav)
-        # HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
-        # HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
-        # N = self.l + self.m
-
-        # amp = U0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-
-        # return amp
+        return HG_l * HG_m * exp
 
 class laguerre_gaussian_beam(polarized_beam):
     def __init__(self, p, l, width, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,

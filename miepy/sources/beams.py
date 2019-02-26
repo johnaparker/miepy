@@ -35,7 +35,7 @@ class beam(propagating_source):
         R = radius*np.ones_like(THETA)
 
         E = self.angular_spectrum(THETA, PHI, k)
-        S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
+        S = 0.5/Z0*np.linalg.norm(E, axis=0)**2*np.sin(THETA)
         P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
         return np.sqrt(P)
 

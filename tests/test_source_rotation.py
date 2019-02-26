@@ -3,7 +3,6 @@ Tests for rotation of incident source expansion coefficients
 """
 
 import numpy as np
-from tqdm import tqdm
 import miepy
 
 nm = 1e-9

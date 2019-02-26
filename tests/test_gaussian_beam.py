@@ -9,15 +9,15 @@ k = 2*np.pi/wav
 
 
 def sim():
-    s = miepy.sources.gaussian_beam(width=1900*nm, polarization=[1,1j], center=[100*nm, 0, 200*nm], theta=np.pi/4)
+    s = miepy.sources.hermite_gaussian_beam(2, 2, width=800*nm, polarization=[1,0], center=[0,0,0], theta=0)
 
-    x = np.linspace(-2900*nm, 2900*nm, 100)
-    y = np.linspace(-2900*nm, 2900*nm, 100)
+    x = np.linspace(-1900*nm, 1900*nm, 100)
+    y = np.linspace(-1900*nm, 1900*nm, 100)
     X, Y = np.meshgrid(x, y)
     Z = np.zeros_like(X)
 
     ### E by angular spectrum integration
-    E = s.E_field(X, Z, Y, k)
+    E = s.E_field(X, Y, Z, k)
     I = np.sum(np.abs(E)**2, axis=0)
     print(E[:,50,50])
     a1 = np.max(I)
@@ -31,7 +31,7 @@ def sim():
     lmax = 6
     p_src = s.structure([0, 0, 0], k, lmax)
     Efunc = miepy.vsh.expand_E(p_src, k, miepy.vsh_mode.incident)
-    R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Z, Y)
+    R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
     E = Efunc(R, THETA, PHI)
     E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
     I = np.sum(np.abs(E)**2, axis=0)
@@ -46,3 +46,5 @@ def sim():
     print(a2/a1)
 
     plt.show()
+
+sim()
