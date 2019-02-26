@@ -51,8 +51,8 @@ class bigaussian_beam(polarized_beam):
         return f'bigaussian_beam(width_x={self.width_x}, width_y={self.width_y}, polarization={self.polarization}, ' \
                f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
 
-    # def scalar_angular_spectrum(self, theta, phi, k):
-        # return np.exp(-(k*self.width*np.tan(theta)/2)**2)
+    def scalar_angular_spectrum(self, theta, phi, k):
+        return np.exp(-(k*np.tan(theta)/2)**2*((self.width_x*np.cos(phi))**2 + (self.width_y*np.sin(phi))**2))
 
     # def theta_cutoff(self, k, eps=1e-3):
         # return np.arctan(np.sqrt(-2*np.log(eps))/(k*self.width))
@@ -94,8 +94,9 @@ class hermite_gaussian_beam(polarized_beam):
         HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.tan(theta)*np.cos(phi))
         HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.tan(theta)*np.sin(phi))
         exp = np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        factor = 1j**(self.l + self.m)
 
-        return HG_l * HG_m * exp
+        return factor * HG_l * HG_m * exp
 
 class laguerre_gaussian_beam(polarized_beam):
     def __init__(self, p, l, width, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,
@@ -131,56 +132,44 @@ class laguerre_gaussian_beam(polarized_beam):
 
         # return amp*np.exp(1j*phase)
 
-    # def scalar_potenital_ingoing(self, theta, phi, k):
-        # if self.amplitude is None:
-            # E0 = np.sqrt((2*Z0*self.power))
-        # else:
-            # E0 = self.amplitude
+    def scalar_angular_spectrum(self, theta, phi, k):
+        Lpl = eval_genlaguerre(self.p, abs(self.l), 0.5*(k*self.width*np.tan(theta))**2)
+        exp = np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        phase = np.exp(1j*self.l*phi)
+        amp = 1
+        # amp = (k*self.width*np.tan(theta)/np.sqrt(2))**abs(self.l)
 
-        # wav = 2*np.pi/k
-        # r = 1e6*wav
-        # x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
+        return amp*Lpl*exp*phase
 
-        # rho_sq = x**2 + y**2
-        # phi = np.arctan2(y, x)
-
-        # C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
-        # wz = w(z, self.width, wav)
-
-        # Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
-        # N = abs(self.l) + 2*self.p
-
-        # amp = E0*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
-        # phase = self.l*phi
-
-        # return amp*np.exp(1j*phase)
-
-def azimuthal_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
+def azimuthal_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi/2):
     """azimuthally polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1],  theta=theta, phi=phi, 
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    return HG_1 + HG_2
+    if power is None:
+        power = 1.0
 
-def radial_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
-    """radially polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    return HG_1 + HG_2
-
-def shear_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
-    """shear polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,-1],  theta=theta, phi=phi, 
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
     HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
+    return HG_1 + HG_2
+
+def radial_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi/2):
+    """radially polarized beam"""
+    if power is None:
+        power = 1.0
+
+    HG_1 = hermite_gaussian_beam(1, 0, width, [-1,0],  theta=theta, phi=phi, 
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [0,-1], theta=theta, phi=phi,
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
+    return HG_1 + HG_2
+
+def shear_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi/2):
+    """shear polarized beam"""
+    if power is None:
+        power = 1.0
+
+    HG_1 = hermite_gaussian_beam(1, 0, width, [0,-1],  theta=theta, phi=phi, 
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
+    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], theta=theta, phi=phi,
+                  power=power/2, phase=phase, center=center, theta_max=theta_max)
     return HG_1 + HG_2
