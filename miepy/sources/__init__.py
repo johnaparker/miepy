@@ -1,12 +1,10 @@
-from . import plane_waves
-from . import beams
-from . import focused_beams
-
-from .source_base import source
+from .source_base import source, propagating_source, polarized_propagating_source, combined_source
+from .beams import beam, polarized_beam
 
 from .plane_waves import plane_wave
 
-from .beams import (gaussian_beam, hermite_gaussian_beam, laguerre_gaussian_beam,
-                    paraxial_beam, bigaussian_beam, azimuthal_beam, radial_beam, shear_beam)
+from .common import gaussian_beam
+# from .common import (gaussian_beam, hermite_gaussian_beam, laguerre_gaussian_beam,
+                    #  bigaussian_beam, azimuthal_beam, radial_beam, shear_beam)
 
 from .point import point_dipole

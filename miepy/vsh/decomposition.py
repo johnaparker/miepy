@@ -280,13 +280,14 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     rad = 1e6*(2*np.pi/k)
     rhat, *_ = coordinates.sph_basis_vectors(THETA, PHI)
-    Esrc = src.spherical_ingoing(THETA, PHI, k)
+    Esrc = src.angular_spectrum(THETA, PHI, k)
 
     p0 = np.zeros((2,rmax) + THETA.shape, dtype=complex)
+    E0 = src.E0(k)*np.exp(1j*src.phase)
 
     for i,n,m in vsh.mode_indices(lmax):
         Emn_val = vsh.Emn(m, n)
-        factor = k**2*1j**(2-n)*np.abs(Emn_val)/(4*np.pi)
+        factor = E0*k**2*1j**(2-n)*np.abs(Emn_val)/(4*np.pi)
         N, M = vsh.VSH_far(n, m, vsh.vsh_mode.ingoing)
 
         E = N(rad, THETA, PHI, k)

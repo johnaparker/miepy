@@ -85,7 +85,7 @@ def VSH_far(n, m, mode=vsh_mode.outgoing):
 
     pi_f = vsh.special.pi_func
     tau_f = vsh.special.tau_func
-    zn = get_zn(mode)
+    zn = get_zn_far(mode)
     sign = -1 if mode is vsh.vsh_mode.ingoing else 1
         
     def N(r, theta, phi, k):

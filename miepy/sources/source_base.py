@@ -1,5 +1,10 @@
 """
-Source abstract base class
+Abstract base classes for sources. Defines:
+
+    source__________________________interface for all sources
+    propagating_source______________sources that have a direction of propagation
+    polarized_propagating_source____propagating_source with a global polarization state (TE, TM pair)
+    combined_source_________________a suporposition of sources
 """
 
 import numpy as np
@@ -7,30 +12,165 @@ from abc import ABCMeta, abstractmethod
 import miepy
 
 class source:
-    """source interface base class"""
+    """abstract base class for source objects"""
     __metaclass__ = ABCMeta
 
-    def __init__(self, amplitude, phase):
+    def __init__(self, amplitude=1, phase=0, origin=None):
+        """
+        Arguments:
+            amplitude   global amplitude factor (default 1)
+            phase       global phase shift (default 0)
+            origin      a reference point for the center of the source (default: [0,0,0])
+        """
         self.amplitude = amplitude
         self.phase = phase
 
-    @abstractmethod
-    def E_field(self, x, y, z, k): pass
+        if origin is None:
+            self.origin = np.zeros(3, dtype=float)
+        else:
+            self.origin = np.asarray(origin, dtype=float)
 
     @abstractmethod
-    def H_field(self, x, y, z, k): pass
+    def angular_spectrum(self, theta, phi, k):
+        """Return the angular spectrum representation of the far-field source
+        
+        Arguments:
+            theta    far-field theta angle
+            phi      far-field phi angle
+            k        wavenumber (in medium)
+        """
+        pass
 
     @abstractmethod
-    def structure(self, position, k, lmax, radius): pass
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False):
+        """Compute the electric field of the source
+
+        Arguments:
+            x1        x (or r) position (array-like) 
+            x2        y (or theta) position (array-like) 
+            x3        z (or phi) position (array-like) 
+            k         wavenumber (in medium)
+            far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
+            spherical (optional) input/output in spherical coordinates (bool, default=False)
+
+        Returns: E[3,...]
+        """
+        pass
 
     @abstractmethod
-    def is_paraxial(self, k): pass
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False):
+        """Compute the magnetic field of the source
 
-    def spherical_ingoing(self, theta, phi, k):
-        raise NotImplementedError('source has not defined a spherical ingoing function')
+        Arguments:
+            x1        x (or r) position (array-like) 
+            x2        y (or theta) position (array-like) 
+            x3        z (or phi) position (array-like) 
+            k         wavenumber (in medium)
+            far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
+            spherical (optional) input/output in spherical coordinates (bool, default=False)
 
+        Returns: E[3,...]
+        """
+        pass
+
+    @abstractmethod
+    def E_angular(self, theta, phi, k, radius=None):
+        """Compute the electric field in the far-field in spherical coordinates
+             
+        Arguments:
+            theta    theta position (array-like) 
+            phi      phi position (array-like) 
+            k        wavenumber (in medium)
+            radius   r position (default: large value)
+        """
+        pass
+
+    @abstractmethod
+    def H_angular(self, theta, phi, k, radius=None):
+        """Compute the magnetic field in the far-field in spherical coordinates
+             
+        Arguments:
+            theta    theta position (array-like) 
+            phi      phi position (array-like) 
+            k        wavenumber (in medium)
+            radius   r position (default: large value)
+        """
+        pass
+
+    @abstractmethod
+    def structure(self, position, k, lmax):
+        """Compute the expansion coefficients of the source at a given position
+
+        Arguments:
+            position   (x,y,z) position of the expansion origin
+            k          wavenumber (in medium)
+            lmax       maximum expansion order
+        """
+        pass
+
+    def power_density(self, x1, x2, x3, k, far=False, spherical=False):
+        """Compute the power density of the source
+
+        Arguments:
+            x1        x (or r) position (array-like) 
+            x2        y (or theta) position (array-like) 
+            x3        z (or phi) position (array-like) 
+            far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
+            spherical (optional) input/output in spherical coordinates (bool, default=False)
+
+        Returns: E[3,...]
+        """
+        pass
+
+    #TODO: if other is combined_source...
     def __add__(self, other):
+        """Add two sources together"""
         return combined_source(self, other)
+
+    #TODO: implement
+    def __radd__(self, other):
+        pass
+
+class propagating_source(source):
+    """abstract base class for propagating sources"""
+    __metaclass__ = ABCMeta
+
+    def __init__(self, amplitude=1, phase=0, origin=None, theta=0, phi=0, standing=False):
+        source.__init__(self, amplitude=amplitude, phase=phase, origin=origin)
+
+        self.theta = theta
+        self.phi   = phi
+        self.orientation = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
+        self.standing = standing
+
+        ### TM and TE vectors
+        self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
+
+class polarized_propagating_source(propagating_source):
+    """abstract base class for polarized, propagating sources"""
+    __metaclass__ = ABCMeta
+
+    def __init__(self, polarization, amplitude=1, phase=0, origin=None, theta=0, phi=0, standing=False):
+        propagating_source.__init__(self, theta=theta, phi=phi, phase=phase, origin=origin, standing=standing)
+
+        self.polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization /= np.linalg.norm(self.polarization)
+
+    @abstractmethod
+    def scalar_angular_spectrum(self, theta, phi, k):
+        pass
+
+    def angular_spectrum(self, theta, phi, k):
+        U = self.scalar_angular_spectrum(theta, phi, k)
+        Esph = np.zeros((2,) + U.shape, dtype=complex)
+
+        Ex = U*self.polarization[0]
+        Ey = U*self.polarization[1]
+        Esph[0] = -Ex*np.cos(phi) - Ey*np.sin(phi)
+        Esph[1] = -Ex*np.sin(phi) + Ey*np.cos(phi)
+        Esph *= np.exp(1j*self.phase)
+
+        return Esph
 
 class combined_source(source):
     """sources added together"""
@@ -38,18 +178,33 @@ class combined_source(source):
     def __init__(self, *sources):
         self.sources = sources
 
-    def E_field(self, x, y, z, k):
-        return sum(map(lambda source: source.E_field(x, y, z, k), self.sources))
-
-    def H_field(self, x, y, z, k):
-        return sum(map(lambda source: source.H_field(x, y, z, k), self.sources))
+    def angular_spectrum(self, theta, phi, k):
+        return sum((source.angular_spectrum(theta, phi, k) for source in self.sources))
 
     #TODO: alternatively, allow adding fields and performing structure only once
-    def structure(self, position, k, lmax, radius):
-        return sum((source.structure(position, k, lmax, radius) for source in self.sources))
+    def structure(self, position, k, lmax):
+        return sum((source.structure(position, k, lmax) for source in self.sources))
 
-    def spherical_ingoing(self, theta, phi, k):
-        return sum((source.spherical_ingoing(theta, phi, k) for source in self.sources))
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False):
+        return sum((source.E_field(x1, x2, x3, k, far, spherical) for source in self.sources))
 
-    def is_paraxial(self, k):
-        return all((source.is_paraxial(k) for source in sources))
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False):
+        return sum((source.H_field(x1, x2, x3, k, far, spherical) for source in self.sources))
+
+    def E_angular(self, theta, phi, k, radius=None):
+        return sum((source.E_angular(theta, phi, k, radius) for source in self.sources))
+
+    def H_angular(self, theta, phi, k, radius=None):
+        return sum((source.H_angular(theta, phi, k, radius) for source in self.sources))
+
+    def __add__(self, other):
+        if type(other) is combined_source:
+            return combined_source(*self.sources, *other.sources)
+        elif isinstance(other, source):
+            return combined_source(*self.sources, other)
+        else:
+            raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
+
+    #TODO: implement
+    def __radd__(self, other):
+        pass

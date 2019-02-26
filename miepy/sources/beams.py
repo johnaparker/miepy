@@ -1,409 +1,141 @@
 """
-beam sources
+Abstract base classes for beams. Defines:
+
+    beam______________base clase for beams
+    polarized_beam____beam with a global polarization state (TE, TM pair)
 """
 
 import numpy as np
+from abc import ABCMeta, abstractmethod
 import miepy
-from miepy.sources.source_base import source, combined_source
-from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite, erfc
-from scipy.constants import physical_constants
-from copy import deepcopy
+from miepy.sources import propagating_source, polarized_propagating_source
+from functools import partial
+from miepy.constants import Z0
 
-Z0 = physical_constants['characteristic impedance of vacuum'][0]
+class beam(propagating_source):
+    """abstract base class for beam sources"""
+    __metaclass__ = ABCMeta
 
-def zr(w0, wav):
-    return np.pi*w0**2/wav
-
-def w(z, w0, wav):
-    return w0*np.sqrt(1 + (z/zr(w0,wav))**2)
-    
-def Rinv(z, w0, wav):
-    return z/(z**2 + zr(w0,wav)**2)
-
-def gouy(z, w0, wav):
-    return np.arctan2(z, zr(w0,wav))
-
-def find_cutoff(f, cutoff, tol=1e-7):
-    theta = np.pi/2
-    val = f(theta)
-    dtheta = 0.01*np.pi
-    err = np.abs(val - cutoff)
-    
-    while err > tol:
-        val = 0
-        while val < cutoff:
-            theta += dtheta
-            val = f(theta)
-
-        err = abs(val - cutoff)
-        theta -= dtheta
-        dtheta /= 2
-
-    return theta
-
-def power_numeric(beam, k):
-    """Calculate the total power in a beam via numeric integration"""
-    radius = 1e6*2*np.pi/k
-    theta = np.linspace(np.pi/2, np.pi, 30)
-    phi = np.linspace(0, 2*np.pi, 20)
-    THETA, PHI = np.meshgrid(theta, phi)
-    R = radius*np.ones_like(THETA)
-
-    E = beam.scalar_potenital_ingoing(THETA, PHI, k, norm=False)
-    S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
-    P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
-
-    return P
-
-def structure_function(src, k, lmax):
-    #TODO implement a better way of finding the maximum value... per source object
-    f = lambda theta: np.linalg.norm(src.spherical_ingoing(theta, 0, k))
-    g = lambda theta: np.linalg.norm(src.spherical_ingoing(theta, np.pi/2, k))
-    theta = np.linspace(np.pi/2, np.pi, 500)
-    f_max = np.max(f(theta))
-    g_max = np.max(g(theta))
-
-    if g_max > f_max:
-        cutoff = find_cutoff(lambda theta: g(theta)/g_max, 1e-6, tol=1e-9)
-    else:
-        cutoff = find_cutoff(lambda theta: f(theta)/f_max, 1e-6, tol=1e-9)
-
-    return miepy.vsh.decomposition.integral_project_source_far(src, 
-                           k, lmax, theta_0=cutoff)
-
-#TODO: implement .from_string constructors
-class beam(source):
-    def __init__(self, polarization, theta=0, phi=0, power=None, 
-                    amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(amplitude, phase)
-        self.polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization /= np.linalg.norm(self.polarization)
-        self.center = np.asarray(center)
-
-        self.theta = theta
-        self.phi   = phi
-        self.orientation = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
-
-        ### TM and TE vectors
-        self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
-
-        self.amplitude = amplitude
+    def __init__(self, power=1, theta_max=np.pi/2, phase=0, center=None, theta=0, phi=0, standing=False):
+        propagating_source.__init__(self, amplitude=1, phase=phase, origin=center, theta=theta, phi=phi, standing=standing)
         self.power = power
-        if power is None and amplitude is None:
-            raise ValueError('either power or amplitude must be specified')
-        elif power is not None and amplitude is not None:
-            raise ValueError('cannot specify power and amplitude simultaneously')
+        self.theta_max = theta_max
+        self.center = self.origin
 
-        self.current_k = None
+        self.k_stored = None
+        self.p_src_func = None
 
-    def scalar_potenital(self, x, y, z, k): pass
+    def E0(self, k):
+        radius = 1e6*2*np.pi/k
+        theta_c = self.theta_cutoff(k)
 
-    def scalar_potenital_ingoing(self, theta, phi, k): pass
+        theta = np.linspace(theta_c, np.pi, 30)
+        phi = np.linspace(0, 2*np.pi, 20)
+        THETA, PHI = np.meshgrid(theta, phi)
+        R = radius*np.ones_like(THETA)
 
-    def is_paraxial(self, k): pass
+        E = self.angular_spectrum(THETA, PHI, k)
+        S = 0.5/Z0*np.abs(E)**2*np.sin(THETA)
+        P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
 
-    def E_field(self, x, y, z, k):
-        xp, yp, zp = miepy.coordinates.translate(x, y, z, -self.center)
-        xp, yp, zp = miepy.coordinates.rotate(xp, yp, zp, self.orientation.inverse())
+        return np.sqrt(P)
 
-        U = self.scalar_potenital(xp, yp, zp, k)
-        E = np.zeros((3,) + U.shape, dtype=complex)
-        amp = U*np.exp(1j*self.phase)
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
+        x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
+        x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
+        rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
 
-        pol = self.n_tm*self.polarization[0] + self.n_te*self.polarization[1]
-        return np.einsum('i...,...->i...', pol, amp)
+        theta_c = self.theta_cutoff(k)
+        theta = np.linspace(np.pi - theta_c, np.pi, sampling)
+        phi = np.linspace(0, 2*np.pi, 2*sampling)
+        THETA, PHI = np.meshgrid(theta, phi)
+
+        E_inf = np.zeros((3,) + THETA.shape, dtype=complex)
+        E_inf[1:] = self.angular_spectrum(THETA, PHI, k)
+        E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, THETA, PHI)
+
+        @partial(np.vectorize, signature='(),(),()->(n)')
+        def far_to_near(rho, angle, z):
+            integrand = np.exp(1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+                        * E_inf*np.sin(THETA)
+            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
+
+        E = far_to_near(rho, angle, z)
+        E = np.moveaxis(E, source=-1, destination=0)
+        E = miepy.coordinates.rotate_vec(E, self.orientation)
+
+        E0 = self.E0(k)*np.exp(1j*self.phase)
+        return E0*E
 
     def H_field(self, x, y, z, k):
-        xp, yp, zp = miepy.coordinates.translate(x, y, z, -self.center)
-        xp, yp, zp = miepy.coordinates.rotate(xp, yp, zp, -self.orientation)
+        x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
+        x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
+        rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
 
-        U = self.scalar_potenital(xp, yp, zp, k)
-        H = np.zeros((3,) + U.shape, dtype=complex)
-        amp = U*np.exp(1j*self.phase)
+        theta_c = self.theta_cutoff(k)
+        theta = np.linspace(0, theta_c, sampling)
+        phi = np.linspace(0, 2*np.pi, 2*sampling)
+        THETA, PHI = np.meshgrid(theta, phi)
 
-        pol = self.n_te*self.polarization[0] - self.n_tm*self.polarization[1]
-        return np.einsum('i...,...->i...', pol, amp)
+        H_inf = np.zeros((3,) + THETA.shape, dtype=complex)
+        H_inf[1:] = self.angular_spectrum(THETA, PHI, k)[::-1]
+        H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, THETA, PHI)
 
-    def spherical_ingoing(self, theta, phi, k):
-        """Determine far-field spherical fields from the scalar potential.
-        Returns E[2,...], the theta & phi components"""
-        U = self.scalar_potenital_ingoing(theta, phi, k)
-        Esph = np.zeros((2,) + U.shape, dtype=complex)
+        @partial(np.vectorize, signature='(),(),()->(n)')
+        def far_to_near(rho, angle, z):
+            integrand = np.exp(1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+                        * H_inf*np.sin(THETA)
+            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
 
-        Ex = U*self.polarization[0]
-        Ey = U*self.polarization[1]
-        Esph[0] = -Ex*np.cos(phi) - Ey*np.sin(phi)
-        Esph[1] = -Ex*np.sin(phi) + Ey*np.cos(phi)
-        Esph *= np.exp(1j*self.phase)
+        H = far_to_near(rho, angle, z)
+        H = np.moveaxis(J, source=-1, destination=0)
+        H = miepy.coordinates.rotate(*H, self.orientation)
 
-        return Esph
+        E0 = self.E0(k)*np.exp(1j*self.phase)
+        return E0*H
 
-    def structure(self, position, k, lmax, radius):
-        #TODO: fix orientation_copy hack
-        orientation_copy = deepcopy(self.orientation)
-        self.orientation = miepy.quaternion.one
-        if self.is_paraxial(k):
-            sampling = miepy.vsh.decomposition.sampling_from_lmax(lmax, method='near')
-            p_src = miepy.vsh.decomposition.near_field_point_matching(self, 
-                              position, 2*radius, k, lmax, sampling)
-        else:
-            if k != self.current_k:
-                self.current_k = k
-                self.p_src_func = structure_function(self, k, lmax)
+    def E_angular(self, theta, phi, k, radius=None):
+        if radius is None:
+            radius = 1e6*(2*np.pi/k)
 
-            pos_r = miepy.coordinates.rotate(*(position - self.center), orientation_copy.inverse())
-            p_src = self.p_src_func(pos_r)
+        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/(k*radius)
+        E = E0*self.angular_spectrum(theta - self.theta, phi - self.phi, k)
+        return E
 
-        self.orientation = orientation_copy
+    def H_angular(self, theta, phi, k, radius=None):
+        if radius is None:
+            radius = 1e6*(2*np.pi/k)
 
-        if self.theta != 0 or self.phi != 0:
+        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/(k*radius)
+        E = E0*self.angular_spectrum(theta - self.theta, phi - self.phi, k)
+        H = E[::-1]
+        return H
+
+    def theta_cutoff(self, k, eps=1e-3):
+        return min(self.theta_max, np.pi/2)
+
+    def structure(self, position, k, lmax):
+        theta_c = self.theta_cutoff(k)
+
+        if k != self.k_stored:
+            self.k_stored = k
+            self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(self, 
+                               k, lmax, theta_0=np.pi - theta_c)
+
+        pos = miepy.coordinates.rotate(*(position - self.center), self.orientation.inverse())
+        p_src = self.p_src_func(pos)
+
+        if self.orientation != miepy.quaternion.one:
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, self.orientation)
 
         return p_src
 
-class paraxial_beam(beam):
-    def __init__(self, Ufunc, polarization, theta=0, phi=0, 
-                   power=None, amplitude=1, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
-        self.Ufunc = Ufunc
 
-    def scalar_potenital(self, x, y, z, k):
-        return self.Ufunc(x, y, z, k)
+class polarized_beam(beam, polarized_propagating_source):
+    """abstract base class for polarized beam sources"""
+    __metaclass__ = ABCMeta
 
-    def is_paraxial(self, k):
-        return True
-
-    def __repr__(self):
-        return f'paraxial_beam(Ufunc={self.Ufunc.__name__}, polarization={self.polarization}, power={self.power}, ' \
-               f'center={self.center}, ptheta={self.theta}, phi={self.phi})'
-
-class gaussian_beam(beam):
-    def __init__(self, width, polarization, theta=0, phi=0, 
-                  power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
-        self.width = width
-
-    def __repr__(self):
-        return f'gaussian_beam(width={self.width}, polarization={self.polarization}, power={self.power}, ' \
-               f'center={self.center}, theta={self.theta}, phi={self.phi})'
-    
-    def scalar_potenital(self, x, y, z, k):
-        if self.amplitude is None:
-            E0 = 2/self.width*np.sqrt(Z0*self.power/np.pi)
-        else:
-            E0 = self.amplitude
-
-        rho_sq = x**2 + y**2
-        wav = 2*np.pi/k
-        amp = E0*self.width/w(z, self.width, wav) * np.exp(-rho_sq/w(z,self.width,wav)**2)
-        phase = k*z[2] + k*rho_sq*Rinv(z[2],self.width,wav)/2 - gouy(z[2],self.width,wav)
-
-        return amp*np.exp(1j*phase)
-
-    def scalar_potenital_ingoing(self, theta, phi, k):
-        r = 1e6*(2*np.pi/k)
-        if self.amplitude is None:
-            c = 0.5*(k*self.width)**2
-            if self.is_paraxial(k):
-                U0 = 2*k*self.width*np.sqrt(Z0*self.power/np.pi)/r
-            else:
-                if c < 700:
-                    U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
-                else:
-                    U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))/r
-        else:
-            U0 = k*self.width**2*self.amplitude/r/2
-
-        U = U0*np.exp(-(k*self.width*np.tan(theta)/2)**2)
-        return U
-
-    def is_paraxial(self, k):
-        return False
-        # wav = 2*np.pi/k
-        # return self.width > 8*wav
-
-class bigaussian_beam(beam):
-    def __init__(self, width_x, width_y, polarization, theta=0, phi=0,
-                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
-        self.width_x = width_x
-        self.width_y = width_y
-
-    def __repr__(self):
-        return f'bigaussian_beam(width_x={self.width_x}, width_y={self.width_y}, polarization={self.polarization}, ' \
-               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
-    
-    def scalar_potenital(self, x, y, z, k):
-        if self.amplitude is None:
-            E0 = 2/np.sqrt(self.width_x*self.width_y)*np.sqrt(Z0*self.power/np.pi)
-        else:
-            E0 = self.amplitude
-
-        rho_sq = x**2/self.width_x**2 + y**2/self.width_y**2
-        wav = 2*np.pi/k
-        amp = E0*np.exp(-rho_sq)
-        phase = k*z
-
-        return amp*np.exp(1j*phase)
-
-    def scalar_potenital_ingoing(self, theta, phi, k):
-        pass
-
-    def is_paraxial(self, k):
-        return True
-        # return 2*np.pi/k < min(self.width_x, self.width_y)
-
-class hermite_gaussian_beam(beam):
-    def __init__(self, l, m, width, polarization, theta=0, phi=0, 
-                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
-        self.width = width
-        self.l = l
-        self.m = m
-
-    def __repr__(self):
-        return f'HG_beam(width={self.width}, l={self.l}, m={self.m}, polarization={self.polarization}, ' \
-               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
-    
-    def scalar_potenital(self, x, y, z, k):
-        if self.amplitude is None:
-            factor = 1/self.width*np.sqrt(2/(np.pi*2**self.l*2**self.m*factorial(self.l)*factorial(self.m)))
-            E0 = factor*np.sqrt((2*Z0*self.power))
-        else:
-            E0 = self.amplitude
-
-        rho_sq = x**2 + y**2
-        wav = 2*np.pi/k
-
-        wz = w(z, self.width, wav)
-        HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
-        HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
-        N = self.l + self.m
-
-        amp = E0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-        phase = k*z + k*rho_sq*Rinv(z,self.width,wav)/2 - (N+1)*gouy(z,self.width,wav)
-
-        return amp*np.exp(1j*phase)
-
-    def scalar_potenital_ingoing(self, theta, phi, k, norm=True):
-        #TODO: remove the norm hack
-        if norm:
-            if self.amplitude is None:
-                U0 = np.sqrt(self.power/power_numeric(self, k))
-            else:
-                U0 = self.amplitude
-        else:
-            U0 = 1
-
-        wav = 2*np.pi/k
-        r = 1e6*wav
-        x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
-        
-        rho_sq = x**2 + y**2
-
-        wz = w(z, self.width, wav)
-        HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
-        HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
-        N = self.l + self.m
-
-        amp = U0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-
-        return amp
-
-    def is_paraxial(self, k):
-        return False
-        wav = 2*np.pi/k
-        return self.width > 4*wav
-
-class laguerre_gaussian_beam(beam):
-    def __init__(self, p, l, width, polarization, theta=0, phi=0,
-                    power=None, amplitude=None, phase=0, center=np.zeros(3)):
-        super().__init__(polarization, theta, phi, power, amplitude, phase, center)
-        self.width = width
-        self.p = p
-        self.l = l
-
-    def __repr__(self):
-        return f'LG_beam(width={self.width}, p={self.p}, l={self.l}, polarization={self.polarization}, ' \
-               f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
-    
-    def scalar_potenital(self, x, y, z, k):
-        if self.amplitude is None:
-            E0 = np.sqrt((2*Z0*self.power))
-        else:
-            E0 = self.amplitude
-
-        rho_sq = x**2 + y**2
-        phi = np.arctan2(y, x)
-        wav = 2*np.pi/k
-
-        C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
-        wz = w(z, self.width, wav)
-
-        Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
-        N = abs(self.l) + 2*self.p
-
-        amp = E0*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
-        phase = self.l*phi + k*z + k*rho_sq*Rinv(z,self.width,wav)/2 - (N+1)*gouy(z,self.width,wav)
-
-        return amp*np.exp(1j*phase)
-
-    def scalar_potenital_ingoing(self, theta, phi, k):
-        if self.amplitude is None:
-            E0 = np.sqrt((2*Z0*self.power))
-        else:
-            E0 = self.amplitude
-
-        wav = 2*np.pi/k
-        r = 1e6*wav
-        x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
-
-        rho_sq = x**2 + y**2
-        phi = np.arctan2(y, x)
-
-        C = np.sqrt(2*factorial(self.p)/(np.pi*factorial(self.p + abs(self.l))))
-        wz = w(z, self.width, wav)
-
-        Lpl = eval_genlaguerre(self.p, abs(self.l), 2*rho_sq/wz**2)
-        N = abs(self.l) + 2*self.p
-
-        amp = E0*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(self.l) * Lpl
-        phase = self.l*phi
-
-        return amp*np.exp(1j*phase)
-
-    def is_paraxial(self, k):
-        return False
-        wav = 2*np.pi/k
-        return self.width > 4*wav
-
-def azimuthal_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
-    """azimuthally polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1],  theta=theta, phi=phi, 
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [-1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    return HG_1 + HG_2
-
-def radial_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
-    """radially polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [0,1], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    return HG_1 + HG_2
-
-def shear_beam(width, theta=0, phi=0, amplitude=None, power=None, phase=0, center=np.zeros(3)):
-    """shear polarized beam"""
-    if power is not None:
-        power /= 2
-    HG_1 = hermite_gaussian_beam(1, 0, width, [0,1], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    HG_2 = hermite_gaussian_beam(0, 1, width, [1,0], theta=theta, phi=phi,
-                  amplitude=amplitude, power=power, phase=phase, center=center)
-    return HG_1 + HG_2
+    def __init__(self, polarization, power=1, theta_max=np.pi/2, phase=0, center=None, theta=0, phi=0, standing=False):
+        polarized_propagating_source.__init__(self, polarization=polarization)
+        beam.__init__(self, power=power, theta_max=theta_max, phase=phase, center=center,
+            theta=theta, phi=phi, standing=standing)

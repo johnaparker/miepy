@@ -7,7 +7,7 @@ from scipy import special
 from scipy.integrate import simps
 from miepy.cpp.decomposition import trapz, trapz_2d
 import miepy
-Z0 = miepy.sources.beams.Z0
+from miepy.constants import Z0
 
 def simps_2d(xd,yd,fd):
     """1d simpsons rule extended to 2d"""

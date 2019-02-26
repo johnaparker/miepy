@@ -146,6 +146,13 @@ def rotate(x, y, z, quat, origin=None):
 
     return p_final
 
+def rotate_vec(F, quat):
+    """Rotate the vector F using a quaternion"""
+    R = miepy.quaternion.as_rotation_matrix(quat)
+    F_rotated = np.einsum('ij,j...->i...', R, F)
+
+    return F_rotated
+
 def translate(x, y, z, dr):
     """Translate the points (x, y, z) by dr"""
     xp = x + dr[0]

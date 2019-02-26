@@ -17,6 +17,7 @@ from . import flux
 from . import coordinates
 from . import utils
 from . import symmetry
+from . import constants
 
 from .materials.create import constant_material, function_material, data_material
 from .cluster import cluster
