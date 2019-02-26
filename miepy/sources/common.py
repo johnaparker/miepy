@@ -36,7 +36,7 @@ class gaussian_beam(polarized_beam):
     def scalar_angular_spectrum(self, theta, phi, k):
         return np.exp(-(k*self.width*np.tan(theta)/2)**2)
 
-    def theta_cutoff(self, k, eps=1e-3):
+    def theta_cutoff(self, k, eps=1e-9):
         return np.arctan(np.sqrt(-2*np.log(eps))/(k*self.width))
 
 class bigaussian_beam(polarized_beam):
@@ -69,26 +69,6 @@ class hermite_gaussian_beam(polarized_beam):
     def __repr__(self):
         return f'HG_beam(width={self.width}, l={self.l}, m={self.m}, polarization={self.polarization}, ' \
                f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
-    
-    # def scalar_potenital(self, x, y, z, k):
-        # if self.amplitude is None:
-            # factor = 1/self.width*np.sqrt(2/(np.pi*2**self.l*2**self.m*factorial(self.l)*factorial(self.m)))
-            # E0 = factor*np.sqrt((2*Z0*self.power))
-        # else:
-            # E0 = self.amplitude
-
-        # rho_sq = x**2 + y**2
-        # wav = 2*np.pi/k
-
-        # wz = w(z, self.width, wav)
-        # HG_l = eval_hermite(self.l, np.sqrt(2)*x/wz)
-        # HG_m = eval_hermite(self.m, np.sqrt(2)*y/wz)
-        # N = self.l + self.m
-
-        # amp = E0*self.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
-        # phase = k*z + k*rho_sq*Rinv(z,self.width,wav)/2 - (N+1)*gouy(z,self.width,wav)
-
-        # return amp*np.exp(1j*phase)
 
     def scalar_angular_spectrum(self, theta, phi, k):
         HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.tan(theta)*np.cos(phi))

@@ -32,12 +32,11 @@ class beam(propagating_source):
         theta = np.linspace(theta_c, np.pi, 30)
         phi = np.linspace(0, 2*np.pi, 20)
         THETA, PHI = np.meshgrid(theta, phi)
-        R = radius*np.ones_like(THETA)
 
         E = self.angular_spectrum(THETA, PHI, k)
         S = 0.5/Z0*np.linalg.norm(E, axis=0)**2*np.sin(THETA)
-        P = radius**2*miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
-        return np.sqrt(P)
+        P = miepy.vsh.misc.trapz_2d(theta, phi, S.T).real/4
+        return np.sqrt(self.power/P)
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
         x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
