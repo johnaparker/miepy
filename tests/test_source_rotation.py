@@ -31,7 +31,7 @@ def test_plane_wave_rotation():
 
     lmax = 6
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
-    p_src = source.structure([0,0,0], k, lmax, 100*nm)
+    p_src = source.structure([0,0,0], k, lmax)
     Efunc = miepy.expand_E(p_src, k, mode=miepy.vsh_mode.incident)
 
     E2 = Efunc(R, THETA, PHI)

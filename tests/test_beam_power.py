@@ -31,7 +31,7 @@ def test_numeric_power():
     ### power through aperature
     lmax = 6
     source = miepy.sources.gaussian_beam(width, [1,0], power=1)
-    p_src = source.structure([0,0,0], k, lmax, width)
+    p_src = source.structure([0,0,0], k, lmax)
 
     P = miepy.vsh.misc.power_through_aperature(source, [0,0,0], 3*width, k, sampling=20)
 

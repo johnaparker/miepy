@@ -5,10 +5,10 @@ plane wave sources
 import numpy as np
 import miepy
 from miepy.vsh.special import pi_func, tau_func
-from miepy.sources.source_base import source
+from miepy.sources import polarized_propagating_source
 
-class plane_wave(source):
-    def __init__(self, polarization, theta=0, phi=0, amplitude=1, phase=0):
+class plane_wave(polarized_propagating_source):
+    def __init__(self, polarization, amplitude=1, phase=0, theta=0, phi=0, standing=False):
         """
         Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave
 
@@ -19,21 +19,14 @@ class plane_wave(source):
             amplitude            electric field amplitude E0
             phase                phase factor
         """
-        super().__init__(amplitude, phase)
-        self.polarization = np.asarray(polarization, dtype=np.complex)
-        self.polarization /= np.linalg.norm(self.polarization)
-
-        self.theta = theta
-        self.phi   = phi
-
-        ### TM and TE vectors
-        self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
+        polarized_propagating_source.__init__(self, polarization=polarization,
+                amplitude=amplitude, phase=phase, origin=None, theta=theta, phi=phi, standing=standing)
 
     def __repr__(self):
         return f'plane_wave(polarization={self.polarization}, amplitude={self.amplitude}, theta={self.theta}, phi={self.phi})'
 
     @classmethod
-    def from_string(cls, polarization, direction='z', amplitude=1, phase=0):
+    def from_string(cls, polarization, direction='z', amplitude=1, phase=0, standing=False):
         """Create a plane wave from string values for the polarization and direction
         
         Arguments:
@@ -85,19 +78,35 @@ class plane_wave(source):
         else:
             raise ValueError("'{polarization}' is not a valid polarization. Use one of ['x', 'y', 'z', 'rhc', 'lhc']".format(polarization=polarization))
 
-        return cls(pol, theta, phi, amplitude, phase)
+        return cls(polarization=pol, theta=theta, phi=phi, amplitude=amplitude, phase=phase, standing=standing)
     
-    def E_field(self, x, y, z, k):
-        amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x + self.k_hat[1]*y + self.k_hat[2]*z))*np.exp(1j*self.phase)
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False):
+        if spherical:
+            x1, x2, x3 = miepy.coordinates.sph_to_cart(x1, x2, x3)
+
+        amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x1 + self.k_hat[1]*x2 + self.k_hat[2]*x3))*np.exp(1j*self.phase)
         pol = self.n_tm*self.polarization[0] + self.n_te*self.polarization[1]
-        return np.einsum('i...,...->i...', pol, amp)
 
-    def H_field(self, x, y, z, k):
-        amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x + self.k_hat[1]*y + self.k_hat[2]*z))*np.exp(1j*self.phase)
+        E = np.einsum('i...,...->i...', pol, amp)
+        if spherical:
+            E = miepy.coordinates.cart_to_sph(*E)
+
+        return E
+
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False):
+        if spherical:
+            x1, x2, x3 = miepy.coordinates.sph_to_cart(x1, x2, x3)
+
+        amp = self.amplitude*np.exp(1j*k*(self.k_hat[0]*x1 + self.k_hat[1]*x2 + self.k_hat[2]*x3))*np.exp(1j*self.phase)
         pol = self.n_te*self.polarization[0] - self.n_tm*self.polarization[1]
-        return np.einsum('i...,...->i...', pol, amp)
 
-    def structure(self, position, k, lmax, radius=None):
+        H = np.einsum('i...,...->i...', pol, amp)
+        if spherical:
+            H = miepy.coordinates.cart_to_sph(*H)
+
+        return H
+
+    def structure(self, position, k, lmax):
         rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.zeros([2, rmax], dtype=complex)
         phase = k*(self.k_hat[0]*position[0] + self.k_hat[1]*position[1] + self.k_hat[2]*position[2]) + self.phase
@@ -113,5 +122,14 @@ class plane_wave(source):
 
         return p_src
 
-    def is_paraxial(self, k):
-        return True
+    def angular_spectrum(self, theta, phi, k):
+        if theta == self.theta and phi == self.phi:
+            return np.inf
+        else:
+            return 0
+
+    def E_angular(self, theta, phi, k, radius=None):
+        return self.angular_spectrum(theta, phi, j)
+
+    def H_angular(self, theta, phi, k, radius=None):
+        return self.angular_spectrum(theta, phi, j)

@@ -37,7 +37,7 @@ def power_through_aperature(source, center, radius, k, sampling=150):
 
     lmax = int(np.ceil(k*radius))
     lmax = 8
-    p_src = source.structure(center, k, lmax, radius)
+    p_src = source.structure(center, k, lmax)
     mask = (X**2 + Y**2 < radius **2)
 
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
