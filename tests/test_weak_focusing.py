@@ -37,18 +37,18 @@ def Rinv(z, w0, wav):
 def gouy(z, w0, wav):
     return np.arctan2(z, zr(w0,wav))
 
+def gaussian_paraxial(x, y, z, k):
+    E0 = 2/width*np.sqrt(Z0*power/np.pi)
+
+    rho_sq = x**2 + y**2
+    wav = 2*np.pi/k
+    amp = E0*width/w(z, width, wav) * np.exp(-rho_sq/w(z, width, wav)**2)
+    phase = k*z + k*rho_sq*Rinv(z, width, wav)/2 - gouy(z, width, wav)
+
+    return amp*np.exp(1j*phase)
+
 def test_gaussian_beam_weak_focusing():
     """Weak focus test for Gaussian beam"""
-    def gaussian_paraxial(x, y, z, k):
-        E0 = 2/width*np.sqrt(Z0*power/np.pi)
-
-        rho_sq = x**2 + y**2
-        wav = 2*np.pi/k
-        amp = E0*width/w(z, width, wav) * np.exp(-rho_sq/w(z, width, wav)**2)
-        phase = k*z + k*rho_sq*Rinv(z, width, wav)/2 - gouy(z, width, wav)
-
-        return amp*np.exp(1j*phase)
-
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
     E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
     E2 = gaussian_paraxial(X, Y, Z, k)
@@ -75,16 +75,6 @@ def test_gouy_phase():
 
 def test_gaussian_beam_z_component():
     """Check z-component of weakly focused Gaussian beam in xy-plane"""
-    def gaussian_paraxial(x, y, z, k):
-        E0 = 2/width*np.sqrt(Z0*power/np.pi)
-
-        rho_sq = x**2 + y**2
-        wav = 2*np.pi/k
-        amp = E0*width/w(z, width, wav) * np.exp(-rho_sq/w(z, width, wav)**2)
-        phase = k*z + k*rho_sq*Rinv(z, width, wav)/2 - gouy(z, width, wav)
-
-        return amp*np.exp(1j*phase)
-
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
 
     x = np.linspace(-1.5*width, 1.5*width, 5)
@@ -149,3 +139,24 @@ def test_laguerre_gaussian_beam_weak_focusing():
     E2 = laguerre_gaussian_paraxial(source, X, Y, Z, k)
 
     assert np.allclose(E1, E2, rtol=4e-3, atol=1e-9)
+
+def test_stiching_by_expansion_gaussian_beam():
+    """reconstruct the paraxial E-field by expanding over p_src in a 'stitched' together fashion"""
+
+    source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
+    E1 = gaussian_paraxial(X, Y, Z, k)
+
+    E2 = np.zeros_like(E1)
+    for xi,xval in enumerate(x):
+        for yi,yval in enumerate(y):
+            for zi,zval in enumerate(z):
+                z0 = 50*nm
+                p_src = source.structure([xval,yval,zval - z0], k, lmax=3)
+                Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
+
+                R, THETA, PHI =miepy.coordinates.cart_to_sph(0, 0, z0)
+                E = Efunc(R, THETA, PHI)
+                E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
+                E2[xi,yi,zi] = E[0]
+
+    assert np.allclose(E1, E2, rtol=8e-3, atol=0)
