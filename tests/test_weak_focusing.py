@@ -73,6 +73,32 @@ def test_gouy_phase():
 
     assert not np.allclose(E1, E2, rtol=8e-3, atol=0)
 
+def test_gaussian_beam_z_component():
+    """Check z-component of weakly focused Gaussian beam in xy-plane"""
+    def gaussian_paraxial(x, y, z, k):
+        E0 = 2/width*np.sqrt(Z0*power/np.pi)
+
+        rho_sq = x**2 + y**2
+        wav = 2*np.pi/k
+        amp = E0*width/w(z, width, wav) * np.exp(-rho_sq/w(z, width, wav)**2)
+        phase = k*z + k*rho_sq*Rinv(z, width, wav)/2 - gouy(z, width, wav)
+
+        return amp*np.exp(1j*phase)
+
+    source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
+
+    x = np.linspace(-1.5*width, 1.5*width, 5)
+    y = np.linspace(-1.5*width, 1.5*width, 5)
+    X, Y = np.meshgrid(x, y)
+    Z = np.zeros_like(X)
+    
+    Ez1 = source.E_field(X, Y, Z, k)[2]
+
+    Ex = gaussian_paraxial(X, Y, Z, k)
+    Ez2 = -1j*2*X/(k*width**2)*Ex
+
+    assert np.allclose(Ez1, Ez2, rtol=2e-3, atol=1e-9)
+
 def test_hermite_gaussian_beam_weak_focusing():
     """Weak focus test for Hermite-Gaussian beam"""
     def hermite_gaussian_paraxial(src, x, y, z, k):
