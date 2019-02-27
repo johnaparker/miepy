@@ -112,8 +112,32 @@ class beam(propagating_source):
 
         return H
 
-    def theta_cutoff(self, k, eps=1e-3):
-        return min(self.theta_max, np.pi/2)
+    def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
+        Nphi = 60
+        theta = np.linspace(0, self.theta_max, Nphi)
+        phi = np.linspace(0, 2*np.pi, Nphi)
+        THETA, PHI = np.meshgrid(theta, phi)
+        E = self.angular_spectrum(THETA, PHI, k)
+        I = np.sum(np.abs(E)**2, axis=0)
+        Imax = np.max(I)
+
+        theta = self.theta_max
+        dtheta = 0.01*theta
+
+        err = np.abs(I/Imax - cutoff)
+
+        while (err > tol).all():
+            I = np.zeros_like(err)
+            while (I/Imax < cutoff).all():
+                theta -= dtheta
+                E = self.angular_spectrum(theta, phi, k)
+                I = np.sum(np.abs(E)**2, axis=0)
+
+            err = np.abs(I/Imax - cutoff)
+            theta += dtheta
+            dtheta /= 2
+
+        return theta
 
     def structure(self, position, k, lmax):
         theta_c = self.theta_cutoff(k)

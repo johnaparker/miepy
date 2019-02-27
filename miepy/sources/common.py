@@ -34,8 +34,8 @@ class gaussian_beam(polarized_beam):
     def scalar_angular_spectrum(self, theta, phi, k):
         return np.exp(-(k*self.width*np.tan(theta)/2)**2)
 
-    def theta_cutoff(self, k, eps=1e-9):
-        return np.arctan(np.sqrt(-2*np.log(eps))/(k*self.width))
+    def theta_cutoff(self, k, cutoff=1e-9, tol=None):
+        return np.arctan(np.sqrt(-2*np.log(cutoff))/(k*self.width))
 
 class bigaussian_beam(polarized_beam):
     def __init__(self, width_x, width_y, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,
@@ -52,9 +52,6 @@ class bigaussian_beam(polarized_beam):
     def scalar_angular_spectrum(self, theta, phi, k):
         return np.exp(-(k*np.tan(theta)/2)**2*((self.width_x*np.cos(phi))**2 + (self.width_y*np.sin(phi))**2))
 
-    # def theta_cutoff(self, k, eps=1e-3):
-        # return np.arctan(np.sqrt(-2*np.log(eps))/(k*self.width))
-    
 class hermite_gaussian_beam(polarized_beam):
     def __init__(self, l, m, width, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,
                 theta=0, phi=0, standing=False):
