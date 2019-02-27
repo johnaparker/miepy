@@ -7,6 +7,8 @@ Test tighly focused beams by comparing the E field from two methods:
 import numpy as np
 import miepy
 from miepy.constants import Z0
+from math import factorial
+from scipy.special import eval_genlaguerre, eval_hermite
 
 nm = 1e-9
 wav = 600*nm
@@ -71,19 +73,52 @@ def test_gouy_phase():
 
     assert not np.allclose(E1, E2, rtol=8e-3, atol=0)
 
-# def test_E_field_weak_focusing():
-    # def hermite_gaussian_paraxial(x, y, z, k):
-        # E0 = 2/width*np.sqrt(Z0*power/np.pi)
+def test_hermite_gaussian_beam_weak_focusing():
+    def hermite_gaussian_paraxial(src, x, y, z, k):
+        factor = 1/src.width*np.sqrt(2/(np.pi*2**src.l*2**src.m*factorial(src.l)*factorial(src.m)))
+        E0 = factor*np.sqrt((2*Z0*src.power))
 
-        # rho_sq = x**2 + y**2
-        # wav = 2*np.pi/k
-        # amp = E0*width/w(z, width, wav) * np.exp(-rho_sq/w(z, width, wav)**2)
-        # phase = k*z + k*rho_sq*Rinv(z, width, wav)/2 - gouy(z, width, wav)
+        rho_sq = x**2 + y**2
+        wav = 2*np.pi/k
 
-        # return amp*np.exp(1j*phase)
+        wz = w(z, src.width, wav)
+        HG_l = eval_hermite(src.l, np.sqrt(2)*x/wz)
+        HG_m = eval_hermite(src.m, np.sqrt(2)*y/wz)
+        N = src.l + src.m
 
-    # source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
-    # E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
-    # E2 = gaussian_paraxial(X, Y, Z, k)
+        amp = E0*src.width/wz * HG_l * HG_m * np.exp(-rho_sq/wz**2)
+        phase = k*z + k*rho_sq*Rinv(z,src.width,wav)/2 - (N+1)*gouy(z,src.width,wav)
 
-    # assert np.allclose(E1, E2, rtol=8e-4, atol=0)
+        return amp*np.exp(1j*phase)
+
+    source = miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power,
+            theta_max=.15)
+    E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
+    E2 = hermite_gaussian_paraxial(source, X, Y, Z, k)
+
+    assert np.allclose(E1, E2, rtol=2e-3, atol=1e-9)
+
+def test_laguerre_gaussian_beam_weak_focusing():
+    def laguerre_gaussian_paraxial(src, x, y, z, k):
+        E0 = np.sqrt((2*Z0*src.power))
+
+        rho_sq = x**2 + y**2
+        phi = np.arctan2(y, x)
+        wav = 2*np.pi/k
+
+        C = np.sqrt(2*factorial(src.p)/(np.pi*factorial(src.p + abs(src.l))))
+        wz = w(z, src.width, wav)
+
+        Lpl = eval_genlaguerre(src.p, abs(src.l), 2*rho_sq/wz**2)
+        N = abs(src.l) + 2*src.p
+
+        amp = E0*C/wz * np.exp(-rho_sq/wz**2) * ((2*rho_sq)**0.5/wz)**abs(src.l) * Lpl
+        phase = src.l*phi + k*z + k*rho_sq*Rinv(z,src.width,wav)/2 - (N+1)*gouy(z,src.width,wav)
+
+        return amp*np.exp(1j*phase)
+
+    source = miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power, theta_max=.1)
+    E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
+    E2 = laguerre_gaussian_paraxial(source, X, Y, Z, k)
+
+    assert np.allclose(E1, E2, rtol=3e-3, atol=1e-9)
