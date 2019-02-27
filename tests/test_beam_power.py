@@ -12,7 +12,7 @@ nm = 1e-9
 wav = 600*nm
 k = 2*np.pi/wav
 
-width = 400*nm
+width = 800*nm
 power = .2
 polarization = [0,1]
 
@@ -23,11 +23,11 @@ X, Y = np.meshgrid(x, y)
 Z = np.zeros_like(X)
 
 @pytest.mark.parametrize("source,rtol", [
-    (miepy.sources.gaussian_beam(width, polarization, power=power), 9e-4),
+    (miepy.sources.gaussian_beam(width, polarization, power=power), 2e-2),
     (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power), 4e-4),
     (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power), 8e-3),
-    (miepy.sources.azimuthal_beam(width=width, power=power), 4e-6),
-    (miepy.sources.bigaussian_beam(width_x=width, width_y=width/2, polarization=polarization, power=power), 4e-4),
+    (miepy.sources.azimuthal_beam(width=width, power=power), 2e-5),
+    (miepy.sources.bigaussian_beam(width_x=width, width_y=width/2, polarization=polarization, power=power), 8e-3),
 ])
 def test_power_by_near_field_poynting_vector(source, rtol):
     """Check that the power is correct by integrating the near field Poynting vector in the xy plane"""

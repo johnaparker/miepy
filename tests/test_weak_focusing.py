@@ -118,8 +118,7 @@ def test_hermite_gaussian_beam_weak_focusing():
 
         return amp*np.exp(1j*phase)
 
-    source = miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power,
-            theta_max=.15)
+    source = miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power)
     E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
     E2 = hermite_gaussian_paraxial(source, X, Y, Z, k)
 
@@ -145,8 +144,8 @@ def test_laguerre_gaussian_beam_weak_focusing():
 
         return amp*np.exp(1j*phase)
 
-    source = miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power, theta_max=.1)
+    source = miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power)
     E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
     E2 = laguerre_gaussian_paraxial(source, X, Y, Z, k)
 
-    assert np.allclose(E1, E2, rtol=3e-3, atol=1e-9)
+    assert np.allclose(E1, E2, rtol=4e-3, atol=1e-9)
