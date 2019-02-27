@@ -3,80 +3,101 @@ Tests for the power quantity of different incident beams
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import miepy
-from scipy.integrate import nquad, dblquad
-from scipy.special import erfc
 from miepy.vsh.misc import trapz_2d
-Z0 = 376.7
+from miepy.constants import Z0
+import pytest
 
 nm = 1e-9
+wav = 600*nm
+k = 2*np.pi/wav
 
-#TODO implement tests
-def test_numeric_power():
-    """compute power of a Gaussian beam using various methods"""
+width = 400*nm
+power = .2
+polarization = [0,1]
 
-    ### analytic expression
-    k = 2*np.pi/(600*nm)
-    width = 200*nm
+xmax = 2000*nm
+x = np.linspace(-xmax, xmax, 21)
+y = np.linspace(-xmax, xmax, 21)
+X, Y = np.meshgrid(x, y)
+Z = np.zeros_like(X)
 
-    radius = 1e6*(2*np.pi/k)
-    c = 0.5*(k*width)**2
-    P = radius**2*np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))
-    P *= 6
-
-    print(P)
-    assert(abs(P-1) < 0.002)
-
-    ### power through aperature
-    lmax = 6
-    source = miepy.sources.gaussian_beam(width, [1,0], power=1)
-    p_src = source.structure([0,0,0], k, lmax)
-
-    P = miepy.vsh.misc.power_through_aperature(source, [0,0,0], 3*width, k, sampling=20)
-
-    print(P)
-    assert(abs(P-1) < 0.03)
-
-    ### integration over spherically ingoing waves
-    theta = np.linspace(np.pi/2, np.pi, 20)
-    phi = np.linspace(0, 2*np.pi, 20)
-    THETA, PHI = np.meshgrid(theta, phi)
-    R = radius*np.ones_like(THETA)
-
-    Efunc = miepy.expand_E(p_src/2, k, miepy.vsh_mode.ingoing)
-    E = Efunc(R, THETA, PHI)
-    S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
-    P = radius**2*trapz_2d(theta, phi, S.T).real
-
-    print(P)
-    assert(abs(P-1) < 0.02)
-
-    ### sum over expansion coefficients from analytic integration
-    factor = 0.5/Z0*np.pi/k**2
-    P = factor*np.sum(np.abs(p_src)**2)
-
-    print(P)
-    assert(abs(P-1) < 0.008)
-
-    ### 2D integration of Poynting vector
-    a = 3000*nm
-    x = np.linspace(-a, a, 20)
-    y = np.linspace(-a, a, 20)
-    X, Y = np.meshgrid(x, y)
-    R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, 0)
-    Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
-    Hfunc = miepy.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
-    E = Efunc(R, THETA, PHI)
-    H = Hfunc(R, THETA, PHI)
-    E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
-    H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)/Z0
-
-    S = 0.5*np.linalg.norm(np.cross(E, np.conjugate(H), axis=0), axis=0)
-    S = 0.5*np.cross(E, np.conjugate(H), axis=0)[2]
-    # S = 0.5*np.sum(np.abs(E)**2, axis=0)
-
+@pytest.mark.parametrize("source,rtol", [
+    (miepy.sources.gaussian_beam(width, polarization, power=power), 9e-4),
+    (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power), 4e-4),
+    (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power), 8e-3),
+    (miepy.sources.azimuthal_beam(width=width, power=power), 4e-6),
+    (miepy.sources.bigaussian_beam(width_x=width, width_y=width/2, polarization=polarization, power=power), 4e-4),
+])
+def test_power_by_near_field_poynting_vector(source, rtol):
+    """Check that the power is correct by integrating the near field Poynting vector in the xy plane"""
+    E = source.E_field(X, Y, Z, k)
+    H = source.H_field(X, Y, Z, k)
+    S = 0.5/Z0*np.cross(E, np.conjugate(H), axis=0)[2]
     P = trapz_2d(x, y, S).real
 
-    print(P)
-    assert(abs(P-1) < 0.01)
+    assert np.allclose(P, power, rtol=rtol)
+
+class Test_gaussian_beam_numeric_power:
+    """compute power of a Gaussian beam using various methods"""
+    width = 200*nm
+    power = 1
+    polarization = [1,0]
+
+    source = miepy.sources.gaussian_beam(width, polarization, power=power)
+
+    def test_power_through_aperature(self):
+        """power by using power_through_aperature function for a large aperature"""
+        P = miepy.vsh.misc.power_through_aperature(self.source, [0,0,0], 3*self.width, k, sampling=20)
+        assert np.allclose(P, self.power, rtol=.03)
+
+    def test_power_spherically_ingoing_waves(self):
+        """power by far-field integration of spherically ingoing waves"""
+        lmax = 6
+        radius = 1e6*(2*np.pi/k)
+
+        p_src = self.source.structure([0,0,0], k, lmax)
+        theta = np.linspace(np.pi/2, np.pi, 20)
+        phi = np.linspace(0, 2*np.pi, 20)
+        THETA, PHI = np.meshgrid(theta, phi)
+        R = radius*np.ones_like(THETA)
+
+        Efunc = miepy.expand_E(p_src/2, k, miepy.vsh_mode.ingoing)
+        E = Efunc(R, THETA, PHI)
+        S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
+        P = radius**2*trapz_2d(theta, phi, S.T).real
+
+        assert np.allclose(P, self.power, rtol=.02)
+
+    def test_power_p_src_analytic(self):
+        """power by analytic sum over p_src coefficients"""
+        lmax = 6
+        p_src = self.source.structure([0,0,0], k, lmax)
+        factor = 0.5/Z0*np.pi/k**2
+        P = factor*np.sum(np.abs(p_src)**2)
+
+        assert np.allclose(P, self.power, rtol=.008)
+
+    def test_power_2d_integration(self):
+        """power by  integrating Poynting vector in 2D plane"""
+        lmax = 6
+        p_src = self.source.structure([0,0,0], k, lmax)
+        a = 3000*nm
+        x = np.linspace(-a, a, 20)
+        y = np.linspace(-a, a, 20)
+        X, Y = np.meshgrid(x, y)
+        R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, 0)
+        Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
+        Hfunc = miepy.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
+        E = Efunc(R, THETA, PHI)
+        H = Hfunc(R, THETA, PHI)
+        E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
+        H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)/Z0
+
+        S = 0.5*np.linalg.norm(np.cross(E, np.conjugate(H), axis=0), axis=0)
+        S = 0.5*np.cross(E, np.conjugate(H), axis=0)[2]
+        # S = 0.5*np.sum(np.abs(E)**2, axis=0)
+
+        P = trapz_2d(x, y, S).real
+
+        assert np.allclose(P, self.power, rtol=.01)

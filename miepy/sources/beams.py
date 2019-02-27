@@ -29,8 +29,8 @@ class beam(propagating_source):
         radius = 1e6*2*np.pi/k
         theta_c = self.theta_cutoff(k)
 
-        theta = np.linspace(0, theta_c, 30)
-        phi = np.linspace(0, 2*np.pi, 20)
+        theta = np.linspace(0, theta_c, 20)
+        phi = np.linspace(0, 2*np.pi, 40)
         THETA, PHI = np.meshgrid(theta, phi)
 
         E = self.angular_spectrum(THETA, PHI, k)
@@ -65,32 +65,33 @@ class beam(propagating_source):
         A = self.E0(k)*np.exp(1j*self.phase)
         return 1e6*A*E/2
 
-    def H_field(self, x, y, z, k):
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
         x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
         x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
         rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
 
         theta_c = self.theta_cutoff(k)
-        theta = np.linspace(0, theta_c, sampling)
+        theta = np.linspace(np.pi - theta_c, np.pi, sampling)
         phi = np.linspace(0, 2*np.pi, 2*sampling)
         THETA, PHI = np.meshgrid(theta, phi)
 
         H_inf = np.zeros((3,) + THETA.shape, dtype=complex)
         H_inf[1:] = self.angular_spectrum(THETA, PHI, k)[::-1]
+        H_inf[2] *= -1
         H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, THETA, PHI)
 
         @partial(np.vectorize, signature='(),(),()->(n)')
         def far_to_near(rho, angle, z):
-            integrand = np.exp(1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+            integrand = np.exp(-1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
                         * H_inf*np.sin(THETA)
             return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
 
         H = far_to_near(rho, angle, z)
-        H = np.moveaxis(J, source=-1, destination=0)
-        H = miepy.coordinates.rotate(*H, self.orientation)
+        H = np.moveaxis(H, source=-1, destination=0)
+        H = miepy.coordinates.rotate_vec(H, self.orientation)
 
-        E0 = self.E0(k)*np.exp(1j*self.phase)
-        return E0*H
+        A = self.E0(k)*np.exp(1j*self.phase)
+        return 1e6*A*H/2
 
     def E_angular(self, theta, phi, k, radius=None):
         if radius is None:
@@ -107,6 +108,8 @@ class beam(propagating_source):
         E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/(k*radius)
         E = E0*self.angular_spectrum(theta - self.theta, phi - self.phi, k)
         H = E[::-1]
+        H[2] *= -1
+
         return H
 
     def theta_cutoff(self, k, eps=1e-3):

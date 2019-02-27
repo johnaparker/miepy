@@ -74,6 +74,7 @@ def test_gouy_phase():
     assert not np.allclose(E1, E2, rtol=8e-3, atol=0)
 
 def test_hermite_gaussian_beam_weak_focusing():
+    """Weak focus test for Hermite-Gaussian beam"""
     def hermite_gaussian_paraxial(src, x, y, z, k):
         factor = 1/src.width*np.sqrt(2/(np.pi*2**src.l*2**src.m*factorial(src.l)*factorial(src.m)))
         E0 = factor*np.sqrt((2*Z0*src.power))
@@ -99,6 +100,7 @@ def test_hermite_gaussian_beam_weak_focusing():
     assert np.allclose(E1, E2, rtol=2e-3, atol=1e-9)
 
 def test_laguerre_gaussian_beam_weak_focusing():
+    """Weak focus test for Laguerre-Gaussian beam"""
     def laguerre_gaussian_paraxial(src, x, y, z, k):
         E0 = np.sqrt((2*Z0*src.power))
 
