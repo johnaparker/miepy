@@ -8,7 +8,7 @@ import scipy.special as special
 import scipy.integrate as integrate
 from scipy.optimize import curve_fit
 import miepy
-from miepy.sources.source_base import source, combined_source
+from miepy.sources import source, combined_source
 j0 = special.j0
 j1 = special.j1
 jv = special.jv

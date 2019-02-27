@@ -4,7 +4,7 @@ point sources
 
 import numpy as np
 import miepy
-from miepy.sources.source_base import source
+from miepy.sources import source
 
 #TODO: implement for any polarization
 class point_dipole(source):
