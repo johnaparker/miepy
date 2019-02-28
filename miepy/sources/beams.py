@@ -103,8 +103,8 @@ class beam(propagating_source):
         E_inf = self.angular_spectrum(theta_r, phi_r, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
-        E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation.inverse())
-        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta_r, phi_r)
+        E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
+        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)
 
         E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/radius
 
@@ -122,8 +122,8 @@ class beam(propagating_source):
         H_inf[0] *= -1
         H_inf = np.insert(H_inf, 0, 0, axis=0)
         H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, theta_r, phi_r)
-        H_inf = miepy.coordinates.rotate_vec(H_inf, self.orientation.inverse())
-        H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta_r, phi_r)
+        H_inf = miepy.coordinates.rotate_vec(H_inf, self.orientation)
+        H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)
 
         E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/radius
 
