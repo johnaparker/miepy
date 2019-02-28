@@ -162,12 +162,11 @@ class polarized_propagating_source(propagating_source):
 
     def angular_spectrum(self, theta, phi, k):
         U = self.scalar_angular_spectrum(theta, phi, k)
-        Esph = np.zeros((2,) + U.shape, dtype=complex)
 
         Ex = U*self.polarization[0]
         Ey = U*self.polarization[1]
-        Esph[0] = -Ex*np.cos(phi) - Ey*np.sin(phi)
-        Esph[1] = -Ex*np.sin(phi) + Ey*np.cos(phi)
+        Esph = np.array([-Ex*np.cos(phi) - Ey*np.sin(phi),
+                         -Ex*np.sin(phi) + Ey*np.cos(phi)], dtype=complex)
         Esph *= np.exp(1j*self.phase)
 
         return Esph
