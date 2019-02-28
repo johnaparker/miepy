@@ -22,12 +22,11 @@ class gaussian_beam(polarized_beam):
                f'center={self.center}, theta={self.theta}, phi={self.phi})'
 
     def E0(self, k):
-        r = 1e6*(2*np.pi/k)
         c = 0.5*(k*self.width)**2
         if c < 700:
-            U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))/r
+            U0 = np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))
         else:
-            U0 = 2*np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))/r
+            U0 = np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))
 
         return U0
 

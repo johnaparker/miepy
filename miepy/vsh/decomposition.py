@@ -278,9 +278,9 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
     theta = np.linspace(theta_0, np.pi, sampling)
     phi = np.linspace(0, 2*np.pi, 2*sampling)
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
-    rad = 1e6*(2*np.pi/k)
+    rad = 1
     rhat, *_ = coordinates.sph_basis_vectors(THETA, PHI)
-    Esrc = src.angular_spectrum(THETA, PHI, k)
+    Esrc = src.angular_spectrum(THETA, PHI, k)*np.exp(-1j*k)/rad
 
     p0 = np.zeros((2,rmax) + THETA.shape, dtype=complex)
     E0 = src.E0(k)*np.exp(1j*src.phase)
@@ -293,12 +293,12 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
         E = N(rad, THETA, PHI, k)
         U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
         integrand = U*rad**2
-        p0[0,i] = factor*integrand
+        p0[0,i] = 2*factor*integrand
 
         E = M(rad, THETA, PHI, k)
         U = np.sum(Esrc*np.conjugate(E), axis=0)*np.sin(THETA)
         integrand = U*rad**2
-        p0[1,i] = factor*integrand
+        p0[1,i] = 2*factor*integrand
 
     def f(origin):
         p = np.zeros([2,rmax], dtype=complex)

@@ -38,6 +38,35 @@ def test_power_by_near_field_poynting_vector(source, rtol):
 
     assert np.allclose(P, power, rtol=rtol)
 
+def test_power_by_far_field_poynting_vector():
+    """Check that the power is correct by integrating the far field Poynting vector in the forward hemisphere plane"""
+    source = miepy.sources.gaussian_beam(width=100*nm, polarization=[1,0], power=power)
+
+    theta = np.linspace(0, np.pi/2, 30)
+    # theta = np.linspace(np.pi/2, np.pi, 30)
+    phi = np.linspace(0, 2*np.pi, 60)
+    THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+    RAD = 1e6*wav*np.ones_like(THETA)
+
+    # S = np.sum(np.abs(E)**2, axis=0)/(2*Z0)
+
+    E = source.E_angular(THETA, PHI, k, RAD)
+    E = np.insert(E, 0, 0, axis=0)
+    E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
+    H = source.H_angular(THETA, PHI, k, RAD)
+    H = np.insert(H, 0, 0, axis=0)
+    H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)
+
+    S = np.cross(E, np.conjugate(H), axis=0)/(2*Z0)
+
+    rhat, *_ = miepy.coordinates.sph_basis_vectors(THETA, PHI)
+
+    integrand = np.sum(rhat*S, axis=0)*np.sin(THETA)*RAD**2
+    # integrand = S*np.sin(THETA)*RAD**2
+    P = miepy.vsh.misc.trapz_2d(theta, phi, integrand).real
+
+    assert np.allclose(P, power, rtol=8e-4)
+
 class Test_gaussian_beam_numeric_power:
     """compute power of a Gaussian beam using various methods"""
     width = 200*nm

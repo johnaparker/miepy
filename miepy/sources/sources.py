@@ -167,7 +167,6 @@ class polarized_propagating_source(propagating_source):
         Ey = U*self.polarization[1]
         Esph = np.array([-Ex*np.cos(phi) - Ey*np.sin(phi),
                          -Ex*np.sin(phi) + Ey*np.cos(phi)], dtype=complex)
-        Esph *= np.exp(1j*self.phase)
 
         return Esph
 
