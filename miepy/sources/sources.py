@@ -125,11 +125,16 @@ class source:
     #TODO: if other is combined_source...
     def __add__(self, other):
         """Add two sources together"""
-        return combined_source(self, other)
+        if type(other) is combined_source:
+            return combined_source(self, *other.sources)
+        elif isinstance(other, source):
+            return combined_source(self, other)
+        else:
+            raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
 
     #TODO: implement
-    def __radd__(self, other):
-        pass
+    # def __radd__(self, other):
+        # pass
 
 class propagating_source(source):
     """abstract base class for propagating sources"""
@@ -204,5 +209,5 @@ class combined_source(source):
             raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
 
     #TODO: implement
-    def __radd__(self, other):
-        pass
+    # def __radd__(self, other):
+        # pass
