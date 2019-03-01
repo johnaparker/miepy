@@ -4,7 +4,7 @@ import miepy
 
 class microscope:
     """A microscope to produce images of a cluster"""
-    def __init__(self, cluster, medium=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30):
+    def __init__(self, cluster, medium=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
         """
         Arguments:
             cluster        miepy cluster
@@ -13,6 +13,7 @@ class microscope:
             focal_obj      focal length of the objective lens (default: 100)
             theta_obj      maximum collection angle of the objective lens
             sampling       far-field sampling
+            source         (bool) include the angular source fields (default: False)
         """
         self.cluster = cluster
         self.focal_img = focal_img
@@ -33,7 +34,7 @@ class microscope:
         self.k1 = 2*np.pi*self.n1/cluster.wavelength
         self.k2 = 2*np.pi*self.n2/cluster.wavelength
 
-        self.E_far = cluster.E_angular(self.THETA, self.PHI)
+        self.E_far = cluster.E_angular(self.THETA, self.PHI, source=source)
         self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
         self.numerical_aperature = self.n1*np.sin(theta_obj)
 
@@ -60,6 +61,7 @@ class microscope:
                 rho = np.sqrt(x**2 + y**2)
                 angle = np.arctan2(y, x)
                 integrand = factor*self.E_far*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
+                integrand = np.insert(integrand, 0, 0, axis=0)
                 integrand = miepy.coordinates.vec_sph_to_cart(integrand, self.THETA, self.PHI)
 
                 for p in range(2):

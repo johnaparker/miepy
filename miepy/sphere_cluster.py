@@ -323,33 +323,35 @@ class sphere_cluster:
 
         return H
 
-    def E_angular(self, theta, phi, radius=None):
+    def E_angular(self, theta, phi, radius=None, source=False):
         """Compute the electric field due to all particles in the far-field in spherical coordinates
              
             Arguments:
                 theta    theta position (array-like) 
                 phi      phi position (array-like) 
                 radius   r position (default: large value)
+                source   (bool) include the angular source fields (default: False)
         """
         #TODO better expression far default far-radius
         if radius is None:
-            radius = 1e10*self.wavelength
+            radius = 2*np.pi/self.material_data.k_b
 
-        return self.E_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)
+        return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
-    def H_angular(self, theta, phi, radius=None):
+    def H_angular(self, theta, phi, radius=None, source=False):
         """Compute the magnetic field due to all particles in the far-field in spherical coordinates
              
             Arguments:
                 theta    theta position (array-like) 
                 phi      phi position (array-like) 
                 radius   r position (default: large value)
+                source   (bool) include the angular source fields (default: False)
         """
         #TODO better expression far default far-radius
         if radius is None:
-            radius = 1e10*self.wavelength
+            radius = 2*np.pi/self.material_data.k_b
 
-        return self.H_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)
+        return self.H_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
     def cross_sections_per_multipole(self, lmax=None):
         """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
