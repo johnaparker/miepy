@@ -188,9 +188,8 @@ class cluster:
             E_sph = expand(self.p_scat[i], self.material_data.k_b)(rad,theta,phi)
             E += miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
-        #TODO: [x,y,z] to x,y,z
         if source:
-            E += self.source.E_field(x, y, z, self.material_data.k_b)
+            E += self.source.E_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -251,10 +250,9 @@ class cluster:
                                mu=self.material_data.mu_b)(rad,theta,phi)
             H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
-        #TODO: [x,y,z] to x,y,z
         if source:
             factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
-            H += factor*self.source.H_field(x, y, z, self.material_data.k_b)
+            H += factor*self.source.H_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:

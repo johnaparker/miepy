@@ -202,9 +202,8 @@ class sphere_cluster:
             E_sph = expand(self.p_scat[i], self.material_data.k_b)(rad,theta,phi)
             E += miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
-        #TODO: [x,y,z] to x,y,z
         if source:
-            E += self.source.E_field(x, y, z, self.material_data.k_b)
+            E += self.source.E_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -265,10 +264,9 @@ class sphere_cluster:
                                mu=self.material_data.mu_b)(rad,theta,phi)
             H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
-        #TODO: [x,y,z] to x,y,z
         if source:
             factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
-            H += factor*self.source.H_field(x, y, z, self.material_data.k_b)
+            H += factor*self.source.H_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -292,7 +290,7 @@ class sphere_cluster:
         #TODO: does this depend on the origin?
         if spherical:
             H = miepy.coordinates.vec_cart_to_sph(H, theta=x2, phi=x3)
-        
+
         return H
 
     def E_angular(self, theta, phi, radius=None):
