@@ -7,7 +7,6 @@ nm = 1e-9
 um = 1e-6
 
 theta_obj = 90/180*np.pi
-focal = 1
 
 Ag = miepy.materials.Ag()
 radius = 75*nm
@@ -19,7 +18,6 @@ wavelength = 800*nm
 separation = 620*nm
 L = 1
 lattice = hexagonal_lattice_layers(L)
-# lattice = lattice[:-2]
 
 cluster = miepy.sphere_cluster(position=separation*lattice,
                                radius=radius,
@@ -28,10 +26,10 @@ cluster = miepy.sphere_cluster(position=separation*lattice,
                                wavelength=wavelength,
                                lmax=lmax,
                                medium=water)
-xmax = L*separation + 8*radius
+xmax = L*separation + 4*radius
 
-x = np.linspace(-xmax, xmax, 20)
-y = np.linspace(-xmax, xmax, 20)
+x = np.linspace(-xmax, xmax, 100)
+y = np.linspace(-xmax, xmax, 100)
 X, Y = np.meshgrid(x, y)
 Z = np.zeros_like(X)
 
@@ -54,17 +52,18 @@ ax = axes[1]
 
 X = np.sin(THETA)*np.cos(PHI)
 Y = np.sin(THETA)*np.sin(PHI)
-ax.pcolormesh(X, Y, I_far, shading='gouraud', rasterized=True)
+ax.pcolormesh(X, Y, I_far, shading='gouraud', rasterized=True, vmax=1)
 ax.set_aspect('equal')
 ax.set_title('angular far fields', weight='bold')
 
 ax = axes[2]
-x = np.linspace(-xmax, xmax, 80)
-y = np.linspace(-xmax, xmax, 80)
+x = np.linspace(-xmax, xmax, 50)
+y = np.linspace(-xmax, xmax, 50)
 X, Y = np.meshgrid(x, y)
 
-scope = miepy.microscope(cluster, focal, theta_obj, sampling=60)
-im = scope.image(x, y, 0)
+scope = miepy.microscope(cluster, theta_obj=theta_obj)
+M = scope.magnification
+im = scope.image(x*M, y*M)
 I = np.sum(np.abs(im)**2, axis=0)
 
 ax.pcolormesh(X/nm, Y/nm, I, shading='gouraud', cmap='gray', rasterized=True)

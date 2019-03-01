@@ -12,19 +12,15 @@ wavelength = 600*nm
 k = 2*np.pi/wavelength
 lmax = 6
 
-source = miepy.sources.gaussian_beam(width, [1, 1j], power=1)
-p_src = source.structure([0,0,0], k, lmax, size)
-Efunc = miepy.expand_E(p_src, k, mode=miepy.vsh_mode.incident)
-Hfunc = miepy.expand_H(p_src, k, mode=miepy.vsh_mode.incident, eps=1, mu=1)
+source = miepy.sources.gaussian_beam(width, [1, 1j])
 
 Nx = 50
 x = np.linspace(-size/2, size/2, Nx)
 y = np.linspace(-size/2, size/2, Nx)
 X, Y = np.meshgrid(x, y)
-R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, np.zeros_like(X))
-# R, THETA, PHI = miepy.coordinates.cart_to_sph(X, np.zeros_like(X), Y)
-E = Efunc(R, THETA, PHI)
-E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
+Z = np.zeros_like(X)
+
+E = source.E_field(X, Y, Z, k)
 I = np.sum(E.real**2, axis=0)
 vmax = np.max(np.sum(np.abs(E)**2, axis=0))/2
 
@@ -49,8 +45,7 @@ def update(phase):
 ani = animation.FuncAnimation(fig, update, np.linspace(0,2*np.pi,120), interval=15, blit=True)
 
 ax = axes[2]
-H = Hfunc(R, THETA, PHI)
-H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)
+H = source.H_field(X, Y, Z, k)
 
 S = np.real(np.cross(E, np.conj(H), axis=0))
 skip = 4

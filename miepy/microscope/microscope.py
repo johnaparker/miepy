@@ -35,6 +35,9 @@ class microscope:
         self.k2 = 2*np.pi*self.n2/cluster.wavelength
 
         self.E_far = cluster.E_angular(self.THETA, self.PHI, source=source)
+        self.E_far = np.insert(self.E_far, 0, 0, axis=0)
+        self.E_far = miepy.coordinates.vec_sph_to_cart(self.E_far, self.THETA, self.PHI)
+
         self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
         self.numerical_aperature = self.n1*np.sin(theta_obj)
 
@@ -54,15 +57,14 @@ class microscope:
                     *np.sin(self.THETA)*np.sqrt(np.cos(self.THETA)) \
                     *np.exp(0.5j*k*z_val*(f1/f2)**2*np.sin(self.THETA)**2)
 
-        image = np.zeros((2, len(x_array), len(y_array)), dtype=complex)
+        image = np.empty((2, len(x_array), len(y_array)), dtype=complex)
+        integrand = np.empty((2,) + self.THETA.shape, dtype=complex)
 
         for i,x in enumerate(tqdm(x_array)):
             for j,y in enumerate(y_array):
                 rho = np.sqrt(x**2 + y**2)
                 angle = np.arctan2(y, x)
-                integrand = factor*self.E_far*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
-                integrand = np.insert(integrand, 0, 0, axis=0)
-                integrand = miepy.coordinates.vec_sph_to_cart(integrand, self.THETA, self.PHI)
+                integrand[...] = factor*self.E_far[:2]*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
 
                 for p in range(2):
                     image[p,i,j] = miepy.vsh.misc.trapz_2d(self.theta, self.phi, integrand[p])
