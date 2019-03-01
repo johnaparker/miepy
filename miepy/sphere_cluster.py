@@ -168,6 +168,37 @@ class sphere_cluster:
 
         return Hscat + Hinc
     
+    def E_source(self, x1, x2, x3, far=False, spherical=False):
+        """Compute the electric field from the source
+
+        Arguments:
+            x1        x/r position (array-like) 
+            x2        y/theta position (array-like) 
+            x3        z/phi position (array-like) 
+            far       (optional) use expressions valid only for far-field (bool, default=False)
+            spherical (optional) input/output in spherical coordinates (bool, default=False)
+
+        Returns: E[3,...]
+        """
+        E = self.source.E_field(x1, x2, x3, self.material_data.k_b, far=far, spherical=spherical)
+        return E
+
+    def H_source(self, x1, x2, x3, far=False, spherical=False):
+        """Compute the magnetic field from the source
+
+        Arguments:
+            x1        x/r position (array-like) 
+            x2        y/theta position (array-like) 
+            x3        z/phi position (array-like) 
+            far       (optional) use expressions valid only for far-field (bool, default=False)
+            spherical (optional) input/output in spherical coordinates (bool, default=False)
+
+        Returns: H[3,...]
+        """
+        factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
+        H = self.source.H_field(x1, x2, x3, self.material_data.k_b, far=far, spherical=spherical)
+        return factor*H
+
     def E_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the electric field due to all particles
              
@@ -203,7 +234,7 @@ class sphere_cluster:
             E += miepy.coordinates.vec_sph_to_cart(E_sph, theta, phi)
 
         if source:
-            E += self.source.E_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
+            E += self.E_source(x, y, z, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -265,8 +296,7 @@ class sphere_cluster:
             H += miepy.coordinates.vec_sph_to_cart(H_sph, theta, phi)
 
         if source:
-            factor = (self.material_data.eps_b/self.material_data.mu_b)**0.5
-            H += factor*self.source.H_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
+            H += self.H_source(x, y, z, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
