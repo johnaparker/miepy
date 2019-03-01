@@ -100,13 +100,14 @@ class beam(propagating_source):
         xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
         _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
 
-        E_inf = self.angular_spectrum(theta_r, phi_r, k)
+        E_inf = self.angular_spectrum(np.pi - theta_r, phi_r, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
         E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
         E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)
 
-        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/radius
+        sign = np.sign(zr)
+        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
         return E0*E_inf[1:]
 
@@ -118,16 +119,17 @@ class beam(propagating_source):
         xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
         _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
 
-        H_inf = self.angular_spectrum(theta_r, phi_r, k)[::-1]
+        H_inf = self.angular_spectrum(np.pi - theta_r, phi_r, k)[::-1]
         H_inf[0] *= -1
         H_inf = np.insert(H_inf, 0, 0, axis=0)
         H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, theta_r, phi_r)
         H_inf = miepy.coordinates.rotate_vec(H_inf, self.orientation)
         H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)
 
-        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(1j*k*radius)/radius
+        sign = np.sign(zr)
+        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
-        return E0*H_inf[1:]
+        return sign*E0*H_inf[1:]
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
         Nphi = 60
