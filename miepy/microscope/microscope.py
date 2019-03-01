@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import miepy
+from functools import partial
 
 class microscope:
     """A microscope to produce images of a cluster"""
@@ -41,7 +42,7 @@ class microscope:
         self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
         self.numerical_aperature = self.n1*np.sin(theta_obj)
 
-    def image(self, x_array, y_array, z_val=0):
+    def image(self, x, y, z_val=0):
         """
         Create an image of the cluster
 
@@ -57,16 +58,20 @@ class microscope:
                     *np.sin(self.THETA)*np.sqrt(np.cos(self.THETA)) \
                     *np.exp(0.5j*k*z_val*(f1/f2)**2*np.sin(self.THETA)**2)
 
-        image = np.empty((2, len(x_array), len(y_array)), dtype=complex)
         integrand = np.empty((2,) + self.THETA.shape, dtype=complex)
 
-        for i,x in enumerate(tqdm(x_array)):
-            for j,y in enumerate(y_array):
-                rho = np.sqrt(x**2 + y**2)
-                angle = np.arctan2(y, x)
-                integrand[...] = factor*self.E_far[:2]*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
+        @partial(np.vectorize, signature='(),()->(n)')
+        def compute_pixel(x, y):
+            rho = np.sqrt(x**2 + y**2)
+            angle = np.arctan2(y, x)
+            integrand[...] = factor*self.E_far[:2]*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
+            val = np.zeros(2, dtype=complex)
+            for p in range(2):
+                val[p] = miepy.vsh.misc.trapz_2d(self.theta, self.phi, integrand[p])
 
-                for p in range(2):
-                    image[p,i,j] = miepy.vsh.misc.trapz_2d(self.theta, self.phi, integrand[p])
+            return val
+
+        image = compute_pixel(x, y)
+        image = np.moveaxis(image, -1, 0)
         
         return image

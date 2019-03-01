@@ -59,15 +59,15 @@ ax.set_title('angular far fields', weight='bold')
 ax = axes[2]
 x = np.linspace(-xmax, xmax, 50)
 y = np.linspace(-xmax, xmax, 50)
-X, Y = np.meshgrid(x, y, indexing='ij')
+X, Y = np.meshgrid(x, y)
 
 scope = miepy.microscope(cluster, theta_obj=theta_obj)
 M = scope.magnification
-im = scope.image(x*M, y*M)
+im = scope.image(X*M, Y*M)
 I = np.sum(np.abs(im)**2, axis=0)
 
 ax.pcolormesh(X/nm, Y/nm, I, shading='gouraud', cmap='gray', rasterized=True)
 ax.set_aspect('equal')
 ax.set_title('image', weight='bold')
 
-plt.show()
+# plt.show()
