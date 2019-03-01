@@ -334,7 +334,7 @@ class sphere_cluster:
         """
         #TODO better expression far default far-radius
         if radius is None:
-            radius = 2*np.pi/self.material_data.k_b
+            radius = 1e6*2*np.pi/self.material_data.k_b
 
         return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
@@ -349,7 +349,7 @@ class sphere_cluster:
         """
         #TODO better expression far default far-radius
         if radius is None:
-            radius = 2*np.pi/self.material_data.k_b
+            radius = 1e6*2*np.pi/self.material_data.k_b
 
         return self.H_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
