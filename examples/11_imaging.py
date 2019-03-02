@@ -70,4 +70,4 @@ ax.pcolormesh(X/nm, Y/nm, I, shading='gouraud', cmap='gray', rasterized=True)
 ax.set_aspect('equal')
 ax.set_title('image', weight='bold')
 
-# plt.show()
+plt.show()
