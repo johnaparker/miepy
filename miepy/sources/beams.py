@@ -45,7 +45,7 @@ class beam(propagating_source):
         theta_c = self.theta_cutoff(k)
         theta = np.linspace(np.pi - theta_c, np.pi, sampling)
         phi = np.linspace(0, 2*np.pi, 2*sampling)
-        THETA, PHI = np.meshgrid(theta, phi)
+        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
 
         E_inf = self.angular_spectrum(THETA, PHI, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
@@ -53,9 +53,9 @@ class beam(propagating_source):
 
         @partial(np.vectorize, signature='(),(),()->(n)')
         def far_to_near(rho, angle, z):
-            integrand = np.exp(-1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
                         * E_inf*np.sin(THETA)
-            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
+            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
 
         E = far_to_near(rho, angle, z)
         E = np.moveaxis(E, source=-1, destination=0)
@@ -72,7 +72,7 @@ class beam(propagating_source):
         theta_c = self.theta_cutoff(k)
         theta = np.linspace(np.pi - theta_c, np.pi, sampling)
         phi = np.linspace(0, 2*np.pi, 2*sampling)
-        THETA, PHI = np.meshgrid(theta, phi)
+        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
 
         H_inf = self.angular_spectrum(THETA, PHI, k)[::-1]
         H_inf[0] *= -1
@@ -81,9 +81,9 @@ class beam(propagating_source):
 
         @partial(np.vectorize, signature='(),(),()->(n)')
         def far_to_near(rho, angle, z):
-            integrand = np.exp(-1j*k*(z*np.cos(THETA) + rho*np.sin(THETA)*np.cos(PHI - angle))) \
+            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
                         * H_inf*np.sin(THETA)
-            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i].T) for i in range(3)])
+            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
 
         H = far_to_near(rho, angle, z)
         H = np.moveaxis(H, source=-1, destination=0)
@@ -100,14 +100,14 @@ class beam(propagating_source):
         xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
         _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
 
-        E_inf = self.angular_spectrum(np.pi - theta_r, phi_r, k)
+        E_inf = self.angular_spectrum(theta_r, phi_r, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
         E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
         E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)
 
         sign = np.sign(zr)
-        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
+        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
         return E0*E_inf[1:]
 
@@ -119,7 +119,7 @@ class beam(propagating_source):
         xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
         _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
 
-        H_inf = self.angular_spectrum(np.pi - theta_r, phi_r, k)[::-1]
+        H_inf = self.angular_spectrum(theta_r, phi_r, k)[::-1]
         H_inf[0] *= -1
         H_inf = np.insert(H_inf, 0, 0, axis=0)
         H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, theta_r, phi_r)
@@ -127,7 +127,7 @@ class beam(propagating_source):
         H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)
 
         sign = np.sign(zr)
-        E0 = self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
+        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
         return sign*E0*H_inf[1:]
 
