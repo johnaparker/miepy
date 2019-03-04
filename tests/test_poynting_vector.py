@@ -67,3 +67,73 @@ def test_gaussian_poynting_vector_far_field():
 
     assert np.allclose(S, r_hat, atol=1e-24, rtol=1e-15)
 
+def test_source_wavenumber_dependence_near_field():
+    """
+    verify the direction of propagation in the near field by measuring the phase dependence of E/H, assert that it's monotonically increasing
+    """
+    source = miepy.sources.gaussian_beam(width=width, polarization=[1,1])
+
+    z = np.linspace(-2*wav, 2*wav, 50)
+    x = np.zeros_like(z)
+    y = np.zeros_like(z)
+
+    E = source.E_field(x, y, z, k)
+
+    phase = np.unwrap(np.angle(E[0]))
+    assert np.all(np.diff(phase) > 0), 'Ex phase'
+
+    phase = np.unwrap(np.angle(E[1]))
+    assert np.all(np.diff(phase) > 0), 'Ey phase'
+
+    H = source.H_field(x, y, z, k)
+
+    phase = np.unwrap(np.angle(H[0]))
+    assert np.all(np.diff(phase) > 0), 'Hx phase'
+
+    phase = np.unwrap(np.angle(H[1]))
+    assert np.all(np.diff(phase) > 0), 'Hy phase'
+
+def test_source_wavenumber_dependence_far_field():
+    """
+    verify the direction of propagation in the far field by measuring the phase dependence of E/H, assert that it's monotonically increasing
+    """
+    source = miepy.sources.gaussian_beam(width=width, polarization=[1,1])
+
+    radius = np.linspace(1, 1 + 2*wav, 50)
+    theta = np.zeros_like(radius)
+    phi = np.zeros_like(radius)
+
+    E = source.E_angular(theta, phi, k, radius=radius)
+
+    phase = np.unwrap(np.angle(E[0]))
+    assert np.all(np.diff(phase) > 0), 'Ex phase, upper hemisphere'
+
+    phase = np.unwrap(np.angle(E[1]))
+    assert np.all(np.diff(phase) > 0), 'Ey phase, upper hemisphere'
+
+    H = source.H_angular(theta, phi, k, radius=radius)
+
+    phase = np.unwrap(np.angle(H[0]))
+    assert np.all(np.diff(phase) > 0), 'Hx phase, upper hemisphere'
+
+    phase = np.unwrap(np.angle(H[1]))
+    assert np.all(np.diff(phase) > 0), 'Hy phase, upper hemisphere'
+
+
+    theta[...] = np.pi
+    radius = radius[::-1]
+    E = source.E_angular(theta, phi, k, radius=radius)
+
+    phase = np.unwrap(np.angle(E[0]))
+    assert np.all(np.diff(phase) > 0), 'Ex phase, lower hemisphere'
+
+    phase = np.unwrap(np.angle(E[1]))
+    assert np.all(np.diff(phase) > 0), 'Ey phase, lower hemisphere'
+
+    H = source.H_angular(theta, phi, k, radius=radius)
+
+    phase = np.unwrap(np.angle(H[0]))
+    assert np.all(np.diff(phase) > 0), 'Hx phase, lower hemisphere'
+
+    phase = np.unwrap(np.angle(H[1]))
+    assert np.all(np.diff(phase) > 0), 'Hy phase, lower hemisphere'
