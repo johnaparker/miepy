@@ -5,6 +5,7 @@ import numpy as np
 import miepy
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics
 from miepy.utils import atleast
+from functools import partial
 
 #TODO: make several properties... such as wavelength, source, position, etc.
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
@@ -226,7 +227,7 @@ class sphere_cluster:
         if far:
             expand = miepy.expand_E_far
         else:
-            expand = lambda p,k: miepy.expand_E(p, k, mode=miepy.vsh_mode.outgoing)
+            expand = partial(miepy.expand_E, mode=miepy.vsh_mode.outgoing)
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])
@@ -287,7 +288,7 @@ class sphere_cluster:
         if far:
             expand = miepy.expand_H_far
         else:
-            expand = lambda p,k,eps,mu: miepy.expand_H(p, k, mode=miepy.vsh_mode.outgoing, eps=eps, mu=mu)
+            expand = partial(miepy.expand_H, mode=miepy.vsh_mode.outgoing)
 
         for i in range(self.Nparticles):
             rad, theta, phi = miepy.coordinates.cart_to_sph(x, y, z, origin=self.position[i])

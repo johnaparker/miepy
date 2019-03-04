@@ -94,6 +94,8 @@ class beam(propagating_source):
         A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
         return -A*H
 
+    #TODO: Dependence on center
+    #TODO: Test dependence on center and orientation
     def E_angular(self, theta, phi, k, radius=None):
         if radius is None:
             radius = 1e6*(2*np.pi/k)
@@ -115,6 +117,8 @@ class beam(propagating_source):
 
         return E0*E_inf
 
+    #TODO: Dependence on center
+    #TODO: Test dependence on center and orientation
     def H_angular(self, theta, phi, k, radius=None):
         if radius is None:
             radius = 1e6*(2*np.pi/k)
