@@ -1,7 +1,7 @@
 """
-Test tighly focused beams by comparing the E field from two methods:
+Test weakly focused beams by comparing the E/H field from two methods:
     (i) Directly integrating the far-field angular spectrum to obtain focal fields
-    (ii) Using the expansion coefficients around the center of the beam
+    (ii) Using the analytic paraxial expression for the beam
 """
 
 import numpy as np
@@ -9,6 +9,7 @@ import miepy
 from miepy.constants import Z0
 from math import factorial
 from scipy.special import eval_genlaguerre, eval_hermite
+import pytest
 
 nm = 1e-9
 wav = 600*nm
@@ -53,7 +54,11 @@ def test_gaussian_beam_weak_focusing():
     E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
     E2 = gaussian_paraxial(X, Y, Z, k)
 
-    assert np.allclose(E1, E2, rtol=8e-4, atol=0)
+    H1 = source.H_field(X, Y, Z, k, sampling=100)[1]
+    H2 = E2
+
+    assert np.allclose(E1, E2, rtol=8e-4, atol=0), 'electric field'
+    assert np.allclose(H1, H2, rtol=8e-4, atol=0), 'magnetic field'
 
 def test_gouy_phase():
     """Weak focus test for Gaussian beam fails without the Guoy phase term"""
@@ -87,7 +92,10 @@ def test_gaussian_beam_z_component():
     Ex = gaussian_paraxial(X, Y, Z, k)
     Ez2 = -1j*2*X/(k*width**2)*Ex
 
-    assert np.allclose(Ez1, Ez2, rtol=2e-3, atol=1e-9)
+    Hz1 = source.H_field(X, Y, Z, k)[2]
+
+    assert np.allclose(Ez1, Ez2, rtol=2e-3, atol=1e-9), 'Ez component matches'
+    assert np.allclose(Hz1, Ez2.T, rtol=2e-3, atol=1e-9), 'Hz component matches (Hz(x,y) = Ez(y,x))'
 
 def test_hermite_gaussian_beam_weak_focusing():
     """Weak focus test for Hermite-Gaussian beam"""

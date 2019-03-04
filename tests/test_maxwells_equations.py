@@ -58,6 +58,8 @@ def test_maxwells_equations_source_near_field(source):
     assert np.allclose(curlH, -1j*k*E, atol=0, rtol=1e-3), 'curl(H) = -ikE'
 
 
+#TODO: this test fails if x,y,z = (0,0,1), i.e. theta = 0. Is this a problem?
+#The definition of polarization in terms of spherical coordinates is discontinuous here
 @pytest.mark.parametrize("source", [
     miepy.sources.gaussian_beam(width, polarization, theta=theta, phi=phi),
     miepy.sources.hermite_gaussian_beam(1, 1, width, polarization, theta=theta, phi=phi),

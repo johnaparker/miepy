@@ -1,5 +1,5 @@
 """
-Test tighly focused beams by comparing the E field from two methods:
+Test tighly focused beams by comparing the E/H field from two methods:
     (i) Directly integrating the far-field angular spectrum to obtain focal fields
     (ii) Using the expansion coefficients around the center of the beam
 """
