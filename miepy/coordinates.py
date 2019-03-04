@@ -146,6 +146,21 @@ def rotate(x, y, z, quat, origin=None):
 
     return p_final
 
+def rotate_sph(theta, phi, quat):
+    """Rotate the spherical coordinates (theta, phi) to rotated spherical coordinates"""
+    q1 = miepy.quaternion.from_spherical_coords(theta, phi)
+    q2 = quat*q1
+    theta_r, phi_r = np.moveaxis(miepy.quaternion.as_spherical_coords(q2), -1, 0)
+
+    theta_r = np.asarray(theta_r)
+    phi_r = np.asarray(phi_r)
+
+    # Final step: if theta = 0, then above conversion turns phi -> phi_r/2, so this is corrected
+    idx = (theta == 0)
+    phi_r[idx] *= 2
+
+    return theta_r, phi_r
+
 def rotate_vec(F, quat):
     """Rotate the vector F using a quaternion"""
     R = miepy.quaternion.as_rotation_matrix(quat)

@@ -37,6 +37,7 @@ class beam(propagating_source):
         P = miepy.vsh.misc.trapz_2d(theta, phi, S.T).real
         return np.sqrt(self.power/P)
 
+    #TODO implement far/spherical flags
     def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
         x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
         x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
@@ -64,6 +65,7 @@ class beam(propagating_source):
         A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
         return A*E
 
+    #TODO implement far/spherical flags
     def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
         x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
         x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
@@ -96,40 +98,44 @@ class beam(propagating_source):
         if radius is None:
             radius = 1e6*(2*np.pi/k)
 
-        x, y, z = miepy.coordinates.sph_to_cart(radius, theta, phi)
-        xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
-        _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
+        theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
 
+        #TODO: can the lines below be reduced to some rotate_vec_sph function?
         E_inf = self.angular_spectrum(theta_r, phi_r, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
         E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
-        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)
+        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)[1:]
 
-        sign = np.sign(zr)
+        sign = np.sign(np.pi/2 - theta_r)
         E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
-        return E0*E_inf[1:]
+        factor = -(2*((theta_r < np.pi/2)) - 1)
+        E_inf[1] *= factor
+
+        return E0*E_inf
 
     def H_angular(self, theta, phi, k, radius=None):
         if radius is None:
             radius = 1e6*(2*np.pi/k)
 
-        x, y, z = miepy.coordinates.sph_to_cart(radius, theta, phi)
-        xr, yr, zr = miepy.coordinates.rotate(x, y, z, self.orientation.inverse())
-        _, theta_r, phi_r = miepy.coordinates.cart_to_sph(xr, yr, zr)
+        theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
 
+        #TODO: can the lines below be reduced to some rotate_vec_sph function?
         H_inf = self.angular_spectrum(theta_r, phi_r, k)[::-1]
         H_inf[0] *= -1
         H_inf = np.insert(H_inf, 0, 0, axis=0)
         H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, theta_r, phi_r)
         H_inf = miepy.coordinates.rotate_vec(H_inf, self.orientation)
-        H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)
+        H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)[1:]
 
-        sign = np.sign(zr)
+        sign = np.sign(np.pi/2 - theta_r)
         E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
 
-        return sign*E0*H_inf[1:]
+        factor = -(2*((theta_r < np.pi/2)) - 1)
+        H_inf[1] *= factor
+
+        return -E0*H_inf
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
         Nphi = 60
