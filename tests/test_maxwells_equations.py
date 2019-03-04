@@ -67,7 +67,7 @@ def test_maxwells_equations_source_far_field(source):
     """
     Verify Maxwell's equations for a source at a point in the far field
     """
-    x0, y0, z0 = 0, 0, 1
+    x0, y0, z0 = 0.1, 0.1, 1
     eps = 1*nm
 
     x = np.linspace(x0, x0 + eps, 2)
@@ -92,8 +92,8 @@ def test_maxwells_equations_source_far_field(source):
     divH = div(H_grid, eps)
     curlH = curl(H_grid, eps)
 
-    assert np.abs(divE/(k*np.linalg.norm(E))) < 1e-14, 'div(E) = 0'
-    assert np.abs(divH/(k*np.linalg.norm(H))) < 1e-14, 'div(H) = 0'
+    assert np.abs(divE/(k*np.linalg.norm(E))) < 1e-5, 'div(E) = 0'
+    assert np.abs(divH/(k*np.linalg.norm(H))) < 1e-5, 'div(H) = 0'
     assert np.allclose(curlE[:2], 1j*k*H[:2], atol=0, rtol=1e-5), 'curl(E) = ikH'
     assert np.allclose(curlH[:2], -1j*k*E[:2], atol=0, rtol=1e-5), 'curl(H) = -ikE'
 
