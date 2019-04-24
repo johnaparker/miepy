@@ -122,7 +122,11 @@ class source:
         """
         pass
 
-    #TODO: if other is combined_source...
+    def H_angular_spectrum(self, theta, phi, k):
+        H_inf = self.angular_spectrum(theta, phi, k)[::-1]
+        H_inf[0] *= -1
+        return H_inf
+
     def __add__(self, other):
         """Add two sources together"""
         if type(other) is combined_source:
@@ -131,10 +135,6 @@ class source:
             return combined_source(self, other)
         else:
             raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
-
-    #TODO: implement
-    # def __radd__(self, other):
-        # pass
 
 class propagating_source(source):
     """abstract base class for propagating sources"""
@@ -181,6 +181,10 @@ class combined_source(source):
     def __init__(self, *sources):
         self.sources = sources
 
+    def __repr__(self):
+        source_types = [type(s).__name__ for s in self.sources]
+        return 'combined_source({})'.format(', '.join(source_types))
+
     def angular_spectrum(self, theta, phi, k):
         return sum((source.angular_spectrum(theta, phi, k) for source in self.sources))
 
@@ -207,7 +211,3 @@ class combined_source(source):
             return combined_source(*self.sources, other)
         else:
             raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
-
-    #TODO: implement
-    # def __radd__(self, other):
-        # pass

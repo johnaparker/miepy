@@ -26,6 +26,12 @@ class beam(propagating_source):
         self.p_src_func = None
 
     def E0(self, k):
+        """
+        Compute the amplitude constant of the beam
+        
+        Arguments:
+            k    medium wavenumber
+        """
         theta_c = self.theta_cutoff(k)
 
         theta = np.linspace(0, theta_c, 20)
@@ -37,111 +43,75 @@ class beam(propagating_source):
         P = miepy.vsh.misc.trapz_2d(theta, phi, S.T).real
         return np.sqrt(self.power/P)
 
-    #TODO implement far/spherical flags
-    def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
-        x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
-        x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
-        rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+        """
+        Compute the electric field
 
-        theta_c = self.theta_cutoff(k)
-        theta = np.linspace(np.pi - theta_c, np.pi, sampling)
-        phi = np.linspace(0, 2*np.pi, 2*sampling)
-        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+        Arguments:
+            x1          x/r position (array-like) 
+            x2          y/theta position (array-like) 
+            x3          z/phi position (array-like) 
+            k           medium wavenumber
+            far         use expressions valid only for far-field (bool, default=False)
+            spherical   input/output in spherical coordinates (bool, default=False)
+            sampling    sampling to use in theta/phi integrals (default: 20)
+            origin      origin for when spherical=True (default: self.center)
+        """
+        return self._field(self.angular_spectrum, self.E_angular, x1, x2, x3, k,
+                far=far, spherical=spherical, sampling=sampling, origin=origin)
 
-        E_inf = self.angular_spectrum(THETA, PHI, k)
-        E_inf = np.insert(E_inf, 0, 0, axis=0)
-        E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, THETA, PHI)
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+        """
+        Compute the magnetic field
 
-        @partial(np.vectorize, signature='(),(),()->(n)')
-        def far_to_near(rho, angle, z):
-            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
-                        * E_inf*np.sin(THETA)
-            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
-
-        E = far_to_near(rho, angle, z)
-        E = np.moveaxis(E, source=-1, destination=0)
-        E = miepy.coordinates.rotate_vec(E, self.orientation)
-
-        A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
-        return A*E
-
-    #TODO implement far/spherical flags
-    def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20):
-        x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
-        x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
-        rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
-
-        theta_c = self.theta_cutoff(k)
-        theta = np.linspace(np.pi - theta_c, np.pi, sampling)
-        phi = np.linspace(0, 2*np.pi, 2*sampling)
-        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
-
-        H_inf = self.angular_spectrum(THETA, PHI, k)[::-1]
-        H_inf[0] *= -1
-        H_inf = np.insert(H_inf, 0, 0, axis=0)
-        H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, THETA, PHI)
-
-        @partial(np.vectorize, signature='(),(),()->(n)')
-        def far_to_near(rho, angle, z):
-            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
-                        * H_inf*np.sin(THETA)
-            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
-
-        H = far_to_near(rho, angle, z)
-        H = np.moveaxis(H, source=-1, destination=0)
-        H = miepy.coordinates.rotate_vec(H, self.orientation)
-
-        A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
-        return -A*H
+        Arguments:
+            x1          x/r position (array-like) 
+            x2          y/theta position (array-like) 
+            x3          z/phi position (array-like) 
+            k           medium wavenumber
+            far         use expressions valid only for far-field (bool, default=False)
+            spherical   input/output in spherical coordinates (bool, default=False)
+            sampling    sampling to use in theta/phi integrals (default: 20)
+            origin      origin for when spherical=True (default: self.center)
+        """
+        return -1*self._field(self.H_angular_spectrum, self.H_angular, x1, x2, x3, k,
+                    far=far, spherical=spherical, sampling=sampling, origin=origin)
 
     #TODO: Dependence on center
     #TODO: Test dependence on center and orientation
     def E_angular(self, theta, phi, k, radius=None):
-        if radius is None:
-            radius = 1e6*(2*np.pi/k)
+        """
+        Obtain the far-field electric field in spherical coordinates
 
-        theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
+        Arguments:
+            theta    theta coordinates (array-like)
+            phi      phi coordinates (array-like)
+            k        medium wavenumber
+            radius   radius coordinate (scalar or array-like)
+        """
+        return self._angular(self.angular_spectrum, theta, phi, k, radius=radius)
 
-        #TODO: can the lines below be reduced to some rotate_vec_sph function?
-        E_inf = self.angular_spectrum(theta_r, phi_r, k)
-        E_inf = np.insert(E_inf, 0, 0, axis=0)
-        E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
-        E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
-        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)[1:]
-
-        sign = np.sign(np.pi/2 - theta_r)
-        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
-
-        factor = -(2*((theta_r < np.pi/2)) - 1)
-        E_inf[1] *= factor
-
-        return E0*E_inf
-
-    #TODO: Dependence on center
-    #TODO: Test dependence on center and orientation
     def H_angular(self, theta, phi, k, radius=None):
-        if radius is None:
-            radius = 1e6*(2*np.pi/k)
+        """
+        Obtain the far-field magnetic field in spherical coordinates
 
-        theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
-
-        #TODO: can the lines below be reduced to some rotate_vec_sph function?
-        H_inf = self.angular_spectrum(theta_r, phi_r, k)[::-1]
-        H_inf[0] *= -1
-        H_inf = np.insert(H_inf, 0, 0, axis=0)
-        H_inf = miepy.coordinates.vec_sph_to_cart(H_inf, theta_r, phi_r)
-        H_inf = miepy.coordinates.rotate_vec(H_inf, self.orientation)
-        H_inf = miepy.coordinates.vec_cart_to_sph(H_inf, theta, phi)[1:]
-
-        sign = np.sign(np.pi/2 - theta_r)
-        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
-
-        factor = -(2*((theta_r < np.pi/2)) - 1)
-        H_inf[1] *= factor
-
-        return -E0*H_inf
+        Arguments:
+            theta    theta coordinates (array-like)
+            phi      phi coordinates (array-like)
+            k        medium wavenumber
+            radius   radius coordinate (scalar or array-like)
+        """
+        return -1*self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius)
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
+        """
+        Cutoff angle required for numerical intergration of the angular spectrum
+
+        Arguments:
+            k        medium wavenumber
+            cutoff   fraction to determine where to cutoff theta_max
+            tol      tolerance to obtain given cutoff
+        """
         Nphi = 60
         theta = np.linspace(0, self.theta_max, Nphi)
         phi = np.linspace(0, 2*np.pi, Nphi)
@@ -169,6 +139,14 @@ class beam(propagating_source):
         return theta
 
     def structure(self, position, k, lmax):
+        """
+        Obtain the structure coefficients of the beam
+
+        Arguments:
+            position     (x, y, z) position
+            k            medium wavenumber
+            lmax         maximum expansion order
+        """
         theta_c = self.theta_cutoff(k)
 
         if k != self.k_stored:
@@ -183,6 +161,96 @@ class beam(propagating_source):
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, self.orientation)
 
         return p_src
+
+    def _angular(self, angular_func, theta, phi, k, radius=None):
+        """
+        Method to obtain E or H far field angular fields
+
+        Arguments:
+            angular_func    function for the angular spectrum
+            theta    theta coordinates (array-like)
+            phi      phi coordinates (array-like)
+            k        medium wavenumber
+            radius   radius coordinate (scalar or array-like)
+        """
+        if radius is None:
+            radius = 1e6*(2*np.pi/k)
+
+        theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
+
+        #TODO: can the lines below be reduced to some rotate_vec_sph function?
+        E_inf = angular_func(theta_r, phi_r, k)
+        E_inf = np.insert(E_inf, 0, 0, axis=0)
+        E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
+        E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
+        E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)[1:]
+
+        sign = np.sign(np.pi/2 - theta_r)
+        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
+
+        factor = -(2*((theta_r < np.pi/2)) - 1)
+        E_inf[1] *= factor
+
+        return E0*E_inf
+
+
+    def _field(self, angular_func, far_func, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+        """
+        Method to compute E or H field
+
+        Arguments:
+            angular_func    function for the angular spectrum
+            far_func        function for the far-fields (used when far=True)
+            x1          x/r position (array-like) 
+            x2          y/theta position (array-like) 
+            x3          z/phi position (array-like) 
+            far         use expressions valid only for far-field (bool, default=False)
+            spherical   input/output in spherical coordinates (bool, default=False)
+            sampling    sampling to use in theta/phi integrals (default: 20)
+            origin      origin for when spherical=True (default: self.center)
+        """
+        if origin is None:
+            origin = self.center
+
+        if far:
+            if not spherical:
+                x1, x2, x3 = miepy.coordinates.cart_to_sph(x1, x2, x3, origin=origin)
+            E = far_func(x2, x3, k, radius=x1)
+            return E
+
+        if spherical:
+            x1, x2, x3 = miepy.coordinates.sph_to_cart(x1, x2, x3, origin=origin)
+
+        x1r, x2r, x3r = miepy.coordinates.translate(x1, x2, x3, -self.center)
+        x1r, x2r, x3r = miepy.coordinates.rotate(x1r, x2r, x3r, self.orientation.inverse())
+        rho, angle, z = miepy.coordinates.cart_to_cyl(x1r, x2r, x3r)
+
+        theta_c = self.theta_cutoff(k)
+        theta = np.linspace(np.pi - theta_c, np.pi, sampling)
+        phi = np.linspace(0, 2*np.pi, 2*sampling)
+        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+
+        E_inf = angular_func(THETA, PHI, k)
+        E_inf = np.insert(E_inf, 0, 0, axis=0)
+        E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, THETA, PHI)
+
+        @partial(np.vectorize, signature='(),(),()->(n)')
+        def far_to_near(rho, angle, z):
+            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
+                        * E_inf*np.sin(THETA)
+            return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
+
+        E = far_to_near(rho, angle, z)
+        E = np.moveaxis(E, source=-1, destination=0)
+        E = miepy.coordinates.rotate_vec(E, self.orientation)
+
+        A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
+        E *= A
+
+        if spherical:
+            E = miepy.coordinates.vec_cart_to_sph(E, x2, x3)
+        return E
+
 
 
 class polarized_beam(beam, polarized_propagating_source):
