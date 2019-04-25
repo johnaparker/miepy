@@ -77,9 +77,7 @@ class beam(propagating_source):
         return -1*self._field(self.H_angular_spectrum, self.H_angular, x1, x2, x3, k,
                     far=far, spherical=spherical, sampling=sampling, origin=origin)
 
-    #TODO: Dependence on center
-    #TODO: Test dependence on center and orientation
-    def E_angular(self, theta, phi, k, radius=None):
+    def E_angular(self, theta, phi, k, radius=None, origin=None):
         """
         Obtain the far-field electric field in spherical coordinates
 
@@ -88,10 +86,11 @@ class beam(propagating_source):
             phi      phi coordinates (array-like)
             k        medium wavenumber
             radius   radius coordinate (scalar or array-like)
+            origin   origin around which to compute angular fields (default: self.center)
         """
-        return self._angular(self.angular_spectrum, theta, phi, k, radius=radius)
+        return self._angular(self.angular_spectrum, theta, phi, k, radius=radius, origin=origin)
 
-    def H_angular(self, theta, phi, k, radius=None):
+    def H_angular(self, theta, phi, k, radius=None, origin=None):
         """
         Obtain the far-field magnetic field in spherical coordinates
 
@@ -100,8 +99,9 @@ class beam(propagating_source):
             phi      phi coordinates (array-like)
             k        medium wavenumber
             radius   radius coordinate (scalar or array-like)
+            origin   origin around which to compute angular fields (default: self.center)
         """
-        return -1*self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius)
+        return -1*self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius, origin=origin)
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
         """
@@ -162,7 +162,8 @@ class beam(propagating_source):
 
         return p_src
 
-    def _angular(self, angular_func, theta, phi, k, radius=None):
+    #TODO: Test dependence on center and orientation
+    def _angular(self, angular_func, theta, phi, k, radius=None, origin=None):
         """
         Method to obtain E or H far field angular fields
 
@@ -172,6 +173,7 @@ class beam(propagating_source):
             phi      phi coordinates (array-like)
             k        medium wavenumber
             radius   radius coordinate (scalar or array-like)
+            origin   origin around which to compute angular fields (default: self.center)
         """
         if radius is None:
             radius = 1e6*(2*np.pi/k)
@@ -190,6 +192,11 @@ class beam(propagating_source):
 
         factor = -(2*((theta_r < np.pi/2)) - 1)
         E_inf[1] *= factor
+
+        if origin is not None:
+            rhat, *_ = coordinates.sph_basis_vectors(theta, phi)
+            phase = k*np.einsum('i...,i', rhat, origin - self.center)
+            E_inf *= np.exp(1j*phase)
 
         return E0*E_inf
 
