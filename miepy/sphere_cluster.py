@@ -36,10 +36,7 @@ class sphere_cluster:
             raise ValueError("The shapes of position, radius, and material do not match")
         self.Nparticles = self.radius.shape[0]
         self.symmetry = symmetry
-
         self.interface = interface
-        if self.interface is not None and type(source) is not miepy.sources.plane_wave:
-            raise ValueError("Cannot use a non-planewave source with an interface")
 
         ### system properties
         self.source = source
@@ -548,6 +545,7 @@ class sphere_cluster:
 
             for i in range(self.Nparticles):
                 pos = np.copy(self.position[i])
+                #TODO: move this line to plane-wave only
                 pos[2] -= 2*self.interface.z
                 self.p_src[i] += reflected.structure(pos, self.material_data.k_b, self.lmax)
 
