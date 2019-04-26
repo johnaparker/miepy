@@ -1,8 +1,10 @@
 """
-Abstract base classes for beams. Defines:
+Base classes for beams. Defines:
 
-    beam______________base clase for beams
-    polarized_beam____beam with a global polarization state (TE, TM pair)
+    beam________________base clase for beams
+    polarized_beam______beam with a global polarization state (TE, TM pair)
+    reflected_beam______beam reflected by an interface
+    transmitted_beam____beam transmitted by an interface
 """
 
 import numpy as np
@@ -162,6 +164,12 @@ class beam(propagating_source):
 
         return p_src
 
+    def reflect(self, interface, medium, wavelength):
+        return reflected_beam(self, interface, wavenumber, medium)
+
+    def transmit(self, interface, medium, wavelength):
+        return transmitted_beam(self, interface, wavenumber, medium)
+
     #TODO: Test dependence on center and orientation
     def _angular(self, angular_func, theta, phi, k, radius=None, origin=None):
         """
@@ -268,3 +276,53 @@ class polarized_beam(beam, polarized_propagating_source):
         polarized_propagating_source.__init__(self, polarization=polarization)
         beam.__init__(self, power=power, theta_max=theta_max, phase=phase, center=center,
             theta=theta, phi=phi, standing=standing)
+
+class reflected_beam(beam):
+    def __init__(self, incident_beam, interface, wavelength, medium):
+        center = np.copy(incident_beam.center)
+        center[2] += 2*(interfa.z - center[2])
+        theta = np.pi - incident_beam.theta
+        phi = incident_beam.phi
+        beam.__init__(self, power=incident_beam.power, theta_max=incident_beam.theta_max,
+                phase=incident_beam.phase, center=center, theta=theta, phi=phi)
+
+        self.incident_beam = incident_beam
+        self.interface = interface
+        self.wavelength = wavelength
+        self.medium = medium
+
+    #TODO: if theta, phi are not (0,0), this angular spectrum is not correct
+    def angular_spectrum(self, theta, phi, k):
+        U = self.incident_beam.angular_spectrum(theta, phi, k)
+        r_parallel, r_perp = self.interface.reflection_coefficients(theta, self.wavelength, self.medium)
+        U[0] *= -r_parallel
+        U[1] *= r_perp
+
+        return U
+
+    def E0(self, k):
+        return self.incident_beam.E0(k)
+
+class transmitted_beam(beam):
+    def __init__(self, incident_beam, interface, wavelength, medium):
+        theta = interface.transmission_angle(theta, wavelength, medium)
+        phi = incident_beam.phi
+        beam.__init__(self, power=incident_beam.power, theta_max=incident_beam.theta_max,
+                phase=incident_beam.phase, center=incident_beam.center, theta=theta, phi=phi)
+
+        self.incident_beam = incident_beam
+        self.interface = interface
+        self.wavelength = wavelength
+        self.medium = medium
+
+    #TODO: if theta, phi are not (0,0), this angular spectrum is not correct
+    def angular_spectrum(self, theta, phi, k):
+        U = self.incident_beam.angular_spectrum(theta, phi, k)
+        t_parallel, t_perp = self.interface.transmission_coefficients(theta, self.wavelength, self.medium)
+        U[0] *= t_parallel
+        U[1] *= t_perp
+
+        return U
+
+    def E0(self, k):
+        return self.incident_beam.E0(k)

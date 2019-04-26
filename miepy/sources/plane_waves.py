@@ -133,3 +133,33 @@ class plane_wave(polarized_propagating_source):
 
     def H_angular(self, theta, phi, k, radius=None):
         return self.angular_spectrum(theta, phi, j)
+
+    def reflect(self, interface, medium, wavelength):
+        theta = np.pi - self.theta
+        phi = self.phi
+        phase = self.phase
+
+        r_parallel, r_perp = interface.reflection_coefficients(self.theta, wavelength, medium)
+
+        a_theta = r_parallel*self.polarization[0]
+        a_phi = r_perp*self.polarization[1]
+        polarization = [a_theta, a_phi]
+        amplitude = np.linalg.norm(polarization)*self.amplitude
+
+        return plane_wave(polarization, theta, phi, amplitude, phase)
+
+    def transmit(self, interface, medium, wavelength):
+        m = interface.get_relative_index(wavelength, medium)
+
+        theta = np.arcsin(np.sin(self.theta)/m)
+        phi = self.phi
+        phase = self.phase
+
+        t_parallel, t_perp = interface.transmission_coefficients(self.theta, wavelength, medium)
+
+        a_theta = t_parallel*self.polarization[0]
+        a_phi = t_perp*self.polarization[1]
+        polarization = [a_theta, a_phi]
+        amplitude = np.linalg.norm(polarization)*self.amplitude
+
+        return plane_wave(polarization, theta, phi, amplitude, phase)

@@ -108,6 +108,20 @@ class source:
         """
         pass
 
+    @abstractmethod
+    def reflect(self, interface, medium, wavelength):
+        """
+        Create a source reflected by an interface
+        """
+        pass
+
+    @abstractmethod
+    def transmit(self, interface, medium, wavelength):
+        """
+        Create a source transmitted by an interface
+        """
+        pass
+
     def power_density(self, x1, x2, x3, k, far=False, spherical=False):
         """Compute the power density of the source
 

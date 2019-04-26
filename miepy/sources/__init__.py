@@ -1,5 +1,5 @@
 from .sources import source, propagating_source, polarized_propagating_source, combined_source
-from .beams import beam, polarized_beam
+from .beams import beam, polarized_beam, reflected_beam
 
 from .plane_waves import plane_wave
 

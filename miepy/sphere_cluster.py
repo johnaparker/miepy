@@ -544,13 +544,12 @@ class sphere_cluster:
             self.p_src[i] = self.source.structure(pos, self.material_data.k_b, self.lmax)
 
         if self.interface is not None:
-            reflected = self.interface.reflected_plane_wave(self.source, self.wavelength, self.medium)
+            reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
 
             for i in range(self.Nparticles):
                 pos = np.copy(self.position[i])
                 pos[2] -= 2*self.interface.z
                 self.p_src[i] += reflected.structure(pos, self.material_data.k_b, self.lmax)
-
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src

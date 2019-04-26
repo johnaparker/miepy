@@ -19,43 +19,21 @@ class interface:
 
         return r_parallel, r_perp
 
-    def transmission_coefficients(self, theta, wavelength, medium):
+    #TODO: implement
+    def transmission_kz(self, theta, wavelength, medium):
+        pass
+
+    def transmission_angle(self, theta, wavelength, medium):
         m = self.get_relative_index(wavelength, medium)
         theta_t = np.arcsin(np.sin(theta)/m)
+        return theta_t
+
+    def transmission_coefficients(self, theta, wavelength, medium):
+        theta_t = self.transmission_angle(theta, wavelength, medium)
         t_parallel = 2*np.cos(theta)/(m*np.cos(theta) + np.cos(theta_t))
         t_perp     = 2*np.cos(theta)/(np.cos(theta) + m*np.cos(theta_t))
 
         return t_parallel, t_perp
-
-    def reflected_plane_wave(self, plane_wave, wavelength, medium):
-        theta = np.pi - plane_wave.theta
-        phi = plane_wave.phi
-        phase = plane_wave.phase
-
-        r_parallel, r_perp = self.reflection_coefficients(plane_wave.theta, wavelength, medium)
-
-        a_theta = r_parallel*plane_wave.polarization[0]
-        a_phi = r_perp*plane_wave.polarization[1]
-        polarization = [a_theta, a_phi]
-        amplitude = np.linalg.norm(polarization)*plane_wave.amplitude
-
-        return miepy.sources.plane_wave(polarization, theta, phi, amplitude, phase)
-
-    def transmitted_plane_wave(self, plane_wave, wavelength, medium):
-        m = self.get_relative_index(wavelength, medium)
-
-        theta = np.arcsin(np.sin(plane_wave.theta)/m)
-        phi = plane_wave.phi
-        phase = plane_wave.phase
-
-        t_parallel, t_perp = self.transmission_coefficients(plane_wave.theta, wavelength, medium)
-
-        a_theta = t_parallel*plane_wave.polarization[0]
-        a_phi = t_perp*plane_wave.polarization[1]
-        polarization = [a_theta, a_phi]
-        amplitude = np.linalg.norm(polarization)*plane_wave.amplitude
-
-        return miepy.sources.plane_wave(polarization, theta, phi, amplitude, phase)
 
 if __name__ == '__main__':
     n1 = 1
