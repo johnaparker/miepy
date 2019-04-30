@@ -137,7 +137,8 @@ class plane_wave(polarized_propagating_source):
     def reflect(self, interface, medium, wavelength):
         theta = np.pi - self.theta
         phi = self.phi
-        phase = self.phase
+        k = 2*np.pi*medium.index(wavelength)/wavelength
+        phase = self.phase - 2*k*self.k_hat[2]*interface.z
 
         r_parallel, r_perp = interface.reflection_coefficients(self.theta, wavelength, medium)
 

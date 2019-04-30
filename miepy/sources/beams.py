@@ -231,6 +231,10 @@ class beam(propagating_source):
             if not spherical:
                 x1, x2, x3 = miepy.coordinates.cart_to_sph(x1, x2, x3, origin=origin)
             E = far_func(x2, x3, k, radius=x1)
+
+            if not spherical:
+                E = np.insert(E, 0, 0, axis=0)
+                E = miepy.coordinates.vec_sph_to_cart(E, x2, x3)
             return E
 
         if spherical:
@@ -266,8 +270,6 @@ class beam(propagating_source):
             E = miepy.coordinates.vec_cart_to_sph(E, x2, x3)
         return E
 
-
-
 class polarized_beam(beam, polarized_propagating_source):
     """abstract base class for polarized beam sources"""
     __metaclass__ = ABCMeta
@@ -291,17 +293,26 @@ class reflected_beam(beam):
         self.wavelength = wavelength
         self.medium = medium
 
-    #TODO: if theta, phi are not (0,0), this angular spectrum is not correct
     def angular_spectrum(self, theta, phi, k):
-        U = self.incident_beam.angular_spectrum(np.pi-theta, phi, k)
-        r_parallel, r_perp = self.interface.reflection_coefficients(theta - self.theta, self.wavelength, self.medium)
-        U[0] *= r_parallel
-        U[1] *= -r_perp
+        q = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
+        theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q)
+        theta = np.pi - theta
 
-        return U
+        r_parallel, r_perp = self.interface.reflection_coefficients(theta, self.wavelength, self.medium)
+        q = miepy.quaternion.from_spherical_coords(self.incident_beam.theta, self.incident_beam.phi)
+        theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q.inverse())
+
+        U = self.incident_beam.angular_spectrum(theta, phi, k)
+        U[0] *= r_parallel
+        U[1] *= r_perp
+
+        return -U
 
     def E0(self, k):
         return self.incident_beam.E0(k)
+
+    def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
+        return self.incident_beam.theta_cutoff(k, cutoff=cutoff, tol=tol)
 
 class transmitted_beam(beam):
     def __init__(self, incident_beam, interface, wavelength, medium):
@@ -315,10 +326,17 @@ class transmitted_beam(beam):
         self.wavelength = wavelength
         self.medium = medium
 
-    #TODO: if theta, phi are not (0,0), this angular spectrum is not correct
     def angular_spectrum(self, theta, phi, k):
+        q = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
+        theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q)
+        m = self.interface.get_relative_index(self.wavelength, self.medium)
+        theta = np.arcsin(m*np.sin(theta)).real
+
+        t_parallel, t_perp = self.interface.transmission_coefficients(theta, self.wavelength, self.medium)
+        q = miepy.quaternion.from_spherical_coords(self.incident_beam.theta, self.incident_beam.phi)
+        theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q.inverse())
+
         U = self.incident_beam.angular_spectrum(theta, phi, k)
-        t_parallel, t_perp = self.interface.transmission_coefficients(theta -self.theta, self.wavelength, self.medium)
         U[0] *= t_parallel
         U[1] *= t_perp
 
@@ -326,3 +344,6 @@ class transmitted_beam(beam):
 
     def E0(self, k):
         return self.incident_beam.E0(k)
+
+    def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
+        return self.incident_beam.theta_cutoff(k, cutoff=cutoff, tol=tol)

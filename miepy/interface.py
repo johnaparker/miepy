@@ -13,7 +13,7 @@ class interface:
 
     def reflection_coefficients(self, theta, wavelength, medium):
         m = self.get_relative_index(wavelength, medium)
-        theta_t = np.arcsin(np.sin(theta)/m)
+        theta_t = self.transmission_angle(theta, wavelength, medium)
         r_parallel = (m*np.cos(theta) - np.cos(theta_t))/(m*np.cos(theta) + np.cos(theta_t))
         r_perp     = (np.cos(theta) - m*np.cos(theta_t))/(np.cos(theta) + m*np.cos(theta_t))
 

@@ -30,6 +30,9 @@ class material:
     @abstractmethod
     def mu(self, wavelength): pass
 
+    def index(self, wavelength):
+        return np.sqrt(self.eps(wavelength)*self.mu(wavelength))
+
     def __repr__(self):
         return self.name
 
