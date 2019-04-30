@@ -55,7 +55,7 @@ def test_interface_z_translation(s1, s2, rtol):
 
 @pytest.mark.parametrize("source,rtol", [
     (miepy.sources.gaussian_beam(width=width, polarization=polarization), 1e-15),
-    (miepy.sources.plane_wave(polarization=polarization), 1e-15)
+    (miepy.sources.plane_wave(polarization=polarization), 0)
 ])
 def test_index_matched_interface(source, rtol):
     """

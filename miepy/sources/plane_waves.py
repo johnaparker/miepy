@@ -147,6 +147,9 @@ class plane_wave(polarized_propagating_source):
         polarization = [a_theta, a_phi]
         amplitude = np.linalg.norm(polarization)*self.amplitude
 
+        if amplitude == 0:
+            polarization = self.polarization
+
         return plane_wave(polarization=polarization, theta=theta, phi=phi, amplitude=amplitude, phase=phase)
 
     def transmit(self, interface, medium, wavelength):
@@ -162,5 +165,8 @@ class plane_wave(polarized_propagating_source):
         a_phi = t_perp*self.polarization[1]
         polarization = [a_theta, a_phi]
         amplitude = np.linalg.norm(polarization)*self.amplitude
+
+        if amplitude == 0:
+            polarization = self.polarization
 
         return plane_wave(polarization=polarization, theta=theta, phi=phi, amplitude=amplitude, phase=phase)
