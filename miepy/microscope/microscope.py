@@ -3,52 +3,79 @@ from tqdm import tqdm
 import miepy
 from functools import partial
 
+def cluster_microscope(cluster, medium=None, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
+    """
+    Arguments:
+        cluster        miepy cluster
+        medium         the outer medium of the microscope (default: air)
+        orientation    orientation of the microscope (as a quaternion; default +z)
+        focal_img      focal length of the imaging lens (default: 100)
+        focal_obj      focal length of the objective lens (default: 100)
+        theta_obj      maximum collection angle of the objective lens
+        sampling       far-field sampling
+        source         (bool) include the angular source fields (default: False)
+    """
+    if medium is None:
+        medium = miepy.materials.air()
+
+    E_angular = partial(cluster.E_angular, source=source)
+    wavelength = cluster.wavelength
+    n1 = cluster.medium.index(wavelength)
+    n2 = medium.index(wavelength)
+
+    return microscope(E_angular, wavelength, n1, n2=n2, orientation=orientation, focal_img=focal_img, focal_obj=focal_obj, theta_obj=theta_obj, sampling=sampling)
+
+
 class microscope:
-    """A microscope to produce images of a cluster"""
-    def __init__(self, cluster, medium=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
+    """A microscope to produce images"""
+    def __init__(self, E_angular, wavelength, n1, n2=1, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30):
         """
         Arguments:
-            cluster        miepy cluster
-            medium         the outer medium of the microscope (default: air)
+            E_angular      far-field angular function for E(theta, phi)
+            wavelength     wavelength of light
+            n1             refractive index at focal plane
+            n2             refractive index at image plane (default: 1)
+            orientation    orientation of the microscope (as a quaternion; default +z)
             focal_img      focal length of the imaging lens (default: 100)
             focal_obj      focal length of the objective lens (default: 100)
             theta_obj      maximum collection angle of the objective lens
             sampling       far-field sampling
             source         (bool) include the angular source fields (default: False)
         """
-        self.cluster = cluster
         self.focal_img = focal_img
         self.focal_obj = focal_obj
         self.theta_obj = theta_obj
-
-        if medium is None:
-            self.medium = miepy.materials.air()
-        else:
-            self.medium = medium
 
         self.theta = np.linspace(0, self.theta_obj, sampling)
         self.phi   = np.linspace(0, 2*np.pi, 2*sampling)
         self.THETA, self.PHI = np.meshgrid(self.theta, self.phi, indexing='ij')
 
-        self.n1 = self.cluster.medium.eps(cluster.wavelength)**0.5
-        self.n2 = self.medium.eps(cluster.wavelength)**0.5
-        self.k1 = 2*np.pi*self.n1/cluster.wavelength
-        self.k2 = 2*np.pi*self.n2/cluster.wavelength
+        self.n1 = n1
+        self.n2 = n2
+        self.k1 = 2*np.pi*self.n1/wavelength
+        self.k2 = 2*np.pi*self.n2/wavelength
 
-        self.E_far = cluster.E_angular(self.THETA, self.PHI, source=source)
+        if orientation is not None:
+            THETA, PHI = miepy.coordinates.rotate_sph(self.THETA, self.PHI, orientation)
+        else:
+            THETA, PHI = self.THETA, self.PHI
+
+        self.E_far = E_angular(THETA, PHI)
         self.E_far = np.insert(self.E_far, 0, 0, axis=0)
-        self.E_far = miepy.coordinates.vec_sph_to_cart(self.E_far, self.THETA, self.PHI)
+        self.E_far = miepy.coordinates.vec_sph_to_cart(self.E_far, THETA, PHI)
+        if orientation is not None:
+            self.E_far = miepy.coordinates.rotate_vec(self.E_far, orientation)
 
         self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
         self.numerical_aperature = self.n1*np.sin(theta_obj)
 
     def image(self, x, y, z_val=0):
         """
-        Create an image of the cluster
+        Create an image
 
         Arguments:
-            x_array    1D array of image x-values
-            y_array    1D array of image y-values
+            x_array    image x-values (array-like)
+            y_array    image y-values (array-like)
             z_val      z-value of the image (relative to the focus)
         """
         k = self.k2

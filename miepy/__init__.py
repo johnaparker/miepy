@@ -32,7 +32,7 @@ from .particles import sphere, spheroid, cylinder, ellipsoid, regular_prism, cub
 from .cpp.interactions import solver
 from .interface import interface
 from .visual.view3d import visualize
-from .microscope.microscope import microscope
+from .microscope.microscope import microscope, cluster_microscope
 
 from .vsh.mode_indices import reduced_index
 

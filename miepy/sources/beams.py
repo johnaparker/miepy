@@ -202,7 +202,7 @@ class beam(propagating_source):
         E_inf[1] *= factor
 
         if origin is not None:
-            rhat, *_ = coordinates.sph_basis_vectors(theta, phi)
+            rhat, *_ = miepy.coordinates.sph_basis_vectors(theta, phi)
             phase = k*np.einsum('i...,i', rhat, origin - self.center)
             E_inf *= np.exp(1j*phase)
 
