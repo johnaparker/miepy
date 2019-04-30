@@ -4,6 +4,7 @@ Tests related to miepy.interface
 
 import numpy as np
 import miepy
+import pytest
 
 nm = 1e-9
 wavelength = 600*nm
@@ -17,43 +18,49 @@ polarization = [1,0]
 
 zpos = 400*nm
 
-
-def test_interface_z_translation():
+@pytest.mark.parametrize("s1,s2,rtol", [
+    (miepy.sources.gaussian_beam(width=width, polarization=polarization, center=[0,0,-zpos]),
+          miepy.sources.gaussian_beam(width=width, polarization=polarization), 0),
+    (miepy.sources.plane_wave(polarization=polarization),
+          miepy.sources.plane_wave(polarization=polarization), 1e-4)
+])
+def test_interface_z_translation(s1, s2, rtol):
     """
     Moving the source and particle is identical to moving the interface (cross-section comparison)
     """
-    source = miepy.sources.gaussian_beam(width=width, polarization=polarization, center=[0,0,-zpos])
     interface = miepy.interface(miepy.materials.constant_material(index=1.7))
     cluster = miepy.sphere_cluster(position=[0,0,-zpos],
                                    radius=radius,
                                    material=material,
                                    medium=medium,
                                    lmax=2,
-                                   source=source,
+                                   source=s1,
                                    interface=interface,
                                    wavelength=wavelength)
     C1 = np.array(cluster.cross_sections())
 
 
-    source = miepy.sources.gaussian_beam(width=width, polarization=polarization)
     interface = miepy.interface(miepy.materials.constant_material(index=1.7), z=zpos)
     cluster = miepy.sphere_cluster(position=[0,0,0],
                                    radius=radius,
                                    material=material,
                                    medium=medium,
                                    lmax=2,
-                                   source=source,
+                                   source=s2,
                                    interface=interface,
                                    wavelength=wavelength)
     C2 = np.array(cluster.cross_sections())
 
-    assert np.allclose(C1, C2, atol=0, rtol=0)
+    assert np.allclose(C1, C2, atol=0, rtol=rtol)
 
-def test_index_matched_interface():
+@pytest.mark.parametrize("source,rtol", [
+    (miepy.sources.gaussian_beam(width=width, polarization=polarization), 1e-15),
+    (miepy.sources.plane_wave(polarization=polarization), 1e-15)
+])
+def test_index_matched_interface(source, rtol):
     """
     An interface that is index-matched with the medium is identical to not having an interface (cross-section comparison)
     """
-    source = miepy.sources.gaussian_beam(width=width, polarization=polarization)
     interface = miepy.interface(medium, z=zpos)
     cluster = miepy.sphere_cluster(position=[0,0,0],
                                    radius=radius,
