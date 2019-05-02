@@ -24,7 +24,7 @@ def load_material(name, author):
     # return load_material(miepy.__path__[0] + "/materials/ag.npy")
     filepath = get_filepath(name, author)
     with open(filepath, 'r') as f:
-        docs = yaml.load(f)
+        docs = yaml.load(f, Loader=yaml.SafeLoader)
         str_data = docs['DATA'][0]['data']
         list_data = str_data.splitlines()
         for i,item in enumerate(list_data):
@@ -101,7 +101,7 @@ def material_info_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
             filepath = get_filepath(name, author)
             with open(filepath, 'r') as f:
-                docs = yaml.load(f)
+                docs = yaml.load(f, Loader=yaml.SafeLoader)
                 reference = docs['REFERENCES']
                 try:
                     comments = docs['COMMENTS']
