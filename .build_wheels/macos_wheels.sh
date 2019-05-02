@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export MACOSX_DEPLOYMENT_TARGET=10.9
+export CPATH=/usr/local/include/:$CPATH
+
 export CC=/usr/local/bin/gcc-8
 export CXX=/usr/local/bin/g++-8
 
