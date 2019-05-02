@@ -12,13 +12,13 @@ from distutils.version import LooseVersion
 
 
 NAME = 'miepy'
-DESCRIPTION = "Python module to solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
+DESCRIPTION = "Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
 URL = ''
 EMAIL = 'japarker@uchicago.edu'
 AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
 # REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.3'
+VERSION = '0.4.1'
 LICENSE = 'GPLv3'
 
 REQUIRED = [
@@ -150,8 +150,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: C++',
         'Programming Language :: Fortran',
+        'Operating System :: Unix',
         'Operating System :: POSIX',
         'Operating System :: MacOS',
+        'Operating System :: Microsoft :: Windows',
         'Development Status :: 3 - Alpha',
         'Topic :: Scientific/Engineering :: Physics',
         'Intended Audience :: Science/Research',

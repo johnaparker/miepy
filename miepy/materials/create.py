@@ -2,7 +2,6 @@
 creation new materials
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import miepy
 from scipy import constants

@@ -3,11 +3,9 @@ Various functions to load materials and display metadata from the material datab
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import yaml
 import os
 import itertools
-from matplotlib.markers import MarkerStyle
 import miepy
 
 def get_filepath(name, author):
@@ -57,6 +55,9 @@ def wavelength_filter(df, min_wav, max_wav):
 
 def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.inf):
     """For a given material, plot all permittivity data for all authors between a given wavelength range"""
+    import matplotlib.pyplot as plt
+    from matplotlib.markers import MarkerStyle
+
     fig1,(ax1,ax2) = plt.subplots(ncols=2, figsize=plt.figaspect(1/2))
 
     markers = itertools.cycle(('o', 'v', '^', '<', '>', 's', '8', 'p', 'x'))

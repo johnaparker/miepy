@@ -1,3 +1,16 @@
+## 0.4 - 2019-05-30
+- Support for including an interface (substrate) in the simulation; all sources can be transmitted and reflected
+- Non-axisymmetric particles are now supported; ellipsoids, cubes, and regular prisms are defined
+- Focal fields of focused beams are computed exactly using the angular spectrum rather than via paraxial limit expressions
+- 3D scene visualization using the VPython library
+- Microscope module for producing simulated images of clusters through a lens system
+- New metal material for perfectly conducting objects
+- Method to compute the local density of states (LDOS)
+- Faster T-matrix initialization for particles of the same geometry by caching the non-rotated T-matrix
+- Performance critical code re-written in C++ and binded using pybind11; large speed-up for smaller clusters
+- Experimental support for OpenMP for shared-memory parallel execution
+- Platform support: now builds on Linux, MacOS and Windows
+
 ## 0.3 - 2018-07-16
 - Extension to non-spherical particles (spheroids and cylinders) using the T-matrix method
 - Plane waves and beams now have theta and phi variables to control their incident direction

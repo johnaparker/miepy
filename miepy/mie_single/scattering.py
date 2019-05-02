@@ -5,7 +5,6 @@ Mie sphere and Mie core shell both contain an, bn as part of their solution
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import miepy
 import scipy.constants as constants
 from miepy.special_functions import riccati_1,riccati_2,vector_spherical_harmonics

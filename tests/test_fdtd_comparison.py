@@ -12,7 +12,6 @@ Compares cross-sections and forces
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import miepy
 
 nm = 1e-9
@@ -176,6 +175,7 @@ def test_fdtd_forces(plot=False):
         fig.suptitle(test_fdtd_forces.__name__, weight='bold')
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
     test_fdtd_cross_sections(plot=True)
     test_fdtd_forces(plot=True)
     plt.show()

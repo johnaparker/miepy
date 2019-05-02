@@ -18,6 +18,7 @@ from . import coordinates
 from . import utils
 from . import symmetry
 from . import constants
+from . import microscope
 
 from .materials.create import constant_material, function_material, data_material
 from .cluster import cluster
@@ -32,7 +33,7 @@ from .particles import sphere, spheroid, cylinder, ellipsoid, regular_prism, cub
 from .cpp.interactions import solver
 from .interface import interface
 from .visual.view3d import visualize
-from .microscope.microscope import microscope, cluster_microscope
+from .microscope import microscope, cluster_microscope
 
 from .vsh.mode_indices import reduced_index
 
