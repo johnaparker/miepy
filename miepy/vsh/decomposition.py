@@ -262,6 +262,8 @@ def integral_project_source(src, k, lmax, origin=[0,0,0], sampling=30, mode=vsh.
 
     return p
 
+#TODO: rad=1 .....
+#TODO: (theta_min, theta_max) for integral bounds
 def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
     """Decompose a source object into VSHs using integral method in the far-field
     Returns p[2,rmax]
