@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "vsh_functions.hpp"
 
 #include <pybind11/pybind11.h>

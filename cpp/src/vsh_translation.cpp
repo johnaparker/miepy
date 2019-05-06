@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "vsh_translation.hpp"
 #include "special.hpp"
 #include "indices.hpp"

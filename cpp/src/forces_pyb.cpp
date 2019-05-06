@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "forces.hpp"
 
 #include <pybind11/pybind11.h>

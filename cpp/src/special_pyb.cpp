@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "special.hpp"
 
 #include <pybind11/pybind11.h>

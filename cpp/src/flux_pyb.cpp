@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "flux.hpp"
 
 #include <pybind11/pybind11.h>
