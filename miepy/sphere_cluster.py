@@ -197,7 +197,7 @@ class sphere_cluster:
         H = self.source.H_field(x1, x2, x3, self.material_data.k_b, far=far, spherical=spherical)
         return factor*H
 
-    def E_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False, interface=True):
+    def E_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the electric field due to all particles
              
             Arguments:
@@ -209,7 +209,6 @@ class sphere_cluster:
                 mask      (optional) set interior fields to 0 (bool, default=False)
                 far       (optional) use expressions valid only for far-field (bool, default=False)
                 spherical (optional) input/output in spherical coordinates (bool, default=False)
-                interface (optional) include reflected/transmitted fields due to the interface (bool, default=True)
 
             Returns: E[3,...]
         """
@@ -235,13 +234,13 @@ class sphere_cluster:
         if source:
             E += self.E_source(x, y, z, far=far, spherical=False)
 
-        if interface and self.interface is not None:
-            idx = z <= self.interface.z
-            reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
-            E += reflected.E_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
+            if self.interface is not None:
+                idx = z <= self.interface.z
+                reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
+                E += reflected.E_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
 
-            transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
-            E += transmitted.E_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
+                transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
+                E += transmitted.E_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -267,7 +266,7 @@ class sphere_cluster:
         
         return E
 
-    def H_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False, interface=True):
+    def H_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
         """Compute the magnetic field due to all particles
              
             Arguments:
@@ -279,7 +278,6 @@ class sphere_cluster:
                 mask      (optional) set interior fields to 0 (bool, default=False)
                 far       (optional) use expressions valid only for far-field (bool, default=False)
                 spherical (optional) input/output in spherical coordinates (bool, default=False)
-                interface (optional) include reflected/transmitted fields due to the interface (bool, default=True)
 
             Returns: H[3,...]
         """
@@ -306,13 +304,13 @@ class sphere_cluster:
         if source:
             H += self.H_source(x, y, z, far=far, spherical=False)
 
-        if interface and self.interface is not None:
-            idx = z <= self.interface.z
-            reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
-            H += reflected.H_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
+            if self.interface is not None:
+                idx = z <= self.interface.z
+                reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
+                H += reflected.H_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
 
-            transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
-            H += transmitted.H_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
+                transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
+                H += transmitted.H_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -339,7 +337,7 @@ class sphere_cluster:
 
         return H
 
-    def E_angular(self, theta, phi, radius=None, source=False, interface=True):
+    def E_angular(self, theta, phi, radius=None, source=False):
         """Compute the electric field due to all particles in the far-field in spherical coordinates
              
             Arguments:
@@ -347,15 +345,14 @@ class sphere_cluster:
                 phi      phi position (array-like) 
                 radius   r position (default: large value)
                 source   (bool) include the angular source fields (default: False)
-                interface (optional) include reflected/transmitted fields due to the interface (bool, default=True)
         """
         #TODO better expression far default far-radius
         if radius is None:
             radius = 1e6*2*np.pi/self.material_data.k_b
 
-        return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True, interface=interface)[1:]
+        return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
-    def H_angular(self, theta, phi, radius=None, source=False, interface=True):
+    def H_angular(self, theta, phi, radius=None, source=False):
         """Compute the magnetic field due to all particles in the far-field in spherical coordinates
              
             Arguments:
@@ -363,13 +360,12 @@ class sphere_cluster:
                 phi      phi position (array-like) 
                 radius   r position (default: large value)
                 source   (bool) include the angular source fields (default: False)
-                interface (optional) include reflected/transmitted fields due to the interface (bool, default=True)
         """
         #TODO better expression far default far-radius
         if radius is None:
             radius = 1e6*2*np.pi/self.material_data.k_b
 
-        return self.H_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True, interface=interface)[1:]
+        return self.H_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
     def cross_sections_per_multipole(self, lmax=None):
         """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole

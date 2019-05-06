@@ -235,8 +235,8 @@ def integral_project_fields(E, r, k, lmax, mode=vsh.vsh_mode.outgoing, spherical
     p = np.zeros([2,rmax], dtype=complex)
 
     for i,n,m in vsh.mode_indices(lmax):
-        p[0,i] = project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
-        p[1,i] = project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
+        p[0,i] = integral_project_fields_onto(E, r, k, 'electric', n, m, mode, spherical)
+        p[1,i] = integral_project_fields_onto(E, r, k, 'magnetic', n, m, mode, spherical)
 
     return p
 
