@@ -65,7 +65,7 @@ class sphere_cluster:
                 raise ValueError('medium must be non-absorbing')
 
         ### build material data of particles
-        self.material_data = miepy.materials.material_struct(self.material, self.medium, wavelength=self.wavelength)
+        self.material_data = miepy.material_functions.material_struct(self.material, self.medium, wavelength=self.wavelength)
 
         ### mie coefficients
         self.mie_scat = np.zeros([self.Nparticles, 2, self.lmax], dtype=complex)

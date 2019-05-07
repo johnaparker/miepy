@@ -28,7 +28,7 @@ def test_interface_z_translation(s1, s2, rtol):
     """
     Moving the source and particle is identical to moving the interface (cross-section comparison)
     """
-    interface = miepy.interface(miepy.materials.constant_material(index=1.7))
+    interface = miepy.interface(miepy.constant_material(index=1.7))
     cluster = miepy.sphere_cluster(position=[0,0,-zpos],
                                    radius=radius,
                                    material=material,
@@ -40,7 +40,7 @@ def test_interface_z_translation(s1, s2, rtol):
     C1 = np.array(cluster.cross_sections())
 
 
-    interface = miepy.interface(miepy.materials.constant_material(index=1.7), z=zpos)
+    interface = miepy.interface(miepy.constant_material(index=1.7), z=zpos)
     cluster = miepy.sphere_cluster(position=[0,0,0],
                                    radius=radius,
                                    material=material,

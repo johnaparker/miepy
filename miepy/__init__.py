@@ -8,7 +8,7 @@ Python module to calcuate scattering coefficients of a plane wave incident on a 
 from . import cpp
 from . import vsh
 from . import sources
-from . import materials
+from . import material_functions
 from . import interactions
 from . import tmatrix
 from . import particles
@@ -20,7 +20,8 @@ from . import symmetry
 from . import constants
 from . import microscope
 
-from .materials.create import constant_material, function_material, data_material
+from .material_functions.create import constant_material, function_material, data_material
+from .materials.predefined import materials
 from .cluster import cluster
 from .sphere_cluster import sphere_cluster
 from .mie_single.scattering import (scattering_per_multipole, absorbption_per_multipole,

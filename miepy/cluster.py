@@ -73,7 +73,7 @@ class cluster:
             self.origin = np.asarray(origin)
 
         ### build material data of particles
-        self.material_data = miepy.materials.material_struct(self.material, self.medium, wavelength=self.wavelength)
+        self.material_data = miepy.material_functions.material_struct(self.material, self.medium, wavelength=self.wavelength)
 
         ### expansion coefficients
         self.p_inc  = np.zeros([self.Nparticles, 2, self.rmax], dtype=complex)
