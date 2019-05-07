@@ -11,9 +11,10 @@ from functools import partial
 #TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
 #TODO: swap position indices, so that [N,3] => [3,N]
 class cluster:
-    """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
+    """Solve Generalized Mie Theory for an N particle cluster in an arbitray source profile"""
     def __init__(self, *, particles, source, wavelength, lmax,
-                 medium=None, origin=None, interactions=True):
+                 medium=None, origin=None, symmetry=None, interface=None,
+                 interactions=True):
         """Arguments:
                particles[N]  list of particle objects
                source        source object specifying the incident E and H functions
@@ -21,8 +22,16 @@ class cluster:
                lmax          maximum number of orders to use in angular momentum expansion (int)
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
                origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
+               symmetry      (optional) specify system symmetries (default: no symmetries)
+               interface     (optional) include an infinite interface (default: no interface)
                interactions  (optional) If True, include particle interactions (bool, default=True) 
         """
+        if interface is not None:
+            raise NotImplementedError('interface with miepy.cluster not yet supported')
+
+        if symmetry is not None:
+            raise NotImplementedError('symmetries with miepy.cluster not yet supported')
+
         ### system properties
         self.source = source
         self.wavelength = wavelength
