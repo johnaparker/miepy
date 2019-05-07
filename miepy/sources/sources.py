@@ -218,6 +218,12 @@ class combined_source(source):
     def H_angular(self, theta, phi, k, radius=None):
         return sum((source.H_angular(theta, phi, k, radius) for source in self.sources))
 
+    def reflect(self, interface, medium, wavelength):
+        return combined_source(*[src.reflect(interface, medium, wavelength) for src in self.sources])
+
+    def transmit(self, interface, medium, wavelength):
+        return combined_source(*[src.transmit(interface, medium, wavelength) for src in self.sources])
+
     def __add__(self, other):
         if type(other) is combined_source:
             return combined_source(*self.sources, *other.sources)
