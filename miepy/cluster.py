@@ -12,14 +12,13 @@ from functools import partial
 #TODO: swap position indices, so that [N,3] => [3,N]
 class cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
-    def __init__(self, *, particles, lmax,
-                 source=None, wavelength=None, medium=None, origin=None,
-                 interactions=True):
+    def __init__(self, *, particles, source, wavelength, lmax,
+                 medium=None, origin=None, interactions=True):
         """Arguments:
                particles[N]  list of particle objects
+               source        source object specifying the incident E and H functions
+               wavelength    wavelength to solve the system at
                lmax          maximum number of orders to use in angular momentum expansion (int)
-               source        (optional) source object specifying the incident E and H functions (deault: defer source until later)
-               wavelength    (optional) wavelength to solve the system at (default: defer wavelength until later)
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
                origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
                interactions  (optional) If True, include particle interactions (bool, default=True) 

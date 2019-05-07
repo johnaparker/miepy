@@ -12,16 +12,16 @@ from functools import partial
 #TODO: swap position indices, so that [N,3] => [3,N]
 class sphere_cluster:
     """Solve Generalized Mie Theory: N particle cluster in an arbitray source profile"""
-    def __init__(self, *, position, radius, material, lmax,
-                 source=None, wavelength=None, medium=None, origin=None,
-                 symmetry=None, interface=None, interactions=True):
+    def __init__(self, *, position, radius, material, source, wavelength,
+                 lmax, medium=None, origin=None, symmetry=None, interface=None,
+                 interactions=True):
         """Arguments:
                position[N,3] or [3]    sphere positions
                radius[N] or scalar     sphere radii
                material[N] or scalar   sphere materials
+               source        source object specifying the incident E and H functions
+               wavelength    wavelength to solve the system at
                lmax          maximum number of orders to use in angular momentum expansion (int)
-               source        (optional) source object specifying the incident E and H functions (deault: defer source until later)
-               wavelength    (optional) wavelength to solve the system at (default: defer wavelength until later)
                medium        (optional) material medium (must be non-absorbing; default=vacuum)
                origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
                symmetry      (optional) specify system symmetries (default: no symmetries)
