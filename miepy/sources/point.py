@@ -49,7 +49,7 @@ class point_dipole(source):
         else:
             Hfunc = partial(miepy.vsh.expand_H, mode=miepy.vsh_mode.outgoing, eps=1, mu=1)
 
-        return self._field(Hfunc, x1, x3, x3, k, spherical=spherical)
+        return self._field(Hfunc, x1, x2, x3, k, spherical=spherical)
 
     def E_angular(self, theta, phi, k, radius=None):
         if radius is None:
