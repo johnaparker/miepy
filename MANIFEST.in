@@ -9,3 +9,5 @@ recursive-include cpp/src *
 
 include miepy/tmatrix/nfmds/*.f90
 include miepy/tmatrix/nfmds/makefile
+
+include tests/*.py
