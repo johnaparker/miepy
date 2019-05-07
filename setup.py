@@ -31,6 +31,7 @@ REQUIRED = [
     'pyyaml',
     'numpy_quaternion',
     'spherical_functions',
+    'vpython',
 ]
 
 

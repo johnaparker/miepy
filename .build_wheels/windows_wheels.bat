@@ -3,6 +3,7 @@
 ::     conda activate py37
 ::     conda install -c anaconda python pip numpy scipy matplotlib tqdm sympy pandas pyyaml cmake make
 ::     conda install -c conda-forge quaternion spherical_functions gsl eigen
+::     conda install -c vpython vpython
 
 :: Manually build cpp with CMake
 ::     cmake -G "Visual Studio 15 2017 Win64" ..
