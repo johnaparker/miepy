@@ -14,7 +14,10 @@ def wigner_D(n, m, mp, quat):
         mp      multipole orientation (to)
         quat    quaternion representing the rotation
     """
-    from spherical_functions import Wigner_D_element
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        from spherical_functions import Wigner_D_element
 
     return Wigner_D_element(quat, n, mp, m)
 
@@ -28,7 +31,10 @@ def vsh_rotation_matrix(n, quat):
     Returns:
         Rotation matrix R[2n+1,2n+1], such that p' = R*p
     """
-    from spherical_functions import Wigner_D_matrices
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        from spherical_functions import Wigner_D_matrices
 
     l = 2*n + 1
     R = Wigner_D_matrices(quat, n, n).reshape((l,l))
