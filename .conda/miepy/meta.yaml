@@ -1,0 +1,70 @@
+{% set name = "miepy" %}
+{% set version = "0.4.2" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  path: ../../
+  #url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  #sha256: 141addff6fb1f150b7506d084c5ece88b0211eeafb53b7b881cd7c0b8f4be51a
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
+
+requirements:
+  build:
+    - cmake
+    - eigen
+    - gsl
+    - openmp
+    - libgcc-ng
+    - libstdcxx-ng
+  host:
+    - matplotlib
+    - numpy
+    - quaternion
+    - pandas
+    - pip
+    - python
+    - pyyaml
+    - scipy
+    - spherical_functions
+    - sympy
+    - tqdm
+    - eigen
+    - gsl
+    - openmp
+    - libgcc-ng
+    - libstdcxx-ng
+  run:
+    - matplotlib
+    - numpy
+    - quaternion
+    - pandas
+    - python
+    - pyyaml
+    - scipy
+    - spherical_functions
+    - sympy
+    - tqdm
+    - eigen
+    - gsl
+    - openmp
+    - libgcc-ng
+    - libstdcxx-ng
+
+about:
+  home: The package home page
+  license: GNU General Public v3 (GPLv3)
+  license_family: GPL3
+  license_file: 
+  summary: Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)
+  doc_url: 
+  dev_url: 
+
+extra:
+  recipe-maintainers:
+    - your-github-id-here
