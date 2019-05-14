@@ -25,6 +25,7 @@ class beam(propagating_source):
         self.center = self.origin
 
         self.k_stored = None
+        self.lmax_stored = None
         self.p_src_func = None
 
     def E0(self, k):
@@ -151,8 +152,9 @@ class beam(propagating_source):
         """
         theta_c = self.theta_cutoff(k)
 
-        if k != self.k_stored:
+        if k != self.k_stored or lmax != self.lmax_stored:
             self.k_stored = k
+            self.lmax_stored = lmax
             self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(self, 
                                k, lmax, theta_0=np.pi - theta_c)
 
