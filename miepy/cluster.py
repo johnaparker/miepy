@@ -26,6 +26,7 @@ class cluster:
                interface     (optional) include an infinite interface (default: no interface)
                interactions  (optional) If True, include particle interactions (bool, default=True) 
         """
+        self.interface = interface
         if interface is not None:
             raise NotImplementedError('interface with miepy.cluster not yet supported')
 
