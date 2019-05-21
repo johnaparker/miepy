@@ -46,7 +46,7 @@ class beam(propagating_source):
         P = miepy.vsh.misc.trapz_2d(theta, phi, S.T).real
         return np.sqrt(self.power/P)
 
-    def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+    def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
         Compute the electric field
 
@@ -63,7 +63,7 @@ class beam(propagating_source):
         return self._field(self.angular_spectrum, self.E_angular, x1, x2, x3, k,
                 far=far, spherical=spherical, sampling=sampling, origin=origin)
 
-    def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+    def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
         Compute the magnetic field
 
@@ -211,7 +211,7 @@ class beam(propagating_source):
         return E0*E_inf
 
 
-    def _field(self, angular_func, far_func, x1, x2, x3, k, far=False, spherical=False, sampling=20, origin=None):
+    def _field(self, angular_func, far_func, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
         Method to compute E or H field
 

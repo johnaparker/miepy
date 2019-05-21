@@ -57,8 +57,8 @@ def test_gaussian_beam_weak_focusing():
     H1 = source.H_field(X, Y, Z, k, sampling=100)[1]
     H2 = E2
 
-    assert np.allclose(E1, E2, rtol=8e-4, atol=0), 'electric field'
-    assert np.allclose(H1, H2, rtol=8e-4, atol=0), 'magnetic field'
+    assert np.allclose(E1, E2, rtol=2e-3, atol=0), 'electric field'
+    assert np.allclose(H1, H2, rtol=2e-3, atol=0), 'magnetic field'
 
 def test_gouy_phase():
     """Weak focus test for Gaussian beam fails without the Guoy phase term"""
@@ -82,8 +82,8 @@ def test_gaussian_beam_z_component():
     """Check z-component of weakly focused Gaussian beam in xy-plane"""
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
 
-    x = np.linspace(-1.5*width, 1.5*width, 5)
-    y = np.linspace(-1.5*width, 1.5*width, 5)
+    x = np.linspace(-1.2*width, 1.2*width, 5)
+    y = np.linspace(-1.2*width, 1.2*width, 5)
     X, Y = np.meshgrid(x, y)
     Z = np.zeros_like(X)
     
@@ -94,8 +94,9 @@ def test_gaussian_beam_z_component():
 
     Hz1 = source.H_field(X, Y, Z, k)[2]
 
-    assert np.allclose(Ez1, Ez2, rtol=2e-3, atol=1e-9), 'Ez component matches'
-    assert np.allclose(Hz1, Ez2.T, rtol=2e-3, atol=1e-9), 'Hz component matches (Hz(x,y) = Ez(y,x))'
+    idx = Ez2.T > 0
+    assert np.allclose(Ez1, Ez2, rtol=5e-3, atol=1e-9), 'Ez component matches'
+    assert np.allclose(Hz1, Ez2.T, rtol=5e-3, atol=1e-9), 'Hz component matches (Hz(x,y) = Ez(y,x))'
 
 def test_hermite_gaussian_beam_weak_focusing():
     """Weak focus test for Hermite-Gaussian beam"""

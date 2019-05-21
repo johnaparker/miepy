@@ -6,7 +6,7 @@ import numpy as np
 import miepy
 from miepy.sources import polarized_beam
 from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite, erfc
+from scipy.special import eval_genlaguerre, eval_hermite, erfi
 from copy import deepcopy
 from miepy.constants import Z0
 
@@ -24,17 +24,24 @@ class gaussian_beam(polarized_beam):
     def E0(self, k):
         c = 0.5*(k*self.width)**2
         if c < 700:
-            U0 = np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))
+            U0 = np.sqrt(2*Z0*self.power/(np.pi*(np.sqrt(np.pi/c)*np.exp(-c)*erfi(np.sqrt(c)))))
         else:
-            U0 = np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))
+            U0 = np.sqrt(2*Z0*self.power/(np.pi*(1/c + 1/(2*c**2) - 3/(4*c**3) + 15/(8*c**4))))
 
         return U0
 
     def scalar_angular_spectrum(self, theta, phi, k):
-        return np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        return np.exp(-(k*self.width*np.sin(theta)/2)**2)
 
-    def theta_cutoff(self, k, cutoff=1e-9, tol=None):
-        return np.arctan(np.sqrt(-2*np.log(cutoff))/(k*self.width))
+    def theta_cutoff(self, k, cutoff=1e-6, tol=None):
+        arg = np.sqrt(-2*np.log(cutoff))/(k*self.width)
+
+        if arg >= 1:
+            theta_c = np.pi/2
+        else:
+            theta_c = np.arcsin(arg)
+
+        return min(self.theta_max, theta_c, np.pi/2 - 1e-5)
 
 class bigaussian_beam(polarized_beam):
     def __init__(self, width_x, width_y, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,

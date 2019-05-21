@@ -20,7 +20,7 @@ def simps_2d(xd,yd,fd):
 
     return simps(xData, xd)
 
-def power_through_aperature(source, center, radius, k, sampling=150):
+def power_through_aperature(source, center, radius, k, sampling=75):
     """Calculate the power through an aperature for a source
 
        Arguments:
@@ -28,31 +28,21 @@ def power_through_aperature(source, center, radius, k, sampling=150):
            center      center position of the aperature
            radius      radius of the aperature
            k           wavenumber
-           sampling    numer of samples used along the diamter of the aperature (default: 150)
+           sampling    numer of samples used along the diamter of the aperature (default: 75)
     """
     x = center[0] + np.linspace(-radius, radius, sampling)
     y = center[1] + np.linspace(-radius, radius, sampling)
     X, Y = np.meshgrid(x, y)
     Z = center[2] + np.zeros_like(X)
 
-    lmax = int(np.ceil(k*radius))
-    lmax = 8
-    p_src = source.structure(center, k, lmax)
     mask = (X**2 + Y**2 < radius **2)
-
-    R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
-    Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
-    Hfunc = miepy.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
 
     E = np.zeros((3,) + X.shape, dtype=complex)
     H = np.zeros((3,) + X.shape, dtype=complex)
-    E[:,mask] = Efunc(R[mask], THETA[mask], PHI[mask])
-    H[:,mask] = Hfunc(R[mask], THETA[mask], PHI[mask])
-    E = miepy.coordinates.vec_sph_to_cart(E, THETA, PHI)
-    H = miepy.coordinates.vec_sph_to_cart(H, THETA, PHI)/Z0
+    E[:,mask] = source.E_field(X[mask], Y[mask], Z[mask], k)
+    H[:,mask] = source.H_field(X[mask], Y[mask], Z[mask], k)/Z0
 
     S = 0.5*np.cross(E, np.conjugate(H), axis=0)[2]
-
     P = trapz_2d(x, y, S).real
     return P
 

@@ -26,7 +26,7 @@ Z = np.zeros_like(X)
     (miepy.sources.gaussian_beam(width, polarization, power=power), 2e-2),
     (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization, power=power), 4e-4),
     (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization, power=power), 8e-3),
-    (miepy.sources.azimuthal_beam(width=width, power=power), 2e-5),
+    (miepy.sources.azimuthal_beam(width=width, power=power), 3e-5),
     (miepy.sources.bigaussian_beam(width_x=width, width_y=width/2, polarization=polarization, power=power), 8e-3),
 ])
 def test_power_by_near_field_poynting_vector(source, rtol):
@@ -44,7 +44,7 @@ def test_power_by_far_field_poynting_vector_upper_hemisphere():
 
     source = miepy.sources.gaussian_beam(width=100*nm, polarization=[1,0], power=power)
 
-    theta = np.linspace(0, np.pi/2, 30)
+    theta = np.linspace(0, np.pi/2 - 1e-5, 30)
     phi = np.linspace(0, 2*np.pi, 60)
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     RAD = 1e6*wav*np.ones_like(THETA)
@@ -73,7 +73,7 @@ def test_power_by_far_field_poynting_vector_lower_hemisphere():
 
     source = miepy.sources.gaussian_beam(width=100*nm, polarization=[1,0], power=power)
 
-    theta = np.linspace(np.pi/2, np.pi, 30)
+    theta = np.linspace(np.pi/2 + 1e-5, np.pi, 30)
     phi = np.linspace(0, 2*np.pi, 60)
     THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
     RAD = 1e6*wav*np.ones_like(THETA)
@@ -98,7 +98,7 @@ def test_power_by_far_field_poynting_vector_lower_hemisphere():
 
 class Test_gaussian_beam_numeric_power:
     """compute power of a Gaussian beam using various methods"""
-    width = 200*nm
+    width = 400*nm
     power = 1
     polarization = [1,0]
 
@@ -125,7 +125,7 @@ class Test_gaussian_beam_numeric_power:
         S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
         P = radius**2*trapz_2d(theta, phi, S.T).real
 
-        assert np.allclose(P, self.power, rtol=.02)
+        assert np.allclose(P, self.power, rtol=.04)
 
     def test_power_p_src_analytic(self):
         """power by analytic sum over p_src coefficients"""
@@ -134,7 +134,7 @@ class Test_gaussian_beam_numeric_power:
         factor = 0.5/Z0*np.pi/k**2
         P = factor*np.sum(np.abs(p_src)**2)
 
-        assert np.allclose(P, self.power, rtol=.008)
+        assert np.allclose(P, self.power, rtol=.04)
 
     def test_power_2d_integration(self):
         """power by  integrating Poynting vector in 2D plane"""
@@ -158,4 +158,4 @@ class Test_gaussian_beam_numeric_power:
 
         P = trapz_2d(x, y, S).real
 
-        assert np.allclose(P, self.power, rtol=.01)
+        assert np.allclose(P, self.power, rtol=.04)
