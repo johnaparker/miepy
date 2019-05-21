@@ -128,10 +128,12 @@ class plane_wave(polarized_propagating_source):
         else:
             return 0
 
-    def E_angular(self, theta, phi, k, radius=None):
+    #TODO: implement origin
+    def E_angular(self, theta, phi, k, radius=None, origin=None):
         return self.angular_spectrum(theta, phi, j)
 
-    def H_angular(self, theta, phi, k, radius=None):
+    #TODO: implement origin
+    def H_angular(self, theta, phi, k, radius=None, origin=None):
         return self.angular_spectrum(theta, phi, j)
 
     def reflect(self, interface, medium, wavelength):

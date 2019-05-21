@@ -51,13 +51,15 @@ class point_dipole(source):
 
         return self._field(Hfunc, x1, x2, x3, k, spherical=spherical)
 
-    def E_angular(self, theta, phi, k, radius=None):
+    #TODO: implement origin
+    def E_angular(self, theta, phi, k, radius=None, origin=None):
         if radius is None:
             radius = 1e6*2*np.pi/k
 
         return self.E_field(radius, radius, theta, phi, far=True, spherical=False)[1:]
 
-    def H_angular(self, theta, phi, k, radius=None):
+    #TODO: implement origin
+    def H_angular(self, theta, phi, k, radius=None, origin=None):
         if radius is None:
             radius = 1e6*2*np.pi/k
 

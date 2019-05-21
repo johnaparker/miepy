@@ -350,7 +350,12 @@ class sphere_cluster:
         if radius is None:
             radius = 1e6*2*np.pi/self.material_data.k_b
 
-        return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
+        E = self.E_field(radius, theta, phi, interior=False, source=False, far=True, spherical=True)[1:]
+        if source:
+            reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
+            E += reflected.E_angular(theta, phi, self.material_data.k_b, radius=radius, origin=self.origin)
+
+        return E
 
     def H_angular(self, theta, phi, radius=None, source=False):
         """Compute the magnetic field due to all particles in the far-field in spherical coordinates
