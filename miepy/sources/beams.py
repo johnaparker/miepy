@@ -298,9 +298,9 @@ class reflected_beam(beam):
     def angular_spectrum(self, theta, phi, k):
         q = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
         theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q)
-        r_parallel, r_perp = self.interface.reflection_coefficients(theta, self.wavelength, self.medium)  #TODO: is this in the right place for the current theta, phi?
 
-        theta = np.pi - theta
+        theta[theta>np.pi/2] = np.pi - theta[theta>np.pi/2]
+        r_parallel, r_perp = self.interface.reflection_coefficients(theta, self.wavelength, self.medium)  #TODO: is this in the right place for the current theta, phi?
         q = miepy.quaternion.from_spherical_coords(self.incident_beam.theta, self.incident_beam.phi)
         theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q.inverse())
 
