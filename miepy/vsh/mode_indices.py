@@ -13,7 +13,7 @@ def lmax_to_rmax(lmax):
     return rmax
 
 def reduced_index(n, m):
-    r = n*(n+2) - n - m - 1;
+    r = n*(n+2) - n + m - 1;
     return r
 
 class mode_indices:
