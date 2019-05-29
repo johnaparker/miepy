@@ -45,7 +45,7 @@ class dft_beam(beam):
         self.Ey_func = None
 
     def compute_spectrum(self, k):
-        theta = np.linspace(np.pi - self.theta_max, np.pi, self.sampling)
+        theta = np.linspace(0, self.theta_max, self.sampling)
         phi = np.linspace(0, 2*np.pi, self.sampling)
         THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
 
@@ -80,12 +80,19 @@ class dft_beam(beam):
         if self.Ex_func is None:
             self.compute_spectrum(k)
 
+        theta = np.minimum(theta, np.pi - theta)  # functions are valid for theta < pi/2
+
         Ex = self.Ex_func(theta, phi)
         Ey = self.Ey_func(theta, phi)
+
+        idx = theta > self.theta_max  #if theta > theta_max, angular_spectrum should vanish
+        Ex[idx] = 0
+        Ey[idx] = 0
+
         Esph = np.array([-Ex*np.cos(phi) - Ey*np.sin(phi),
                          -Ex*np.sin(phi) + Ey*np.cos(phi)], dtype=complex)
 
         return Esph
 
-    def theta_cutoff(self, k, cutoff=1e-9, tol=None):
-        return self.theta_max
+    # def theta_cutoff(self, k, cutoff=1e-9, tol=None):
+        # return self.theta_max
