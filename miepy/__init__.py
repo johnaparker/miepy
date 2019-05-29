@@ -20,7 +20,7 @@ from . import symmetry
 from . import constants
 from . import microscope
 
-from .material_functions.create import constant_material, function_material, data_material
+from .material_functions.create import dielectric, constant_material, function_material, data_material
 from .materials.predefined import materials
 from .cluster import cluster
 from .sphere_cluster import sphere_cluster

@@ -35,6 +35,22 @@ class material:
     def __repr__(self):
         return self.name
 
+def dielectric(index=None, eps=1.0, mu=1.0, name=None):
+    """
+    Create a dielectric material (constant index of refraction / permittivity)
+
+    Arguments:
+        index     index of refraction (if specified, material is not magnetic and eps/mu not declared)
+        eps       dielectric permittivity (specify)
+        mu        dielectric permeability
+        name      name of material
+    """
+
+    if index is not None:
+        return constant_material(index=index, name=name)
+    else:
+        return constant_material(eps=eps, mu=mu, name=name)
+
 class constant_material(material):
     def __init__(self, eps=1.0, mu=1.0, index=None, name=None):
         """create a material with a constant eps and mu"""
