@@ -126,8 +126,13 @@ class beam(propagating_source):
         theta = self.theta_max
         dtheta = 0.01*theta
 
-        err = np.abs(I/Imax - cutoff)
+        E = self.angular_spectrum(theta, phi, k)
+        I = np.sum(np.abs(E)**2, axis=0)
+        err = I/Imax - cutoff
+        if np.any(err > 0):
+            return self.theta_max
 
+        err = np.abs(I/Imax - cutoff)
         while (err > tol).all():
             I = np.zeros_like(err)
             while (I/Imax < cutoff).all():
@@ -150,9 +155,8 @@ class beam(propagating_source):
             k            medium wavenumber
             lmax         maximum expansion order
         """
-        theta_c = self.theta_cutoff(k)
-
         if k != self.k_stored or lmax != self.lmax_stored:
+            theta_c = self.theta_cutoff(k)
             self.k_stored = k
             self.lmax_stored = lmax
             self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(self, 

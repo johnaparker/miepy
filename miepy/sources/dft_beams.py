@@ -93,6 +93,3 @@ class dft_beam(beam):
                          -Ex*np.sin(phi) + Ey*np.cos(phi)], dtype=complex)
 
         return Esph
-
-    # def theta_cutoff(self, k, cutoff=1e-9, tol=None):
-        # return self.theta_max
