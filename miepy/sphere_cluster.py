@@ -469,9 +469,9 @@ class sphere_cluster:
             
             Returns: F[3,Nparticles]
         """
-        F = np.zeros([3, self.Nparticles], dtype=float)
+        F = np.zeros([self.Nparticles, 3], dtype=float)
         for i in range(self.Nparticles):
-            F[:,i] = self.force_on_particle(i, source=source)
+            F[i] = self.force_on_particle(i, source=source)
 
         return F
 
@@ -483,9 +483,9 @@ class sphere_cluster:
             
             Returns: T[3,Nparticles]
         """
-        T = np.zeros([3, self.Nparticles], dtype=float)
+        T = np.zeros([self.Nparticles, 3], dtype=float)
         for i in range(self.Nparticles):
-            T[:,i] = self.torque_on_particle(i, source=source)
+            T[i] = self.torque_on_particle(i, source=source)
 
         return T
 
