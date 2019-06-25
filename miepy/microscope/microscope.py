@@ -69,7 +69,7 @@ class microscope:
         self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
         self.numerical_aperature = self.n1*np.sin(theta_obj)
 
-    def image(self, x, y, z_val=0):
+    def image(self, x, y, z_val=0, magnify=False):
         """
         Create an image
 
@@ -77,7 +77,11 @@ class microscope:
             x_array    image x-values (array-like)
             y_array    image y-values (array-like)
             z_val      z-value of the image (relative to the focus)
+            magnify    If True, magnify the input by the microscope's magnification
         """
+        if magnify:
+            M = self.magnification
+            x, y = M*x, M*y
         k = self.k2
         f1 = self.focal_obj
         f2 = self.focal_img
