@@ -490,6 +490,36 @@ class cluster:
         else:
             return factor*np.real(E_comp*np.conj(p_comp))/np.abs(p_comp)**2
 
+    def microscope(self, x, y, z=0, magnify=True, medium=None, orientation=None, focal_img=100,
+                   focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
+        """Create an image of the cluster using a microscope
+
+        Arguments:
+            x              image x-values (array-like)
+            y              image y-values (array-like)
+            z              z-value of the camera (relative to the focus)
+            magnify        If True, magnify the input by the microscope's magnification
+            medium         the outer medium of the microscope (default: air)
+            orientation    orientation of the microscope (as a quaternion; default +z)
+            focal_img      focal length of the imaging lens
+            focal_obj      focal length of the objective lens
+            theta_obj      maximum collection angle of the objective lens
+            sampling       far-field sampling
+            source         (bool) include the angular source fields
+        """
+        if medium is None:
+            medium = miepy.materials.air()
+
+        E_angular = partial(self.E_angular, source=source)
+        wavelength = self.wavelength
+        n1 = self.medium.index(wavelength)
+        n2 = medium.index(wavelength)
+
+        scope = miepy.microscope(E_angular, wavelength, n1, n2=n2, orientation=orientation,
+                      focal_img=focal_img, focal_obj=focal_obj, theta_obj=theta_obj, sampling=sampling)
+
+        return scope.image(x, y, z_val=z, magnify=magnify)
+
     def update(self, position=None, orientation=None):
         """Update properties of the particles
 

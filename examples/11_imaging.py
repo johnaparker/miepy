@@ -61,9 +61,7 @@ x = np.linspace(-xmax, xmax, 50)
 y = np.linspace(-xmax, xmax, 50)
 X, Y = np.meshgrid(x, y)
 
-scope = miepy.microscope(cluster, theta_obj=theta_obj)
-M = scope.magnification
-im = scope.image(X*M, Y*M)
+im = cluster.microscope(X, Y, theta_obj=theta_obj)
 I = np.sum(np.abs(im)**2, axis=0)
 
 ax.pcolormesh(X/nm, Y/nm, I, shading='gouraud', cmap='gray', rasterized=True)

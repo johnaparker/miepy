@@ -235,12 +235,15 @@ class sphere_cluster:
             E += self.E_source(x, y, z, far=far, spherical=False)
 
             if self.interface is not None:
-                idx = z <= self.interface.z
                 reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
-                E += reflected.E_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
+                E += reflected.E_field(x, y, z, self.material_data.k_b, far=far, spherical=False)
+                #TODO: Fix this comment block
+                # idx = z <= self.interface.z
+                # reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
+                # E += reflected.E_field(x[idx], y[idx], z[idx], self.material_data.k_b, far=far, spherical=False)
 
-                transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
-                E += transmitted.E_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
+                # transmitted = self.source.transmit(self.interface, self.medium, self.wavelength)
+                # E += transmitted.E_field(x[~idx], y[~idx], z[~idx], self.material_data.k_b, far=far, spherical=False)
 
         #TODO: what if x is scalar...
         if interior and not mask and not far:
@@ -512,6 +515,36 @@ class sphere_cluster:
             return np.real(1j*E_comp)/np.real(p_comp)
         else:
             return factor*np.real(E_comp*np.conj(p_comp))/np.abs(p_comp)**2
+
+    def microscope(self, x, y, z=0, magnify=True, medium=None, orientation=None, focal_img=100,
+                   focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
+        """Create an image of the cluster using a microscope
+
+        Arguments:
+            x              image x-values (array-like)
+            y              image y-values (array-like)
+            z              z-value of the camera (relative to the focus)
+            magnify        If True, magnify the input by the microscope's magnification
+            medium         the outer medium of the microscope (default: air)
+            orientation    orientation of the microscope (as a quaternion; default +z)
+            focal_img      focal length of the imaging lens
+            focal_obj      focal length of the objective lens
+            theta_obj      maximum collection angle of the objective lens
+            sampling       far-field sampling
+            source         (bool) include the angular source fields
+        """
+        if medium is None:
+            medium = miepy.materials.air()
+
+        E_angular = partial(self.E_angular, source=source)
+        wavelength = self.wavelength
+        n1 = self.medium.index(wavelength)
+        n2 = medium.index(wavelength)
+
+        scope = miepy.microscope(E_angular, wavelength, n1, n2=n2, orientation=orientation,
+                      focal_img=focal_img, focal_obj=focal_obj, theta_obj=theta_obj, sampling=sampling)
+
+        return scope.image(x, y, z_val=z, magnify=magnify)
 
     def update_position(self, position):
         """Update the positions of the spheres

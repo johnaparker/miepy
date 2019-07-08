@@ -23,15 +23,12 @@ class gaussian_beam(polarized_beam):
 
     def E0(self, k):
         c = 0.5*(k*self.width)**2
-        if c < 700:
-            U0 = np.sqrt(2*Z0*self.power/(np.pi*(np.sqrt(np.pi/c)*np.exp(-c)*erfi(np.sqrt(c)))))
-        else:
-            U0 = np.sqrt(2*Z0*self.power/(np.pi*(1/c + 1/(2*c**2) - 3/(4*c**3) + 15/(8*c**4))))
+        U0 = np.sqrt(2*Z0*self.power*c/(np.pi*(1 - np.exp(-c))))
 
         return U0
 
     def scalar_angular_spectrum(self, theta, phi, k):
-        return np.exp(-(k*self.width*np.sin(theta)/2)**2)
+        return np.exp(-(k*self.width*np.sin(theta)/2)**2)*np.sqrt(np.abs(np.cos(theta)))
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=None):
         arg = np.sqrt(-2*np.log(cutoff))/(k*self.width)
@@ -72,12 +69,12 @@ class hermite_gaussian_beam(polarized_beam):
                f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
 
     def scalar_angular_spectrum(self, theta, phi, k):
-        HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.tan(theta)*np.cos(phi))
-        HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.tan(theta)*np.sin(phi))
-        exp = np.exp(-(k*self.width*np.tan(theta)/2)**2)
+        HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.sin(theta)*np.cos(phi))
+        HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.sin(theta)*np.sin(phi))
+        exp = np.exp(-(k*self.width*np.sin(theta)/2)**2)
         factor = (-1j)**(self.l + self.m)
 
-        return factor * HG_l * HG_m * exp
+        return factor * HG_l * HG_m * exp * np.sqrt(np.abs(np.cos(theta)))
 
 class laguerre_gaussian_beam(polarized_beam):
     def __init__(self, p, l, width, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,
