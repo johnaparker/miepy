@@ -10,6 +10,7 @@ Features
 + **Periodic boundary conditions** with various lattice types (square, hexagonal, etc.) and **mirror and discrete rotational symmetries** for faster calculations
 + Optional **planar interface (substrate)** 
 + **3D scene visualization** using the the VPython library
++ Image clusters using a **simulated microscope**
 + **OpenMP parallelization** for systems with larger numbers of particles
 
 Usage
@@ -17,7 +18,7 @@ Usage
 
 For examples and use cases, see examples folder.
 
-For full documentation, see docs folder.
+For an overview of the theory, see docs folder.
 
 Installation
 --------------
@@ -29,8 +30,13 @@ Then install MiePy
 ```shell
 pip install miepy
 ```
+MiePy is also available via Conda
+```shell
+conda install -c japarker miepy
+```
 
-
+Install from source
+--------------
 To build MiePy from source, first install the required dependencies:
 
 + [CMake](https://cmake.org/install/) (C++ build system)
@@ -44,7 +50,6 @@ Then, install MiePy using pip
 pip install miepy --no-binary
 ```
 
-
 To build the latest development version, clone MiePy and its submodules:
 ```shell
 git clone https://github.com/johnaparker/miepy.git miepy --recurse-submodules && cd miepy
@@ -57,9 +62,6 @@ Optionally, run the tests to verify correctness:
 ```shell
 pytest tests
 ```
-
-Sample Output
---------------
 
 License
 --------------
