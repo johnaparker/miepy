@@ -21,3 +21,10 @@ void bind_trapz_2d(py::module &m) {
         Numerically integrate 2D discrete samples using the trapezoidal rule
     )pbdoc");
 }
+
+void bind_integrate_phase(py::module &m) {
+    m.def("integrate_phase", integrate_phase, 
+           "rhat"_a, "origin"_a, "k"_a, "rmax"_a, "theta"_a, "phi"_a, "p0"_a, R"pbdoc(
+        Integrate a phase function with a given source function
+    )pbdoc");
+}

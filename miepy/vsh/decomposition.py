@@ -6,6 +6,7 @@ Decomposition of electric fields and sources into VSH coefficients using:
 
 import numpy as np
 from miepy import vsh, coordinates
+from miepy.cpp.decomposition import integrate_phase
 
 #TODO: this should be called by the point_matching methods below directly
 def sampling_from_lmax(lmax, method):
@@ -303,15 +304,6 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi/2):
         p0[1,i] = 2*factor*integrand
 
     def f(origin):
-        p = np.zeros([2,rmax], dtype=complex)
-
-        phase = k*np.einsum('i...,i', rhat, -origin)
-        exp_phase = np.exp(1j*phase)
-
-        for i in range(rmax):
-            p[0,i] = vsh.misc.trapz_2d(theta, phi, p0[0,i]*exp_phase)
-            p[1,i] = vsh.misc.trapz_2d(theta, phi, p0[1,i]*exp_phase)
-
-        return p
+        return integrate_phase(rhat=rhat, origin=origin, k=k, rmax=rmax, theta=theta, phi=phi, p0=p0)
 
     return f

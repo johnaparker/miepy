@@ -9,6 +9,7 @@ from tqdm import tqdm
 from functools import partial
 from scipy.sparse.linalg import bicg, bicgstab
 from miepy.interactions import solve_linear_system
+from topics.photonic_clusters.create_lattice import hexagonal_lattice_particles
 from timer import time_function
 
 nm = 1e-9
@@ -16,14 +17,16 @@ nm = 1e-9
 Ag = miepy.materials.Ag()
 radius = 75*nm
 source = miepy.sources.plane_wave.from_string(polarization='rhc')
-separation = 165*nm
+source = miepy.sources.gaussian_beam(2500*nm, [1, 1j], power=.002)
+separation = 600*nm
 
 def tests(Nmax, step=1):
     Nparticles = np.arange(1, Nmax+1, step)
-    t_force, t_flux, t_build, t_solve, t_expand = [np.zeros_like(Nparticles, dtype=float) for i in range(5)]
+    t_force, t_flux, t_build, t_solve, t_source = [np.zeros_like(Nparticles, dtype=float) for i in range(5)]
     for i,N in enumerate(Nparticles):
         print(N, Nmax)
-        positions = [[n*separation, 0, 0] for n in range(N)]
+        # positions = [[n*separation, 0, 0] for n in range(N)]
+        positions = hexagonal_lattice_particles(N)*separation
         mie = miepy.sphere_cluster(position=positions,
                                    radius=radius,
                                    material=Ag,
@@ -43,19 +46,19 @@ def tests(Nmax, step=1):
         y = 2*radius*np.ones_like(x)
         z = np.zeros_like(x)
 
-        t_expand[i] = time_function(partial(mie.E_field, x, y, z))
+        t_source[i] = time_function(mie._solve_source_decomposition)
 
     fig, ax = plt.subplots()
 
-    ax.plot(Nparticles, t_force, label='force')
-    ax.plot(Nparticles, t_flux, label='flux')
-    ax.plot(Nparticles, t_build, label='build')
-    ax.plot(Nparticles, t_solve, label='solve')
-    ax.plot(Nparticles, t_expand, label='expand')
+    ax.plot(Nparticles, t_force, '-o', label='force')
+    ax.plot(Nparticles, t_flux,'-o',  label='flux')
+    ax.plot(Nparticles, t_build, '-o', label='build')
+    ax.plot(Nparticles, t_solve, '-o', label='solve')
+    ax.plot(Nparticles, t_source, '-o', label='source')
 
     ax.legend()
     ax.set(xlabel='number of particles', ylabel='runtime (s)')
 
     plt.show()
 
-tests(50, step=5)
+tests(10, step=1)
