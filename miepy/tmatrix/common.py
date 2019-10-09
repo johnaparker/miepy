@@ -25,6 +25,36 @@ def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax, conducting=False):
 
     return tmatrix
 
+def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m, lmax):
+    """Compute the T-matrix of a core-shell, using regular Mie theory
+
+    Arguments:
+        radius      core radius
+        wavelength  incident wavelength
+        eps_core    particle permittivity
+        eps_shell  shell permittivity
+        eps_m       medium permittivity
+        lmax        maximum number of multipoles
+    """
+    rmax = miepy.vsh.lmax_to_rmax(lmax)
+    tmatrix = np.zeros([2,rmax,2,rmax], dtype=complex)
+    k_medium = 2*np.pi*eps_m**0.5/wavelength
+
+    particle = miepy.single_mie_core_shell(radius, radius + thickness,
+                      material_in=miepy.dielectric(eps=eps_core),
+                      material_out=miepy.dielectric(eps=eps_shell),
+                      medium=miepy.dielectric(eps=eps_m),
+                      lmax=lmax,
+                      wavelength=wavelength)
+
+    particle.solve()
+
+    for i, n, m in miepy.mode_indices(lmax):
+        tmatrix[0,i,0,i] = particle.an[0,n-1]
+        tmatrix[1,i,1,i] = particle.bn[0,n-1]
+
+    return tmatrix
+
 def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
     """Compute the T-matrix of a spheroid
     
