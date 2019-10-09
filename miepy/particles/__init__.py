@@ -1,5 +1,6 @@
 from .particle_base import particle
 from .sphere import sphere
+from .core_shell import core_shell
 from .spheroid import spheroid
 from .cylinder import cylinder
 from .ellipsoid import ellipsoid
