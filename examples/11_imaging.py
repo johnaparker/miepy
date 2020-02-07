@@ -1,7 +1,24 @@
 import numpy as np
 import miepy
-from topics.photonic_clusters.create_lattice import hexagonal_lattice_layers
 import matplotlib.pyplot as plt
+
+def hexagonal_lattice_layers(L):
+    """return a hexagonal lattice with unit spacing and L layers"""
+    k1 = np.array([1,0,0], dtype=float)
+    k2 = np.array([np.cos(np.pi/3), np.sin(np.pi/3), 0], dtype=float)
+
+    lattice = [np.zeros(3)]
+
+    for step in range(1,L+1):
+        lattice.append(step*k1)
+
+        for direc in [k2-k1, -k1, -k2, -k2+k1, k1, k2]:
+            for _ in range(step):
+                lattice.append(lattice[-1] + direc)
+        lattice.pop()
+
+    return np.asarray(lattice, dtype=float)
+
 
 nm = 1e-9
 um = 1e-6
