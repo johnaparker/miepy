@@ -9,7 +9,7 @@ nm = 1e-9
 
 def test_medium_scaling_force(plot=False):
     """ensure that the radiation pressure on a single sphere scales with 
-       background index as n^5 for small, high-index sphere"""
+       background index as n^6 for small, high-index sphere"""
 
     n_b = np.linspace(1,5,10)
     F = np.zeros_like(n_b)
@@ -17,14 +17,14 @@ def test_medium_scaling_force(plot=False):
         sphere = miepy.sphere_cluster(position=[0,0,0],
                                       radius=2*nm,
                                       material=miepy.constant_material(40**2),
-                                      medium=miepy.constant_material(n**2),
+                                      medium=miepy.dielectric(n),
                                       source=miepy.sources.plane_wave.from_string(polarization='x'),
                                       wavelength=2800*nm,
-                                      lmax=2)
+                                      lmax=5)
 
         F[i] = sphere.force_on_particle(0)[2]
 
-    F_fit = np.max(F)*(n_b/np.max(n_b))**5
+    F_fit = np.max(F)*(n_b/np.max(n_b))**6
 
     if not plot:
         L2 = np.linalg.norm(F - F_fit)/F.shape[0]
@@ -34,7 +34,7 @@ def test_medium_scaling_force(plot=False):
     else:
         plt.figure()
         plt.plot(n_b, F, label='exact force')
-        plt.plot(n_b, F_fit, 'o', label='$n_b^5$ scaling')
+        plt.plot(n_b, F_fit, 'o', label='$n_b^6$ scaling')
         plt.xlabel('$n_b$')
         plt.ylabel('force')
         plt.legend()

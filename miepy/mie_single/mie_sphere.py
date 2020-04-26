@@ -197,7 +197,7 @@ class single_mie_sphere:
                 Fz -= factor*np.real(self.an[:,i]*np.conj(self.an[:,i+1])
                                    + self.bn[:,i]*np.conj(self.bn[:,i+1]))
 
-        return Fz * constants.epsilon_0*self.material_data['n_b']/2
+        return Fz * constants.epsilon_0*self.material_data['eps_b']/2
 
     def E_field(self, index=None, lmax=None):
         """Return an electric field function E(r,theta,phi) for a given wavenumber index"""

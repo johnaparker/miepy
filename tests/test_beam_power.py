@@ -115,8 +115,8 @@ class Test_gaussian_beam_numeric_power:
         radius = 1e6*(2*np.pi/k)
 
         p_src = self.source.structure([0,0,0], k, lmax)
-        theta = np.linspace(np.pi/2, np.pi, 20)
-        phi = np.linspace(0, 2*np.pi, 20)
+        theta = np.linspace(np.pi/2, np.pi, 60)
+        phi = np.linspace(0, 2*np.pi, 60)
         THETA, PHI = np.meshgrid(theta, phi)
         R = radius*np.ones_like(THETA)
 
@@ -125,6 +125,7 @@ class Test_gaussian_beam_numeric_power:
         S = 0.5/Z0*np.sum(np.abs(E)**2, axis=0)*np.sin(THETA)
         P = radius**2*trapz_2d(theta, phi, S.T).real
 
+        print(P)
         assert np.allclose(P, self.power, rtol=.04)
 
     def test_power_p_src_analytic(self):

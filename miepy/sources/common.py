@@ -6,7 +6,7 @@ import numpy as np
 import miepy
 from miepy.sources import polarized_beam
 from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite, erfi
+from scipy.special import eval_genlaguerre, eval_hermite, erfc
 from copy import deepcopy
 from miepy.constants import Z0
 
@@ -23,12 +23,15 @@ class gaussian_beam(polarized_beam):
 
     def E0(self, k):
         c = 0.5*(k*self.width)**2
-        U0 = np.sqrt(2*Z0*self.power*c/(np.pi*(1 - np.exp(-c))))
+        if c < 700:
+            U0 = np.sqrt(Z0*self.power/(np.pi*(1 - np.sqrt(np.pi*c)*np.exp(c)*erfc(np.sqrt(c)))))
+        else:
+            U0 = np.sqrt(Z0*self.power/(np.pi*(1/(2*c) - 3/(4*c**2) + 15/(8*c**3))))
 
         return U0
 
     def scalar_angular_spectrum(self, theta, phi, k):
-        return np.exp(-(k*self.width*np.sin(theta)/2)**2)*np.sqrt(np.abs(np.cos(theta)))
+        return np.exp(-(k*self.width*np.tan(theta)/2)**2)
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=None):
         arg = np.sqrt(-2*np.log(cutoff))/(k*self.width)
@@ -36,7 +39,7 @@ class gaussian_beam(polarized_beam):
         if arg >= 1:
             theta_c = np.pi/2
         else:
-            theta_c = np.arcsin(arg)
+            theta_c = np.arctan(arg)
 
         return min(self.theta_max, theta_c, np.pi/2 - 1e-5)
 
@@ -69,12 +72,12 @@ class hermite_gaussian_beam(polarized_beam):
                f'power={self.power}, center={self.center}, theta={self.theta}, phi={self.phi})'
 
     def scalar_angular_spectrum(self, theta, phi, k):
-        HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.sin(theta)*np.cos(phi))
-        HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.sin(theta)*np.sin(phi))
-        exp = np.exp(-(k*self.width*np.sin(theta)/2)**2)
+        HG_l = eval_hermite(self.l, k*self.width/np.sqrt(2)*np.tan(theta)*np.cos(phi))
+        HG_m = eval_hermite(self.m, k*self.width/np.sqrt(2)*np.tan(theta)*np.sin(phi))
+        exp = np.exp(-(k*self.width*np.tan(theta)/2)**2)
         factor = (-1j)**(self.l + self.m)
 
-        return factor * HG_l * HG_m * exp * np.sqrt(np.abs(np.cos(theta)))
+        return factor * HG_l * HG_m * exp
 
 class laguerre_gaussian_beam(polarized_beam):
     def __init__(self, p, l, width, polarization, power=1, theta_max=np.pi/2, phase=0, center=None,

@@ -18,7 +18,7 @@ EMAIL = 'japarker@uchicago.edu'
 AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
 # REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.4.2'
+VERSION = '0.4.3'
 LICENSE = 'GPLv3'
 
 REQUIRED = [

@@ -8,21 +8,22 @@ import matplotlib.pyplot as plt
 import miepy
 
 # wavelength from 400nm to 1000nm
-wavelengths = np.linspace(400e-9,1000e-9,1000)
+wavelengths = np.linspace(400e-9,800e-9,1000)
 
 # Ag material
 Ag = miepy.materials.Ag()
+water = miepy.materials.water()
 
 # Calculate scattering coefficients
 radius = 100e-9    # 100 nm radius
 lmax = 10          # Use up to 10 multipoles
-sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, lmax)
+sphere = miepy.single_mie_sphere(radius, Ag, wavelengths, lmax, medium=water)
 
 # Figure 1: Scattering and Absorption
 fig, ax1 = plt.subplots()
 C = sphere.cross_sections()
-plt.plot(wavelengths*1e9, C.scattering, label="Scattering", linewidth=2)
-plt.plot(wavelengths*1e9, C.absorption, label="Absorption", linewidth=2)
+plt.plot(wavelengths*1e9, C.scattering/C.scattering[-1], label="Scattering", linewidth=2)
+plt.plot(wavelengths*1e9, C.absorption/C.absorption[-1], label="Absorption", linewidth=2)
 
 # Figure 2: Scattering per multipole
 fig, ax2 = plt.subplots()

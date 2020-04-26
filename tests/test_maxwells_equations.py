@@ -189,14 +189,14 @@ def test_maxwells_equations_cluster_far_field(source):
     assert np.allclose(curlE[:2], 1j*k*H[:2], atol=0, rtol=1e-5), 'curl(E) = ikH'
     assert np.allclose(curlH[:2], -1j*k*E[:2], atol=0, rtol=1e-5), 'curl(H) = -ikE'
 
-@pytest.mark.not_implemented()
+@pytest.mark.skip(reason="not implemented")
 def test_maxwells_equation_interior():
     """
     Verify Maxwell's equations in the interior of a particle
     """
     pass
 
-@pytest.mark.not_implemented
+@pytest.mark.skip(reason="not implemented")
 def test_maxwells_equation_in_medium():
     """
     Verify Maxwell's equations in a non-vacuum medium
