@@ -13,7 +13,7 @@ vec3 force(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVector
 
     std::complex<double> Fxy = 0;
     std::complex<double> Fz = 0;
-    double Axy = PI/pow(k,2)*eps_0*sqrt(eps_b);
+    double Axy = PI/pow(k,2)*eps_0*eps_b;
     double Az = -2*Axy;
 
     int rmax = p_scat.size()/2;
@@ -93,7 +93,7 @@ vec3 torque(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVecto
 
     int rmax = p_scat.size()/2;
     int lmax = rmax_to_lmax(rmax);
-    double A = -2*PI/pow(k,3)*eps_0*sqrt(eps_b);
+    double A = -2*PI/pow(k,3)*eps_0*eps_b;
     vec3 T = vec3::Zero();
 
     Eigen::Map<const ComplexVector> p(p_scat.data(), rmax);
