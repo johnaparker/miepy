@@ -55,6 +55,7 @@ void bind_cluster_cross_sections(py::module &);
 void bind_trapz(py::module &);
 void bind_trapz_2d(py::module &);
 void bind_integrate_phase(py::module &);
+void bind_grid_interpolate(py::module &);
 
 // misc tests
 void bind_test(py::module &);
@@ -138,6 +139,7 @@ PYBIND11_MODULE(cpp, m) {
     bind_trapz(decomposition_m);
     bind_trapz_2d(decomposition_m);
     bind_integrate_phase(decomposition_m);
+    bind_grid_interpolate(decomposition_m);
 
     // misc tests
     bind_test(special_m);

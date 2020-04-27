@@ -18,6 +18,10 @@ Ag = miepy.materials.Ag()
 radius = 75*nm
 source = miepy.sources.plane_wave.from_string(polarization='rhc')
 source = miepy.sources.gaussian_beam(2500*nm, [1, 1j], power=.002)
+
+x = np.linspace(-4000*nm, 4000*nm, 100)
+y = np.linspace(-4000*nm, 4000*nm, 100)
+source = miepy.sources.grid_interpolate_source(source, [x,y,0])
 separation = 600*nm
 
 def tests(Nmax, step=1):

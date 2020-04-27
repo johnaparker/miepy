@@ -49,7 +49,7 @@ class sphere_cluster:
         self.auto_origin = False    
         if origin is None:
             self.origin = np.zeros(3)
-        elif origin is 'auto':
+        elif origin == 'auto':
             self.auto_origin = True
             self.origin = np.average(self.position, axis=0)
         else:
