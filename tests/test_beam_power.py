@@ -114,7 +114,7 @@ class Test_gaussian_beam_numeric_power:
         lmax = 6
         radius = 1e6*(2*np.pi/k)
 
-        p_src = self.source.structure([[0,0,0]], k, lmax)
+        p_src = self.source.structure([[0,0,0]], k, lmax)[0]
         theta = np.linspace(np.pi/2, np.pi, 60)
         phi = np.linspace(0, 2*np.pi, 60)
         THETA, PHI = np.meshgrid(theta, phi)
@@ -131,7 +131,7 @@ class Test_gaussian_beam_numeric_power:
     def test_power_p_src_analytic(self):
         """power by analytic sum over p_src coefficients"""
         lmax = 6
-        p_src = self.source.structure([[0,0,0]], k, lmax)
+        p_src = self.source.structure([[0,0,0]], k, lmax)[0]
         factor = 0.5/Z0*np.pi/k**2
         P = factor*np.sum(np.abs(p_src)**2)
 
@@ -140,7 +140,7 @@ class Test_gaussian_beam_numeric_power:
     def test_power_2d_integration(self):
         """power by  integrating Poynting vector in 2D plane"""
         lmax = 6
-        p_src = self.source.structure([[0,0,0]], k, lmax)
+        p_src = self.source.structure([[0,0,0]], k, lmax)[0]
         a = 3000*nm
         x = np.linspace(-a, a, 20)
         y = np.linspace(-a, a, 20)

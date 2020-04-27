@@ -160,7 +160,7 @@ def test_stiching_by_expansion_gaussian_beam():
         for yi,yval in enumerate(y):
             for zi,zval in enumerate(z):
                 z0 = 50*nm
-                p_src = source.structure([[xval,yval,zval - z0]], k, lmax=3)
+                p_src = source.structure([[xval,yval,zval - z0]], k, lmax=3)[0]
                 Efunc = miepy.expand_E(p_src, k, miepy.vsh_mode.incident)
 
                 R, THETA, PHI =miepy.coordinates.cart_to_sph(0, 0, z0)

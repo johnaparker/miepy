@@ -31,7 +31,7 @@ def test_E_field_tight_focusing(source, rtol):
     E1 = source.E_field(X, Y, Z, k)
 
     lmax = 10
-    p_src = source.structure([[0, 0, 0]], k, lmax)
+    p_src = source.structure([[0, 0, 0]], k, lmax)[0]
     Efunc = miepy.vsh.expand_E(p_src, k, miepy.vsh_mode.incident)
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
     E2 = Efunc(R, THETA, PHI)
@@ -49,7 +49,7 @@ def test_H_field_tight_focusing(source, rtol):
     H1 = source.H_field(X, Y, Z, k)
 
     lmax = 10
-    p_src = source.structure([[0, 0, 0]], k, lmax)
+    p_src = source.structure([[0, 0, 0]], k, lmax)[0]
     Hfunc = miepy.vsh.expand_H(p_src, k, miepy.vsh_mode.incident, 1, 1)
     R, THETA, PHI = miepy.coordinates.cart_to_sph(X, Y, Z)
     H2 = Hfunc(R, THETA, PHI)

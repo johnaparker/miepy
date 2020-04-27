@@ -174,7 +174,7 @@ class beam(propagating_source):
         rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.empty([position.shape[0], 2, rmax], dtype=complex)
         for i in range(position.shape[0]):
-            p_src = self.p_src_func(pos[i])
+            p_src[i] = self.p_src_func(pos[i])
 
         if self.orientation != miepy.quaternion.one:
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, self.orientation)
