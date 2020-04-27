@@ -165,7 +165,11 @@ class beam(propagating_source):
                                k, lmax, theta_0=np.pi - theta_c)
 
             
-        pos = miepy.coordinates.rotate(*(position - self.center).T, self.orientation.inverse()).T
+        if self.orientation != miepy.quaternion.one:
+            R = miepy.quaternion.as_rotation_matrix(self.orientation.inverse())
+            pos = np.einsum('ij,...j->...i', R, position - self.center)
+        else:
+            pos = position - self.center
 
         rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.empty([position.shape[0], 2, rmax], dtype=complex)
