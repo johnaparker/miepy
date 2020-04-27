@@ -55,13 +55,17 @@ def rotate_expansion_coefficients(p_exp, quat):
         The rotated expansion coefficients, p_rot[2,rmax]
     """
     p_rot = np.empty_like(p_exp)
-    rmax = p_exp.shape[1]
+    rmax = p_exp.shape[-1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)
 
     for n in range(1,lmax+1):
         R = vsh_rotation_matrix(n, quat)
         rmax = miepy.vsh.lmax_to_rmax(n)
         idx = np.s_[rmax-(2*n+1):rmax]
-        p_rot[:,idx] = np.einsum('ab,pb->pa', R, p_exp[:,idx])
+
+        if p_rot.ndim == 3:
+            p_rot[...,idx] = np.einsum('ab,Npb->Npa', R, p_exp[...,idx])
+        else:
+            p_rot[:,idx] = np.einsum('ab,pb->pa', R, p_exp[:,idx])
 
     return p_rot

@@ -107,18 +107,24 @@ class plane_wave(polarized_propagating_source):
         return H
 
     def structure(self, position, k, lmax):
+        position = np.asarray(position)
+
+        Nparticles = len(position)
         rmax = miepy.vsh.lmax_to_rmax(lmax)
-        p_src = np.zeros([2, rmax], dtype=complex)
-        phase = k*(self.k_hat[0]*position[0] + self.k_hat[1]*position[1] + self.k_hat[2]*position[2]) + self.phase
 
-        for i,n,m in miepy.mode_indices(lmax):
-            pi_value = pi_func(n, m, self.theta)
-            tau_value = tau_func(n, m, self.theta)
-            Emn = np.abs(miepy.vsh.Emn(m, n))
-            factor = self.amplitude*np.exp(1j*(phase - m*self.phi))*Emn
+        p_src = np.empty([Nparticles, 2, rmax], dtype=complex)
 
-            p_src[0,i] = factor*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
-            p_src[1,i] = factor*(pi_value*self.polarization[0]  - 1j*tau_value*self.polarization[1])
+        for j in range(Nparticles):
+            phase = k*(self.k_hat[0]*position[j,0] + self.k_hat[1]*position[j,1] + self.k_hat[2]*position[j, 2]) + self.phase
+
+            for i,n,m in miepy.mode_indices(lmax):
+                pi_value = pi_func(n, m, self.theta)
+                tau_value = tau_func(n, m, self.theta)
+                Emn = np.abs(miepy.vsh.Emn(m, n))
+                factor = self.amplitude*np.exp(1j*(phase - m*self.phi))*Emn
+
+                p_src[j,0,i] = factor*(tau_value*self.polarization[0] - 1j*pi_value*self.polarization[1])
+                p_src[j,1,i] = factor*(pi_value*self.polarization[0]  - 1j*tau_value*self.polarization[1])
 
         return p_src
 

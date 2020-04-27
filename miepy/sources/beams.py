@@ -151,10 +151,12 @@ class beam(propagating_source):
         Obtain the structure coefficients of the beam
 
         Arguments:
-            position     (x, y, z) position
-            k            medium wavenumber
-            lmax         maximum expansion order
+            position[N,3]     (x, y, z) positions of N particles
+            k                 medium wavenumber
+            lmax              maximum expansion order
         """
+        position = np.asarray(position)
+
         if k != self.k_stored or lmax != self.lmax_stored:
             theta_c = self.theta_cutoff(k)
             self.k_stored = k
@@ -162,8 +164,13 @@ class beam(propagating_source):
             self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(self, 
                                k, lmax, theta_0=np.pi - theta_c)
 
-        pos = miepy.coordinates.rotate(*(position - self.center), self.orientation.inverse())
-        p_src = self.p_src_func(pos)
+            
+        pos = miepy.coordinates.rotate(*(position - self.center).T, self.orientation.inverse()).T
+
+        rmax = miepy.vsh.lmax_to_rmax(lmax)
+        p_src = np.empty([position.shape[0], 2, rmax], dtype=complex)
+        for i in range(position.shape[0]):
+            p_src = self.p_src_func(pos[i])
 
         if self.orientation != miepy.quaternion.one:
             p_src = miepy.vsh.rotate_expansion_coefficients(p_src, self.orientation)

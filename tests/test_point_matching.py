@@ -9,7 +9,7 @@ def test_plane_wave_point_matching():
     lmax = 3
 
     source = miepy.sources.plane_wave([1,0])
-    p_src = source.structure([0,0,0], k, lmax)
+    p_src = source.structure([[0,0,0]], k, lmax)[0]
 
     p_src_numeric = miepy.vsh.decomposition.near_field_point_matching(source, [0,0,0], wav/4, k, lmax, sampling=10)
 
@@ -34,7 +34,7 @@ def test_point_dipole_point_matching():
 
     source = miepy.sources.point_dipole([0,0,0], direction=[1,0,0])
 
-    p1 = source.structure(pos, k, lmax)
+    p1 = source.structure([pos], k, lmax)[0]
     p2 = miepy.vsh.decomposition.near_field_point_matching(source, pos, .1, k, lmax, sampling)
 
     p1 = p1[0, :8]

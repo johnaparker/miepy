@@ -104,9 +104,9 @@ class source:
         """Compute the expansion coefficients of the source at a given position
 
         Arguments:
-            position   (x,y,z) position of the expansion origin
-            k          wavenumber (in medium)
-            lmax       maximum expansion order
+            position[N,3]   (x,y,z) position of the expansion origin for N points
+            k               wavenumber (in medium)
+            lmax            maximum expansion order
         """
         pass
 

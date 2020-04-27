@@ -386,7 +386,7 @@ class sphere_cluster:
             lmax = self.lmax
 
         self.solve_cluster_coefficients(lmax)
-        p0 = self.source.structure(self.origin, self.material_data.k_b, lmax)
+        p0 = self.source.structure(np.array([self.origin]), self.material_data.k_b, lmax)[0]
 
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k_b)
 
@@ -590,14 +590,11 @@ class sphere_cluster:
         self.p_cluster = None
 
     def _solve_source_decomposition(self):
-        for i in range(self.Nparticles):
-            self.p_src[i] = self.source.structure(self.position[i], self.material_data.k_b, self.lmax)
+        self.p_src[...] = self.source.structure(self.position, self.material_data.k_b, self.lmax)
 
         if self.interface is not None:
             reflected = self.source.reflect(self.interface, self.medium, self.wavelength)
-
-            for i in range(self.Nparticles):
-                self.p_src[i] += reflected.structure(self.position[i], self.material_data.k_b, self.lmax)
+            self.p_src += reflected.structure(self.position, self.material_data.k_b, self.lmax)
 
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src

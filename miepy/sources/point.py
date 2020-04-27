@@ -66,21 +66,25 @@ class point_dipole(source):
         return self.H_field(radius, radius, theta, phi, far=True, spherical=False)[1:]
 
     def structure(self, position, k, lmax):
+        position = np.asarray(position)
+        Nparticles = len(position)
+
         rmax = miepy.vsh.lmax_to_rmax(lmax)
-        p_src = np.zeros([2, rmax], dtype=complex)
+        p_src = np.zeros([Nparticles, 2, rmax], dtype=complex)
         factor = self.amplitude*np.exp(1j*self.phase)
 
-        dr = position - self.position
-        rad, theta, phi = miepy.coordinates.cart_to_sph(*dr)
+        for i in range(Nparticles):
+            dr = position[i] - self.position
+            rad, theta, phi = miepy.coordinates.cart_to_sph(*dr)
 
-        for r,n,m in miepy.mode_indices(lmax):
-            for u in [-1,0,1]:
-                A, B = miepy.cpp.vsh_translation.vsh_translation(m, n, u, 1, rad, theta, phi, k, miepy.vsh_mode.outgoing)
-                p_src[0,r] += -A*self.weight[u]
-                p_src[1,r] += -B*self.weight[u]
+            for r,n,m in miepy.mode_indices(lmax):
+                for u in [-1,0,1]:
+                    A, B = miepy.cpp.vsh_translation.vsh_translation(m, n, u, 1, rad, theta, phi, k, miepy.vsh_mode.outgoing)
+                    p_src[i,0,r] += -A*self.weight[u]
+                    p_src[i,1,r] += -B*self.weight[u]
 
         if self.mode == 'magnetic':
-            p_src = p_src[::-1]
+            p_src = p_src[:, ::-1]
 
         return factor*p_src
 
