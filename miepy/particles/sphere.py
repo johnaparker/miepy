@@ -32,5 +32,8 @@ class sphere(particle):
     def enclosed_radius(self):
         return self.radius
 
+    def _rotate_fixed_tmatrix(self):
+        self.tmatrix = self.tmatrix_fixed
+
     def _dict_key(self, wavelength):
         return (sphere, self.radius, self.material.eps(wavelength).item(), self.material.mu(wavelength).item())
