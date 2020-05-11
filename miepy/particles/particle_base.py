@@ -24,7 +24,7 @@ class particle:
         self.tmatrix_fixed = None
         self.tmatrix = None
 
-        if self.material.name == 'metal':
+        if self.material is not None and self.material.name == 'metal':
             self.conducting = True
         else:
             self.conducting = False

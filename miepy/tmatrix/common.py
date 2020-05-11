@@ -176,3 +176,12 @@ def tmatrix_regular_prism(N, side, height, wavelength, eps, eps_m, lmax, extende
 
     return nfmds_solver(lmax, parameters, solver=tmatrix_solvers.non_axisymmetric,
                         extended_precision=extended_precision)
+
+def tmatrix_sphere_cluster(pos, radii, lmax, lmax_cluster, wavelength, eps, eps_m, extended_precision=False, **kwargs):
+    parameters = dict(pos=pos, radii=radii, Nrank_particles=lmax,
+            wavelength=wavelength, index=eps**0.5, index_m=eps_m**0.5)
+    parameters.update(kwargs)
+
+    return nfmds_solver(lmax_cluster, parameters, solver=tmatrix_solvers.sphere_cluster,
+                        extended_precision=extended_precision)
+

@@ -9,13 +9,14 @@ from functools import namedtuple
 from .required_files import main_input_file, sct_input_file
 from .axisymmetric_file import axisymmetric_file
 from .non_axisymmetric_file import non_axisymmetric_file
+from .sphere_cluster_file import sphere_cluster_file
 
 
 tmatrix_input = namedtuple('TmatrixInput', 'number, name, input_function')
 class tmatrix_solvers:
     axisymmetric     = tmatrix_input(number=1, name='AXSYM', input_function=axisymmetric_file)
     non_axisymmetric = tmatrix_input(number=2, name='NONAXSYM', input_function=non_axisymmetric_file)
-
+    sphere_cluster   = tmatrix_input(number=11, name='MULTSPH', input_function=sphere_cluster_file)
 
 def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extended_precision=False):
     """Return the T-matrix using the Null-Field Method with discrete sources (NFM-DS)
