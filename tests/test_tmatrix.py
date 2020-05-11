@@ -90,3 +90,31 @@ def test_rotated_spheroid_equals_rotated_light(material, atol):
     C2 = oriented.cross_sections()
 
     assert np.allclose(C1, C2, rtol=0, atol=atol)
+
+def test_sphere_cluster_tmatrix_particle():
+    """sphere_cluster_particle in miepy.cluster yields the same results as miepy.sphere_cluster"""
+    L = 155*nm
+    lmax = 6
+
+    cluster = miepy.sphere_cluster(position=[[-L/2, 0,0], [L/2,0,0]],
+                                   material=Ag,
+                                   radius=75*nm,
+                                   source=source,
+                                   lmax=lmax,
+                                   medium=medium,
+                                   wavelength=800*nm)
+    C1 = cluster.cross_sections()
+    cluster.solve_cluster_coefficients()
+    p1 = cluster.p_cluster
+
+    particle = miepy.sphere_cluster_particle(cluster.position, cluster.radius, Ag, lmax=lmax)
+    cluster = miepy.cluster(particles=particle,
+                            source=source,
+                            lmax=lmax,
+                            medium=medium,
+                            wavelength=800*nm)
+    C2 = cluster.cross_sections()
+    p2 = cluster.p_scat
+
+    assert np.allclose(C1, C2, rtol=7e-4, atol=0), 'equal cross-sections'
+    assert np.allclose(p1, p2, rtol=1e-2, atol=1e-12), 'equal cluster scattering coefficients'
