@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # pull docker image
-#       docker pull quay.io/pypa/manylinux1_x86_64
+#       docker pull quay.io/pypa/manylinux2010_x86_64
 # run docker environment interactively (from MiePy root directory)
-#       docker run -it -v `pwd`:/io quay.io/pypa/manylinux1_x86_64
+#       docker run -it -v `pwd`:/io quay.io/pypa/manylinux2010_x86_64
 # run this script in docker (from MiePy root directory)
 #       docker run --rm -v `pwd`:/io quay.io/pypa/manylinux2010_x86_64 /io/.build_wheels/manylinux-wheels.sh
 set -e -x
@@ -39,7 +39,7 @@ for VERSION in {cp36-cp36m,cp37-cp37m}; do
     "${PYBIN}/pip" install numpy
     "${PYBIN}/pip" install cmake
     #"${PYBIN}/pip" install -r /io/requirements.txt
-    "${PYBIN}/pip" wheel /io/ -w /io/.build_wheels/wheelhouse/
+    "${PYBIN}/pip" wheel /io/ -v -w /io/.build_wheels/wheelhouse/
     
     # Bundle external shared libraries into the wheel
     for whl in /io/.build_wheels/wheelhouse/miepy*.whl; do
@@ -58,7 +58,7 @@ for VERSION in {cp38-cp38,}; do
     "${PYBIN}/pip" install numpy
     "${PYBIN}/pip" install cmake
     #"${PYBIN}/pip" install -r /io/requirements.txt
-    "${PYBIN}/pip" wheel /io/ -w /io/.build_wheels/wheelhouse/
+    "${PYBIN}/pip" wheel /io/ -v -w /io/.build_wheels/wheelhouse/
     
     # Bundle external shared libraries into the wheel
     for whl in /io/.build_wheels/wheelhouse/miepy*.whl; do
