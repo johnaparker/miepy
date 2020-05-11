@@ -30,10 +30,30 @@ make install
 
 # Compile wheels
 export PATH_BASE=$PATH
-for VERSION in {cp35-cp35m,cp36-cp36m,cp37-cp37m}; do
+
+for VERSION in {cp36-cp36m,cp37-cp37m}; do
     export PYBIN="/opt/python/${VERSION}/bin/"
     export PATH="${PYBIN}:${PATH_BASE}"
     export CPATH="/opt/python/${VERSION}/include/python${VERSION:2:1}.${VERSION:3:1}m:${CPATH}"
+
+    "${PYBIN}/pip" install numpy
+    "${PYBIN}/pip" install cmake
+    #"${PYBIN}/pip" install -r /io/requirements.txt
+    "${PYBIN}/pip" wheel /io/ -w /io/.build_wheels/wheelhouse/
+    
+    # Bundle external shared libraries into the wheel
+    for whl in /io/.build_wheels/wheelhouse/miepy*.whl; do
+        if [[ "$whl" = *"${VERSION}"* ]] && [[ "$whl" != *"manylinux"* ]] ; then
+            auditwheel repair "$whl" -w /io/.build_wheels/wheelhouse/ --plat manylinux2010_x86_64
+        fi
+    done
+
+done
+
+for VERSION in {cp38-cp38,}; do
+    export PYBIN="/opt/python/${VERSION}/bin/"
+    export PATH="${PYBIN}:${PATH_BASE}"
+    export CPATH="/opt/python/${VERSION}/include/python${VERSION:2:1}.${VERSION:3:1}:${CPATH}"
 
     "${PYBIN}/pip" install numpy
     "${PYBIN}/pip" install cmake
