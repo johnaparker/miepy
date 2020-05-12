@@ -17,7 +17,7 @@ URL = ''
 EMAIL = 'japarker@uchicago.edu'
 AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
-# REQUIRES_PYTHON = '>=3.6.0'
+REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.5.0'
 LICENSE = 'GPLv3'
 
@@ -140,6 +140,7 @@ setup(
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     install_requires=REQUIRED,
+    python_requires=REQUIRES_PYTHON,
     include_package_data = True,
     ext_modules=[CMakeExtension('miepy/cpp', './cpp')],
     cmdclass={

@@ -15,10 +15,12 @@ export PATH=/opt/python/cp37-cp37m/bin/:$PATH
 # unzip  libraries to build
 cd /root
 cp -r /io/.build_wheels/eigen3 .
-cp -r /io/.build_wheels/gsl-2.5 .
+cp -r /io/.build_wheels/gsl-2.6 .
 
 # install GSL
-cd gsl-2.5
+cd gsl-2.6
+./configure
+make
 make install
 
 # install Eigen
