@@ -70,3 +70,12 @@ miepy/bin/tmatrix_extended
 
 # c++ code
 *.so
+
+# wheel building
+.build_wheels/eigen3
+.build_wheels/gsl-2.6
+.build_wheels/wheelhouse
+
+# temp folder and files
+temp
+temp.py
