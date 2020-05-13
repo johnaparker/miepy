@@ -51,5 +51,5 @@ class sphere_cluster_particle(particle):
         return self.tmatrix
 
     def enclosed_radius(self):
-        return np.max(np.linalg.norm(self.p_position - self.position[:,np.newaxis], axis=1)) \
-               + np.max(self.radii)
+        return np.max(np.linalg.norm(self.p_position - self.position[np.newaxis], axis=1)) \
+               + np.max(self.p_radii)
