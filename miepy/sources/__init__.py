@@ -9,5 +9,6 @@ from .common import (gaussian_beam, hermite_gaussian_beam, laguerre_gaussian_bea
                      bigaussian_beam, azimuthal_beam, radial_beam, shear_beam)
 
 from .point import point_dipole
+from .vsh_sources import vsh_source
 
 from .grid_interpolate import grid_interpolate_source
