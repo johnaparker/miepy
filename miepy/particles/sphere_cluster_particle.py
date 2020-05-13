@@ -1,6 +1,7 @@
 import miepy
 import numpy as np
 from .particle_base import particle
+import uuid
 
 class sphere_cluster_particle(particle):
     def __init__(self, position, radius, material, lmax, orientation=None):
@@ -13,10 +14,11 @@ class sphere_cluster_particle(particle):
             lmax[N]         sphere lmax values
             orientation     orientation of the collection (relative to as created)
         """
-        self.com = np.average(position, axis=0)
         self.Nparticles = len(position)
-
-        self.p_position = np.atleast_2d(position)
+        self.p_position = np.asarray(position)
+        if self.p_position.ndim != 2 or self.Nparticles == 1:
+            raise ValueError('a sphere_cluster_particle must have at least 2 particles')
+        self.com = np.average(self.p_position, axis=0)
 
         self.p_radii = np.empty(self.Nparticles, dtype=float)
         self.p_radii[...] = radius
@@ -26,8 +28,10 @@ class sphere_cluster_particle(particle):
 
         self.p_lmax = np.empty(self.Nparticles, dtype=int)
         self.p_lmax[...] = lmax
-
         self.lmax_cluster = np.max(self.p_lmax)
+
+        self.id = uuid.uuid4()
+
         super().__init__(self.com, orientation, self.p_material[0])
 
     def __repr__(self):
@@ -51,5 +55,8 @@ class sphere_cluster_particle(particle):
         return self.tmatrix
 
     def enclosed_radius(self):
-        return np.max(np.linalg.norm(self.p_position - self.position[:,np.newaxis], axis=1)) \
-               + np.max(self.radii)
+        return np.max(np.linalg.norm(self.p_position - self.position[np.newaxis], axis=1)) \
+               + np.max(self.p_radii)
+
+    def _dict_key(self, wavelength):
+        return self.id

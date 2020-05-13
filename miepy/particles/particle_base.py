@@ -70,4 +70,4 @@ class particle:
             self.tmatrix = miepy.tmatrix.rotate_tmatrix(self.tmatrix_fixed, self.orientation)
 
     def _dict_key(self, wavelength):
-        pass
+        raise NotImplementedError('particle must implement _dict_key')

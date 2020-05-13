@@ -5,11 +5,10 @@ import matplotlib.animation as animation
 import matplotlib as mpl
 import meep
 import meep_ext
-import pinboard
-from tqdm import tqdm
+from numpipe import scheduler, pbar
 import miepy
 
-job = pinboard.pinboard()
+job = scheduler()
 nm = 1e-9
 um = 1e-6
 
@@ -122,7 +121,7 @@ def gmt_sim():
     particles.append(miepy.ellipsoid([0,0,0], rx, ry, rz, material=Au, orientation=q))
 
 
-    for i, wavelength in enumerate(tqdm(wavelengths)):
+    for i, wavelength in enumerate(pbar(wavelengths)):
         sol = miepy.cluster(particles=particles,
                             source=miepy.sources.plane_wave([1,0]),
                             wavelength=wavelength,
@@ -132,7 +131,7 @@ def gmt_sim():
 
     return dict(wavelengths=wavelengths, C=C, A=A, E=E)
 
-@job.at_end
+@job.plots
 def vis():
     fig, ax = plt.subplots()
 
@@ -157,4 +156,4 @@ def vis():
 
     plt.show()
 
-job.execute()
+job.run()

@@ -5,12 +5,11 @@ import matplotlib.animation as animation
 import matplotlib as mpl
 import meep
 import meep_ext
-import pinboard
-from tqdm import tqdm
+from numpipe import scheduler, pbar
 import miepy
 from matplotlib.backends.backend_pdf import PdfPages
 
-job = pinboard.pinboard()
+job = scheduler()
 nm = 1e-9
 um = 1e-6
 
@@ -136,7 +135,7 @@ def force_gmmt():
 
     F = np.zeros([3,9,len(wavelengths)], dtype=float)
 
-    for i, wavelength in enumerate(tqdm(wavelengths)):
+    for i, wavelength in enumerate(pbar(wavelengths)):
         sol = miepy.cluster(particles=particles,
                             source=miepy.sources.plane_wave([1,0]),
                             wavelength=wavelength,
@@ -148,7 +147,7 @@ def force_gmmt():
 
     return dict(wavelengths=wavelengths, force=F)
 
-@job.at_end
+@job.plots
 def vis():
     norm = job.load(force_norm)
     scat = job.load(force_sim)
@@ -171,4 +170,4 @@ def vis():
 
     # plt.show()
 
-job.execute()
+job.run()

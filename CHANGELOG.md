@@ -1,3 +1,13 @@
+## 0.5 - 2020-05-11
+- New types of particles: `sphere_cluster_particle` for reducing a collection of spheres to a single particle. `miepy.core_shell` for a core-shell particle.
+- New `dft_beam` and `scalar_dft_beam` sources that take as input the E field in an XY-plane, and the angular far-field is determined via a discrete Fourier transform
+- New SLM-type source `miepy.sources.phase_only_slm` to phase modulate a beam
+- `cluster.microscope` feature to compute simulated microscope images of clusters
+- New optional optimization: `miepy.sources.grid_interpolate_source` takes a source and precomputes the structure coefficients on a grid for later interpolation
+- Better performance for `miepy.cluster` that contains many `miepy.sphere` particles
+- Other small performance enhancements
+- Bug fix: forces and torques off by an index of refraction of the medium
+
 ## 0.4 - 2019-05-30
 - Support for including an interface (substrate) in the simulation; all sources can be transmitted and reflected
 - Non-axisymmetric particles are now supported; ellipsoids, cubes, and regular prisms are defined

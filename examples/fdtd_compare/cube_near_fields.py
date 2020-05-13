@@ -8,11 +8,10 @@ import matplotlib.animation as animation
 import matplotlib as mpl
 import meep
 import meep_ext
-import pinboard
-from tqdm import tqdm
+from numpipe import scheduler
 import miepy
 
-job = pinboard.pinboard()
+job = scheduler()
 nm = 1e-9
 um = 1e-6
 
@@ -128,7 +127,7 @@ def gmt_sim():
 
     return dict(phi=phi, X=X, Y=Y, Ixy=Ixy, Iphi=Iphi)
 
-@job.at_end
+@job.plots
 def vis():
     fdtd = job.load(sim)
     gmmt = job.load(gmt_sim)
@@ -167,4 +166,4 @@ def vis():
 
     plt.show()
 
-job.execute()
+job.run()
