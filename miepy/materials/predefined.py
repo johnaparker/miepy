@@ -69,3 +69,8 @@ class materials:
     def Si(author='Green-2008'):
         """Return silicon material from MiePy data"""
         return load_material("Si", author)
+
+    @staticmethod
+    def Cr(author='Johnson'):
+        """Return Cr material from MiePy data"""
+        return load_material("Cr", author)
