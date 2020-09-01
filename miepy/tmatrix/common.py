@@ -50,8 +50,8 @@ def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m
     particle.solve()
 
     for i, n, m in miepy.mode_indices(lmax):
-        tmatrix[0,i,0,i] = particle.an[0,n-1]
-        tmatrix[1,i,1,i] = particle.bn[0,n-1]
+        tmatrix[0,i,0,i] = -1j*particle.an[0,n-1]
+        tmatrix[1,i,1,i] = -1j*particle.bn[0,n-1]
 
     return tmatrix
 
