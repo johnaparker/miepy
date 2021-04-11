@@ -273,7 +273,6 @@ class radial_beam(source):
 
         return H
 
-#TODO: fix
 class shear_beam(source):
     def __init__(self, width, theta_max, focal_length):
         self.width = width
