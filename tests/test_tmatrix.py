@@ -62,7 +62,7 @@ def test_tmatrix_spheroid_is_sphere(material, atol):
 
 @pytest.mark.parametrize("material,atol", [
     (Ag, 8e-29),
-    (metal, 5e-29),
+    (metal, 8e-29),
 ])
 def test_rotated_spheroid_equals_rotated_light(material, atol):
     """cross-sections are the same if a spheroid is rotated or if the light is rotated"""

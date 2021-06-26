@@ -28,9 +28,9 @@ class point_dipole(source):
         self.mode = mode
 
         self.weight = {}
-        self.weight[1] = -1j*(self.direction[0] - 1j*self.direction[1])/2
+        self.weight[1] = -1j*(self.direction[0] - 1j*self.direction[1])/np.sqrt(2)
         self.weight[0] = -1j*self.direction[2]
-        self.weight[-1] = 1j*(self.direction[0] + 1j*self.direction[1])/2
+        self.weight[-1] = 1j*(self.direction[0] + 1j*self.direction[1])/np.sqrt(2)
 
     def angular_spectrum(self, theta, phi, k):
         return self.E_angular(theta, phi, k)
