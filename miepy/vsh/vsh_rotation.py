@@ -5,22 +5,6 @@ VSH rotation functions
 import numpy as np
 import miepy
 
-def wigner_D(n, m, mp, quat):
-    """Wigner-D function
-    
-    Arguments:
-        n       multipole order
-        m       multipole orientation (from)
-        mp      multipole orientation (to)
-        quat    quaternion representing the rotation
-    """
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        from spherical_functions import Wigner_D_element
-
-    return Wigner_D_element(quat, n, mp, m)
-
 def vsh_rotation_matrix(n, quat):
     """Rotation matrix for a given multipole order
 
@@ -34,10 +18,10 @@ def vsh_rotation_matrix(n, quat):
     import warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        from spherical_functions import Wigner_D_matrices
+        import spherical
 
     l = 2*n + 1
-    R = Wigner_D_matrices(quat, n, n).reshape((l,l))
+    R = spherical.wigner_D(quat.components, n, n).reshape((l,l))
 
     m = np.arange(-n, n+1)
     R *= np.power(-1.0, np.subtract.outer(m, m))

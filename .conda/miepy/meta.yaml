@@ -31,7 +31,7 @@ requirements:
     - python
     - pyyaml
     - scipy
-    - spherical_functions
+    - spherical
     - sympy
     - tqdm
     - eigen
@@ -47,7 +47,7 @@ requirements:
     - python
     - pyyaml
     - scipy
-    - spherical_functions
+    - spherical
     - sympy
     - tqdm
     - eigen

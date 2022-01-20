@@ -30,7 +30,7 @@ REQUIRED = [
     'pandas',
     'pyyaml',
     'numpy_quaternion',
-    'spherical_functions',
+    'spherical',
     'vpython',
 ]
 
