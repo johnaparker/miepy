@@ -105,10 +105,10 @@ class single_mie_sphere:
         self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
                
         #TODO (performance) swap an/bn shape for lmax by Nfreq, remove transpose
-        self.an = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.bn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.cn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.dn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
+        self.an = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.bn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.cn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.dn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
 
         self.scattering_properties = (self.an, self.bn, self.material_data['k'])
 
@@ -215,7 +215,7 @@ class single_mie_sphere:
         mat = self.material_data
 
         def E_func(r, theta, phi):
-            E = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+            E = np.zeros(shape = [3] + list(r.shape), dtype=complex)
             id_inside = r <= self.radius
 
             k = mat['k'][index]
@@ -244,7 +244,7 @@ class single_mie_sphere:
         mat = self.material_data
 
         def H_func(r, theta, phi):
-            H = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+            H = np.zeros(shape = [3] + list(r.shape), dtype=complex)
             id_inside = r <= self.radius
 
             k = mat['k'][index]

@@ -174,7 +174,7 @@ class polarized_propagating_source(propagating_source):
     def __init__(self, polarization, amplitude=1, phase=0, origin=None, theta=0, phi=0, standing=False):
         propagating_source.__init__(self, amplitude=amplitude, phase=phase, origin=origin, theta=theta, phi=phi, standing=standing)
 
-        self.polarization = np.asarray(polarization, dtype=np.complex)
+        self.polarization = np.asarray(polarization, dtype=complex)
         self.polarization /= np.linalg.norm(self.polarization)
 
     @abstractmethod

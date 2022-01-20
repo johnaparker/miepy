@@ -167,8 +167,8 @@ def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1, name=None):
     size = len(sig[0])
     omega = 2*np.pi*constants.c*constants.hbar/(constants.e*wav*1e-9)
 
-    eps = eps_inf*np.ones(Nfreq, dtype=np.complex)
-    mu = np.ones(Nfreq, dtype=np.complex)
+    eps = eps_inf*np.ones(Nfreq, dtype=complex)
+    mu = np.ones(Nfreq, dtype=complex)
     for i in range(size):
         eps_add = sig[0,i]*wp[0]**2/(f[0,i]**2 - omega**2 -1j*omega*gam[0,i])
         mu_add = sig[1,i]*wp[1]**2/(f[1,i]**2 - omega**2 -1j*omega*gam[1,i])
