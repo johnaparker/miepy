@@ -31,7 +31,7 @@ class sphere_cluster:
         ### sphere properties
         self.position = np.asarray(np.atleast_2d(position), dtype=float)
         self.radius = atleast(radius, dim=1, length=self.position.shape[0], dtype=float)
-        self.material = atleast(material, dim=1, length=self.position.shape[0], dtype=np.object)
+        self.material = atleast(material, dim=1, length=self.position.shape[0], dtype=object)
         if (self.position.shape[0] != self.radius.shape[0] != self.material.shape[0]):
             raise ValueError("The shapes of position, radius, and material do not match")
         self.Nparticles = self.radius.shape[0]

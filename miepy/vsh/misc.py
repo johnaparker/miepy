@@ -85,7 +85,7 @@ class vector_spherical_harmonics:
         def f(r, theta, phi):
             theta_comp = np.cos(phi)*self.pi_func(theta)*self.z_func(k*r)
             phi_comp = -1*np.sin(phi)*self.tau_func(theta)*self.z_func(k*r)
-            r_comp = np.zeros(shape = theta.shape, dtype=np.complex)
+            r_comp = np.zeros(shape = theta.shape, dtype=complex)
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
@@ -93,7 +93,7 @@ class vector_spherical_harmonics:
         def f(r, theta, phi):
             theta_comp = -1*np.sin(phi)*self.pi_func(theta)*self.z_func(k*r)
             phi_comp = -1*np.cos(phi)*self.tau_func(theta)*self.z_func(k*r)
-            r_comp = np.zeros(shape = theta.shape, dtype=np.complex)
+            r_comp = np.zeros(shape = theta.shape, dtype=complex)
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 

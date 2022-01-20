@@ -14,7 +14,7 @@ def riccati_1(nmax,x):
        returns (r1, r1'), n=0,1,...,nmax"""
 
     x = np.asarray(x)
-    result = np.zeros((2,nmax) + x.shape, dtype=np.complex)
+    result = np.zeros((2,nmax) + x.shape, dtype=complex)
 
     for n in range(nmax):
         jn = special.spherical_jn(n+1,x)
@@ -30,7 +30,7 @@ def riccati_3(nmax,x):
        returns (r3, r3'), n=0,1,...,nmax"""
 
     x = np.asarray(x)
-    result = np.zeros((2,nmax) + x.shape, dtype=np.complex)
+    result = np.zeros((2,nmax) + x.shape, dtype=complex)
 
     for n in range(nmax):
         yn = special.spherical_yn(n+1,x)
@@ -84,7 +84,7 @@ class vector_spherical_harmonics:
         def f(r, theta, phi):
             theta_comp = np.cos(phi)*self.pi_func(theta)*self.z_func(k*r)
             phi_comp = -1*np.sin(phi)*self.tau_func(theta)*self.z_func(k*r)
-            r_comp = np.zeros(shape = theta.shape, dtype=np.complex)
+            r_comp = np.zeros(shape = theta.shape, dtype=complex)
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 
@@ -92,7 +92,7 @@ class vector_spherical_harmonics:
         def f(r, theta, phi):
             theta_comp = -1*np.sin(phi)*self.pi_func(theta)*self.z_func(k*r)
             phi_comp = -1*np.cos(phi)*self.tau_func(theta)*self.z_func(k*r)
-            r_comp = np.zeros(shape = theta.shape, dtype=np.complex)
+            r_comp = np.zeros(shape = theta.shape, dtype=complex)
             return np.array([r_comp, theta_comp, phi_comp])
         return f
 

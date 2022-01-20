@@ -77,7 +77,7 @@ def scattered_E(an, bn, k):
     """
     lmax = an.shape[0]
     def E_func(r, theta, phi):
-        E = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+        E = np.zeros(shape = [3] + list(r.shape), dtype=complex)
         for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
@@ -95,7 +95,7 @@ def interior_E(cn, dn, k):
     """
     lmax = cn.shape[0]
     def E_func(r, theta, phi):
-        E = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+        E = np.zeros(shape = [3] + list(r.shape), dtype=complex)
         for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
@@ -115,7 +115,7 @@ def scattered_H(an, bn, k, n_b, mu_b):
     """
     lmax = an.shape[0]
     def H_func(r, theta, phi):
-        H = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+        H = np.zeros(shape = [3] + list(r.shape), dtype=complex)
         for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 
@@ -135,7 +135,7 @@ def interior_H(cn, dn, k, n, mu):
     """
     lmax = cn.shape[0]
     def H_func(r, theta, phi):
-        H = np.zeros(shape = [3] + list(r.shape), dtype=np.complex)
+        H = np.zeros(shape = [3] + list(r.shape), dtype=complex)
         for L in range(1,lmax+1):
             En = 1j**L*(2*L+1)/(L*(L+1))
 

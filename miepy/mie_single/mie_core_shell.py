@@ -11,7 +11,7 @@ R3 = riccati_3_single
 
 def M_matrix(m1,m2,x,y,mu,mu1,mu2,n):
     """M matrix in core_shell solver"""
-    M = np.zeros([8,8,len(m1)], dtype=np.complex)
+    M = np.zeros([8,8,len(m1)], dtype=complex)
     z = np.zeros(len(m1))
     M[0] = np.array([z,z, -m2*R1(n,m1*x)[0],z, m1*R1(n,m2*x)[0],z, -m1*R3(n,m2*x)[0],z])
     M[1] = np.array([z,z,z, m2*R1(n,m1*x)[1],z, -m1*R1(n,m2*x)[1],z, m1*R3(n,m2*x)[1]])
@@ -27,7 +27,7 @@ def M_matrix(m1,m2,x,y,mu,mu1,mu2,n):
 def c_values(m2,y,mu2,n):
     """c array in core_shell solver"""
     z = np.zeros(len(m2))
-    c = np.zeros([8,len(m2)], dtype=np.complex)
+    c = np.zeros([8,len(m2)], dtype=complex)
     c = np.array([z,z,z,z, -m2*R1(n,y)[1], m2*R1(n,y)[0], -mu2*R1(n,y)[0], mu2*R1(n,y)[1]])
     return np.transpose(c)
 
@@ -73,10 +73,10 @@ class single_mie_core_shell:
         self.material_data['n_b']        = np.sqrt(self.material_data['eps_b']*self.material_data['mu_b'])
         self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
                
-        self.an = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.bn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.cn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
-        self.dn = np.zeros((self.Nfreq, self.lmax), dtype=np.complex)
+        self.an = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.bn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.cn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
+        self.dn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
 
         self.scattering_properties = (self.an, self.bn, self.material_data['k'])
 
