@@ -13,14 +13,14 @@ def M_matrix(m1,m2,x,y,mu,mu1,mu2,n):
     """M matrix in core_shell solver"""
     M = np.zeros([8,8,len(m1)], dtype=complex)
     z = np.zeros(len(m1))
-    M[0] = np.array([z,z, -m2*R1(n,m1*x)[0],z, m1*R1(n,m2*x)[0],z, -m1*R3(n,m2*x)[0],z])
-    M[1] = np.array([z,z,z, m2*R1(n,m1*x)[1],z, -m1*R1(n,m2*x)[1],z, m1*R3(n,m2*x)[1]])
-    M[2] = np.array([z,z, mu2*R1(n,m1*x)[1],z, -mu1*R1(n,m2*x)[1],z, mu1*R3(n,m2*x)[1],z])
-    M[3] = np.array([z,z,z, -mu2*R1(n,m1*x)[0],z, mu1*R1(n,m2*x)[0],z, -mu1*R3(n,m2*x)[0]])
-    M[4] = np.array([-m2*R2(n,y)[1],z,z,z,z, -R1(n,m2*y)[1],z, R3(n,m2*y)[1]])
-    M[5] = np.array([z, m2*R2(n,y)[0],z,z, R1(n,m2*y)[0],z, -R3(n,m2*y)[0],z])
-    M[6] = np.array([-mu2*R2(n,y)[0],z,z,z,z, -mu*R1(n,m2*y)[0],z, mu*R3(n,m2*y)[0]])
-    M[7] = np.array([z, mu2*R2(n,y)[1],z,z, mu*R1(n,m2*y)[1],z, -mu*R3(n,m2*y)[1],z])
+    M[0] = np.array([z,z, -m2*R1(n,m1*x)[0],z, m1*R1(n,m2*x)[0],z, -m1*1j*R2(n,m2*x)[0],z])
+    M[1] = np.array([z,z,z, m2*R1(n,m1*x)[1],z, -m1*R1(n,m2*x)[1],z, m1*1j*R2(n,m2*x)[1]])
+    M[2] = np.array([z,z, mu2*R1(n,m1*x)[1],z, -mu1*R1(n,m2*x)[1],z, mu1*1j*R2(n,m2*x)[1],z])
+    M[3] = np.array([z,z,z, -mu2*R1(n,m1*x)[0],z, mu1*R1(n,m2*x)[0],z, -mu1*1j*R2(n,m2*x)[0]])
+    M[4] = np.array([-m2*R3(n,y)[1],z,z,z,z, -R1(n,m2*y)[1],z, 1j*R2(n,m2*y)[1]])
+    M[5] = np.array([z, m2*R3(n,y)[0],z,z, R1(n,m2*y)[0],z, -1j*R2(n,m2*y)[0],z])
+    M[6] = np.array([-mu2*R3(n,y)[0],z,z,z,z, -mu*R1(n,m2*y)[0],z, mu*1j*R2(n,m2*y)[0]])
+    M[7] = np.array([z, mu2*R3(n,y)[1],z,z, mu*R1(n,m2*y)[1],z, -mu*1j*R2(n,m2*y)[1],z])
 
     return np.transpose(M, (2,0,1))
 
