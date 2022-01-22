@@ -5,6 +5,7 @@ mie_core_shell calculates the scattering coefficients of a core-shell structure 
 import numpy as np
 import miepy
 from miepy.special_functions import riccati_1_single,riccati_2_single,riccati_3_single
+from miepy.mie_single.scattering import scattered_E,scattered_H,interior_E,interior_H
 R1 = riccati_1_single
 R2 = riccati_2_single
 R3 = riccati_3_single
@@ -117,3 +118,64 @@ class single_mie_core_shell:
         return miepy.flux.cross_sections(miepy.scattering_per_multipole(*self.scattering_properties),
                 miepy.absorbption_per_multipole(*self.scattering_properties),
                 miepy.extinction_per_multipole(*self.scattering_properties))
+
+    def E_field(self, index=None, lmax=None):
+        """Return an electric field function E(r,theta,phi) for a given wavenumber index"""
+        if lmax is None: lmax = self.lmax
+        if index is None:
+            index = np.s_[:]
+
+        if not self.computed: self.solve()
+
+        an = self.an[index, :lmax+1]
+        bn = self.bn[index, :lmax+1]
+        cn = self.cn[index, :lmax+1]
+        dn = self.dn[index, :lmax+1]
+        mat = self.material_data
+
+        def E_func(r, theta, phi):
+            E = np.zeros(shape = [3] + list(r.shape), dtype=complex)
+            id_inside = r <= self.radius_in
+            id_outside = r > self.radius_out
+
+            k = mat['k'][index]
+            E[:,id_outside] = scattered_E(an, bn, k)(r[id_outside], theta[id_outside], phi[id_outside])
+
+            k = 2*np.pi*mat['n_in'][index]/self.wavelength[index]
+            E[:,id_inside] = interior_E(cn, dn, k)(r[id_inside], theta[id_inside], phi[id_inside])
+            return E
+
+        return E_func
+
+    def H_field(self, index=None, lmax=None):
+        """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
+
+        if lmax is None: lmax = self.lmax
+        if index is None:
+            index = np.s_[:]
+
+        if not self.computed: self.solve()
+
+        an = self.an[index, :lmax+1]
+        bn = self.bn[index, :lmax+1]
+        cn = self.cn[index, :lmax+1]
+        dn = self.dn[index, :lmax+1]
+        mat = self.material_data
+
+        def H_func(r, theta, phi):
+            H = np.zeros(shape = [3] + list(r.shape), dtype=complex)
+            id_inside = r <= self.radius_in
+            id_outside = r > self.radius_out
+
+            k = mat['k'][index]
+            n = mat['n_b'][index]
+            mu = mat['mu_b'][index]
+            H[:,id_outside] = scattered_H(an, bn, k, n, mu)(r[id_outside], theta[id_outside], phi[id_outside])
+
+            k = 2*np.pi*mat['n_in'][index]/self.wavelength[index]
+            n = mat['n_in'][index]
+            mu = mat['mu_in'][index]
+            H[:,id_inside] = interior_H(cn, dn, k, n, mu)(r[id_inside], theta[id_inside], phi[id_inside])
+            return H
+
+        return H_func
