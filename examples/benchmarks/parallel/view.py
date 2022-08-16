@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 time_1 = {}
 with h5py.File('out_1.h5', 'r') as f:
     for name in f:
-        time_1[name] = f[name].value
+        time_1[name] = f[name][...]
 
 colors = {'build': 'C0', 'solve': 'C1', 'flux': 'C2', 'force': 'C3'}
 
@@ -19,7 +19,7 @@ for speedup in speedup_vals:
     time_x = {}
     with h5py.File(f'out_{speedup}.h5', 'r') as f:
         for name in f:
-            time_x[name] = f[name].value
+            time_x[name] = f[name][...]
 
         Nparticles = f.attrs['Nparticles']
 
