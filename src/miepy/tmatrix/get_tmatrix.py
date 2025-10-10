@@ -58,11 +58,20 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
             f.write((solver.input_function(Nrank=lmax, **input_kwargs)))
 
         ### execute program and communicate
-        install_path = miepy.__path__[0]
-        if extended_precision:
-            command = '{install_path}/bin/tmatrix_extended'.format(install_path=install_path)
-        else:
-            command = '{install_path}/bin/tmatrix'.format(install_path=install_path)
+        # Search for tmatrix binary in all package paths (handles editable installs)
+        binary_name = 'tmatrix_extended' if extended_precision else 'tmatrix'
+        command = None
+        for path in miepy.__path__:
+            candidate = os.path.join(path, 'bin', binary_name)
+            if os.path.exists(candidate):
+                command = candidate
+                break
+
+        if command is None:
+            raise FileNotFoundError(
+                f"Could not find {binary_name} binary in any of the following locations:\n" +
+                "\n".join([os.path.join(p, 'bin', binary_name) for p in miepy.__path__])
+            )
 
         proc = subprocess.Popen([command], cwd=sources_dir, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         proc.communicate(str(solver.number).encode())
