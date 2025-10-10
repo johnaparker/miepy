@@ -1,13 +1,22 @@
-include miepy/materials/database.zip
-recursive-include miepy/materials/database *
+# Include README and license
+include README.md
+include LICENSE
 
-include miepy/bin/*
+# Include root CMake file
+include CMakeLists.txt
 
+# Include material database
+include src/miepy/materials/database.zip
+recursive-include src/miepy/materials/database *
+
+# Include C++ source and build files
 include cpp/CMakeLists.txt
 recursive-include cpp/pybind11 *
 recursive-include cpp/src *
 
-include miepy/tmatrix/nfmds/*.f90
-include miepy/tmatrix/nfmds/makefile
+# Include Fortran source and build files
+include src/miepy/tmatrix/nfmds/*.f90
+include src/miepy/tmatrix/nfmds/makefile
 
+# Include tests
 include tests/*.py

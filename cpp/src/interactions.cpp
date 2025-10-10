@@ -16,7 +16,7 @@ ComplexVector matrix_vector_product(const Ref<const ComplexMatrix>& A, const Ref
     ComplexVector ret(size);
 #pragma omp parallel for
     for (int i = 0; i < size; i++) {
-        ret(i) = A.row(i)*x;
+        ret(i) = A.row(i).dot(x);
     }
 
     return ret;

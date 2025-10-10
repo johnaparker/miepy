@@ -4,7 +4,7 @@ Miscellaneous functions related to vsh
 
 import numpy as np
 from scipy import special
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from miepy.cpp.decomposition import trapz, trapz_2d
 import miepy
 from miepy.constants import Z0
@@ -16,9 +16,9 @@ def simps_2d(xd,yd,fd):
 
     xData = np.zeros(len(xd))
     for i,x in enumerate(xd):
-        xData[i] = simps(fd[i,:], yd)
+        xData[i] = simpson(fd[i,:], x=yd)
 
-    return simps(xData, xd)
+    return simpson(xData, x=xd)
 
 def power_through_aperature(source, center, radius, k, sampling=75):
     """Calculate the power through an aperature for a source

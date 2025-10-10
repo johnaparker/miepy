@@ -1,0 +1,49 @@
+[project]
+name = "miepy"
+version = "0.6.0"
+description = "Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
+readme = "README.md"
+authors = [
+    { name = "John Parker", email = "johnaparker@users.noreply.github.com" }
+]
+license = { text = "GPLv3" }
+keywords = ["electrodynamics", "mie", "scattering"]
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.3",
+    "numpy-quaternion>=2024.0.12",
+    "pandas>=2.3.3",
+    "pyyaml>=6.0.3",
+    "scipy>=1.16.2",
+    "spherical>=1.0.18",
+    "sympy>=1.14.0",
+    "tqdm>=4.67.1",
+    "vpython>=7.6.5",
+]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python",
+    "Programming Language :: C++",
+    "Programming Language :: Fortran",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Development Status :: 3 - Alpha",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Intended Audience :: Science/Research",
+]
+
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.source-dir = "."
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

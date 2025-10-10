@@ -22,7 +22,7 @@ dist
 *.egg-info
 
 # material database
-miepy/materials/database
+src/miepy/materials/database
 
 # misc example folders
 examples/compare
@@ -79,3 +79,6 @@ miepy/bin/tmatrix_extended
 # temp folder and files
 temp
 temp.py
+
+# claude
+.claude

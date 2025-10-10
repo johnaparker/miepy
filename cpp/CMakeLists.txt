@@ -1,23 +1,24 @@
-cmake_minimum_required(VERSION 3.1)
-project(cpp)
+cmake_minimum_required(VERSION 3.15)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+# Set compiler flags
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -Werror")
+
+# Architecture-specific optimization flags
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -fPIC")
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
-
+# Find dependencies
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-#find_package(pybind11 REQUIRED)
-add_subdirectory(pybind11)
+find_package(pybind11 CONFIG REQUIRED)
 
 include_directories(src)
 
-set(SOURCES ${SOURCES} 
+set(SOURCES
     src/special.cpp
     src/vsh_functions.cpp
     src/vsh_translation.cpp
@@ -39,10 +40,12 @@ set(BINDINGS
     src/decomposition_pyb.cpp
 )
 
-add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
-target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
-set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
-                                     SUFFIX "${PYTHON_MODULE_EXTENSION}")
+# Create the Python module using pybind11
+pybind11_add_module(cpp MODULE ${SOURCES} ${BINDINGS})
+target_link_libraries(cpp PRIVATE GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
+
+# Install the module to miepy/
+install(TARGETS cpp DESTINATION miepy COMPONENT python)
 
 #if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     #add_executable(debug test/debug.cpp "${SOURCES}")
