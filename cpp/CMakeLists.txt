@@ -13,7 +13,7 @@ endif()
 # Find dependencies
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(pybind11 CONFIG REQUIRED)
 
 include_directories(src)
