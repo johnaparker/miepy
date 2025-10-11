@@ -7,12 +7,13 @@ on:
 
 jobs:
   test-and-build:
-    name: Test and Build (${{ matrix.os }})
+    name: Test and Build (${{ matrix.os }}, Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
+        python-version: ['3.11', '3.12', '3.13']
 
     steps:
       - name: Checkout repository
@@ -23,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
@@ -87,6 +88,6 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}
+          name: dist-${{ matrix.os }}-py${{ matrix.python-version }}
           path: dist/
           retention-days: 7
