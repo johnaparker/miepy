@@ -26,7 +26,7 @@ file(MAKE_DIRECTORY ${NFMDS_BUILD_DIR})
 # Custom command to build the Fortran executable
 add_custom_command(
     OUTPUT ${NFMDS_EXECUTABLE}
-    COMMAND ${MAKE_EXECUTABLE}
+    COMMAND ${MAKE_EXECUTABLE} -j1
         objdir=${NFMDS_BUILD_DIR}
         exedir=${NFMDS_BUILD_DIR}
         compilemode=release

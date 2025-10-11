@@ -16,9 +16,9 @@ def simps_2d(xd,yd,fd):
 
     xData = np.zeros(len(xd))
     for i,x in enumerate(xd):
-        xData[i] = simpson(fd[i,:], x=yd)
+        xData[i] = simpson(fd[i,:], yd)
 
-    return simpson(xData, x=xd)
+    return simpson(xData, xd)
 
 def power_through_aperature(source, center, radius, k, sampling=75):
     """Calculate the power through an aperature for a source
