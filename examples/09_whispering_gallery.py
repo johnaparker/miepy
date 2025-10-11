@@ -8,7 +8,7 @@ import miepy
 
 nm = 1e-9
 
-f = miepy.sources.point_dipole([700*nm,1100*nm,0], polarization=[0,0,1])
+f = miepy.sources.point_dipole([700*nm,1100*nm,0], direction=[0,0,1])
 x = np.linspace(-500*nm, 500*nm, 50)
 y = np.linspace(200*nm, 1500*nm, 50)
 X,Y = np.meshgrid(x, y, indexing='ij')
@@ -25,7 +25,7 @@ ax.pcolormesh(X/nm, Y/nm, E[2].real, cmap='bwr', shading='gouraud', vmax=vmax, v
 ax.set_aspect('equal')
 
 radius=250*nm
-source = miepy.sources.point_dipole([-radius -10*nm, 0, 0], polarization=[0,0,1])
+source = miepy.sources.point_dipole([-radius -10*nm, 0, 0], direction=[0,0,1])
 # source = miepy.sources.plane_wave.from_string(polarization='x')
 sphere = miepy.sphere_cluster(position=[0,0,0],
                               material=miepy.constant_material(4**2),

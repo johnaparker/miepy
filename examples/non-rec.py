@@ -10,12 +10,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 pdf = PdfPages('out.pdf')
 
-Ag = miepy.materials. Ag()
+Ag = miepy.materials.Ag()
 radius = [100e-9, 75e-9]
 
-sources = {'x-polarized': miepy.sources.x_polarized_plane_wave(amplitude=1e6),
-           'y-polarized': miepy.sources.y_polarized_plane_wave(amplitude=1e6),
-           'rhc-polarized': miepy.sources.rhc_polarized_plane_wave(amplitude=1e6),
+sources = {'x-polarized': miepy.sources.plane_wave.from_string(polarization='x', amplitude=1e6),
+           'y-polarized': miepy.sources.plane_wave.from_string(polarization='y', amplitude=1e6),
+           'rhc-polarized': miepy.sources.plane_wave.from_string(polarization='rhc', amplitude=1e6),
         }
 for name,source in sources.items():
     plt.figure()
@@ -24,18 +24,29 @@ for name,source in sources.items():
     force1 = []
     force2 = []
 
-    spheres = miepy.spheres([[separations[0]/2,0,0], [-separations[0]/2,0,0]], radius, Ag)
-    sol1 = miepy.gmt(spheres, source, 600e-9, 2, interactions=False)
-    sol2 = miepy.gmt(spheres, source, 600e-9, 2, interactions=True)
+    sol1 = miepy.sphere_cluster(position=[[separations[0]/2,0,0], [-separations[0]/2,0,0]],
+                                radius=radius,
+                                material=Ag,
+                                source=source,
+                                wavelength=600e-9,
+                                lmax=2,
+                                interactions=False)
+    sol2 = miepy.sphere_cluster(position=[[separations[0]/2,0,0], [-separations[0]/2,0,0]],
+                                radius=radius,
+                                material=Ag,
+                                source=source,
+                                wavelength=600e-9,
+                                lmax=2,
+                                interactions=True)
 
     for separation in tqdm(separations):
         sol1.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
-        F,T = map(np.squeeze, sol1.force())
-        force1.append(F[0,0] + F[0,1])
+        F,T = sol1.force()
+        force1.append(F[0])
 
         sol2.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
-        F,T = map(np.squeeze, sol2.force())
-        force2.append(F[0,0] + F[0,1])
+        F,T = sol2.force()
+        force2.append(F[0])
 
     force1 = np.asarray(force1)
     force2 = np.asarray(force2)

@@ -17,11 +17,15 @@ R = (X**2 + Y**2 + Z**2)**0.5
 THETA = np.arccos(Z/R)
 PHI = np.arctan2(Y,X)
 
-system = miepy.gmt(miepy.spheres([0,0,0], r, miepy.constant_material(1.3)), 
-            miepy.sources.plane_wave.from_string(polarization='x'),
-            600*nm, 2, interactions=False)
+system = miepy.sphere_cluster(position=[0,0,0],
+                              radius=r,
+                              material=miepy.constant_material(1.3),
+                              source=miepy.sources.plane_wave.from_string(polarization='x'),
+                              wavelength=600*nm,
+                              lmax=2,
+                              interactions=False)
 
-E = np.squeeze(system.E_field(X,Y,Z,False))
+E = np.squeeze(system.E_field(X,Y,Z,source=False))
 I = np.sum(np.abs(E)**2, axis=0)
 print(E[:,0,0])
 

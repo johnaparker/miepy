@@ -42,7 +42,7 @@ I /= np.max(I)
 X, Y, Z = miepy.coordinates.sph_to_cart(I, THETA, PHI)
 colors = mpl.cm.viridis(I)
 
-surface = ax.plot_surface(X, Y, Z, facecolors=colors, edgecolors='#000000',
+surface = ax.plot_surface(X, Y, Z, facecolors=colors,
         cstride=1, rstride=1, linewidth=.1, shade=False)
 surface.set_edgecolor('k')
 

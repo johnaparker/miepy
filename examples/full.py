@@ -16,10 +16,14 @@ z = 0
 X,Y,Z = np.meshgrid(x,y,z, indexing='ij') 
 
 for i,sim in enumerate([True,False]):
-    system = miepy.gmt(miepy.spheres([[-sep/2,0,0],[sep/2,0,0]], r, miepy.materials. Ag()), 
-                miepy.sources.plane_wave.from_string(polarization='x'),
-                600*nm, 2, interactions=sim)
-    E = np.squeeze(system.E_field(X,Y,Z,True))
+    system = miepy.sphere_cluster(position=[[-sep/2,0,0],[sep/2,0,0]],
+                                  radius=r,
+                                  material=miepy.materials.Ag(),
+                                  source=miepy.sources.plane_wave.from_string(polarization='x'),
+                                  wavelength=600*nm,
+                                  lmax=2,
+                                  interactions=sim)
+    E = np.squeeze(system.E_field(X,Y,Z,source=True))
     I = np.sum(np.abs(E)**2, axis=0)
     print(I.shape)
 

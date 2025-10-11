@@ -32,9 +32,9 @@ nm = 1e-9
 sampling = 40
 Nwav = 200
 
-Ag = miepy.materials. Ag()
+Ag = miepy.materials.Ag()
 radius = 75*nm
-source = miepy.sources.x_polarized_plane_wave(amplitude=1)
+source = miepy.sources.plane_wave.from_string(polarization='x', amplitude=1)
 # separations = np.linspace(2*radius+10e-9,2*radius+700e-9, 50)
 separation = 153*nm
 wavelengths = np.linspace(330*nm, 1000*nm, Nwav)
@@ -42,27 +42,28 @@ wavelengths = np.linspace(330*nm, 1000*nm, Nwav)
 separations = np.linspace(153*nm, 300*nm, 10)
 
 plt.figure(figsize=(5,10))
+
+r = 10000*nm
+THETA,PHI = sphere_mesh(sampling)
+X,Y,Z = sph_to_cart(r, THETA, PHI)
+tau = np.linspace(-1, 1, sampling)
+phi = np.linspace(0, 2*np.pi, 2*sampling)
+
 for sep_idx,separation in enumerate(tqdm(separations)):
-    spheres = miepy.spheres([[separation/2,0,0], [-separation/2,0,0]], radius, Ag)
-    sol = miepy.gmt(spheres, source, wavelengths, 3, interactions=True)
-
-    # sol.update_position(np.array([[separation/2,0,0], [-separation/2,0,0]]))
-
-    r = 10000*nm
-    THETA,PHI = sphere_mesh(sampling)
-    X,Y,Z = sph_to_cart(r, THETA, PHI)
-
-    E = sol.E_field(X,Y,Z, inc=False)
-    # H = sol.H_field(X,Y,Z, inc=False)
-    I = np.sum(np.abs(E)**2, axis=0)
-
-    dA = r**2
-    tau = np.linspace(-1, 1, sampling)
-    phi = np.linspace(0, 2*np.pi, 2*sampling)
     flux = np.zeros_like(wavelengths)
 
-    for i in range(Nwav):
-        flux[i] = miepy.vsh.misc.simps_2d(tau, phi, I[i])
+    for i, wavelength in enumerate(wavelengths):
+        sol = miepy.sphere_cluster(position=[[separation/2,0,0], [-separation/2,0,0]],
+                                   radius=radius,
+                                   material=Ag,
+                                   source=source,
+                                   wavelength=wavelength,
+                                   lmax=3,
+                                   interactions=True)
+
+        E = sol.E_field(X,Y,Z, source=False)
+        I = np.sum(np.abs(E)**2, axis=0)
+        flux[i] = miepy.vsh.misc.simps_2d(tau, phi, I)
 
     plt.plot(wavelengths/nm, flux - .0004*sep_idx, color='C0')
 

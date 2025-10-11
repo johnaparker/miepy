@@ -8,7 +8,7 @@ import miepy
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 
-Ag = miepy.materials. Ag()
+Ag = miepy.materials.Ag()
 
 # calculate scattering coefficients, 800 nm illumination
 radius = 200e-9      # 200 nm radius
@@ -36,7 +36,7 @@ IH = np.sum(np.abs(H)**2, axis=0)
 # plot results
 fig,axes = plt.subplots(ncols=2, figsize=plt.figaspect(1/2.7))
 for i,ax in enumerate(axes):
-    plt.subplot(ax)
+    plt.sca(ax)
     I = IE if i == 0 else IH
     plt.pcolormesh(np.squeeze(X)*1e9,np.squeeze(Y)*1e9, I, shading="gouraud", cmap=cm.viridis)
     plt.colorbar(label='field intensity')
