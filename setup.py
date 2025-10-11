@@ -4,7 +4,7 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, Extension
 from distutils.command.build import build
 from setuptools.command.build_ext import build_ext
 from setuptools import Command
@@ -19,7 +19,6 @@ AUTHOR = 'John Parker'
 KEYWORDS = 'electrodynamics mie scattering'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.5.0'
-LICENSE = 'GPLv3'
 
 REQUIRED = [
     'numpy', 
@@ -133,10 +132,20 @@ setup(
     author=AUTHOR,
     author_email=EMAIL,
     description=DESCRIPTION,
-    license=LICENSE,
     keywords=KEYWORDS,
     url=URL,
-    packages=find_packages(),
+    packages=[
+        'miepy',
+        'miepy.material_functions',
+        'miepy.materials',
+        'miepy.microscope',
+        'miepy.mie_single',
+        'miepy.particles',
+        'miepy.sources',
+        'miepy.tmatrix',
+        'miepy.visual',
+        'miepy.vsh',
+    ],
     long_description=read('README.md'),
     long_description_content_type='text/markdown',
     install_requires=REQUIRED,

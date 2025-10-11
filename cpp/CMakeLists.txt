@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(cpp)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -11,7 +11,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED NO_MODULE)
 #find_package(pybind11 REQUIRED)
 add_subdirectory(pybind11)
 

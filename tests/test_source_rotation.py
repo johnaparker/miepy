@@ -36,6 +36,6 @@ def test_plane_wave_rotation():
     E2 = Efunc(R, THETA, PHI)
     E2 = miepy.coordinates.vec_sph_to_cart(E2, THETA, PHI)
 
-    L2 = np.sqrt(np.sum(np.abs(E1 - E2)**2))/np.product(X.shape)
+    L2 = np.sqrt(np.sum(np.abs(E1 - E2)**2))/np.prod(X.shape)
     avg = np.average(np.abs(E1) + np.abs(E2))/2
     assert L2 < 7e-6*avg
