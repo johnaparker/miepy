@@ -63,6 +63,9 @@ jobs:
           echo "CXX=${GXX_PATH}" >> $GITHUB_ENV
           echo "FC=${GFORTRAN_PATH}" >> $GITHUB_ENV
 
+          # Set OpenMP environment for CMake to find it
+          echo "OpenMP_ROOT=${LIBOMP_PREFIX}" >> $GITHUB_ENV
+
           # Determine vcpkg triplet based on architecture
           if [ "$(uname -m)" = "arm64" ]; then
             VCPKG_TRIPLET="arm64-osx"
@@ -71,11 +74,11 @@ jobs:
           fi
 
           # Build CMAKE_ARGS for scikit-build-core
+          # NOTE: Do not set CMAKE_PREFIX_PATH here as it will override pybind11 discovery
           CMAKE_ARGS="-DCMAKE_C_COMPILER=${GCC_PATH}"
           CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=${GXX_PATH}"
           CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_Fortran_COMPILER=${GFORTRAN_PATH}"
           CMAKE_ARGS="${CMAKE_ARGS} -DVCPKG_TARGET_TRIPLET=${VCPKG_TRIPLET}"
-          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${LIBOMP_PREFIX}"
 
           echo "CMAKE_ARGS=${CMAKE_ARGS}" >> $GITHUB_ENV
 
