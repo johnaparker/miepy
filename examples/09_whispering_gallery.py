@@ -47,7 +47,7 @@ I = np.sum(np.abs(E)**2, axis=0)
 fig, ax = plt.subplots()
 # im = ax.pcolormesh(X/nm, Z/nm, I, shading='gouraud')
 # plt.colorbar(im)
-vmax = np.max(E[0].real)
+vmax = np.max(E[0].real)/30000
 ax.pcolormesh(X/nm, Z/nm, E[0].real, cmap='bwr', shading='gouraud', vmax=vmax, vmin=-vmax)
 ax.set_aspect('equal')
 

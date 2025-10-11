@@ -95,7 +95,8 @@ class single_mie_core_shell:
         for n in range(self.lmax):
             M = M_matrix(m1, m2, xvals, yvals, mat['mu_b'], mat['mu_in'], mat['mu_out'], n+1)
             c = c_values(m2, yvals, mat['mu_out'], n+1)
-            sol = np.linalg.solve(M,c)
+            # Solve for each wavelength
+            sol = np.array([np.linalg.solve(M[i], c[i]) for i in range(self.Nfreq)])
             self.an[:,n] = sol[:,0]
             self.bn[:,n] = sol[:,1]
             self.cn[:,n] = sol[:,2]
