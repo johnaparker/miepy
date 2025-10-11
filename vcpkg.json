@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "miepy",
+  "version": "0.6.0",
+  "description": "Generalized multiparticle Mie theory (GMMT) solver",
+  "dependencies": [
+    "eigen3",
+    "gsl"
+  ]
+}

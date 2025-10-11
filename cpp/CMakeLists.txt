@@ -12,8 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
-#find_package(pybind11 REQUIRED)
-add_subdirectory(pybind11)
+find_package(pybind11 REQUIRED)
 
 include_directories(src)
 
