@@ -13,8 +13,9 @@ todo.txt
 *.mp4
 
 # nfmds
-miepy/tmatrix/nfmds/fem
-miepy/tmatrix/nfmds/input
+src/miepy/tmatrix/nfmds/fem
+src/miepy/tmatrix/nfmds/input
+src/miepy/tmatrix/nfmds/tmatrix
 
 # setup files
 build
