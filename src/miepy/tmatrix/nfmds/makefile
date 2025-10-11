@@ -59,7 +59,9 @@ else
   flags   := $(flags_1)
 endif
 
-fc = gfortran $(flags)
+# Allow overriding the Fortran compiler via FC variable
+FC ?= gfortran
+fc = $(FC) $(flags)
 
 # Make commands
 $(exedir)/$(outfile): $(objs)

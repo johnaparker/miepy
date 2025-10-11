@@ -29,6 +29,7 @@ file(MAKE_DIRECTORY ${NFMDS_BUILD_DIR})
 add_custom_command(
     OUTPUT ${NFMDS_EXECUTABLE}
     COMMAND ${MAKE_EXECUTABLE} -j1
+        FC=${GFORTRAN_EXECUTABLE}
         objdir=${NFMDS_BUILD_DIR}
         exedir=${NFMDS_BUILD_DIR}
         compilemode=release
