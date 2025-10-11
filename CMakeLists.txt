@@ -16,7 +16,7 @@ add_subdirectory(cpp)
 # Build the Fortran tmatrix executable
 # This uses the existing Makefile in src/miepy/tmatrix/nfmds
 find_program(MAKE_EXECUTABLE NAMES gmake make REQUIRED)
-find_program(GFORTRAN_EXECUTABLE NAMES gfortran REQUIRED)
+find_program(GFORTRAN_EXECUTABLE NAMES gfortran gfortran-14 gfortran-13 gfortran-12 gfortran-11 REQUIRED)
 
 set(NFMDS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/miepy/tmatrix/nfmds)
 set(NFMDS_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/nfmds)
