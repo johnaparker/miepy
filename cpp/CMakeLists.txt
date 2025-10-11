@@ -7,7 +7,15 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -Werror")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
+
+# Set architecture-appropriate optimization flags
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -mavx -flto -fPIC")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -fPIC")
+else()
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -fPIC")
+endif()
 
 find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
