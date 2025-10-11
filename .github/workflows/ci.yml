@@ -48,28 +48,36 @@ jobs:
       - name: Set OpenMP and compiler environment (macOS)
         if: runner.os == 'macOS'
         run: |
-          echo "OpenMP_ROOT=$(brew --prefix libomp)" >> $GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$(brew --prefix libomp)" >> $GITHUB_ENV
-          # Set compilers to use Homebrew GCC
-          GCC_VERSION=$(ls $(brew --prefix gcc)/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
+          # Get paths
+          LIBOMP_PREFIX=$(brew --prefix libomp)
           GCC_PREFIX=$(brew --prefix gcc)
+          GCC_VERSION=$(ls ${GCC_PREFIX}/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
+
+          # Set compiler paths
+          GCC_PATH="${GCC_PREFIX}/bin/gcc-${GCC_VERSION}"
+          GXX_PATH="${GCC_PREFIX}/bin/g++-${GCC_VERSION}"
+          GFORTRAN_PATH="${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}"
 
           # Set standard compiler environment variables
-          echo "CC=${GCC_PREFIX}/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "CXX=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "FC=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "CC=${GCC_PATH}" >> $GITHUB_ENV
+          echo "CXX=${GXX_PATH}" >> $GITHUB_ENV
+          echo "FC=${GFORTRAN_PATH}" >> $GITHUB_ENV
 
-          # Set CMake-specific compiler variables (required for vcpkg)
-          echo "CMAKE_C_COMPILER=${GCC_PREFIX}/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "CMAKE_CXX_COMPILER=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "CMAKE_Fortran_COMPILER=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
-
-          # Set vcpkg triplet based on architecture
+          # Determine vcpkg triplet based on architecture
           if [ "$(uname -m)" = "arm64" ]; then
-            echo "VCPKG_DEFAULT_TRIPLET=arm64-osx" >> $GITHUB_ENV
+            VCPKG_TRIPLET="arm64-osx"
           else
-            echo "VCPKG_DEFAULT_TRIPLET=x64-osx" >> $GITHUB_ENV
+            VCPKG_TRIPLET="x64-osx"
           fi
+
+          # Build CMAKE_ARGS for scikit-build-core
+          CMAKE_ARGS="-DCMAKE_C_COMPILER=${GCC_PATH}"
+          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=${GXX_PATH}"
+          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_Fortran_COMPILER=${GFORTRAN_PATH}"
+          CMAKE_ARGS="${CMAKE_ARGS} -DVCPKG_TARGET_TRIPLET=${VCPKG_TRIPLET}"
+          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_PREFIX_PATH=${LIBOMP_PREFIX}"
+
+          echo "CMAKE_ARGS=${CMAKE_ARGS}" >> $GITHUB_ENV
 
       - name: Cache vcpkg packages
         uses: actions/cache@v4
