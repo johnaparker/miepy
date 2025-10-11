@@ -52,9 +52,18 @@ jobs:
           echo "CMAKE_PREFIX_PATH=$(brew --prefix libomp)" >> $GITHUB_ENV
           # Set compilers to use Homebrew GCC
           GCC_VERSION=$(ls $(brew --prefix gcc)/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
-          echo "CC=$(brew --prefix gcc)/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix gcc)/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
-          echo "FC=$(brew --prefix gcc)/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
+          GCC_PREFIX=$(brew --prefix gcc)
+
+          # Set standard compiler environment variables
+          echo "CC=${GCC_PREFIX}/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "CXX=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "FC=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
+
+          # Set CMake-specific compiler variables (required for vcpkg)
+          echo "CMAKE_C_COMPILER=${GCC_PREFIX}/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "CMAKE_CXX_COMPILER=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "CMAKE_Fortran_COMPILER=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
+
           # Set vcpkg triplet based on architecture
           if [ "$(uname -m)" = "arm64" ]; then
             echo "VCPKG_DEFAULT_TRIPLET=arm64-osx" >> $GITHUB_ENV
