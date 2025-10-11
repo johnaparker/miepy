@@ -42,7 +42,6 @@ build-backend = "scikit_build_core.build"
 [tool.scikit-build]
 cmake.build-type = "Release"
 cmake.source-dir = "."
-cmake.args = ["-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake"]
 
 [dependency-groups]
 dev = [

@@ -40,6 +40,12 @@ set(BINDINGS
 
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
+# Force vcpkg Eigen3 to be used by adding it BEFORE any other includes, and demote system eigen3
+get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+target_compile_options(cpp PRIVATE
+    "-isystem" "${EIGEN3_INCLUDE_DIR}"
+    "-idirafter" "/usr/include/eigen3"
+)
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                      SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
