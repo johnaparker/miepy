@@ -9,15 +9,9 @@ on:
         type: string
 
 jobs:
-  test-and-build:
-    name: Test and Build (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ['3.11', '3.12', '3.13']
-
+  build-sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,9 +20,30 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
+
+      - name: Build sdist
+        run: uv build --sdist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
         with:
-          enable-cache: true
-          python-version: ${{ matrix.python-version }}
+          name: dist-sdist
+          path: dist/*.tar.gz
+          retention-days: 7
+
+  build-wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-14]  # macos-13 is Intel, macos-14 is ARM
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install system dependencies (Ubuntu)
         if: runner.os == 'Linux'
@@ -48,46 +63,6 @@ jobs:
         run: |
           brew install gcc cmake unzip libomp
 
-      - name: Set OpenMP and compiler environment (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          # Get paths
-          LIBOMP_PREFIX=$(brew --prefix libomp)
-          GCC_PREFIX=$(brew --prefix gcc)
-          GCC_VERSION=$(ls ${GCC_PREFIX}/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
-
-          # Set compiler paths
-          GCC_PATH="${GCC_PREFIX}/bin/gcc-${GCC_VERSION}"
-          GXX_PATH="${GCC_PREFIX}/bin/g++-${GCC_VERSION}"
-          GFORTRAN_PATH="${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}"
-
-          # Set standard compiler environment variables
-          echo "CC=${GCC_PATH}" >> $GITHUB_ENV
-          echo "CXX=${GXX_PATH}" >> $GITHUB_ENV
-          echo "FC=${GFORTRAN_PATH}" >> $GITHUB_ENV
-
-          # Set OpenMP environment for CMake to find it
-          echo "OpenMP_ROOT=${LIBOMP_PREFIX}" >> $GITHUB_ENV
-
-          # Determine vcpkg triplet based on architecture
-          if [ "$(uname -m)" = "arm64" ]; then
-            VCPKG_TRIPLET="arm64-osx"
-          else
-            VCPKG_TRIPLET="x64-osx"
-          fi
-
-          # Set vcpkg overlay triplets path as environment variable
-          echo "VCPKG_OVERLAY_TRIPLETS=${GITHUB_WORKSPACE}/vcpkg/triplets" >> $GITHUB_ENV
-
-          # Build CMAKE_ARGS for scikit-build-core
-          # NOTE: Do not set CMAKE_PREFIX_PATH here as it will override pybind11 discovery
-          CMAKE_ARGS="-DCMAKE_C_COMPILER=${GCC_PATH}"
-          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=${GXX_PATH}"
-          CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_Fortran_COMPILER=${GFORTRAN_PATH}"
-          CMAKE_ARGS="${CMAKE_ARGS} -DVCPKG_TARGET_TRIPLET=${VCPKG_TRIPLET}"
-
-          echo "CMAKE_ARGS=${CMAKE_ARGS}" >> $GITHUB_ENV
-
       - name: Cache vcpkg packages
         uses: actions/cache@v4
         with:
@@ -95,9 +70,9 @@ jobs:
             vcpkg/installed
             vcpkg/packages
             vcpkg/buildtrees
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: |
-            ${{ runner.os }}-vcpkg-
+            ${{ runner.os }}-${{ runner.arch }}-vcpkg-
 
       - name: Bootstrap vcpkg
         run: |
@@ -109,25 +84,47 @@ jobs:
           fi
         shell: bash
 
-      - name: Install dependencies
-        run: uv sync --frozen
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        env:
+          CIBW_BUILD: cp311-* cp312-* cp313-*
+          CIBW_SKIP: "*-musllinux_*"
+          # Linux: Use manylinux2014 for broader compatibility
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+          # Before build: install system dependencies in the container
+          CIBW_BEFORE_BUILD_LINUX: yum install -y cmake gcc-gfortran
+          # macOS: Set up GCC and OpenMP
+          CIBW_BEFORE_BUILD_MACOS: |
+            brew install gcc cmake unzip libomp
+            LIBOMP_PREFIX=$(brew --prefix libomp)
+            GCC_PREFIX=$(brew --prefix gcc)
+            GCC_VERSION=$(ls ${GCC_PREFIX}/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
+            export CC="${GCC_PREFIX}/bin/gcc-${GCC_VERSION}"
+            export CXX="${GCC_PREFIX}/bin/g++-${GCC_VERSION}"
+            export FC="${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}"
+            export OpenMP_ROOT="${LIBOMP_PREFIX}"
+            if [ "$(uname -m)" = "arm64" ]; then
+              VCPKG_TRIPLET="arm64-osx"
+            else
+              VCPKG_TRIPLET="x64-osx"
+            fi
+            export VCPKG_OVERLAY_TRIPLETS="${PWD}/vcpkg/triplets"
+            export CMAKE_ARGS="-DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} -DVCPKG_TARGET_TRIPLET=${VCPKG_TRIPLET}"
+          # Test the wheels
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: pytest {project}/tests
 
-      - name: Run tests
-        run: uv run pytest tests
-
-      - name: Build package
-        run: uv build
-
-      - name: Upload build artifacts
+      - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: dist/
+          name: dist-${{ matrix.os }}
+          path: ./wheelhouse/*.whl
           retention-days: 7
 
   publish:
     name: Publish to PyPI
-    needs: test-and-build
+    needs: [build-sdist, build-wheels]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
