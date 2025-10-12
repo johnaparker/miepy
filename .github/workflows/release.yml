@@ -84,7 +84,6 @@ jobs:
             FC=${{ env.FC }}
             OpenMP_ROOT=${{ env.LIBOMP_PREFIX }}
             VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
-            LDFLAGS="-static-libgfortran -static-libgcc -Wl,-ld_classic"
             CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }}"
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest

@@ -4,6 +4,13 @@ objdir := .
 srcdir := .
 exedir := .
 
+# Platform-specific settings
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    # macOS: statically link GCC runtime libraries
+    LDFLAGS ?= -static-libgfortran -static-libgcc
+endif
+
 sources =  Parameters.f90\
            MachParam.f90\
            Allocation.f90\

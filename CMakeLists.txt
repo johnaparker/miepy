@@ -35,7 +35,6 @@ add_custom_command(
         objdir=${NFMDS_BUILD_DIR}
         exedir=${NFMDS_BUILD_DIR}
         compilemode=release
-        LDFLAGS=-static-libgfortran -static-libgcc
     WORKING_DIRECTORY ${NFMDS_SOURCE_DIR}
     COMMENT "Building Fortran tmatrix executable"
     VERBATIM

@@ -54,6 +54,10 @@ target_compile_options(cpp PRIVATE
     "-isystem" "${EIGEN3_INCLUDE_DIR}"
     "-idirafter" "/usr/include/eigen3"
 )
+# macOS: Statically link GCC runtime libraries
+if(APPLE)
+    target_link_options(cpp PRIVATE "-static-libgcc")
+endif()
 set_target_properties(cpp PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                      SUFFIX "${PYTHON_MODULE_EXTENSION}")
 
