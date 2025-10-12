@@ -73,6 +73,9 @@ jobs:
             VCPKG_TRIPLET="x64-osx"
           fi
 
+          # Set vcpkg overlay triplets path as environment variable
+          echo "VCPKG_OVERLAY_TRIPLETS=${GITHUB_WORKSPACE}/vcpkg/triplets" >> $GITHUB_ENV
+
           # Build CMAKE_ARGS for scikit-build-core
           # NOTE: Do not set CMAKE_PREFIX_PATH here as it will override pybind11 discovery
           CMAKE_ARGS="-DCMAKE_C_COMPILER=${GCC_PATH}"
