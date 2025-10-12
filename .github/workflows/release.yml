@@ -50,6 +50,24 @@ jobs:
         run: |
           brew install gcc cmake unzip libomp
 
+      - name: Set up compiler paths (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          LIBOMP_PREFIX=$(brew --prefix libomp)
+          GCC_PREFIX=$(brew --prefix gcc)
+          GCC_VERSION=$(ls ${GCC_PREFIX}/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
+
+          echo "CC=${GCC_PREFIX}/bin/gcc-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "CXX=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "FC=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
+          echo "LIBOMP_PREFIX=${LIBOMP_PREFIX}" >> $GITHUB_ENV
+
+          if [ "$(uname -m)" = "arm64" ]; then
+            echo "VCPKG_TRIPLET=arm64-osx" >> $GITHUB_ENV
+          else
+            echo "VCPKG_TRIPLET=x64-osx" >> $GITHUB_ENV
+          fi
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22
         env:
@@ -62,26 +80,16 @@ jobs:
           CIBW_BEFORE_BUILD_LINUX: |
             yum install -y cmake gcc-gfortran unzip zip
             cd {project}/vcpkg && ./bootstrap-vcpkg.sh
-          # macOS: Set up GCC and OpenMP (if not already installed)
-          CIBW_BEFORE_BUILD_MACOS: |
-            if ! command -v gfortran &> /dev/null; then
-              brew install gcc cmake unzip libomp
-            fi
-            LIBOMP_PREFIX=$(brew --prefix libomp)
-            GCC_PREFIX=$(brew --prefix gcc)
-            GCC_VERSION=$(ls ${GCC_PREFIX}/bin/gcc-* | grep -oE '[0-9]+$' | head -n1)
-            export CC="${GCC_PREFIX}/bin/gcc-${GCC_VERSION}"
-            export CXX="${GCC_PREFIX}/bin/g++-${GCC_VERSION}"
-            export FC="${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}"
-            export OpenMP_ROOT="${LIBOMP_PREFIX}"
-            if [ "$(uname -m)" = "arm64" ]; then
-              VCPKG_TRIPLET="arm64-osx"
-            else
-              VCPKG_TRIPLET="x64-osx"
-            fi
-            export VCPKG_OVERLAY_TRIPLETS="{project}/vcpkg/triplets"
-            export CMAKE_ARGS="-DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_Fortran_COMPILER=${FC} -DVCPKG_TARGET_TRIPLET=${VCPKG_TRIPLET}"
-            cd {project}/vcpkg && ./bootstrap-vcpkg.sh
+          # macOS: Bootstrap vcpkg
+          CIBW_BEFORE_BUILD_MACOS: cd {project}/vcpkg && ./bootstrap-vcpkg.sh
+          # macOS: Set environment variables for build
+          CIBW_ENVIRONMENT_MACOS: >
+            CC=${{ env.CC }}
+            CXX=${{ env.CXX }}
+            FC=${{ env.FC }}
+            OpenMP_ROOT=${{ env.LIBOMP_PREFIX }}
+            VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
+            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }}"
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/tests
