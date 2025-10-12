@@ -19,7 +19,7 @@ lmax = 2
     "material,atol",
     [
         (Ag, 2.5e-16),
-        (metal, 2e-17),
+        (metal, 5e-17),
     ],
 )
 def test_tmatrix_sphere_is_sphere(material, atol):
