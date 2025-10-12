@@ -14,7 +14,6 @@ dependencies = [
     "numpy>=2.3.3",
     "numpy-quaternion>=2024.0.12",
     "pandas>=2.3.3",
-    "pyqt6>=6.9.1",
     "pyyaml>=6.0.3",
     "scipy>=1.16.2",
     "spherical>=1.0.18",
