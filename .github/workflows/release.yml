@@ -73,7 +73,7 @@ jobs:
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
           # Before build: install system dependencies in the container
           CIBW_BEFORE_BUILD_LINUX: |
-            yum install -y cmake gcc-gfortran unzip zip
+            yum install -y cmake gcc-c++ gcc-gfortran curl tar unzip zip
             cd {project}/vcpkg && ./bootstrap-vcpkg.sh
           # macOS: Bootstrap vcpkg
           CIBW_BEFORE_BUILD_MACOS: cd {project}/vcpkg && ./bootstrap-vcpkg.sh
