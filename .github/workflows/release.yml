@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14]  # macos-13 is Intel, macos-14 is ARM
+        os: [ubuntu-latest, macos-14]  # macos-14 is ARM only
 
     steps:
       - name: Checkout repository
@@ -61,13 +61,7 @@ jobs:
           echo "CXX=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
           echo "FC=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
           echo "LIBOMP_PREFIX=${LIBOMP_PREFIX}" >> $GITHUB_ENV
-          echo "GCC_LIB=${GCC_PREFIX}/lib/gcc/${GCC_VERSION}" >> $GITHUB_ENV
-
-          if [ "$(uname -m)" = "arm64" ]; then
-            echo "VCPKG_TRIPLET=arm64-osx" >> $GITHUB_ENV
-          else
-            echo "VCPKG_TRIPLET=x64-osx" >> $GITHUB_ENV
-          fi
+          echo "VCPKG_TRIPLET=arm64-osx" >> $GITHUB_ENV
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22
@@ -90,8 +84,8 @@ jobs:
             FC=${{ env.FC }}
             OpenMP_ROOT=${{ env.LIBOMP_PREFIX }}
             VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
-            LDFLAGS="-Wl,-ld_classic"
-            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }} -DCMAKE_SHARED_LINKER_FLAGS='-static-libgfortran -static-libgcc' -DCMAKE_EXE_LINKER_FLAGS='-static-libgfortran -static-libgcc'"
+            LDFLAGS="-static-libgfortran -static-libgcc -Wl,-ld_classic"
+            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }}"
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/tests

@@ -65,7 +65,7 @@ fc = $(FC) $(flags)
 
 # Make commands
 $(exedir)/$(outfile): $(objs)
-	$(fc) -o $(exedir)/$(outfile) $(objs)
+	$(fc) -o $(exedir)/$(outfile) $(objs) $(LDFLAGS)
 
 $(objdir)/%.o: $(srcdir)/%.f90
 	$(fc) -c $< -o $@
