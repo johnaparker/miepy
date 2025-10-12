@@ -3,8 +3,17 @@ MiePy
 MiePy is a Python module for the generalized multiparticle Mie theory (GMMT), also known as the aggregate T-matrix method.
 MiePy solves the electrodynamics of a collection of spherical or non-spherical scatterers with an arbitrary incident source.
 
-![electric field](./docs/miepy_thumbnail.png)
-![three particles](https://jparker.nyc3.digitaloceanspaces.com/gallery/em_three_np_contours.png)
+<p align="center">
+  <img src="./docs/miepy_thumbnail.png" width="500" alt="Electric field visualization">
+  <br>
+  <em>Electric field around a 37 particle cluster</em>
+</p>
+
+<p align="center">
+  <img src="https://jparker.nyc3.digitaloceanspaces.com/gallery/em_three_np_contours.png" width="500" alt="Three particle system">
+  <br>
+  <em>3D electric field contours around three metal nanoparticles</em>
+</p>
 
 Features
 --------------
