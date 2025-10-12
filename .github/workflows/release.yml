@@ -64,16 +64,16 @@ jobs:
           echo "VCPKG_TRIPLET=arm64-osx" >> $GITHUB_ENV
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.2
         env:
           CIBW_BUILD: cp311-* cp312-* cp313-*
           CIBW_SKIP: "*-musllinux_*"
-          # Linux: Use manylinux2014 for broader compatibility
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+          # Linux: Use manylinux_2_28 (AlmaLinux 8, modern toolchain)
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
           # Before build: install system dependencies in the container
           CIBW_BEFORE_BUILD_LINUX: |
-            yum install -y cmake gcc-c++ gcc-gfortran curl tar unzip zip
+            dnf install -y cmake gcc-c++ gcc-gfortran curl tar unzip zip ninja-build
             cd {project}/vcpkg && ./bootstrap-vcpkg.sh
           # macOS: Bootstrap vcpkg
           CIBW_BEFORE_BUILD_MACOS: cd {project}/vcpkg && ./bootstrap-vcpkg.sh
