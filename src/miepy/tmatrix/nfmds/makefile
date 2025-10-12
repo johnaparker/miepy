@@ -7,8 +7,8 @@ exedir := .
 # Platform-specific settings
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
-    # macOS: statically link GCC runtime libraries
-    LDFLAGS ?= -static-libgfortran -static-libgcc
+    # macOS: statically link GCC runtime libraries (except OpenMP)
+    LDFLAGS ?= -static-libgfortran -static-libgcc -static-libquadmath
 endif
 
 sources =  Parameters.f90\
