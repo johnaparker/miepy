@@ -1,6 +1,10 @@
 MiePy
 ==============
-MiePy is a Python module for the generalized multiparticle Mie theory (GMMT), also known as the aggregate T-matrix method. MiePy solves the electrodynamics of a collection of spherical or non-spherical scatterers with an arbitrary incident source.
+MiePy is a Python module for the generalized multiparticle Mie theory (GMMT), also known as the aggregate T-matrix method.
+MiePy solves the electrodynamics of a collection of spherical or non-spherical scatterers with an arbitrary incident source.
+
+![electric field](./docs/miepy_thumbnail.png)
+![three particles](https://jparker.nyc3.digitaloceanspaces.com/gallery/em_three_np_contours.png)
 
 Features
 --------------
@@ -46,7 +50,7 @@ git clone https://github.com/johnaparker/miepy.git miepy --recurse-submodules &&
 ./vcpkg/bootstrap-vcpkg.sh
 ```
 
-3. Install MiePy using uv (vcpkg will automatically install Eigen and GSL):
+3. Install MiePy using uv:
 ```shell
 uv sync
 ```
