@@ -22,7 +22,7 @@ Features
 + Evaluation of cluster **cross-sections** and **optical force and torque** on individual particles
 + **Periodic boundary conditions** with various lattice types (square, hexagonal, etc.) and **mirror and discrete rotational symmetries** for faster calculations
 + Optional **planar interface (substrate)** 
-+ **3D scene visualization** using the the VPython library
++ **3D scene visualization** using the VPython library
 + Image clusters using a **simulated microscope**
 + **OpenMP parallelization** for systems with larger numbers of particles
 
