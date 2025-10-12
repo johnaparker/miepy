@@ -61,6 +61,7 @@ jobs:
           echo "CXX=${GCC_PREFIX}/bin/g++-${GCC_VERSION}" >> $GITHUB_ENV
           echo "FC=${GCC_PREFIX}/bin/gfortran-${GCC_VERSION}" >> $GITHUB_ENV
           echo "LIBOMP_PREFIX=${LIBOMP_PREFIX}" >> $GITHUB_ENV
+          echo "GCC_LIB=${GCC_PREFIX}/lib/gcc/${GCC_VERSION}" >> $GITHUB_ENV
 
           if [ "$(uname -m)" = "arm64" ]; then
             echo "VCPKG_TRIPLET=arm64-osx" >> $GITHUB_ENV
@@ -89,7 +90,8 @@ jobs:
             FC=${{ env.FC }}
             OpenMP_ROOT=${{ env.LIBOMP_PREFIX }}
             VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
-            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }}"
+            LDFLAGS="-Wl,-ld_classic"
+            CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }} -DCMAKE_SHARED_LINKER_FLAGS='-static-libgfortran -static-libgcc' -DCMAKE_EXE_LINKER_FLAGS='-static-libgfortran -static-libgcc'"
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/tests
