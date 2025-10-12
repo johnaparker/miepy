@@ -1,9 +1,12 @@
-name: CI
+name: Release
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.2.3)'
+        required: true
+        type: string
 
 jobs:
   test-and-build:
@@ -121,3 +124,49 @@ jobs:
           name: dist-${{ matrix.os }}-py${{ matrix.python-version }}
           path: dist/
           retention-days: 7
+
+  publish:
+    name: Publish to PyPI
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist-all
+          merge-multiple: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Publish to PyPI
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish dist-all/*
+
+  release:
+    name: Create GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist-all
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: Release ${{ inputs.version }}
+          draft: false
+          prerelease: false
+          files: dist-all/**/*
