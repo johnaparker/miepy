@@ -16,18 +16,62 @@ if(WIN32)
   find_program(GENDEF_EXECUTABLE gendef REQUIRED HINTS "C:/msys64/mingw64/bin")
   find_program(DLLTOOL_EXECUTABLE dlltool REQUIRED HINTS "C:/msys64/mingw64/bin")
 
-  # Find Python DLL
-  get_filename_component(PYTHON_DIR ${Python_EXECUTABLE} DIRECTORY)
-  set(PYTHON_DLL "${PYTHON_DIR}/python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll")
+  # Find Python DLL (handles virtual environments)
+  set(PYTHON_DLL_NAME "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll")
 
-  if(NOT EXISTS ${PYTHON_DLL})
-    # Try in parent directory (some Python installations)
-    get_filename_component(PYTHON_PARENT_DIR ${PYTHON_DIR} DIRECTORY)
-    set(PYTHON_DLL "${PYTHON_PARENT_DIR}/python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll")
+  # Method 1: Try Python_RUNTIME_LIBRARY_DIRS (CMake 3.15+)
+  if(DEFINED Python_RUNTIME_LIBRARY_DIRS)
+    foreach(DIR ${Python_RUNTIME_LIBRARY_DIRS})
+      if(EXISTS "${DIR}/${PYTHON_DLL_NAME}")
+        set(PYTHON_DLL "${DIR}/${PYTHON_DLL_NAME}")
+        break()
+      endif()
+    endforeach()
   endif()
 
-  if(NOT EXISTS ${PYTHON_DLL})
-    message(FATAL_ERROR "Could not find Python DLL at ${PYTHON_DLL}")
+  # Method 2: Get base installation from Python (for venvs)
+  if(NOT PYTHON_DLL)
+    execute_process(
+      COMMAND ${Python_EXECUTABLE} -c "import sys; print(sys.base_prefix)"
+      OUTPUT_VARIABLE PYTHON_BASE_PREFIX
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE _result
+    )
+    if(_result EQUAL 0 AND EXISTS "${PYTHON_BASE_PREFIX}/${PYTHON_DLL_NAME}")
+      set(PYTHON_DLL "${PYTHON_BASE_PREFIX}/${PYTHON_DLL_NAME}")
+    endif()
+  endif()
+
+  # Method 3: Check executable directory and parent (standard installs)
+  if(NOT PYTHON_DLL)
+    get_filename_component(PYTHON_DIR ${Python_EXECUTABLE} DIRECTORY)
+    if(EXISTS "${PYTHON_DIR}/${PYTHON_DLL_NAME}")
+      set(PYTHON_DLL "${PYTHON_DIR}/${PYTHON_DLL_NAME}")
+    else()
+      get_filename_component(PYTHON_PARENT_DIR ${PYTHON_DIR} DIRECTORY)
+      if(EXISTS "${PYTHON_PARENT_DIR}/${PYTHON_DLL_NAME}")
+        set(PYTHON_DLL "${PYTHON_PARENT_DIR}/${PYTHON_DLL_NAME}")
+      endif()
+    endif()
+  endif()
+
+  # Method 4: Search in Windows system directories
+  if(NOT PYTHON_DLL)
+    find_file(PYTHON_DLL_FOUND ${PYTHON_DLL_NAME}
+      PATHS ENV PATH
+      NO_DEFAULT_PATH
+    )
+    if(PYTHON_DLL_FOUND)
+      set(PYTHON_DLL ${PYTHON_DLL_FOUND})
+    endif()
+  endif()
+
+  if(NOT PYTHON_DLL OR NOT EXISTS ${PYTHON_DLL})
+    message(FATAL_ERROR "Could not find Python DLL (${PYTHON_DLL_NAME}). Searched in:\n"
+      "  - Python_RUNTIME_LIBRARY_DIRS\n"
+      "  - sys.base_prefix: ${PYTHON_BASE_PREFIX}\n"
+      "  - Executable directory: ${PYTHON_DIR}\n"
+      "  - System PATH")
   endif()
 
   message(STATUS "Found Python DLL: ${PYTHON_DLL}")
