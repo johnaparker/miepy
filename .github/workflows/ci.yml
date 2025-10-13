@@ -115,7 +115,8 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: >
             PATH="C:\\msys64\\mingw64\\bin;$PATH"
             VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
-            CMAKE_ARGS="-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DVCPKG_TARGET_TRIPLET=x64-windows -G 'MinGW Makefiles'"
+            VCPKG_INSTALLED_DIR={project}/vcpkg_installed
+            CMAKE_ARGS="-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DVCPKG_TARGET_TRIPLET=x64-windows -DVCPKG_INSTALLED_DIR={project}/vcpkg_installed -G 'MinGW Makefiles'"
           # Windows: Bundle DLL dependencies using delvewheel
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --add-path {project}\\vcpkg_installed\\x64-windows\\bin -w {dest_dir} {wheel}"
           # Test the wheels
