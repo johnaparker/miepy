@@ -10,6 +10,51 @@ project(miepy LANGUAGES CXX)
 # Unix uses Development.Module which doesn't link libpython
 if(WIN32)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
+
+  # Generate MinGW-compatible import library from Python DLL
+  # Python 3.8+ doesn't ship with libpythonXX.a for MinGW
+  find_program(GENDEF_EXECUTABLE gendef REQUIRED HINTS "C:/msys64/mingw64/bin")
+  find_program(DLLTOOL_EXECUTABLE dlltool REQUIRED HINTS "C:/msys64/mingw64/bin")
+
+  # Find Python DLL
+  get_filename_component(PYTHON_DIR ${Python_EXECUTABLE} DIRECTORY)
+  set(PYTHON_DLL "${PYTHON_DIR}/python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll")
+
+  if(NOT EXISTS ${PYTHON_DLL})
+    # Try in parent directory (some Python installations)
+    get_filename_component(PYTHON_PARENT_DIR ${PYTHON_DIR} DIRECTORY)
+    set(PYTHON_DLL "${PYTHON_PARENT_DIR}/python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll")
+  endif()
+
+  if(NOT EXISTS ${PYTHON_DLL})
+    message(FATAL_ERROR "Could not find Python DLL at ${PYTHON_DLL}")
+  endif()
+
+  message(STATUS "Found Python DLL: ${PYTHON_DLL}")
+
+  # Generate import library in build directory
+  set(PYTHON_DEF_FILE "${CMAKE_CURRENT_BINARY_DIR}/python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.def")
+  set(PYTHON_MINGW_LIB "${CMAKE_CURRENT_BINARY_DIR}/libpython${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.a")
+
+  add_custom_command(
+    OUTPUT ${PYTHON_DEF_FILE}
+    COMMAND ${GENDEF_EXECUTABLE} ${PYTHON_DLL} -o ${PYTHON_DEF_FILE}
+    COMMENT "Generating Python .def file for MinGW"
+    VERBATIM
+  )
+
+  add_custom_command(
+    OUTPUT ${PYTHON_MINGW_LIB}
+    COMMAND ${DLLTOOL_EXECUTABLE} --dllname python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}.dll --def ${PYTHON_DEF_FILE} --output-lib ${PYTHON_MINGW_LIB}
+    DEPENDS ${PYTHON_DEF_FILE}
+    COMMENT "Generating MinGW import library for Python"
+    VERBATIM
+  )
+
+  add_custom_target(python_import_lib ALL DEPENDS ${PYTHON_MINGW_LIB})
+
+  # Make this library available to cpp subdirectory
+  set(PYTHON_MINGW_LIBRARY ${PYTHON_MINGW_LIB} CACHE INTERNAL "MinGW Python import library")
 else()
   find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 endif()

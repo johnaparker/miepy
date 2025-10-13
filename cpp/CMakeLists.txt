@@ -55,9 +55,12 @@ set(BINDINGS
 
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
-# Windows with MinGW needs explicit link to Python DLL
+# Windows with MinGW: use generated import library
 if(WIN32)
-  target_link_libraries(cpp PRIVATE Python::Python)
+  # Depend on the custom target that generates the import library
+  add_dependencies(cpp python_import_lib)
+  # Link against the generated MinGW-compatible import library
+  target_link_libraries(cpp PRIVATE ${PYTHON_MINGW_LIBRARY})
 endif()
 # Force vcpkg Eigen3 to be used by adding it BEFORE any other includes, and demote system eigen3
 get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
