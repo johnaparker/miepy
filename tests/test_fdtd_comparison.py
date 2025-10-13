@@ -316,7 +316,7 @@ for i, wavelength in enumerate(wavelengths):
 
 
 def test_fdtd_cross_sections(plot=False):
-    """Compare cross-sections to fdtd"""
+    """Compare cross-sections to fdtd."""
     if not plot:
         L2 = np.linalg.norm(scat - gmtC[0]) / scat.shape[0]
         assert np.all(L2 < 8e-15)
@@ -342,7 +342,7 @@ def test_fdtd_cross_sections(plot=False):
 
 
 def test_fdtd_forces(plot=False):
-    """Compare forces to fdtd"""
+    """Compare forces to fdtd."""
     if not plot:
         L2 = np.linalg.norm(Fx - gmtF[0]) / Fx.shape[0]
         assert np.all(L2 < 5e-27)

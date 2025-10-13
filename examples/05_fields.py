@@ -1,4 +1,4 @@
-"""Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)"""
+"""Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)."""
 
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt

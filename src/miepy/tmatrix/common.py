@@ -6,7 +6,7 @@ from .get_tmatrix import nfmds_solver, tmatrix_solvers
 
 
 def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax, conducting=False):
-    """Compute the T-matrix of a sphere, using regular Mie theory
+    """Compute the T-matrix of a sphere, using regular Mie theory.
 
     Arguments:
         radius      sphere radius
@@ -20,7 +20,7 @@ def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax, conducting=False):
     tmatrix = np.zeros([2, rmax, 2, rmax], dtype=complex)
     k_medium = 2 * np.pi * eps_m**0.5 / wavelength
 
-    for i, n, m in miepy.mode_indices(lmax):
+    for i, n, _m in miepy.mode_indices(lmax):
         an, bn = miepy.mie_single.mie_sphere_scattering_coefficients(
             radius, n, eps, 1, eps_m, 1, k_medium, conducting=conducting
         )
@@ -31,7 +31,7 @@ def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax, conducting=False):
 
 
 def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m, lmax):
-    """Compute the T-matrix of a core-shell, using regular Mie theory
+    """Compute the T-matrix of a core-shell, using regular Mie theory.
 
     Arguments:
         radius      core radius
@@ -43,7 +43,7 @@ def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m
     """
     rmax = miepy.vsh.lmax_to_rmax(lmax)
     tmatrix = np.zeros([2, rmax, 2, rmax], dtype=complex)
-    k_medium = 2 * np.pi * eps_m**0.5 / wavelength
+    2 * np.pi * eps_m**0.5 / wavelength
 
     particle = miepy.single_mie_core_shell(
         radius,
@@ -57,7 +57,7 @@ def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m
 
     particle.solve()
 
-    for i, n, m in miepy.mode_indices(lmax):
+    for i, n, _m in miepy.mode_indices(lmax):
         tmatrix[0, i, 0, i] = -1j * particle.an[0, n - 1]
         tmatrix[1, i, 1, i] = -1j * particle.bn[0, n - 1]
 
@@ -65,7 +65,7 @@ def tmatrix_core_shell(radius, thickness, wavelength, eps_core, eps_shell, eps_m
 
 
 def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid
+    """Compute the T-matrix of a spheroid.
 
     Arguments:
         axis_xy     length of semiaxes perpendicular to the axis of symmetry
@@ -93,7 +93,7 @@ def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_pre
 
 
 def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a cylinder, with sharp or rounded (if oblate) edges
+    """Compute the T-matrix of a cylinder, with sharp or rounded (if oblate) edges.
 
     Arguments:
         radius      radius of cylinder
@@ -126,7 +126,7 @@ def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False
 
 
 def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid
+    """Compute the T-matrix of a spheroid.
 
     Arguments:
         rx,ry,rz    radii of the 3 axes
@@ -155,7 +155,7 @@ def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precisi
 
 
 def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid
+    """Compute the T-matrix of a spheroid.
 
     Arguments:
         rx,ry,rz    radii of the 3 axes
@@ -184,7 +184,7 @@ def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precisi
 
 
 def tmatrix_square_prism(side, height, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid
+    """Compute the T-matrix of a spheroid.
 
     Arguments:
         width       side width of the prism
@@ -213,7 +213,7 @@ def tmatrix_square_prism(side, height, wavelength, eps, eps_m, lmax, extended_pr
 
 
 def tmatrix_regular_prism(N, side, height, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid
+    """Compute the T-matrix of a spheroid.
 
     Arguments:
         N           number of vertices

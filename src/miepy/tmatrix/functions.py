@@ -4,7 +4,7 @@ import miepy
 
 
 def tmatrix_reduce_lmax(tmatrix, lmax):
-    """Reduce the dimensions of a tmatrix to lmax
+    """Reduce the dimensions of a tmatrix to lmax.
 
     Arguments:
         tmatrix[2,rmax,2,rmax]    the tmatrix object
@@ -25,7 +25,7 @@ def tmatrix_reduce_lmax(tmatrix, lmax):
 
 
 def rotate_tmatrix(tmatrix, quat):
-    """Rotate a T-matrix
+    """Rotate a T-matrix.
 
     Arguments:
         tmatrix    tmatrix to be rotated
@@ -39,7 +39,7 @@ def rotate_tmatrix(tmatrix, quat):
 
     R = np.zeros([rmax, rmax], dtype=complex)
 
-    for i, n, m in miepy.mode_indices(lmax):
+    for _i, n, _m in miepy.mode_indices(lmax):
         r = miepy.vsh.lmax_to_rmax(n)
         idx = np.s_[r - (2 * n + 1) : r]
         R[idx, idx] = miepy.vsh.vsh_rotation_matrix(n, quat)

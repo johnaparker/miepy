@@ -4,7 +4,7 @@ import miepy
 
 
 def test_vsh_source_decomposition():
-    """Verify the decomposition of the vsh_source"""
+    """Verify the decomposition of the vsh_source."""
     x, y, z = (-0.1, 0.1, 0.1)
     k = 2 * np.pi
     lmax = 7

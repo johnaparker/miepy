@@ -84,7 +84,7 @@ class regular_prism(particle):
 
 
 def cube(position, width, material, orientation=None, tmatrix_lmax=0):
-    """A cube is a type of regular prism
+    """A cube is a type of regular prism.
 
     Arguments:
         position[3]   x,y,z position of particle

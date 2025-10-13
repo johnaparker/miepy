@@ -2,8 +2,8 @@ from timeit import default_timer as timer
 
 
 def time_function(func, runtime=0.1):
-    """Time a function by running it repeatedly for at least 'runtime' seconds"""
-    start = timer()
+    """Time a function by running it repeatedly for at least 'runtime' seconds."""
+    timer()
     t = 0
     count = 0
 

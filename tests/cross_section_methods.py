@@ -1,4 +1,4 @@
-"""cluster cross-sections vs. particle cross-section when summing over particles"""
+"""cluster cross-sections vs. particle cross-section when summing over particles."""
 
 import matplotlib.pyplot as plt
 import numpy as np

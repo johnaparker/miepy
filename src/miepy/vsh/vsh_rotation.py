@@ -1,4 +1,4 @@
-"""VSH rotation functions"""
+"""VSH rotation functions."""
 
 import numpy as np
 
@@ -6,7 +6,7 @@ import miepy
 
 
 def vsh_rotation_matrix(n, quat):
-    """Rotation matrix for a given multipole order
+    """Rotation matrix for a given multipole order.
 
     Arguments:
         n       multipole order
@@ -31,7 +31,7 @@ def vsh_rotation_matrix(n, quat):
 
 
 def rotate_expansion_coefficients(p_exp, quat):
-    """Rotate a set of expansion coefficients to a new reference frame
+    """Rotate a set of expansion coefficients to a new reference frame.
 
     Arguments:
         p_exp[2,rmax]   expansion coefficients

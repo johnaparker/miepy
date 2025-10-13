@@ -1,4 +1,4 @@
-"""point sources"""
+"""point sources."""
 
 from functools import partial
 
@@ -15,7 +15,7 @@ class point_dipole(source):
         direction    (Dx, Dy, Dz) direction the dipole points (can be complex)
         amplitude    amplitude of the dipole (default: 1)
         phase        additional phase factor (default: 0)
-        mode         'electric' or 'magnetic' dipole (default: electric)
+        mode         'electric' or 'magnetic' dipole (default: electric).
         """
         super().__init__(amplitude, phase, origin=position)
 

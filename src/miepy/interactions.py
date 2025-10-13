@@ -1,4 +1,4 @@
-"""functions for building interaction matrices and solving them"""
+"""functions for building interaction matrices and solving them."""
 
 import numpy as np
 
@@ -12,7 +12,7 @@ def solve_linear_system(tmatrix, p_src, method):
     Arguments:
         tmatrix[N,2,rmax,N,2,rmax]   particle aggregate tmatrix
         p_src[N,2,rmax]   source scattering coefficients
-        method    solver method ('exact', 'bicgstab')
+        method    solver method ('exact', 'bicgstab').
     """
     Nparticles = tmatrix.shape[0]
     rmax = p_src.shape[-1]
@@ -24,7 +24,7 @@ def solve_linear_system(tmatrix, p_src, method):
 
 
 def interactions_precomputation(positions, k, lmax):
-    """Get the relative r,theta,phi positions of the particles and precomputed zn function
+    """Get the relative r,theta,phi positions of the particles and precomputed zn function.
 
     Arguments:
         positions[N,3]      particles positions
@@ -62,7 +62,7 @@ def interactions_precomputation(positions, k, lmax):
 
 def sphere_aggregate_tmatrix(positions, mie, k):
     """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
-    Returns T[N,2,rmax,N,2,rmax]
+    Returns T[N,2,rmax,N,2,rmax].
 
     Arguments:
         positions[N,3]      particles positions
@@ -79,7 +79,7 @@ def sphere_aggregate_tmatrix(positions, mie, k):
 
 def sphere_aggregate_tmatrix_periodic(positions, mie, k, symmetry, k_hat):
     """Obtain the particle-centered aggregate T-matrix for a cluster of spheres with a given periodic symmetry
-    Returns T[N,2,rmax,N,2,rmax]
+    Returns T[N,2,rmax,N,2,rmax].
 
     Arguments:
         positions[N,3]      particles positions
@@ -90,7 +90,7 @@ def sphere_aggregate_tmatrix_periodic(positions, mie, k, symmetry, k_hat):
     """
     Nparticles = positions.shape[0]
     lmax = mie.shape[-1]
-    rmax = miepy.vsh.lmax_to_rmax(lmax)
+    miepy.vsh.lmax_to_rmax(lmax)
     # agg_tmatrix = np.zeros(shape=(Nparticles, 2, rmax, Nparticles, 2, rmax), dtype=complex)
     agg_tmatrix = sphere_aggregate_tmatrix(positions, mie, k)
 
@@ -116,7 +116,7 @@ def sphere_aggregate_tmatrix_periodic(positions, mie, k, symmetry, k_hat):
 # TODO this function is more general than above and can be used for both cases (change only the einsum)
 def particle_aggregate_tmatrix(positions, tmatrix, k):
     """Obtain the particle-centered aggregate T-matrix for a cluster of particles
-    Returns T[N,2,rmax,N,2,rmax]
+    Returns T[N,2,rmax,N,2,rmax].
 
     Arguments:
         positions[N,3]      particles positions
@@ -125,7 +125,7 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
     """
     Nparticles = positions.shape[0]
     rmax = tmatrix.shape[-1]
-    lmax = miepy.vsh.rmax_to_lmax(rmax)
+    miepy.vsh.rmax_to_lmax(rmax)
 
     return miepy.cpp.interactions.particle_aggregate_tmatrix(positions, tmatrix.reshape([Nparticles, -1]), k).reshape(
         [Nparticles, 2, rmax, Nparticles, 2, rmax]
@@ -134,7 +134,7 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
 
 def reflection_matrix_nia(positions, mie, k, reflected, z):
     """Obtain the particle-centered aggregate T-matrix for a cluster of spheres
-    Returns T[N,2,rmax,N,2,rmax]
+    Returns T[N,2,rmax,N,2,rmax].
 
     Arguments:
         positions[N,3]      particles positions

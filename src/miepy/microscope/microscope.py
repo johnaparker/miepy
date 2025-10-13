@@ -16,7 +16,7 @@ def cluster_microscope(
     focal_obj      focal length of the objective lens (default: 100)
     theta_obj      maximum collection angle of the objective lens
     sampling       far-field sampling
-    source         (bool) include the angular source fields (default: False)
+    source         (bool) include the angular source fields (default: False).
     """
     if medium is None:
         medium = miepy.materials.air()
@@ -40,7 +40,7 @@ def cluster_microscope(
 
 
 class microscope:
-    """A microscope to produce images"""
+    """A microscope to produce images."""
 
     def __init__(
         self,
@@ -64,7 +64,7 @@ class microscope:
         focal_obj      focal length of the objective lens (default: 100)
         theta_obj      maximum collection angle of the objective lens
         sampling       far-field sampling
-        source         (bool) include the angular source fields (default: False)
+        source         (bool) include the angular source fields (default: False).
         """
         self.focal_img = focal_img
         self.focal_obj = focal_obj
@@ -94,7 +94,7 @@ class microscope:
         self.numerical_aperature = self.n1 * np.sin(theta_obj)
 
     def image(self, x, y, z_val=0, magnify=False):
-        """Create an image
+        """Create an image.
 
         Arguments:
             x_array    image x-values (array-like)

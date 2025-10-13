@@ -1,4 +1,4 @@
-"""tests for the VSH translation functions"""
+"""tests for the VSH translation functions."""
 
 import numpy as np
 

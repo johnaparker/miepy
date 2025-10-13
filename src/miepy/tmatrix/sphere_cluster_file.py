@@ -17,7 +17,7 @@ GeomPartProp
 
 
 def sphere_cluster_file(pos, radii, Nrank_particles, Nrank, wavelength, index, index_m):
-    """Create input file for axisymmetric particles
+    """Create input file for axisymmetric particles.
 
     Arguments:
         Nrank (int)                  maximum number of multipoles

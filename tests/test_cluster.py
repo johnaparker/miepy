@@ -1,4 +1,4 @@
-"""Test properties of a cluster of particles"""
+"""Test properties of a cluster of particles."""
 
 import numpy as np
 
@@ -15,7 +15,7 @@ wavelengths = np.linspace(600 * nm, 1000 * nm, 5)
 
 
 def test_off_center_particle(plot=False):
-    """Make sure scattering by a sphere away from the origin is equal to scattering of a particle at the origin"""
+    """Make sure scattering by a sphere away from the origin is equal to scattering of a particle at the origin."""
     # at the origin
     C1, A1, E1, C2, A2, E2 = [np.zeros_like(wavelengths, dtype=float) for i in range(6)]
     for i, wavelength in enumerate(wavelengths):
@@ -52,7 +52,7 @@ def test_off_center_particle(plot=False):
 
 def test_interactions_off(plot=False):
     """Compare extinction of cluster to single Mie extinction with interactions disabled
-    expect: E(cluster) = N*E(single)
+    expect: E(cluster) = N*E(single).
     """
     sep = 200 * nm
 

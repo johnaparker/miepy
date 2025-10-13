@@ -1,4 +1,4 @@
-"""Defines function to calculate scattering coefficients of a cluster"""
+"""Defines function to calculate scattering coefficients of a cluster."""
 
 import numpy as np
 
@@ -12,7 +12,7 @@ from .vsh_translation import vsh_translation
 # TODO: equations for rmax, r, lmax (here and elsewhere) should be a function call
 # TODO: iteration over (n,m,r) could be simplified through a generator call (see all interactions)
 def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
-    """Solve for the cluster scattering coefficients of N particles around an origin
+    """Solve for the cluster scattering coefficients of N particles around an origin.
 
     Arguments:
         positions[N,3]   particle positions

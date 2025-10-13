@@ -1,4 +1,4 @@
-"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor"""
+"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor."""
 
 import numpy as np
 from tqdm import tqdm
@@ -37,7 +37,7 @@ for i, separation in enumerate(tqdm(separations)):
 
 
 def test_force():
-    """Comapre MST force to analytic force"""
+    """Comapre MST force to analytic force."""
     L2 = np.linalg.norm(analytic_force - mst_force, axis=1) / analytic_force.shape[1]
     avg = np.average(np.abs(analytic_force) + np.abs(mst_force), axis=1) / 2
 
@@ -45,7 +45,7 @@ def test_force():
 
 
 def test_torque():
-    """Comapre MST torque to analytic torque"""
+    """Comapre MST torque to analytic torque."""
     L2 = np.linalg.norm(analytic_torque - mst_torque, axis=1) / analytic_torque.shape[1]
     avg = np.average(np.abs(analytic_torque) + np.abs(mst_torque), axis=1) / 2
 

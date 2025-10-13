@@ -1,4 +1,4 @@
-"""Expressions for the force and torque given the expansion coefficients or the fields"""
+"""Expressions for the force and torque given the expansion coefficients or the fields."""
 
 import numpy as np
 from scipy import constants
@@ -10,7 +10,7 @@ from miepy.vsh.misc import simps_2d
 
 
 def levi_civita():
-    """Return the levi-civita symbol"""
+    """Return the levi-civita symbol."""
     eijk = np.zeros((3, 3, 3))
     eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1
@@ -18,7 +18,7 @@ def levi_civita():
 
 
 def maxwell_stress_tensor(E, H, eps=1, mu=1):
-    """Compute the Maxwell stress tensor
+    """Compute the Maxwell stress tensor.
 
     Arguments:
         E[3,...]   electric field data
@@ -40,7 +40,7 @@ def maxwell_stress_tensor(E, H, eps=1, mu=1):
 
 
 def force_and_torque_from_mst(E, H, radius, eps=1, mu=1):
-    """Compute the force and torque on a particle using the Maxwell stress tensor
+    """Compute the force and torque on a particle using the Maxwell stress tensor.
 
     Arguments:
         E[3,Ntheta,Nphi]     electric field values on the surface of a sphere
@@ -73,7 +73,7 @@ def force_and_torque_from_mst(E, H, radius, eps=1, mu=1):
 
 def _gmt_force_and_torque_from_mst(gmt, i, sampling=30):
     """FOR TESTING ONLY!
-    Given GMT object and particle number i, return F,T using MST
+    Given GMT object and particle number i, return F,T using MST.
     """
     if type(gmt) is miepy.cluster:
         radius = gmt.particles[i].enclosed_radius()

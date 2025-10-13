@@ -10,7 +10,7 @@ cross_sections = namedtuple("cross_sections", ["scattering", "absorption", "exti
 
 
 def particle_cross_sections(p_scat, p_inc, p_src, k):
-    """Compute the scattering, absorption, and extinction cross-sections for a particle
+    """Compute the scattering, absorption, and extinction cross-sections for a particle.
 
     Arguments:
         p_scat[2,rmax]  particle scattering coefficients
@@ -27,7 +27,7 @@ def particle_cross_sections(p_scat, p_inc, p_src, k):
 
 def cluster_cross_sections(p_cluster, p_src, k):
     """Compute the scattering, absorption, and extinction cross-sections for a cluster
-    Return (scat[2,lmax], abs[2,lmax], extinct[2,lmax])
+    Return (scat[2,lmax], abs[2,lmax], extinct[2,lmax]).
 
     Arguments:
         p_cluster[2,rmax]  cluster scattering coefficients
@@ -41,7 +41,7 @@ def cluster_cross_sections(p_cluster, p_src, k):
 
     factor = 4 * np.pi / k**2
 
-    for r, n, m in miepy.mode_indices(lmax):
+    for r, n, _m in miepy.mode_indices(lmax):
         Cscat[:, n - 1] += factor * np.abs(p_cluster[:, r]) ** 2
         Cext[:, n - 1] += factor * np.real(np.conj(p_src[:, r]) * p_cluster[:, r])
 
@@ -52,7 +52,7 @@ def cluster_cross_sections(p_cluster, p_src, k):
 # TODO eps/mu role here (related to our definition of the H field, eps/mu factor)
 # TODO factor of 1/2 for complex fields not present???
 def poynting_vector(E, H, eps=1, mu=1):
-    """Compute the Poynting vector
+    """Compute the Poynting vector.
 
     Arguments:
         E[3,...]   electric field data
@@ -70,7 +70,7 @@ def poynting_vector(E, H, eps=1, mu=1):
 
 # TODO is this right, can it be more useful?
 def flux_from_poynting(E, H, Ahat, eps=1, mu=1):
-    """Compute the flux from the E and H field over some area using the Poynting vector
+    """Compute the flux from the E and H field over some area using the Poynting vector.
 
     Arguments:
         E[3,...]             electric field values on some surface
@@ -88,7 +88,7 @@ def flux_from_poynting(E, H, Ahat, eps=1, mu=1):
 
 
 def flux_from_poynting_sphere(E, H, radius, eps=1, mu=1):
-    """Compute the flux from the E and H field on the surface of a sphere using the Poynting vector
+    """Compute the flux from the E and H field on the surface of a sphere using the Poynting vector.
 
     Arguments:
         E[3,Ntheta,Nphi]     electric field values on the surface of a sphere
@@ -117,7 +117,7 @@ def flux_from_poynting_sphere(E, H, radius, eps=1, mu=1):
 
 def _gmt_cross_sections_from_poynting(gmt, radius, sampling=30):
     """FOR TESTING ONLY!
-    Given GMT object and particle number i, return cross-sections (C,A,E) from poynting vector
+    Given GMT object and particle number i, return cross-sections (C,A,E) from poynting vector.
     """
     X, Y, Z, THETA, PHI, tau, phi = miepy.coordinates.cart_sphere_mesh(radius, gmt.origin, sampling)
 

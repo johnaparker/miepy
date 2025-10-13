@@ -1,4 +1,4 @@
-"""Decompose an x-polarized plane wave into the VSHs"""
+"""Decompose an x-polarized plane wave into the VSHs."""
 
 import matplotlib.pyplot as plt
 import numpy as np

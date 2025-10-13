@@ -13,7 +13,7 @@ def non_axisymmetric_file(
     Nint_1=50,
     Nint_2=50,
 ):
-    """Create input file for non-axisymmetric particles
+    """Create input file for non-axisymmetric particles.
 
     Arguments:
         geometry_type (int)          choose from 1 (ellipsoid), 2 (square-prism), 3 (N-prism)

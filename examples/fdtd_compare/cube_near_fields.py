@@ -1,4 +1,4 @@
-"""Compare the near fields of a cube in FDTD and GMMT"""
+"""Compare the near fields of a cube in FDTD and GMMT."""
 
 import matplotlib.pyplot as plt
 import meep
@@ -51,7 +51,8 @@ fcen, df = meep_ext.freq_data(1 / (400 * nm), 1 / (1000 * nm))
 polarization = "x"
 
 src_time = meep.GaussianSource(frequency=fcen, fwidth=df)
-source = lambda sim: meep_ext.rhc_polarized_plane_wave(sim, src_time)
+def source(sim):
+    return meep_ext.rhc_polarized_plane_wave(sim, src_time)
 decay = meep.Ex
 
 ### monitor info
@@ -68,7 +69,7 @@ Nx, Ny, Nz = map(round, cell * resolution)
 
 @job.cache
 def sim():
-    """Perform scattering simulation"""
+    """Perform scattering simulation."""
     sim = meep.Simulation(
         cell_size=cell, boundary_layers=[pml], geometry=geometry, default_material=medium, resolution=resolution
     )

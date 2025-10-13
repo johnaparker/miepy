@@ -1,4 +1,4 @@
-"""Scattering intensity of a dielectric sphere for variable wavelength and dielectric constant"""
+"""Scattering intensity of a dielectric sphere for variable wavelength and dielectric constant."""
 
 import matplotlib.pyplot as plt
 import numpy as np

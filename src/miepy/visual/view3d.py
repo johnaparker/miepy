@@ -10,7 +10,7 @@ nm = 1e-9
 
 
 def get_paint(material):
-    """Return a (texture, color, shininess) tuple for a given material"""
+    """Return a (texture, color, shininess) tuple for a given material."""
     import vpython
 
     paint = namedtuple("paint", ["texture", "color", "shininess"])
@@ -25,7 +25,7 @@ def get_paint(material):
 
 
 def draw_particle(particle, paint, **kwargs):
-    """Draw a (non-spherical) particle with a given paint"""
+    """Draw a (non-spherical) particle with a given paint."""
     import vpython
 
     vec = vpython.vec
@@ -113,7 +113,7 @@ def draw_particle(particle, paint, **kwargs):
 # TODO: scale bar: auto-detect position and size
 # TODO: center: COM + FOV. Options: 'origin', 'auto', np.array
 def visualize(cluster, animation=False, transparent=False, scale=None, origin="auto"):
-    """Create a 3D visualization of a particle cluster using VPython
+    """Create a 3D visualization of a particle cluster using VPython.
 
     Arguments:
         cluster      sphere or particle cluster
@@ -142,7 +142,7 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin="a
             radius = cluster.radius[i] / nm
             paint = get_paint(cluster.material[i])
 
-            sphere = vpython.sphere(
+            vpython.sphere(
                 pos=vec(*position), radius=radius, texture=paint.texture, color=paint.color, shininess=paint.shininess
             )
 
@@ -162,7 +162,7 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin="a
         length = height = 1e-3 / nm
         width = 1e-3 / nm
         z = cluster.interface.z
-        box = vpython.box(
+        vpython.box(
             pos=vec(0, 0, -z - width / 2),
             width=width,
             height=height,
@@ -212,7 +212,7 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin="a
         scene.append_to_caption("       ")
         vpython.button(text=" ▌▌", bind=Run, color=vec(1, 0, 0))
 
-        for t in count():
+        for _t in count():
             vpython.rate(30)
 
             # phi = 2*np.pi*t/T

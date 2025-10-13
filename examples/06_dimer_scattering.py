@@ -1,4 +1,4 @@
-"""Scattering, absroption, and extinction cross-sections of an Au dimer"""
+"""Scattering, absroption, and extinction cross-sections of an Au dimer."""
 
 import matplotlib.pyplot as plt
 import numpy as np

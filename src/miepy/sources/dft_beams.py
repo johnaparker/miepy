@@ -18,7 +18,7 @@ def scalar_dft_beam(
     phi=0,
     standing=False,
 ):
-    """Scalar-function version of the DFT beam
+    """Scalar-function version of the DFT beam.
 
     Arguments:
         Ufunc    (x,y)->scalar function for the complex scalar field
@@ -47,7 +47,7 @@ def scalar_dft_beam(
 
 
 class dft_beam(beam):
-    """Use DFT on fields in an xy-plane to produce a beam"""
+    """Use DFT on fields in an xy-plane to produce a beam."""
 
     def __init__(
         self,
@@ -65,7 +65,7 @@ class dft_beam(beam):
         """Arguments:
         Efunc    (x,y)->[2] function for the complex (Ex,Ey) field
         polarization[2]   (TM, TE) values representing the polarization
-        xmax     maximum x-value to integrate Ufunc over
+        xmax     maximum x-value to integrate Ufunc over.
         """
         super().__init__(
             power=power, theta_max=theta_max, phase=phase, center=center, theta=theta, phi=phi, standing=standing
@@ -82,7 +82,7 @@ class dft_beam(beam):
         phi = np.linspace(0, 2 * np.pi, self.sampling)
         THETA, PHI = np.meshgrid(theta, phi, indexing="ij")
 
-        kz = k * np.cos(THETA)
+        k * np.cos(THETA)
         kx = k * np.sin(THETA) * np.cos(PHI)
         ky = k * np.sin(THETA) * np.sin(PHI)
 

@@ -1,4 +1,4 @@
-"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor"""
+"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor."""
 
 import matplotlib.pyplot as plt
 import numpy as np

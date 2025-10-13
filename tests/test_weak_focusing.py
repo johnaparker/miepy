@@ -1,6 +1,6 @@
 """Test weakly focused beams by comparing the E/H field from two methods:
 (i) Directly integrating the far-field angular spectrum to obtain focal fields
-(ii) Using the analytic paraxial expression for the beam
+(ii) Using the analytic paraxial expression for the beam.
 """
 
 from math import factorial
@@ -54,7 +54,7 @@ def gaussian_paraxial(x, y, z, k):
 
 
 def test_gaussian_beam_weak_focusing():
-    """Weak focus test for Gaussian beam"""
+    """Weak focus test for Gaussian beam."""
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
     E1 = source.E_field(X, Y, Z, k, sampling=100)[0]
     E2 = gaussian_paraxial(X, Y, Z, k)
@@ -67,7 +67,7 @@ def test_gaussian_beam_weak_focusing():
 
 
 def test_gouy_phase():
-    """Weak focus test for Gaussian beam fails without the Guoy phase term"""
+    """Weak focus test for Gaussian beam fails without the Guoy phase term."""
 
     def gaussian_paraxial(x, y, z, k):
         E0 = 2 / width * np.sqrt(Z0 * power / np.pi)
@@ -87,7 +87,7 @@ def test_gouy_phase():
 
 
 def test_gaussian_beam_z_component():
-    """Check z-component of weakly focused Gaussian beam in xy-plane"""
+    """Check z-component of weakly focused Gaussian beam in xy-plane."""
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
 
     x = np.linspace(-1.2 * width, 1.2 * width, 5)
@@ -102,13 +102,12 @@ def test_gaussian_beam_z_component():
 
     Hz1 = source.H_field(X, Y, Z, k)[2]
 
-    idx = Ez2.T > 0
     assert np.allclose(Ez1, Ez2, rtol=5e-3, atol=1e-9), "Ez component matches"
     assert np.allclose(Hz1, Ez2.T, rtol=5e-3, atol=1e-9), "Hz component matches (Hz(x,y) = Ez(y,x))"
 
 
 def test_hermite_gaussian_beam_weak_focusing():
-    """Weak focus test for Hermite-Gaussian beam"""
+    """Weak focus test for Hermite-Gaussian beam."""
 
     def hermite_gaussian_paraxial(src, x, y, z, k):
         factor = 1 / src.width * np.sqrt(2 / (np.pi * 2**src.l * 2**src.m * factorial(src.l) * factorial(src.m)))
@@ -135,7 +134,7 @@ def test_hermite_gaussian_beam_weak_focusing():
 
 
 def test_laguerre_gaussian_beam_weak_focusing():
-    """Weak focus test for Laguerre-Gaussian beam"""
+    """Weak focus test for Laguerre-Gaussian beam."""
 
     def laguerre_gaussian_paraxial(src, x, y, z, k):
         E0 = np.sqrt(2 * Z0 * src.power)
@@ -163,7 +162,7 @@ def test_laguerre_gaussian_beam_weak_focusing():
 
 
 def test_stiching_by_expansion_gaussian_beam():
-    """Reconstruct the paraxial E-field by expanding over p_src in a 'stitched' together fashion"""
+    """Reconstruct the paraxial E-field by expanding over p_src in a 'stitched' together fashion."""
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
     E1 = gaussian_paraxial(X, Y, Z, k)
 

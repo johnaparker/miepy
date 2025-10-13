@@ -1,6 +1,6 @@
 """Scattering defines all functions that make use of the scattering coefficients an, bn
 Calculations include scattering, absorbption, and electric and magnetic field computations
-Mie sphere and Mie core shell both contain an, bn as part of their solution
+Mie sphere and Mie core shell both contain an, bn as part of their solution.
 """
 
 import numpy as np
@@ -13,7 +13,7 @@ def scattering_per_multipole(an, bn, k):
     """Scattering cross-section per multipole. Returns scat[Nfreq,2,lmax].
     an[N]    an scattering coefficients
     bn[N]    bn scattering coefficients
-    k[N]     wavenumbers
+    k[N]     wavenumbers.
     """
     Nfreq, lmax = an.shape
     flux = np.zeros([Nfreq, 2, lmax])
@@ -28,7 +28,7 @@ def extinction_per_multipole(an, bn, k):
     """Extinction cross-section per multipole. Returns extinct[Nfreq,2,lmax].
     an[N]    an scattering coefficients
     bn[N]    bn scattering coefficients
-    k[N]     wavenumbers
+    k[N]     wavenumbers.
     """
     Nfreq, lmax = an.shape
     flux = np.zeros([Nfreq, 2, lmax])
@@ -43,7 +43,7 @@ def absorbption_per_multipole(an, bn, k):
     """Absorbption cross-section per multipole. Returns absorb[Nfreq,2,lmax].
     an[N]    an scattering coefficients
     bn[N]    bn scattering coefficients
-    k[N]     wavenumbers
+    k[N]     wavenumbers.
     """
     return extinction_per_multipole(an, bn, k) - scattering_per_multipole(an, bn, k)
 
@@ -52,7 +52,7 @@ def cross_sections(an, bn, k):
     """Return the 3 cross-sections, (Scattering, Absorbption, Extinction)
     an[N]    an scattering coefficients
     bn[N]    bn scattering coefficients
-    k[N]     wavenumbers
+    k[N]     wavenumbers.
     """
     scat_flux = scattering_per_multipole(an, bn, k)
     extinct_flux = extinction_per_multipole(an, bn, k)
@@ -64,7 +64,7 @@ def cross_sections(an, bn, k):
 def multipole_label(T, L):
     """Get multipole label.
     T = 0 (electric), 1(magnetic)
-    L = 0,1,2... (order)
+    L = 0,1,2... (order).
     """
     first = ["e", "m"][T]
     if L <= 3:
@@ -78,7 +78,7 @@ def scattered_E(an, bn, k):
     """For a given an, bn, k, return the scattered electric field function E(r,theta,phi)
     an[L]       an coefficients
     an[L]       bn coefficients
-    k           wavenumber in the medium
+    k           wavenumber in the medium.
     """
     lmax = an.shape[0]
 
@@ -98,7 +98,7 @@ def interior_E(cn, dn, k):
     """For a given cn, dn, k, return the interior electric field function E(r,theta,phi) for a sphere
     cn[L]       cn coefficients
     dn[L]       dn coefficients
-    k           wavenumber inside the sphere
+    k           wavenumber inside the sphere.
     """
     lmax = cn.shape[0]
 
@@ -120,7 +120,7 @@ def scattered_H(an, bn, k, n_b, mu_b):
     an[L]       bn coefficients
     k           wavenumber in the medium
     n_b         index of refraction of the medium
-    mu_b        permeability of the medium
+    mu_b        permeability of the medium.
     """
     lmax = an.shape[0]
 
@@ -147,7 +147,7 @@ def interior_H(cn, dn, k, n, mu):
     dn[L]       dn coefficients
     k           wavenumber inside the sphere
     n           index of refraction of the sphere
-    mu          permeability of the sphere
+    mu          permeability of the sphere.
     """
     lmax = cn.shape[0]
 

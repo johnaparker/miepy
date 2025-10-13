@@ -24,7 +24,7 @@ lmax = 2
     ],
 )
 def test_tmatrix_sphere_is_sphere(material, atol):
-    """Tmatrix method with spheres should be equivalent to sphere cluster"""
+    """Tmatrix method with spheres should be equivalent to sphere cluster."""
     position = [[-300 * nm, 0, 0], [300 * nm, 0, 0]]
 
     spheres = miepy.sphere_cluster(
@@ -59,7 +59,7 @@ def test_tmatrix_sphere_is_sphere(material, atol):
     ],
 )
 def test_tmatrix_spheroid_is_sphere(material, atol):
-    """Tmatrix of spheroid with aspect ratio 1 is equal to tmatrix of sphere"""
+    """Tmatrix of spheroid with aspect ratio 1 is equal to tmatrix of sphere."""
     sphere = miepy.sphere([0, 0, 0], radius, material)
     spheroid = miepy.spheroid([0, 0, 0], radius, radius, material, tmatrix_lmax=4)
 
@@ -78,7 +78,7 @@ def test_tmatrix_spheroid_is_sphere(material, atol):
     ],
 )
 def test_rotated_spheroid_equals_rotated_light(material, atol):
-    """cross-sections are the same if a spheroid is rotated or if the light is rotated"""
+    """cross-sections are the same if a spheroid is rotated or if the light is rotated."""
     theta = 1.3
     phi = 0.7
 
@@ -109,7 +109,7 @@ def test_rotated_spheroid_equals_rotated_light(material, atol):
 
 
 def test_sphere_cluster_tmatrix_particle():
-    """sphere_cluster_particle in miepy.cluster yields the same results as miepy.sphere_cluster"""
+    """sphere_cluster_particle in miepy.cluster yields the same results as miepy.sphere_cluster."""
     L = 155 * nm
     lmax = 6
 

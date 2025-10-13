@@ -5,7 +5,7 @@ from .particle_base import particle
 
 class ellipsoid(particle):
     def __init__(self, position, rx, ry, rz, material, orientation=None, tmatrix_lmax=0):
-        """An ellipsoid object
+        """An ellipsoid object.
 
         Arguments:
             position[3]   x,y,z position of particle

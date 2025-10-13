@@ -4,7 +4,7 @@ import miepy
 
 
 def test_plane_wave_point_matching():
-    """Point matching a plane wave agrees with analytic results"""
+    """Point matching a plane wave agrees with analytic results."""
     k = 1
     wav = 2 * np.pi / k
     lmax = 3
@@ -25,7 +25,7 @@ def test_plane_wave_point_matching():
 
 
 def test_point_dipole_point_matching():
-    """Point matching a point dipole agrees with analytic results"""
+    """Point matching a point dipole agrees with analytic results."""
     wav = 1
     k = 2 * np.pi / wav
     lmax = 4

@@ -1,4 +1,4 @@
-"""Compare analytic cross-sections to integrated Poynting vector for an Ag dimer in x-polarized light"""
+"""Compare analytic cross-sections to integrated Poynting vector for an Ag dimer in x-polarized light."""
 
 import numpy as np
 from tqdm import tqdm
@@ -36,7 +36,7 @@ for i, separation in enumerate(tqdm(separations)):
 
 
 def test_scattering():
-    """Comapre analytic scattering to numerical Poynting vector approach"""
+    """Comapre analytic scattering to numerical Poynting vector approach."""
     L2 = np.linalg.norm(analytic_scattering - poynting_scattering) / poynting_scattering.shape[0]
     avg = np.average(np.abs(analytic_scattering) + np.abs(poynting_scattering)) / 2
 
@@ -44,7 +44,7 @@ def test_scattering():
 
 
 def test_absorption():
-    """Comapre analytic absorption to numerical Poynting vector approach"""
+    """Comapre analytic absorption to numerical Poynting vector approach."""
     L2 = np.linalg.norm(analytic_absorption - poynting_absorption) / poynting_absorption.shape[0]
     avg = np.average(np.abs(analytic_absorption) + np.abs(poynting_absorption)) / 2
 

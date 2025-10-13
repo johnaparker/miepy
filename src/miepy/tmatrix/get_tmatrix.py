@@ -23,7 +23,7 @@ class tmatrix_solvers:
 
 
 def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extended_precision=False):
-    """Return the T-matrix using the Null-Field Method with discrete sources (NFM-DS)
+    """Return the T-matrix using the Null-Field Method with discrete sources (NFM-DS).
 
     Arguments:
         lmax           maximum number of multipoles

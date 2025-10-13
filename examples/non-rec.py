@@ -1,4 +1,4 @@
-"""GMT for dimer, varying the separation distance between the dimer pair, with and without interactions"""
+"""GMT for dimer, varying the separation distance between the dimer pair, with and without interactions."""
 
 import matplotlib.pyplot as plt
 import numpy as np

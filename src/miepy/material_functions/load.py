@@ -1,4 +1,4 @@
-"""Various functions to load materials and display metadata from the material database"""
+"""Various functions to load materials and display metadata from the material database."""
 
 import itertools
 import os
@@ -10,7 +10,7 @@ import miepy
 
 
 def get_filepath(name, author):
-    """Get the absolute filepath to the material data of name and author"""
+    """Get the absolute filepath to the material data of name and author."""
     root = miepy.__path__[0]
     filepath = f"{root}/materials/database/main/{name}/{author}.yml"
     return filepath
@@ -19,7 +19,7 @@ def get_filepath(name, author):
 def load_material(name, author):
     """Load a material from the database
     name         material name
-    author       author of the experimental data
+    author       author of the experimental data.
     """
     # return load_material(miepy.__path__[0] + "/materials/ag.npy")
     filepath = get_filepath(name, author)
@@ -42,7 +42,7 @@ def load_material(name, author):
 
 
 def get_authors(material_name):
-    """Get a list of possible authors for a given material"""
+    """Get a list of possible authors for a given material."""
     filepath = get_filepath(material_name, "")
     directory = filepath[: filepath.rfind("/")]
     files = os.listdir(directory)
@@ -51,13 +51,13 @@ def get_authors(material_name):
 
 
 def wavelength_filter(df, min_wav, max_wav):
-    """Return a material dataframe for wavelengths between min and max"""
+    """Return a material dataframe for wavelengths between min and max."""
     mask = (df["wavelength"] > min_wav) & (df["wavelength"] < max_wav)
     return df[mask]
 
 
 def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.inf):
-    """For a given material, plot all permittivity data for all authors between a given wavelength range"""
+    """For a given material, plot all permittivity data for all authors between a given wavelength range."""
     import matplotlib.pyplot as plt
     from matplotlib.markers import MarkerStyle
 
@@ -89,7 +89,7 @@ def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
 
 def material_info_by_author(material_name, wavelength_min=0, wavelength_max=np.inf):
-    """Print info on all authors of material between a given wavelength range"""
+    """Print info on all authors of material between a given wavelength range."""
     authors = get_authors(material_name)
 
     print(f"Information of {material_name} by author between {wavelength_min * 1e9} nm and {wavelength_max * 1e9} nm:")

@@ -2,13 +2,13 @@ import numpy as np
 
 
 class material_struct:
-    """struct to hold material data for N particles, and update it with given wavelength"""
+    """struct to hold material data for N particles, and update it with given wavelength."""
 
     def __init__(self, materials, medium, wavelength=None):
         """Arguments:
         materials    list of materials
         medium       medium material
-        wavelength   wavelength (default: None)
+        wavelength   wavelength (default: None).
         """
         Nparticles = len(materials)
 
@@ -28,12 +28,12 @@ class material_struct:
 
     @property
     def wavelength(self):
-        """Get the wavelength"""
+        """Get the wavelength."""
         return self._wavelength
 
     @wavelength.setter
     def wavelength(self, value):
-        """Set the wavelength to some value, changing all eps and mu data with it"""
+        """Set the wavelength to some value, changing all eps and mu data with it."""
         self._wavelength = value
 
         if value is not None:

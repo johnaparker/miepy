@@ -9,7 +9,7 @@ from .particle_base import particle
 
 class sphere_cluster_particle(particle):
     def __init__(self, position, radius, material, lmax, orientation=None):
-        """A 'particle' that is a rigid collection of non-overlaping spheres
+        """A 'particle' that is a rigid collection of non-overlaping spheres.
 
         Arguments:
             position[N,3]   x,y,z position of the spheres

@@ -1,4 +1,4 @@
-"""tests for far-fields"""
+"""tests for far-fields."""
 
 import numpy as np
 
@@ -24,13 +24,13 @@ E_exact = dimer.E_field(R, THETA, PHI, source=False, interior=False, spherical=T
 
 
 def test_far_field_convergence():
-    """far-field E and H field should agree with exact field in the large radius limit"""
+    """far-field E and H field should agree with exact field in the large radius limit."""
     E_far = dimer.E_field(R, THETA, PHI, far=True, source=False, interior=False, spherical=True)
     np.testing.assert_allclose(E_exact, E_far, rtol=0, atol=1e-16)
 
 
 def test_far_field_cluster_coefficient():
-    """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients"""
+    """far-fields calculated from the cluster coefficients should be the same as the sum-over particle coefficients."""
     dimer.solve_cluster_coefficients(lmax=4)
     E_func = miepy.vsh.expand_E_far(dimer.p_cluster, dimer.material_data.k_b)
     E_far = E_func(R, THETA, PHI)
@@ -39,9 +39,7 @@ def test_far_field_cluster_coefficient():
 
 
 def test_far_field_directly():
-    """far-field function compared directly to total field function for n=2, m=-1"""
-    x = 1e6
-
+    """far-field function compared directly to total field function for n=2, m=-1."""
     n = 2
     m = -1
     Nfunc, Mfunc = miepy.vsh.VSH(n, m)

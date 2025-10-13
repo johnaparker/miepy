@@ -166,7 +166,7 @@ class HG_10(source):
     def H_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        g10 = I10(k, self.theta_max, self.focal_length, self.width)(rho, z)
+        I10(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g11 = I11(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g12 = I12(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g13 = I13(k, self.theta_max, self.focal_length, self.width)(rho, z)
@@ -191,7 +191,7 @@ class HG_01(source):
     def E_field(self, x, y, z, k):
         rho, phi, z = miepy.coordinates.cart_to_cyl(x, y, z)
 
-        g10 = I10(k, self.theta_max, self.focal_length, self.width)(rho, z)
+        I10(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g11 = I11(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g12 = I12(k, self.theta_max, self.focal_length, self.width)(rho, z)
         g13 = I13(k, self.theta_max, self.focal_length, self.width)(rho, z)

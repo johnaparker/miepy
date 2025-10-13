@@ -1,4 +1,4 @@
-"""performance test"""
+"""performance test."""
 
 from functools import partial
 

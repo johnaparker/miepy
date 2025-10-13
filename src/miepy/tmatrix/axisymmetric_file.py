@@ -13,7 +13,7 @@ def axisymmetric_file(
     eps_z_re_im=0.95,
     Nint=200,
 ):
-    """Create input file for axisymmetric particles
+    """Create input file for axisymmetric particles.
 
     Arguments:
         geometry_type (int)          choose from 1 (spheroid), 2 (cylinder), 3 (rounded oblate cylinder)

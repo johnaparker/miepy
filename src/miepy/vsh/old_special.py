@@ -1,4 +1,4 @@
-"""special functions required by vsh calculations"""
+"""special functions required by vsh calculations."""
 
 from functools import cache, lru_cache
 from math import factorial
@@ -8,7 +8,7 @@ from scipy import special
 
 
 def spherical_hn(n, z, derivative=False):
-    """Spherical hankel function of the first kind or its derivative
+    """Spherical hankel function of the first kind or its derivative.
 
     n: int,array-like        order of the bessel function
     z: array[complex/float]  argument
@@ -18,7 +18,7 @@ def spherical_hn(n, z, derivative=False):
 
 
 def spherical_hn_2(n, z, derivative=False):
-    """Spherical hankel function of the second kind or its derivative
+    """Spherical hankel function of the second kind or its derivative.
 
     n: int,array-like        order of the bessel function
     z: array[complex/float]  argument
@@ -51,7 +51,7 @@ def riccati_3(n, z, derivative=False):
 
 @cache
 def associated_legendre(n, m, deriv=0):
-    """Associated legendre function of integer order and degree
+    """Associated legendre function of integer order and degree.
 
         n: int         order
         m: int         degree
@@ -69,7 +69,7 @@ def associated_legendre(n, m, deriv=0):
 
 @cache
 def pi_func(n, m):
-    """Pi special function that appears in the vector spherical harmonics (VSH)
+    """Pi special function that appears in the vector spherical harmonics (VSH).
 
          n: int         order
          m: int         degree
@@ -88,7 +88,7 @@ def pi_func(n, m):
 
 @cache
 def tau_func(n, m):
-    """Pi special function that appears in the vector spherical harmonics (VSH)
+    """Pi special function that appears in the vector spherical harmonics (VSH).
 
          n: int         order
          m: int         degree
@@ -107,7 +107,7 @@ def tau_func(n, m):
 
 
 def wigner_3j(j1, j2, j3, m1, m2, m3):
-    """wigner3j coefficients"""
+    """wigner3j coefficients."""
     kmin = max(0, j2 - j3 - m1, j1 - j3 + m2)
     kmax = max(j1 + j2 - j3, j1 - m1, j2 + m2)
 
@@ -136,7 +136,7 @@ def wigner_3j(j1, j2, j3, m1, m2, m3):
 
 @lru_cache(None)
 def a_func(m, n, u, v, p):
-    """Gaunt coefficient"""
+    """Gaunt coefficient."""
     f = factorial
     numerator = f(n + m) * f(v + u) * f(p - m - u)
     denominator = f(n - m) * f(v - u) * f(p + m + u)
@@ -150,7 +150,7 @@ def a_func(m, n, u, v, p):
 
 @lru_cache(None)
 def b_func(m, n, u, v, p):
-    """B function"""
+    """B function."""
     f = factorial
     numerator = f(n + m) * f(v + u) * f(p - m - u + 1)
     denominator = f(n - m) * f(v - u) * f(p + m + u + 1)

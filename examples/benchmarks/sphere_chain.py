@@ -1,4 +1,4 @@
-"""performance test"""
+"""performance test."""
 
 from functools import partial
 
@@ -48,8 +48,8 @@ def tests(Nmax, step=1):
         t_solve[i] = time_function(partial(solve_linear_system, A, mie.p_src, method=miepy.solver.bicgstab))
 
         x = np.linspace(0, N * separation, 1)
-        y = 2 * radius * np.ones_like(x)
-        z = np.zeros_like(x)
+        2 * radius * np.ones_like(x)
+        np.zeros_like(x)
 
         t_source[i] = time_function(mie._solve_source_decomposition)
 

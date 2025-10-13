@@ -18,7 +18,7 @@ class cylinder(particle):
         Nint=200,
         tmatrix_lmax=0,
     ):
-        """A cylinder object
+        """A cylinder object.
 
         Arguments:
             position[3]   x,y,z position of particle

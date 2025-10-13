@@ -1,4 +1,4 @@
-"""Tests for the power quantity of different incident beams"""
+"""Tests for the power quantity of different incident beams."""
 
 import numpy as np
 import pytest
@@ -33,7 +33,7 @@ Z = np.zeros_like(X)
     ],
 )
 def test_power_by_near_field_poynting_vector(source, rtol):
-    """Check that the power is correct by integrating the near field Poynting vector in the xy plane"""
+    """Check that the power is correct by integrating the near field Poynting vector in the xy plane."""
     E = source.E_field(X, Y, Z, k)
     H = source.H_field(X, Y, Z, k)
     S = 0.5 / Z0 * np.cross(E, np.conjugate(H), axis=0)[2]
@@ -44,7 +44,7 @@ def test_power_by_near_field_poynting_vector(source, rtol):
 
 def test_power_by_far_field_poynting_vector_upper_hemisphere():
     """Check that the power is correct by integrating the far field Poynting vector in the forward hemisphere plane
-    Expect the power to be positive when the unit vectors are parallel to the outgoing r_hat
+    Expect the power to be positive when the unit vectors are parallel to the outgoing r_hat.
     """
     source = miepy.sources.gaussian_beam(width=100 * nm, polarization=[1, 0], power=power)
 
@@ -74,7 +74,7 @@ def test_power_by_far_field_poynting_vector_upper_hemisphere():
 
 def test_power_by_far_field_poynting_vector_lower_hemisphere():
     """Check that the power is correct by integrating the far field Poynting vector in the backward hemisphere.
-    Expect the power to be negative when the unit vectors are parallel to the outgoing r_hat
+    Expect the power to be negative when the unit vectors are parallel to the outgoing r_hat.
     """
     source = miepy.sources.gaussian_beam(width=100 * nm, polarization=[1, 0], power=power)
 
@@ -103,7 +103,7 @@ def test_power_by_far_field_poynting_vector_lower_hemisphere():
 
 
 class Test_gaussian_beam_numeric_power:
-    """compute power of a Gaussian beam using various methods"""
+    """compute power of a Gaussian beam using various methods."""
 
     width = 400 * nm
     power = 1
@@ -112,12 +112,12 @@ class Test_gaussian_beam_numeric_power:
     source = miepy.sources.gaussian_beam(width, polarization, power=power)
 
     def test_power_through_aperature(self):
-        """Power by using power_through_aperature function for a large aperature"""
+        """Power by using power_through_aperature function for a large aperature."""
         P = miepy.vsh.misc.power_through_aperature(self.source, [0, 0, 0], 3 * self.width, k, sampling=20)
         assert np.allclose(P, self.power, rtol=0.03)
 
     def test_power_spherically_ingoing_waves(self):
-        """Power by far-field integration of spherically ingoing waves"""
+        """Power by far-field integration of spherically ingoing waves."""
         lmax = 6
         radius = 1e6 * (2 * np.pi / k)
 
@@ -136,7 +136,7 @@ class Test_gaussian_beam_numeric_power:
         assert np.allclose(P, self.power, rtol=0.04)
 
     def test_power_p_src_analytic(self):
-        """Power by analytic sum over p_src coefficients"""
+        """Power by analytic sum over p_src coefficients."""
         lmax = 6
         p_src = self.source.structure([[0, 0, 0]], k, lmax)[0]
         factor = 0.5 / Z0 * np.pi / k**2
@@ -145,7 +145,7 @@ class Test_gaussian_beam_numeric_power:
         assert np.allclose(P, self.power, rtol=0.04)
 
     def test_power_2d_integration(self):
-        """Power by  integrating Poynting vector in 2D plane"""
+        """Power by  integrating Poynting vector in 2D plane."""
         lmax = 6
         p_src = self.source.structure([[0, 0, 0]], k, lmax)[0]
         a = 3000 * nm

@@ -1,4 +1,4 @@
-"""Defines the vsh wave functions and related functions"""
+"""Defines the vsh wave functions and related functions."""
 
 from math import factorial
 
@@ -11,7 +11,7 @@ from . import special
 
 
 def get_zn(mode):
-    """Determine the zn function for a given mode"""
+    """Determine the zn function for a given mode."""
     if mode is vsh_mode.outgoing:
         return special.spherical_hn
     elif mode is vsh_mode.ingoing:
@@ -23,7 +23,7 @@ def get_zn(mode):
 
 
 def get_zn_far(mode):
-    """Determine the zn function for a given mode, in the far-field limit"""
+    """Determine the zn function for a given mode, in the far-field limit."""
     if mode is vsh_mode.outgoing:
         return lambda n, z: np.exp(1j * (z - (n + 1) * np.pi / 2)) / z
     elif mode is vsh_mode.ingoing:
@@ -38,7 +38,7 @@ def get_zn_far(mode):
 # TODO: specify spherical flag (either in VSH or the N/M functions themselves)
 # TODO: expansion issues at origin (r=0) for incident modes
 def VSH(n, m, mode=vsh_mode.outgoing):
-    """Electric and magnetic vector spherical harmonic function
+    """Electric and magnetic vector spherical harmonic function.
 
          n: int           order
          m: int           degree
@@ -79,7 +79,7 @@ def VSH(n, m, mode=vsh_mode.outgoing):
 
 
 def VSH_far(n, m, mode=vsh_mode.outgoing):
-    """Electric and magnetic vector spherical harmonic function in the far field
+    """Electric and magnetic vector spherical harmonic function in the far field.
 
          n: int           order
          m: int           degree
@@ -110,7 +110,7 @@ def VSH_far(n, m, mode=vsh_mode.outgoing):
 
 
 def vsh_normalization_values(mode, ftype, n, m, r, k):
-    """Determine the norm of a given vsh mode
+    """Determine the norm of a given vsh mode.
 
     Arguments:
         mode: vsh_mode    type of VSH (outgoing, incident)
@@ -137,7 +137,7 @@ def vsh_normalization_values(mode, ftype, n, m, r, k):
 
 
 def vsh_normalization_values_far(n, m):
-    """Determine the norm of a given vsh mode in the far-field
+    """Determine the norm of a given vsh mode in the far-field.
 
     Arguments:
         n                 vsh order (1, 2, ...)

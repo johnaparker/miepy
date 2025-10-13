@@ -15,8 +15,9 @@ import miepy
 
 @lru_cache(None)
 def gaunt(m, n, u, v, p):
-    """Gaunt coefficient"""
-    f = lambda n: special.gamma(n + 1)
+    """Gaunt coefficient."""
+    def f(n):
+        return special.gamma(n + 1)
     numerator = f(n + m) * f(v + u) * f(p - m - u)
     denominator = f(n - m) * f(v - u) * f(p + m + u)
     factor = (-1) ** (m + u) * (2 * p + 1) * (numerator / denominator) ** 0.5
@@ -29,8 +30,9 @@ def gaunt(m, n, u, v, p):
 
 @lru_cache(None)
 def b_func(m, n, u, v, p):
-    """B function"""
-    f = lambda n: special.gamma(n + 1)
+    """B function."""
+    def f(n):
+        return special.gamma(n + 1)
     numerator = f(n + m) * f(v + u) * f(p - m - u + 1)
     denominator = f(n - m) * f(v - u) * f(p + m + u + 1)
     factor = (-1) ** (m + u) * (2 * p + 3) * (numerator / denominator) ** 0.5
@@ -50,7 +52,8 @@ def b_func(m, n, u, v, p):
 
 def A_translation(m, n, u, v, r, theta, phi, k):
     m *= -1
-    f = lambda n: special.gamma(n + 1)
+    def f(n):
+        return special.gamma(n + 1)
     numerator = (2 * v + 1) * f(n - m) * f(v - u)
     denominator = 2 * n * (n + 1) * f(n + m) * f(v + u)
 
@@ -71,7 +74,8 @@ def A_translation(m, n, u, v, r, theta, phi, k):
 
 def B_translation(m, n, u, v, r, theta, phi, k):
     m *= -1
-    f = lambda n: special.gamma(n + 1)
+    def f(n):
+        return special.gamma(n + 1)
     numerator = (2 * v + 1) * f(n - m) * f(v - u)
     denominator = 2 * n * (n + 1) * f(n + m) * f(v + u)
 

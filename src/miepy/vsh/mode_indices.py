@@ -1,14 +1,14 @@
-"""Functions related to the (m,n) vsh mode indices"""
+"""Functions related to the (m,n) vsh mode indices."""
 
 
 def rmax_to_lmax(rmax):
-    """Obtain lmax from rmax"""
+    """Obtain lmax from rmax."""
     lmax = int(-1 + (1 + rmax) ** 0.5)
     return lmax
 
 
 def lmax_to_rmax(lmax):
-    """Obtain rmax from lmax"""
+    """Obtain rmax from lmax."""
     rmax = lmax * (lmax + 2)
     return rmax
 
@@ -19,11 +19,11 @@ def reduced_index(n, m):
 
 
 class mode_indices:
-    """iterable to produce (r, n, m) mode indices in the order expected by MiePy"""
+    """iterable to produce (r, n, m) mode indices in the order expected by MiePy."""
 
     def __init__(self, *args, **kwargs):
         """mode_indices(lmax)
-        mode_indices(Lmin, lmax, m_start=m_start, m_stop=m_stop)
+        mode_indices(Lmin, lmax, m_start=m_start, m_stop=m_stop).
 
         Returns an object that produces a sequence of (r, n, m) indices with the following ranges:
 

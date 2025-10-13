@@ -1,4 +1,4 @@
-"""commonly defined sources"""
+"""commonly defined sources."""
 
 import numpy as np
 from scipy.special import erfc, eval_genlaguerre, eval_hermite
@@ -180,7 +180,7 @@ class laguerre_gaussian_beam(polarized_beam):
 
 
 def azimuthal_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """Azimuthally polarized beam"""
+    """Azimuthally polarized beam."""
     if power is None:
         power = 1.0
 
@@ -194,7 +194,7 @@ def azimuthal_beam(width, theta=0, phi=0, power=None, phase=0, center=None, thet
 
 
 def radial_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """Radially polarized beam"""
+    """Radially polarized beam."""
     if power is None:
         power = 1.0
 
@@ -208,7 +208,7 @@ def radial_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_m
 
 
 def shear_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """Shear polarized beam"""
+    """Shear polarized beam."""
     if power is None:
         power = 1.0
 

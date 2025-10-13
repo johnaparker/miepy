@@ -1,4 +1,4 @@
-"""Test the validy of Maxwell's equations"""
+"""Test the validy of Maxwell's equations."""
 
 import numpy as np
 import pytest
@@ -37,7 +37,7 @@ theta, phi = 0.6, 0.3
     ],
 )
 def test_maxwells_equations_source_near_field(source):
-    """Verify Maxwell's equations for a source at a point in the near field"""
+    """Verify Maxwell's equations for a source at a point in the near field."""
     x0, y0, z0 = 50 * nm, 100 * nm, 150 * nm
     eps = 0.1 * nm
 
@@ -73,7 +73,7 @@ def test_maxwells_equations_source_near_field(source):
     ],
 )
 def test_maxwells_equations_source_far_field(source):
-    """Verify Maxwell's equations for a source at a point in the far field"""
+    """Verify Maxwell's equations for a source at a point in the far field."""
     x0, y0, z0 = 0.1, 0.1, 1
     eps = 1 * nm
 
@@ -115,7 +115,7 @@ def test_maxwells_equations_source_far_field(source):
     ],
 )
 def test_maxwells_equations_cluster_near_field(source):
-    """Verify Maxwell's equations for a cluster at a point in the near field"""
+    """Verify Maxwell's equations for a cluster at a point in the near field."""
     cluster = miepy.sphere_cluster(
         position=[[-400 * nm, -200 * nm, 0], [200 * nm, 200 * nm, 100 * nm]],
         radius=100 * nm,
@@ -159,7 +159,7 @@ def test_maxwells_equations_cluster_near_field(source):
     ],
 )
 def test_maxwells_equations_cluster_far_field(source):
-    """Verify Maxwell's equations for a cluster at a point in the far field"""
+    """Verify Maxwell's equations for a cluster at a point in the far field."""
     cluster = miepy.sphere_cluster(
         position=[[-400 * nm, -200 * nm, 0], [200 * nm, 200 * nm, 100 * nm]],
         radius=100 * nm,
@@ -202,11 +202,11 @@ def test_maxwells_equations_cluster_far_field(source):
 
 @pytest.mark.skip(reason="not implemented")
 def test_maxwells_equation_interior():
-    """Verify Maxwell's equations in the interior of a particle"""
+    """Verify Maxwell's equations in the interior of a particle."""
     pass
 
 
 @pytest.mark.skip(reason="not implemented")
 def test_maxwells_equation_in_medium():
-    """Verify Maxwell's equations in a non-vacuum medium"""
+    """Verify Maxwell's equations in a non-vacuum medium."""
     pass

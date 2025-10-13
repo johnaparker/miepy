@@ -1,4 +1,4 @@
-"""Scattering, absroption, and extinction cross-sections of an Au dimer"""
+"""Scattering, absroption, and extinction cross-sections of an Au dimer."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +31,7 @@ def plot(ax, E):
     ax.pcolormesh(X / nm, Y / nm, I, rasterized=True)
 
     skip = 8
-    idx = np.s_[::skip, ::skip]
+    np.s_[::skip, ::skip]
     # ax.quiver(X[idx]/nm, Y[idx]/nm, E[0][idx].real, E[1][idx].real, color='black', pivot='mid')
 
 

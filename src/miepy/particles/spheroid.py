@@ -5,7 +5,7 @@ from .particle_base import particle
 
 class spheroid(particle):
     def __init__(self, position, axis_xy, axis_z, material, orientation=None, tmatrix_lmax=0):
-        """A spheroid object
+        """A spheroid object.
 
         Arguments:
             position[3]   x,y,z position of particle

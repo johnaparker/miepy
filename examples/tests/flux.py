@@ -11,8 +11,10 @@ from tqdm import tqdm
 import miepy
 
 
-def sph_to_cart(r, theta, phi, origin=[0, 0, 0]):
-    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+def sph_to_cart(r, theta, phi, origin=None):
+    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)."""
+    if origin is None:
+        origin = [0, 0, 0]
     x = origin[0] + r * np.sin(theta) * np.cos(phi)
     y = origin[1] + r * np.sin(theta) * np.sin(phi)
     z = origin[2] + r * np.cos(theta)
@@ -23,7 +25,7 @@ def sph_to_cart(r, theta, phi, origin=[0, 0, 0]):
 def sphere_mesh(sampling):
     """Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
     with the format required by the project and decompose functions
-    Returns (THETA,PHI) meshgrids
+    Returns (THETA,PHI) meshgrids.
 
     Arguments:
         sampling   number of points to sample between 0 and pi

@@ -1,4 +1,4 @@
-"""VSH sources"""
+"""VSH sources."""
 
 import numpy as np
 
@@ -15,7 +15,7 @@ class vsh_source(source):
         center       center position of vsh_source
         mode         type of vsh_mode (default: incident)
         amplitude    amplitude of the source (default: 1)
-        phase        additional phase factor (default: 0)
+        phase        additional phase factor (default: 0).
         """
         self.n = n
         self.m = m
@@ -94,7 +94,7 @@ class vsh_source(source):
                 rad, theta, phi = miepy.coordinates.cart_to_sph(*dr)
                 for r, n, m in miepy.mode_indices(lmax):
                     Emn = miepy.vsh.Emn(self.m, self.n)
-                    Euv = miepy.vsh.Emn(m, n)
+                    miepy.vsh.Emn(m, n)
                     A, B = miepy.cpp.vsh_translation.vsh_translation(
                         m, n, self.m, self.n, rad, theta, phi, k, self.mode
                     )

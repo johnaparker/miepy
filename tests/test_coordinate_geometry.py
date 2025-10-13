@@ -1,4 +1,4 @@
-"""Tests for coordinate transformations and related geometric functions"""
+"""Tests for coordinate transformations and related geometric functions."""
 
 import numpy as np
 
@@ -6,10 +6,10 @@ import miepy
 
 
 class Test_spherical_coords_rotation:
-    """Verify rotation of spherical coordinates (theta, phi) with `miepy.coordinates.rotate_sph`"""
+    """Verify rotation of spherical coordinates (theta, phi) with `miepy.coordinates.rotate_sph`."""
 
     def test_compare_to_cartestion_rotation(self):
-        """Spherical rotation is identical to cartestion rotation after coordinate transformations"""
+        """Spherical rotation is identical to cartestion rotation after coordinate transformations."""
         theta = 0.5
         phi = 1.2
         r = 1
@@ -26,10 +26,9 @@ class Test_spherical_coords_rotation:
         assert np.allclose(phi_r1, phi_r2), "phi components are equal"
 
     def test_theta_equal_to_zero(self):
-        """When theta is equal to zero, rotate_sph should map phi -> phi + phi_rot correctly"""
+        """When theta is equal to zero, rotate_sph should map phi -> phi + phi_rot correctly."""
         theta = 0
         phi = 1.2
-        r = 1
         phi_rot = 0.4
 
         q_rot = miepy.quaternion.from_spherical_coords(0, phi_rot)

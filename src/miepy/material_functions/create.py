@@ -1,4 +1,4 @@
-"""creation new materials"""
+"""creation new materials."""
 
 from abc import ABCMeta, abstractmethod
 
@@ -8,17 +8,17 @@ from scipy.interpolate import interp1d
 
 
 def wavelength_to_energy(wavelength):
-    """Return the wavelength in energy units (eV)"""
+    """Return the wavelength in energy units (eV)."""
     return constants.h * constants.c / wavelength / constants.e
 
 
 def wavelength_to_wavenumber(wavelength):
-    """Return the wavelength as a wavenumber"""
+    """Return the wavelength as a wavenumber."""
     return 2 * np.pi / wavelength
 
 
 class material:
-    """material interface base class"""
+    """material interface base class."""
 
     __metaclass__ = ABCMeta
 
@@ -41,7 +41,7 @@ class material:
 
 
 def dielectric(index=None, eps=1.0, mu=1.0, name=None):
-    """Create a dielectric material (constant index of refraction / permittivity)
+    """Create a dielectric material (constant index of refraction / permittivity).
 
     Arguments:
         index     index of refraction (if specified, material is not magnetic and eps/mu not declared)
@@ -57,7 +57,7 @@ def dielectric(index=None, eps=1.0, mu=1.0, name=None):
 
 class constant_material(material):
     def __init__(self, eps=1.0, mu=1.0, index=None, name=None):
-        """Create a material with a constant eps and mu"""
+        """Create a material with a constant eps and mu."""
         super().__init__(name)
 
         self.eps_value = eps
@@ -84,7 +84,7 @@ class constant_material(material):
 
 class function_material(material):
     def __init__(self, eps_function, mu_function=None, name=None):
-        """Create a material with an eps and mu function"""
+        """Create a material with an eps and mu function."""
         super().__init__(name)
 
         self.eps_function = eps_function
@@ -112,7 +112,7 @@ class function_material(material):
 
 class data_material(material):
     def __init__(self, wavelength, eps, mu=None, name=None):
-        """Create a material with raw wavelength, eps, and mu data"""
+        """Create a material with raw wavelength, eps, and mu data."""
         super().__init__(name)
 
         if np.isscalar(wavelength):
@@ -144,7 +144,7 @@ class data_material(material):
 # TODO fix and test
 def drude_lorentz(wp, sig, f, gam, magnetic_only=False, eps_inf=1, name=None):
     """Create a function_material using a Drude-Lorentz function.
-    All arguments must be in eV units
+    All arguments must be in eV units.
 
     Arguments can be either 1D or 2D arrays: if 2D, eps/mu
     are both specified. If 1D, eps or mu is specified,

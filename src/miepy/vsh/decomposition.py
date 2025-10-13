@@ -1,6 +1,6 @@
 """Decomposition of electric fields and sources into VSH coefficients using:
 (1) A point matching method
-(2) An integral projection method
+(2) An integral projection method.
 """
 
 import numpy as np
@@ -16,7 +16,7 @@ from .vsh_functions import VSH, VSH_far, vsh_mode, vsh_normalization_values
 
 # TODO: this should be called by the point_matching methods below directly
 def sampling_from_lmax(lmax, method):
-    """Determine the required sampling from lmax for point matching"""
+    """Determine the required sampling from lmax for point matching."""
     rmax = lmax_to_rmax(lmax)
     N = max(3, int(np.ceil(rmax**0.5)))
 
@@ -30,7 +30,7 @@ def sampling_from_lmax(lmax, method):
 
 def sample_sphere_point_matching(position, radius, sampling):
     """Sample points on the surface of the sphere for the point matching method
-    Returns points[3,N]
+    Returns points[3,N].
 
     Arguments:
         position[3]   position of sphere
@@ -42,13 +42,13 @@ def sample_sphere_point_matching(position, radius, sampling):
     THETA, PHI = np.meshgrid(theta, phi, indexing="ij")
     X, Y, Z = coordinates.sph_to_cart(radius, THETA, PHI, origin=position)
 
-    Nphi = phi.shape[0]
+    phi.shape[0]
     return np.reshape(np.array([X, Y, Z]), [3, -1])
 
 
 def sample_plane_point_matching(position, size, sampling):
     """Sample points on a planar surface (z-oriented) for the point matching method
-    Returns points[3,N]
+    Returns points[3,N].
 
     Arguments:
         position[3]   center of plane
@@ -69,7 +69,7 @@ def sample_plane_point_matching(position, size, sampling):
 # TODO: use far-field expressions for the vsh functions
 def far_field_point_matching(source, position, radius, k, lmax, sampling=6):
     """Decompose a source into VSHs using the point matching method in the far field
-    Returns p_src[2,rmax]
+    Returns p_src[2,rmax].
 
     Arguments:
         source      source object
@@ -119,7 +119,7 @@ def far_field_point_matching(source, position, radius, k, lmax, sampling=6):
 
 def near_field_point_matching(source, position, size, k, lmax, sampling):
     """Decompose a source into VSHs using the point matching method in the near field
-    Returns p_src[2,rmax]
+    Returns p_src[2,rmax].
 
     Arguments:
         source      source object
@@ -161,7 +161,7 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
 
 
 def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh_mode.outgoing, spherical=False):
-    """Project fields onto a given mode using integral method
+    """Project fields onto a given mode using integral method.
 
     Arguments:
         E[3,Ntheta,Nphi]     electric field values on the surface of a sphere
@@ -208,8 +208,8 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh_mode.outgoing, s
     return factor * integrated / norm
 
 
-def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling=30, mode=vsh_mode.incident):
-    """Project source object onto a given mode using integral method
+def integral_project_source_onto(src, k, ftype, n, m, origin=None, sampling=30, mode=vsh_mode.incident):
+    """Project source object onto a given mode using integral method.
 
     Arguments:
         src        source object
@@ -221,6 +221,8 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
+    if origin is None:
+        origin = [0, 0, 0]
     r = 2 * np.pi / k  # choose radius to be a wavelength of the light
     r = 50e-9
 
@@ -233,7 +235,7 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling
 
 def integral_project_fields(E, r, k, lmax, mode=vsh_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs using integral method
-    Returns p[2,rmax]
+    Returns p[2,rmax].
 
     Arguments:
         E[3,Ntheta,Nphi]   electric field values on the surface of a sphere
@@ -253,9 +255,9 @@ def integral_project_fields(E, r, k, lmax, mode=vsh_mode.outgoing, spherical=Fal
     return p
 
 
-def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vsh_mode.incident):
+def integral_project_source(src, k, lmax, origin=None, sampling=30, mode=vsh_mode.incident):
     """Decompose a source object into VSHs using integral method
-    Returns p[2,rmax]
+    Returns p[2,rmax].
 
     Arguments:
         src        source object
@@ -265,6 +267,8 @@ def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vs
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
+    if origin is None:
+        origin = [0, 0, 0]
     rmax = lmax_to_rmax(lmax)
     p = np.zeros([2, rmax], dtype=complex)
 
@@ -279,7 +283,7 @@ def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vs
 # TODO: (theta_min, theta_max) for integral bounds
 def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi / 2):
     """Decompose a source object into VSHs using integral method in the far-field
-    Returns p[2,rmax]
+    Returns p[2,rmax].
 
     Arguments:
         src        source object

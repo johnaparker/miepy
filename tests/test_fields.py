@@ -1,4 +1,4 @@
-"""Tests for E and H field calculations"""
+"""Tests for E and H field calculations."""
 
 import numpy as np
 
@@ -8,7 +8,7 @@ nm = 1e-9
 
 
 def test_boundary_conditions():
-    """Verifies the continunity of tangential components of E and H at the surface of a particle"""
+    """Verifies the continunity of tangential components of E and H at the surface of a particle."""
     radius = 50 * nm
 
     cluster = miepy.sphere_cluster(

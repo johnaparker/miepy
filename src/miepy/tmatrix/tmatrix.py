@@ -46,17 +46,17 @@ def get_tmatrix(rad, dS, eps, eps_m, wavelength, lmax):
         p_modes = ingoing if p == 1 else outgoing
         q_modes = ingoing if q == 1 else outgoing
 
-        for r1, n1, m1 in miepy.mode_indices(lmax):
-            M1_p_k2 = p_modes.M_k2[r1]
-            N1_p_k2 = p_modes.N_k2[r1]
+        for r1, _n1, _m1 in miepy.mode_indices(lmax):
+            p_modes.M_k2[r1]
+            p_modes.N_k2[r1]
             M1_p_k1 = p_modes.M_k1[r1]
             N1_p_k1 = p_modes.N_k1[r1]
 
-            for r2, n2, m2 in miepy.mode_indices(lmax):
+            for r2, _n2, _m2 in miepy.mode_indices(lmax):
                 M2_q_k2 = q_modes.M_k2[r2]
                 N2_q_k2 = q_modes.N_k2[r2]
-                M2_q_k1 = q_modes.M_k1[r2]
-                N2_q_k1 = q_modes.N_k1[r2]
+                q_modes.M_k1[r2]
+                q_modes.N_k1[r2]
 
                 # factor = (-1)**(m2 - m1)
                 factor = 1

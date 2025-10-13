@@ -8,7 +8,7 @@ import miepy
 
 
 def display(name, Tcpp, Tpy):
-    """Display name and times of C++/python runtimes"""
+    """Display name and times of C++/python runtimes."""
     print(colored(name, color="white", attrs=["underline"]))
     print(f"    cpp: {Tcpp * 1e6:>7.2f} μs")
     print(f"    py:  {Tpy * 1e6:>7.2f} μs")

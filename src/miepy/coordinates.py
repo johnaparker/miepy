@@ -6,7 +6,7 @@ import miepy
 
 
 def sph_to_cart(r, theta, phi, origin=None):
-    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -18,7 +18,7 @@ def sph_to_cart(r, theta, phi, origin=None):
 
 
 def cart_to_sph(x, y, z, origin=None):
-    """Convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
+    """Convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -31,7 +31,7 @@ def cart_to_sph(x, y, z, origin=None):
 
 
 def cyl_to_cart(r, phi, z, origin=None):
-    """Convert cylindrical coordinates (r, phi, z) centered at origin to cartesian coordinates (x, y, z)"""
+    """Convert cylindrical coordinates (r, phi, z) centered at origin to cartesian coordinates (x, y, z)."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -42,7 +42,7 @@ def cyl_to_cart(r, phi, z, origin=None):
 
 
 def cart_to_cyl(x, y, z, origin=None):
-    """Convert cartesian coordinates (x, y, z) to cylindrical coordinates (r, phi, z) centered at origin"""
+    """Convert cartesian coordinates (x, y, z) to cylindrical coordinates (r, phi, z) centered at origin."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -56,7 +56,7 @@ def cart_to_cyl(x, y, z, origin=None):
 # TODO: if theta is scalar, or phi is scalar... same with other functions here
 # TODO: implement origin
 def sph_basis_vectors(theta, phi, origin=None):
-    """Obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
+    """Obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -69,7 +69,7 @@ def sph_basis_vectors(theta, phi, origin=None):
 
 # TODO: implement origin
 def vec_cart_to_sph(F, theta, phi, origin=None):
-    """Convert a vector field F from cartesian to spherical coordinates
+    """Convert a vector field F from cartesian to spherical coordinates.
 
     Arguments:
         F[3,...]     vector field values
@@ -90,7 +90,7 @@ def vec_cart_to_sph(F, theta, phi, origin=None):
 
 # TODO: implement origin
 def vec_sph_to_cart(F, theta, phi, origin=None):
-    """Convert a vector field F from spherical to cartesian coordinates
+    """Convert a vector field F from spherical to cartesian coordinates.
 
     Arguments:
         F[3,...]     vector field values
@@ -111,7 +111,7 @@ def vec_sph_to_cart(F, theta, phi, origin=None):
 def sphere_mesh(sampling):
     """Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
     with the format required by the project and decompose functions
-    Returns (THETA,PHI) meshgrids
+    Returns (THETA,PHI) meshgrids.
 
     Arguments:
         sampling   number of points to sample between 0 and pi
@@ -126,7 +126,7 @@ def sphere_mesh(sampling):
 
 def cart_sphere_mesh(radius, origin, sampling):
     """Given a radius, origin and sampling, return the
-    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere
+    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere.
     """
     r = np.array([radius])
     tau = np.linspace(-1, 1, sampling)
@@ -142,7 +142,7 @@ def cart_sphere_mesh(radius, origin, sampling):
 
 
 def rotate(x, y, z, quat, origin=None):
-    """Rotate the points (x, y, z) around an origin using a quaternion"""
+    """Rotate the points (x, y, z) around an origin using a quaternion."""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -155,7 +155,7 @@ def rotate(x, y, z, quat, origin=None):
 
 
 def rotate_sph(theta, phi, quat):
-    """Rotate the spherical coordinates (theta, phi) to rotated spherical coordinates"""
+    """Rotate the spherical coordinates (theta, phi) to rotated spherical coordinates."""
     q1 = miepy.quaternion.from_spherical_coords(theta, phi)
     q2 = quat * q1
     theta_r, phi_r = np.moveaxis(miepy.quaternion.as_spherical_coords(q2), -1, 0)
@@ -171,7 +171,7 @@ def rotate_sph(theta, phi, quat):
 
 
 def rotate_vec(F, quat):
-    """Rotate the vector F using a quaternion"""
+    """Rotate the vector F using a quaternion."""
     R = miepy.quaternion.as_rotation_matrix(quat)
     F_rotated = np.einsum("ij,j...->i...", R, F)
 
@@ -179,7 +179,7 @@ def rotate_vec(F, quat):
 
 
 def translate(x, y, z, dr):
-    """Translate the points (x, y, z) by dr"""
+    """Translate the points (x, y, z) by dr."""
     xp = x + dr[0]
     yp = y + dr[1]
     zp = z + dr[2]

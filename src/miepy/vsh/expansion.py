@@ -1,4 +1,4 @@
-"""Expansion of electric and magnetic fields given expansion coefficients"""
+"""Expansion of electric and magnetic fields given expansion coefficients."""
 
 import numpy as np
 
@@ -12,7 +12,7 @@ from .vsh_functions import VSH, vsh_mode
 # TODO: move k argument to field function for consistency
 def expand_E(p, k, mode):
     """Expand VSH coefficients to obtain an electric field function
-    Returns E(r,θ,φ) function
+    Returns E(r,θ,φ) function.
 
     Arguments:
         p[2,rmax]          expansion coefficients
@@ -44,7 +44,7 @@ def expand_E(p, k, mode):
 
 def expand_E_far(p_scat, k):
     """Expand VSH scattering coefficients to obtain an electric field function for the far-field
-    Returns E(r,θ,φ) function
+    Returns E(r,θ,φ) function.
 
     Arguments:
         p_scat[2,rmax]    scattering coefficients
@@ -79,7 +79,7 @@ def expand_E_far(p_scat, k):
 
 def expand_H(p, k, mode, eps, mu):
     """Expand VSH coefficients to obtain a magnetic field function
-    Returns H(r,θ,φ) function
+    Returns H(r,θ,φ) function.
 
     Arguments:
         p[2,rmax]       expansion coefficients
@@ -95,7 +95,7 @@ def expand_H(p, k, mode, eps, mu):
 
 def expand_H_far(p_scat, k, eps, mu):
     """Expand VSH scattering coefficients to obtain a magnetic field function for the far-field
-    Returns H(r,θ,φ) function
+    Returns H(r,θ,φ) function.
 
     Arguments:
         p_scat[2,rmax]    scattering coefficients

@@ -1,4 +1,4 @@
-"""special_functions defines any additional special functions needed by MiePy"""
+"""special_functions defines any additional special functions needed by MiePy."""
 
 import numpy as np
 from scipy import special
@@ -9,7 +9,7 @@ def spherical_hn(n, z, derivative=False):
 
 
 def riccati_1(nmax, x):
-    """Riccati bessel function of the 1st kind
+    """Riccati bessel function of the 1st kind.
 
     returns (r1, r1'), n=0,1,...,nmax
     """
@@ -26,7 +26,7 @@ def riccati_1(nmax, x):
 
 
 def riccati_3(nmax, x):
-    """Riccati bessel function of the 3rd kind
+    """Riccati bessel function of the 3rd kind.
 
     returns (r3, r3'), n=0,1,...,nmax
     """
@@ -43,7 +43,7 @@ def riccati_3(nmax, x):
 
 
 def riccati_2(nmax, x):
-    """Riccati bessel function of the 2nd kind
+    """Riccati bessel function of the 2nd kind.
 
     returns (r2, r2'), n=0,1,...,nmax
     """
@@ -125,7 +125,7 @@ class vector_spherical_harmonics:
 
 # TODO clean these up, compare to old for core-shell theory
 def riccati_1_single(n, x):
-    """Riccati_1, but only a single n value"""
+    """Riccati_1, but only a single n value."""
     jn = special.spherical_jn(n, x)
     jnp = special.spherical_jn(n, x, derivative=True)
 
@@ -133,7 +133,7 @@ def riccati_1_single(n, x):
 
 
 def riccati_2_single(n, x):
-    """Riccati_2, but only a single n value"""
+    """Riccati_2, but only a single n value."""
     # pre = (np.pi*x/2)**.5
     # hn = pre*special.hankel1(n+0.5,x)
     # hnp = hn/(2*x) + pre*special.h1vp(n+0.5,x)
@@ -144,7 +144,7 @@ def riccati_2_single(n, x):
 
 
 def riccati_3_single(n, x):
-    """Riccati_3, but only a single n value"""
+    """Riccati_3, but only a single n value."""
     # pre = (np.pi*x/2)**.5
     # yn = pre*special.yv(n+0.5,x)
     # ynp = yn/(2*x) + pre*special.yvp(n+0.5,x)

@@ -1,5 +1,5 @@
 """Example of how to make a Ag sphere and plot scattering,
-absorption, and scattering per multipole
+absorption, and scattering per multipole.
 """
 
 import matplotlib.pyplot as plt

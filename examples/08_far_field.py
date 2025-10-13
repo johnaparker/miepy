@@ -1,4 +1,4 @@
-"""Far-field analysis with the GMT"""
+"""Far-field analysis with the GMT."""
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt

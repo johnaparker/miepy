@@ -1,4 +1,4 @@
-"""plane wave sources"""
+"""plane wave sources."""
 
 import numpy as np
 
@@ -9,7 +9,7 @@ from miepy.vsh.special import pi_func, tau_func
 
 class plane_wave(polarized_propagating_source):
     def __init__(self, polarization, amplitude=1, phase=0, theta=0, phi=0, standing=False):
-        """Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave
+        """Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave.
 
         Arguments:
             polarization[2]      (TM, TE) values representing the polarization
@@ -34,7 +34,7 @@ class plane_wave(polarized_propagating_source):
 
     @classmethod
     def from_string(cls, polarization, direction="z", amplitude=1, phase=0, standing=False):
-        """Create a plane wave from string values for the polarization and direction
+        """Create a plane wave from string values for the polarization and direction.
 
         Arguments:
             polarization     x, y, or z

@@ -1,4 +1,4 @@
-"""Miscellaneous functions related to vsh"""
+"""Miscellaneous functions related to vsh."""
 
 import numpy as np
 from scipy import special
@@ -9,19 +9,19 @@ from miepy.cpp.decomposition import trapz_2d
 
 
 def simps_2d(xd, yd, fd):
-    """1d simpsons rule extended to 2d"""
+    """1d simpsons rule extended to 2d."""
     if np.iscomplexobj(fd):
         return simps_2d(xd, yd, fd.real) + 1j * simps_2d(xd, yd, fd.imag)
 
     xData = np.zeros(len(xd))
-    for i, x in enumerate(xd):
+    for i, _x in enumerate(xd):
         xData[i] = simpson(fd[i, :], yd)
 
     return simpson(xData, xd)
 
 
 def power_through_aperature(source, center, radius, k, sampling=75):
-    """Calculate the power through an aperature for a source
+    """Calculate the power through an aperature for a source.
 
     Arguments:
         source      source object

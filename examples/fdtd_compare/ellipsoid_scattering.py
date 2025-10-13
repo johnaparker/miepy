@@ -43,10 +43,12 @@ polarization = "x"
 
 src_time = meep.GaussianSource(frequency=1.3 / um, fwidth=4.0 / um)
 if polarization == "x":
-    source = lambda sim: meep_ext.x_polarized_plane_wave(sim, src_time)
+    def source(sim):
+        return meep_ext.x_polarized_plane_wave(sim, src_time)
     decay = meep.Ex
 else:
-    source = lambda sim: meep_ext.y_polarized_plane_wave(sim, src_time)
+    def source(sim):
+        return meep_ext.y_polarized_plane_wave(sim, src_time)
     decay = meep.Ey
 
 ### monitor info
@@ -66,7 +68,7 @@ Nx, Ny, Nz = map(round, cell * resolution)
 
 @job.cache
 def norm_sim():
-    """Perform normalization simulation"""
+    """Perform normalization simulation."""
     norm = meep.Simulation(
         cell_size=cell, boundary_layers=[pml], geometry=[], default_material=medium, resolution=resolution
     )
@@ -93,7 +95,7 @@ def norm_sim():
 
 @job.cache
 def scat_sim():
-    """Perform scattering simulation"""
+    """Perform scattering simulation."""
     scat = meep.Simulation(
         cell_size=cell, boundary_layers=[pml], geometry=geometry, default_material=medium, resolution=resolution
     )

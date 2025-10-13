@@ -1,4 +1,4 @@
-"""mie_sphere calculates the scattering coefficients of a sphere using Mie theory"""
+"""mie_sphere calculates the scattering coefficients of a sphere using Mie theory."""
 
 import numpy as np
 from scipy import constants
@@ -14,7 +14,7 @@ from miepy.special_functions import (
 
 
 def mie_sphere_scattering_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conducting=False):
-    """Solve for the exterior of the sphere, the an and bn coefficients
+    """Solve for the exterior of the sphere, the an and bn coefficients.
 
     Arguments:
         radius      sphere radius
@@ -46,7 +46,7 @@ def mie_sphere_scattering_coefficients(radius, n, eps, mu, eps_b, mu_b, k, condu
 
 
 def mie_sphere_interior_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conducting=False):
-    """Solve for the exterior of the sphere, the an and bn coefficients
+    """Solve for the exterior of the sphere, the an and bn coefficients.
 
     Arguments:
         radius      sphere radius
@@ -78,7 +78,7 @@ def mie_sphere_interior_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conduct
 
 class single_mie_sphere:
     def __init__(self, radius, material, wavelength, lmax, medium=None):
-        """Solve traditional Mie theory: a single sphere in x-polarized plane wave illumination
+        """Solve traditional Mie theory: a single sphere in x-polarized plane wave illumination.
 
         radius           particle radius
         material         particle material
@@ -121,7 +121,7 @@ class single_mie_sphere:
         self.interior_computed = False
 
     def solve_exterior(self):
-        """Solve for the exterior of the sphere, the an and bn coefficients"""
+        """Solve for the exterior of the sphere, the an and bn coefficients."""
         xvals = self.material_data["k"] * self.radius
         m = (self.material_data["eps"] / self.material_data["eps_b"]) ** 0.5
         mt = m * self.material_data["mu_b"] / self.material_data["mu"]
@@ -144,7 +144,7 @@ class single_mie_sphere:
         return self.an, self.bn
 
     def solve_interior(self):
-        """Solve for the interior of the sphere, the cn and dn coefficients"""
+        """Solve for the interior of the sphere, the cn and dn coefficients."""
         # TODO shouldn't this be multiplied by self.radius?
         xvals = self.material_data["k"] * self.radius
         m = (self.material_data["eps"] / self.material_data["eps_b"]) ** 0.5
@@ -169,13 +169,13 @@ class single_mie_sphere:
         return self.cn, self.dn
 
     def cross_sections(self):
-        """Return the 3 cross-sections: (Scattering, Absorbption, Extinction)"""
+        """Return the 3 cross-sections: (Scattering, Absorbption, Extinction)."""
         if not self.exterior_computed:
             self.solve_exterior()
         return miepy.cross_sections(*self.scattering_properties)
 
     def cross_sections_per_multipole(self):
-        """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)"""
+        """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)."""
         if not self.exterior_computed:
             self.solve_exterior()
         return miepy.flux.cross_sections(
@@ -186,9 +186,9 @@ class single_mie_sphere:
 
     # TODO: moved to functions script
     def radiation_force(self):
-        """Return the radiation force (Fz)"""
+        """Return the radiation force (Fz)."""
         Fz = np.zeros(self.Nfreq)
-        nvals = np.arange(1, self.lmax + 1)
+        np.arange(1, self.lmax + 1)
 
         k = self.material_data["k"]
         for i in range(self.lmax):
@@ -209,7 +209,7 @@ class single_mie_sphere:
         return Fz * constants.epsilon_0 * self.material_data["eps_b"] / 2
 
     def E_field(self, index=None, lmax=None):
-        """Return an electric field function E(r,theta,phi) for a given wavenumber index"""
+        """Return an electric field function E(r,theta,phi) for a given wavenumber index."""
         if lmax is None:
             lmax = self.lmax
         if index is None:
@@ -240,7 +240,7 @@ class single_mie_sphere:
         return E_func
 
     def H_field(self, index=None, lmax=None):
-        """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
+        """Return a magnetic field function H(r,theta,phi) for a given wavenumber index."""
         if lmax is None:
             lmax = self.lmax
         if index is None:

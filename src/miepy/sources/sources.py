@@ -14,7 +14,7 @@ import miepy
 
 
 class source:
-    """abstract base class for source objects"""
+    """abstract base class for source objects."""
 
     __metaclass__ = ABCMeta
 
@@ -22,7 +22,7 @@ class source:
         """Arguments:
         amplitude   global amplitude factor (default 1)
         phase       global phase shift (default 0)
-        origin      a reference point for the center of the source (default: [0,0,0])
+        origin      a reference point for the center of the source (default: [0,0,0]).
         """
         self.amplitude = amplitude
         self.phase = phase
@@ -34,7 +34,7 @@ class source:
 
     @abstractmethod
     def angular_spectrum(self, theta, phi, k):
-        """Return the angular spectrum representation of the far-field source
+        """Return the angular spectrum representation of the far-field source.
 
         Arguments:
             theta    far-field theta angle
@@ -45,7 +45,7 @@ class source:
 
     @abstractmethod
     def E_field(self, x1, x2, x3, k, far=False, spherical=False):
-        """Compute the electric field of the source
+        """Compute the electric field of the source.
 
         Arguments:
             x1        x (or r) position (array-like)
@@ -61,7 +61,7 @@ class source:
 
     @abstractmethod
     def H_field(self, x1, x2, x3, k, far=False, spherical=False):
-        """Compute the magnetic field of the source
+        """Compute the magnetic field of the source.
 
         Arguments:
             x1        x (or r) position (array-like)
@@ -77,7 +77,7 @@ class source:
 
     @abstractmethod
     def E_angular(self, theta, phi, k, radius=None, origin=None):
-        """Compute the electric field in the far-field in spherical coordinates
+        """Compute the electric field in the far-field in spherical coordinates.
 
         Arguments:
             theta    theta position (array-like)
@@ -90,7 +90,7 @@ class source:
 
     @abstractmethod
     def H_angular(self, theta, phi, k, radius=None, origin=None):
-        """Compute the magnetic field in the far-field in spherical coordinates
+        """Compute the magnetic field in the far-field in spherical coordinates.
 
         Arguments:
             theta    theta position (array-like)
@@ -103,7 +103,7 @@ class source:
 
     @abstractmethod
     def structure(self, position, k, lmax):
-        """Compute the expansion coefficients of the source at a given position
+        """Compute the expansion coefficients of the source at a given position.
 
         Arguments:
             position[N,3]   (x,y,z) position of the expansion origin for N points
@@ -114,16 +114,16 @@ class source:
 
     @abstractmethod
     def reflect(self, interface, medium, wavelength):
-        """Create a source reflected by an interface"""
+        """Create a source reflected by an interface."""
         pass
 
     @abstractmethod
     def transmit(self, interface, medium, wavelength):
-        """Create a source transmitted by an interface"""
+        """Create a source transmitted by an interface."""
         pass
 
     def power_density(self, x1, x2, x3, k, far=False, spherical=False):
-        """Compute the power density of the source
+        """Compute the power density of the source.
 
         Arguments:
             x1        x (or r) position (array-like)
@@ -142,7 +142,7 @@ class source:
         return H_inf
 
     def __add__(self, other):
-        """Add two sources together"""
+        """Add two sources together."""
         if type(other) is combined_source:
             return combined_source(self, *other.sources)
         elif isinstance(other, source):
@@ -152,7 +152,7 @@ class source:
 
 
 class propagating_source(source):
-    """abstract base class for propagating sources"""
+    """abstract base class for propagating sources."""
 
     __metaclass__ = ABCMeta
 
@@ -169,7 +169,7 @@ class propagating_source(source):
 
 
 class polarized_propagating_source(propagating_source):
-    """abstract base class for polarized, propagating sources"""
+    """abstract base class for polarized, propagating sources."""
 
     __metaclass__ = ABCMeta
 
@@ -196,7 +196,7 @@ class polarized_propagating_source(propagating_source):
 
 
 class combined_source(source):
-    """sources added together"""
+    """sources added together."""
 
     def __init__(self, *sources):
         self.sources = sources

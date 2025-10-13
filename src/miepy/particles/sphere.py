@@ -5,7 +5,7 @@ from .particle_base import particle
 
 class sphere(particle):
     def __init__(self, position, radius, material):
-        """A sphere object
+        """A sphere object.
 
         Arguments:
             position[3]   x,y,z position of particle

@@ -1,4 +1,4 @@
-"""The Generalized Mie Theory (GMT) for a collection of particles"""
+"""The Generalized Mie Theory (GMT) for a collection of particles."""
 
 from functools import partial
 
@@ -11,7 +11,7 @@ import miepy
 # TODO: prefer manual solve calls ratehr than auto solve calls (or have an auto_solve option)
 # TODO: swap position indices, so that [N,3] => [3,N]
 class cluster:
-    """Solve Generalized Mie Theory for an N particle cluster in an arbitray source profile"""
+    """Solve Generalized Mie Theory for an N particle cluster in an arbitray source profile."""
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class cluster:
         origin        (optional) system origin around which to compute cluster quantities (default = [0,0,0]). Choose 'auto' to automatically choose origin as center of geometry.
         symmetry      (optional) specify system symmetries (default: no symmetries)
         interface     (optional) include an infinite interface (default: no interface)
-        interactions  (optional) If True, include particle interactions (bool, default=True)
+        interactions  (optional) If True, include particle interactions (bool, default=True).
         """
         self.interface = interface
         if interface is not None:
@@ -120,7 +120,7 @@ class cluster:
 
     # TODO: interface more like E_field
     def E_field_from_particle(self, i, x, y, z, source=True):
-        """Compute the electric field around particle i
+        """Compute the electric field around particle i.
 
         Arguments:
             i        particle number
@@ -145,7 +145,7 @@ class cluster:
         return Escat + Einc
 
     def H_field_from_particle(self, i, x, y, z, source=True):
-        """Compute the magnetic field around particle i
+        """Compute the magnetic field around particle i.
 
         Arguments:
             i        particle number
@@ -183,7 +183,7 @@ class cluster:
         return Hscat + Hinc
 
     def E_source(self, x1, x2, x3, far=False, spherical=False):
-        """Compute the electric field from the source
+        """Compute the electric field from the source.
 
         Arguments:
             x1        x/r position (array-like)
@@ -198,7 +198,7 @@ class cluster:
         return E
 
     def H_source(self, x1, x2, x3, far=False, spherical=False):
-        """Compute the magnetic field from the source
+        """Compute the magnetic field from the source.
 
         Arguments:
             x1        x/r position (array-like)
@@ -214,7 +214,7 @@ class cluster:
         return factor * H
 
     def E_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
-        """Compute the electric field due to all particles
+        """Compute the electric field due to all particles.
 
         Arguments:
             x1        x/r position (array-like)
@@ -276,7 +276,7 @@ class cluster:
         return E
 
     def H_field(self, x1, x2, x3, interior=True, source=True, mask=False, far=False, spherical=False):
-        """Compute the magnetic field due to all particles
+        """Compute the magnetic field due to all particles.
 
         Arguments:
             x1        x/r position (array-like)
@@ -344,7 +344,7 @@ class cluster:
         return H
 
     def E_angular(self, theta, phi, radius=None, source=False):
-        """Compute the electric field due to all particles in the far-field in spherical coordinates
+        """Compute the electric field due to all particles in the far-field in spherical coordinates.
 
         Arguments:
             theta    theta position (array-like)
@@ -359,7 +359,7 @@ class cluster:
         return self.E_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
     def H_angular(self, theta, phi, radius=None, source=False):
-        """Compute the magnetic field due to all particles in the far-field in spherical coordinates
+        """Compute the magnetic field due to all particles in the far-field in spherical coordinates.
 
         Arguments:
             theta    theta position (array-like)
@@ -374,7 +374,7 @@ class cluster:
         return self.H_field(radius, theta, phi, interior=False, source=source, far=True, spherical=True)[1:]
 
     def cross_sections_per_multipole(self, lmax=None):
-        """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole
+        """Compute the scattering, absorption, and extinction cross-section of the cluster per multipole.
 
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (defult: self.lmax)
@@ -388,7 +388,7 @@ class cluster:
         return miepy.flux.cluster_cross_sections(self.p_cluster, p0, self.material_data.k_b)
 
     def cross_sections(self):
-        """Compute the scattering, absorption, and extinction cross-section of the cluster"""
+        """Compute the scattering, absorption, and extinction cross-section of the cluster."""
         Cscat = 0
         Cabs = 0
         Cext = 0
@@ -402,7 +402,7 @@ class cluster:
         return miepy.flux.cross_sections(Cscat, Cabs, Cext)
 
     def cross_sections_per_multipole_of_particle(self, i):
-        """Compute the scattering, absorption, and extinction cross-section per multipole of a single particle
+        """Compute the scattering, absorption, and extinction cross-section per multipole of a single particle.
 
         Arguments:
             i    particle index
@@ -410,7 +410,7 @@ class cluster:
         return miepy.flux.particle_cross_sections(self.p_scat[i], self.p_inc[i], self.p_src[i], self.material_data.k_b)
 
     def cross_sections_of_particle(self, i):
-        """Compute the scattering, absorption, and extinction cross-section of a single particle
+        """Compute the scattering, absorption, and extinction cross-section of a single particle.
 
         Arguments:
             i    particle index
@@ -419,7 +419,7 @@ class cluster:
         return miepy.flux.cross_sections(*[np.sum(A) for A in C])
 
     def force_on_particle(self, i, source=True):
-        """Determine the force on a single particle
+        """Determine the force on a single particle.
 
         Arguments:
             i         Particle index
@@ -443,7 +443,7 @@ class cluster:
         return F
 
     def torque_on_particle(self, i, source=True):
-        """Determine the torque on a single particle
+        """Determine the torque on a single particle.
 
         Arguments:
             i         Particle index
@@ -467,7 +467,7 @@ class cluster:
         return T
 
     def force(self, source=True):
-        """Determine the force on every particle
+        """Determine the force on every particle.
 
         Arguments:
             source    Include the source field (bool, default=False)
@@ -481,7 +481,7 @@ class cluster:
         return F
 
     def torque(self, source=True):
-        """Determine the torque on every particle
+        """Determine the torque on every particle.
 
         Arguments:
             source    Include the source field (bool, default=False)
@@ -495,7 +495,7 @@ class cluster:
         return T
 
     def local_density_of_states(self, enhancement=True):
-        """Compute the local density of states (LDOS)
+        """Compute the local density of states (LDOS).
 
         Arguments:
             enhancement      (bool) if True, return the relative enhancement LDOS (default: True)
@@ -533,7 +533,7 @@ class cluster:
         sampling=30,
         source=False,
     ):
-        """Create an image of the cluster using a microscope
+        """Create an image of the cluster using a microscope.
 
         Arguments:
             x              image x-values (array-like)
@@ -571,7 +571,7 @@ class cluster:
         return scope.image(x, y, z_val=z, magnify=magnify)
 
     def update(self, position=None, orientation=None):
-        """Update properties of the particles
+        """Update properties of the particles.
 
         Arguments:
             position[N,3]     new particle positions
@@ -599,7 +599,7 @@ class cluster:
                 self._solve_without_interactions()
 
     def solve_cluster_coefficients(self, lmax=None):
-        """Solve for the p,q coefficients of the entire cluster around the origin
+        """Solve for the p,q coefficients of the entire cluster around the origin.
 
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (default: self.lmax)
@@ -612,7 +612,7 @@ class cluster:
         )
 
     def solve(self, wavelength=None, source=None):
-        """Solve for the p,q incident and scattering coefficients
+        """Solve for the p,q incident and scattering coefficients.
 
         Arguments:
             wavelength   wavelength to solve at (default: current wavelength)

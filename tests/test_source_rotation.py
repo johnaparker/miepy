@@ -1,4 +1,4 @@
-"""Tests for rotation of incident source expansion coefficients"""
+"""Tests for rotation of incident source expansion coefficients."""
 
 import numpy as np
 
@@ -9,10 +9,9 @@ um = 1e-6
 
 
 def test_plane_wave_rotation():
-    """A rotated plane-wave: analytic compared to rotated expansion coefficients"""
+    """A rotated plane-wave: analytic compared to rotated expansion coefficients."""
     Nx = 6
     Ny = 6
-    Nz = 6
     x = np.linspace(-100 * nm, 100 * nm, Nx)
     y = np.linspace(-100 * nm, 100 * nm, Nx)
     z = np.linspace(-100 * nm, 100 * nm, Ny)

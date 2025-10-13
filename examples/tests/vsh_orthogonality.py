@@ -24,7 +24,7 @@ def r_dependence():
     # rvals = np.linspace(5000*nm, 8000*nm, len(y))
     for i, r in enumerate(tqdm(rvals)):
         E1 = N(r, THETA, PHI, k)
-        E2 = M(r, THETA, PHI, k)
+        M(r, THETA, PHI, k)
 
         integrand = np.sum(E1 * np.conj(E1), axis=0)
         integral = miepy.vsh.misc.simps_2d(tau, phi, integrand).real

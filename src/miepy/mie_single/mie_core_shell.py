@@ -1,4 +1,4 @@
-"""mie_core_shell calculates the scattering coefficients of a core-shell structure using Mie theory"""
+"""mie_core_shell calculates the scattering coefficients of a core-shell structure using Mie theory."""
 
 import numpy as np
 
@@ -12,7 +12,7 @@ R3 = riccati_3_single
 
 
 def M_matrix(m1, m2, x, y, mu, mu1, mu2, n):
-    """M matrix in core_shell solver"""
+    """M matrix in core_shell solver."""
     M = np.zeros([8, 8, len(m1)], dtype=complex)
     z = np.zeros(len(m1))
     M[0] = np.array([z, z, -m2 * R1(n, m1 * x)[0], z, m1 * R1(n, m2 * x)[0], z, -m1 * 1j * R2(n, m2 * x)[0], z])
@@ -28,7 +28,7 @@ def M_matrix(m1, m2, x, y, mu, mu1, mu2, n):
 
 
 def c_values(m2, y, mu2, n):
-    """C array in core_shell solver"""
+    """C array in core_shell solver."""
     z = np.zeros(len(m2))
     c = np.zeros([8, len(m2)], dtype=complex)
     c = np.array([z, z, z, z, -m2 * R1(n, y)[1], m2 * R1(n, y)[0], -mu2 * R1(n, y)[0], mu2 * R1(n, y)[1]])
@@ -44,7 +44,7 @@ class single_mie_core_shell:
         material_out     shell material
         wavelength[N]    wavelength(s) to solve the system at
         lmax             maximum number of orders to use in angular momentum expansion
-        medium           material medium (must be non-absorbing; defaults to vacuum)
+        medium           material medium (must be non-absorbing; defaults to vacuum).
         """
         self.radius_in = radius_in
         self.radius_out = radius_out
@@ -85,7 +85,7 @@ class single_mie_core_shell:
         self.computed = False
 
     def solve(self):
-        """Solve the system"""
+        """Solve the system."""
         mat = self.material_data
 
         m1 = mat["n_in"] / mat["n_b"]
@@ -110,13 +110,13 @@ class single_mie_core_shell:
         return self.an, self.bn
 
     def cross_sections(self):
-        """Return the 3 cross-sections: (Scattering, Absorbption, Extinction)"""
+        """Return the 3 cross-sections: (Scattering, Absorbption, Extinction)."""
         if not self.computed:
             self.solve()
         return miepy.cross_sections(*self.scattering_properties)
 
     def cross_sections_per_multipole(self):
-        """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)"""
+        """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)."""
         if not self.computed:
             self.solve()
         return miepy.flux.cross_sections(
@@ -126,7 +126,7 @@ class single_mie_core_shell:
         )
 
     def E_field(self, index=None, lmax=None):
-        """Return an electric field function E(r,theta,phi) for a given wavenumber index"""
+        """Return an electric field function E(r,theta,phi) for a given wavenumber index."""
         if lmax is None:
             lmax = self.lmax
         if index is None:
@@ -156,7 +156,7 @@ class single_mie_core_shell:
         return E_func
 
     def H_field(self, index=None, lmax=None):
-        """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
+        """Return a magnetic field function H(r,theta,phi) for a given wavenumber index."""
         if lmax is None:
             lmax = self.lmax
         if index is None:
