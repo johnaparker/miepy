@@ -6,7 +6,13 @@ set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/triplets"
 project(miepy LANGUAGES CXX)
 
 # Find Python
-find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+# Windows needs full Development to link against Python DLL with MinGW
+# Unix uses Development.Module which doesn't link libpython
+if(WIN32)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+else()
+  find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+endif()
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 14)
