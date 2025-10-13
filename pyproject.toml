@@ -1,6 +1,6 @@
 [project]
 name = "miepy"
-version = "1.0.0"
+version = "1.0.1"
 description = "Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
 readme = "README.md"
 authors = [
