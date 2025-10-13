@@ -9,6 +9,12 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
     # macOS: statically link GCC runtime libraries (except OpenMP)
     LDFLAGS ?= -static-libgfortran -static-libgcc -static-libquadmath
+else ifneq ($(findstring MINGW,$(UNAME_S)),)
+    # Windows (MSYS2/MinGW): statically link GCC runtime libraries
+    LDFLAGS ?= -static-libgfortran -static-libgcc -static-libquadmath
+else ifneq ($(findstring MSYS,$(UNAME_S)),)
+    # Windows (MSYS2): statically link GCC runtime libraries
+    LDFLAGS ?= -static-libgfortran -static-libgcc -static-libquadmath
 endif
 
 sources =  Parameters.f90\
