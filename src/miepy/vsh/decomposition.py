@@ -5,14 +5,19 @@
 
 import numpy as np
 
-from miepy import coordinates, vsh
+from miepy import coordinates
 from miepy.cpp.decomposition import integrate_phase
+from miepy.cpp.vsh_functions import Emn
+
+from . import misc
+from .mode_indices import lmax_to_rmax, mode_indices
+from .vsh_functions import VSH, VSH_far, vsh_mode, vsh_normalization_values
 
 
 # TODO: this should be called by the point_matching methods below directly
 def sampling_from_lmax(lmax, method):
     """Determine the required sampling from lmax for point matching"""
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
     N = max(3, int(np.ceil(rmax**0.5)))
 
     if method == "far":
@@ -83,7 +88,7 @@ def far_field_point_matching(source, position, radius, k, lmax, sampling=6):
     Z = points[2]
     _, THETA, PHI = coordinates.cart_to_sph(X, Y, Z, origin=position)
 
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
 
     E_src = np.zeros([2, Npoints], dtype=complex)
     E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
@@ -98,9 +103,9 @@ def far_field_point_matching(source, position, radius, k, lmax, sampling=6):
     phase = k * np.einsum("ij,i", rhat, delta)
     E_src *= np.exp(1j * phase)
 
-    for i, n, m in vsh.mode_indices(lmax):
-        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.vsh_mode.ingoing)
-        Emn_val = vsh.Emn(m, n)
+    for i, n, m in mode_indices(lmax):
+        Nfunc, Mfunc = VSH(n, m, mode=vsh_mode.ingoing)
+        Emn_val = Emn(m, n)
         E_vsh[..., 0, i] = -1j * Emn_val * Nfunc(radius, THETA, PHI, k)[1:]
         E_vsh[..., 1, i] = -1j * Emn_val * Mfunc(radius, THETA, PHI, k)[1:]
 
@@ -131,7 +136,7 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
     Z = points[2]
     RAD, THETA, PHI = coordinates.cart_to_sph(X, Y, Z + 1e-9, origin=position)
 
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
 
     E_src = source.E_field(X, Y, Z, k)[:2]
     H_src = source.H_field(X, Y, Z, k)[:2]
@@ -139,9 +144,9 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
     # H_src = E_src[::-1]
     E_vsh = np.zeros([2, Npoints, 2, rmax], dtype=complex)
 
-    for i, n, m in vsh.mode_indices(lmax):
-        Nfunc, Mfunc = vsh.VSH(n, m, mode=vsh.vsh_mode.incident)
-        Emn_val = vsh.Emn(m, n)
+    for i, n, m in mode_indices(lmax):
+        Nfunc, Mfunc = VSH(n, m, mode=vsh_mode.incident)
+        Emn_val = Emn(m, n)
         E_vsh[..., 0, i] = -1j * Emn_val * coordinates.vec_sph_to_cart(Nfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
         E_vsh[..., 1, i] = -1j * Emn_val * coordinates.vec_sph_to_cart(Mfunc(RAD, THETA, PHI, k), THETA, PHI)[:2]
 
@@ -155,7 +160,7 @@ def near_field_point_matching(source, position, size, k, lmax, sampling):
     return np.reshape(p_src, [2, rmax])
 
 
-def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoing, spherical=False):
+def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh_mode.outgoing, spherical=False):
     """Project fields onto a given mode using integral method
 
     Arguments:
@@ -175,7 +180,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     tau = np.linspace(-1, 1, sampling)
     phi = np.linspace(0, 2 * np.pi, 2 * sampling)
 
-    N, M = vsh.VSH(n, m, mode)
+    N, M = VSH(n, m, mode)
     if ftype == "electric":
         base_function = N
     elif ftype == "magnetic":
@@ -186,24 +191,24 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     if not spherical:
         E = coordinates.vec_cart_to_sph(E, THETA, PHI)
 
-    Emn_val = vsh.Emn(m, n)
+    Emn_val = Emn(m, n)
 
-    if mode == vsh.vsh_mode.outgoing:
+    if mode == vsh_mode.outgoing:
         factor = 1 / (1j * Emn_val)
-    elif mode in (vsh.vsh_mode.incident, vsh.vsh_mode.ingoing):
+    elif mode in (vsh_mode.incident, vsh_mode.ingoing):
         factor = -1 / (1j * Emn_val)
     else:
         raise ValueError(f"{mode} is not a valid type of mode")
 
-    norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
+    norm = vsh_normalization_values(mode, ftype, n, m, r, k)
 
     proj_data = np.sum(E * np.conj(vsh_data), axis=0)
-    integrated = vsh.misc.trapz_2d(tau, phi, proj_data)
+    integrated = misc.trapz_2d(tau, phi, proj_data)
 
     return factor * integrated / norm
 
 
-def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling=30, mode=vsh.vsh_mode.incident):
+def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling=30, mode=vsh_mode.incident):
     """Project source object onto a given mode using integral method
 
     Arguments:
@@ -226,7 +231,7 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling
     return project_fields_onto(E, r, k, ftype, n, m, mode, spherical=False)
 
 
-def integral_project_fields(E, r, k, lmax, mode=vsh.vsh_mode.outgoing, spherical=False):
+def integral_project_fields(E, r, k, lmax, mode=vsh_mode.outgoing, spherical=False):
     """Decompose fields into the VSHs using integral method
     Returns p[2,rmax]
 
@@ -238,17 +243,17 @@ def integral_project_fields(E, r, k, lmax, mode=vsh.vsh_mode.outgoing, spherical
         mode: vsh_mode     type of VSH (outgoing, incident) (default: outgoing)
         spherical          If true, E should be in spherical components (default: False (cartesian))
     """
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
     p = np.zeros([2, rmax], dtype=complex)
 
-    for i, n, m in vsh.mode_indices(lmax):
+    for i, n, m in mode_indices(lmax):
         p[0, i] = integral_project_fields_onto(E, r, k, "electric", n, m, mode, spherical)
         p[1, i] = integral_project_fields_onto(E, r, k, "magnetic", n, m, mode, spherical)
 
     return p
 
 
-def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vsh.vsh_mode.incident):
+def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vsh_mode.incident):
     """Decompose a source object into VSHs using integral method
     Returns p[2,rmax]
 
@@ -260,10 +265,10 @@ def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vs
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
     p = np.zeros([2, rmax], dtype=complex)
 
-    for i, n, m in vsh.mode_indices(lmax):
+    for i, n, m in mode_indices(lmax):
         p[0, i] = project_source_onto(src, k, "electric", n, m, origin, sampling, mode)
         p[1, i] = project_source_onto(src, k, "magnetic", n, m, origin, sampling, mode)
 
@@ -283,7 +288,7 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi / 2):
         sampling   number of points to sample between 0 and pi (default: 20)
         theta_0    integral performed from theta_0 to pi (default: pi/2)
     """
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
 
     theta = np.linspace(theta_0, np.pi, sampling)
     phi = np.linspace(0, 2 * np.pi, 2 * sampling)
@@ -295,10 +300,10 @@ def integral_project_source_far(src, k, lmax, sampling=20, theta_0=np.pi / 2):
     p0 = np.zeros((2, rmax) + THETA.shape, dtype=complex)
     E0 = src.E0(k) * np.exp(1j * src.phase)
 
-    for i, n, m in vsh.mode_indices(lmax):
-        Emn_val = vsh.Emn(m, n)
+    for i, n, m in mode_indices(lmax):
+        Emn_val = Emn(m, n)
         factor = E0 * k**2 * 1j ** (2 - n) * np.abs(Emn_val) / (4 * np.pi)
-        N, M = vsh.VSH_far(n, m, vsh.vsh_mode.ingoing)
+        N, M = VSH_far(n, m, vsh_mode.ingoing)
 
         E = N(rad, THETA, PHI, k)
         U = np.sum(Esrc * np.conjugate(E), axis=0) * np.sin(THETA)

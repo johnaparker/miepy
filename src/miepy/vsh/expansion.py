@@ -2,7 +2,11 @@
 
 import numpy as np
 
-from miepy import vsh
+from miepy.cpp.vsh_functions import Emn
+
+from . import special
+from .mode_indices import mode_indices, rmax_to_lmax
+from .vsh_functions import VSH, vsh_mode
 
 
 # TODO: move k argument to field function for consistency
@@ -15,18 +19,18 @@ def expand_E(p, k, mode):
         k                  wavenumber
         mode: vsh_mode     type of VSH (outgoing, incident, interior, ingoing)
     """
-    lmax = vsh.rmax_to_lmax(p.shape[1])
-    factor = 1j if mode == vsh.vsh_mode.outgoing else -1j
+    lmax = rmax_to_lmax(p.shape[1])
+    factor = 1j if mode == vsh_mode.outgoing else -1j
 
     # TODO: depends on theta.shape
     def f(rad, theta, phi):
         (rad, theta, phi) = map(lambda A: np.asarray(A, dtype=float), (rad, theta, phi))
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
 
-        for i, n, m in vsh.mode_indices(lmax):
-            Nfunc, Mfunc = vsh.VSH(n, m, mode=mode)
+        for i, n, m in mode_indices(lmax):
+            Nfunc, Mfunc = VSH(n, m, mode=mode)
 
-            Emn_val = vsh.Emn(m, n)
+            Emn_val = Emn(m, n)
 
             N = Nfunc(rad, theta, phi, k)
             M = Mfunc(rad, theta, phi, k)
@@ -46,7 +50,7 @@ def expand_E_far(p_scat, k):
         p_scat[2,rmax]    scattering coefficients
         k                 wavenumber
     """
-    lmax = vsh.rmax_to_lmax(p_scat.shape[1])
+    lmax = rmax_to_lmax(p_scat.shape[1])
 
     # TODO: depends on theta.shape
     def f(rad, theta, phi):
@@ -55,11 +59,11 @@ def expand_E_far(p_scat, k):
         E_sph = np.zeros(shape=(3,) + theta.shape, dtype=complex)
         factor = np.exp(1j * k * rad) / (k * rad)
 
-        for i, n, m in vsh.mode_indices(lmax):
-            Emn_val = vsh.Emn(m, n)
+        for i, n, m in mode_indices(lmax):
+            Emn_val = Emn(m, n)
 
-            pi = vsh.special.pi_func(n, m, theta)
-            tau = vsh.special.tau_func(n, m, theta)
+            pi = special.pi_func(n, m, theta)
+            tau = special.tau_func(n, m, theta)
 
             E_sph[1] += (
                 1j * factor * Emn_val * (-1j) ** (n) * (p_scat[0, i] * tau + p_scat[1, i] * pi) * np.exp(1j * m * phi)

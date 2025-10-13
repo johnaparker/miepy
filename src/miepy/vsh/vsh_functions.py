@@ -4,18 +4,20 @@ from math import factorial
 
 import numpy as np
 
-from miepy import vsh
-from miepy.cpp.vsh_functions import Emn, vsh_mode
+from miepy.cpp.vsh_functions import Emn as Emn
+from miepy.cpp.vsh_functions import vsh_mode as vsh_mode
+
+from . import special
 
 
 def get_zn(mode):
     """Determine the zn function for a given mode"""
     if mode is vsh_mode.outgoing:
-        return vsh.special.spherical_hn
+        return special.spherical_hn
     elif mode is vsh_mode.ingoing:
-        return vsh.special.spherical_hn_2
+        return special.spherical_hn_2
     elif mode in (vsh_mode.incident, vsh_mode.interior):
-        return vsh.special.spherical_jn
+        return special.spherical_jn
     else:
         raise TypeError(f"{mode} is not a valid type of mode")
 
@@ -44,9 +46,9 @@ def VSH(n, m, mode=vsh_mode.outgoing):
 
     returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 spherical components
     """
-    pi_f = vsh.special.pi_func
-    tau_f = vsh.special.tau_func
-    Pnm = vsh.special.associated_legendre
+    pi_f = special.pi_func
+    tau_f = special.tau_func
+    Pnm = special.associated_legendre
 
     zn = get_zn(mode)
 
@@ -85,10 +87,10 @@ def VSH_far(n, m, mode=vsh_mode.outgoing):
 
     returns (N(r,θ,ϕ,k) -> [2,...], M(r,θ,ϕ,k) -> [2,...]), the 2 theta/phi components
     """
-    pi_f = vsh.special.pi_func
-    tau_f = vsh.special.tau_func
+    pi_f = special.pi_func
+    tau_f = special.tau_func
     zn = get_zn_far(mode)
-    sign = -1 if mode is vsh.vsh_mode.ingoing else 1
+    sign = -1 if mode is vsh_mode.ingoing else 1
 
     def N(r, theta, phi, k):
         factor = sign * zn(n, k * r) * np.exp(1j * m * phi)

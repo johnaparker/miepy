@@ -3,7 +3,10 @@
 import numpy as np
 
 import miepy.coordinates as coordinates
-from miepy import vsh
+from miepy.cpp.vsh_functions import vsh_mode
+
+from .mode_indices import lmax_to_rmax, mode_indices, rmax_to_lmax
+from .vsh_translation import vsh_translation
 
 
 # TODO: equations for rmax, r, lmax (here and elsewhere) should be a function call
@@ -20,12 +23,12 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
     """
     Nparticles = positions.shape[0]
     rmax_in = p_scat.shape[-1]
-    lmax_in = vsh.rmax_to_lmax(rmax_in)
+    lmax_in = rmax_to_lmax(rmax_in)
 
     if lmax is None:
         lmax = lmax_in
 
-    rmax = vsh.lmax_to_rmax(lmax)
+    rmax = lmax_to_rmax(lmax)
     p_cluster = np.zeros([2, rmax], dtype=complex)
 
     for i in range(Nparticles):
@@ -37,12 +40,12 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
         rij = origin - positions[i]
         rad, theta, phi = coordinates.cart_to_sph(*rij)
 
-        for r, n, m in vsh.mode_indices(lmax):
-            for rp, v, u in vsh.mode_indices(lmax_in):
+        for r, n, m in mode_indices(lmax):
+            for rp, v, u in mode_indices(lmax_in):
                 a = p_scat[i, 0, rp]
                 b = p_scat[i, 1, rp]
 
-                A, B = vsh.vsh_translation(m, n, u, v, rad, theta, phi, k, vsh.vsh_mode.incident)
+                A, B = vsh_translation(m, n, u, v, rad, theta, phi, k, vsh_mode.incident)
 
                 p_cluster[0, r] += a * A + b * B
                 p_cluster[1, r] += a * B + b * A
