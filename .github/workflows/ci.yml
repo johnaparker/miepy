@@ -109,8 +109,8 @@ jobs:
             VCPKG_OVERLAY_TRIPLETS={project}/vcpkg/triplets
             MACOSX_DEPLOYMENT_TARGET=15.0
             CMAKE_ARGS="-DCMAKE_C_COMPILER=${{ env.CC }} -DCMAKE_CXX_COMPILER=${{ env.CXX }} -DCMAKE_Fortran_COMPILER=${{ env.FC }} -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_TRIPLET }}"
-          # Windows: Bootstrap vcpkg
-          CIBW_BEFORE_BUILD_WINDOWS: cd {project}/vcpkg && bash bootstrap-vcpkg.sh
+          # Windows: Install delvewheel and bootstrap vcpkg
+          CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel && cd {project}/vcpkg && bash bootstrap-vcpkg.sh
           # Windows: Set environment variables for build
           CIBW_ENVIRONMENT_WINDOWS: >
             PATH="C:\\msys64\\mingw64\\bin;$PATH"
