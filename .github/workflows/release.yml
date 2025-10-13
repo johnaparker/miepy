@@ -125,7 +125,14 @@ jobs:
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/tests
-  
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: ./wheelhouse/*.whl
+          retention-days: 7
+
   publish:
     name: Publish to PyPI
     needs: [build-sdist, build-wheels]
@@ -147,7 +154,7 @@ jobs:
       - name: Publish to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: uv publish dist-all/*
+        run: uv publish --check-url https://pypi.org/simple/ dist-all/*
 
   release:
     name: Create GitHub Release
