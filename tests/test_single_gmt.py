@@ -1,10 +1,8 @@
-"""
-Comparison of single Mie theory and GMT
-"""
+"""Comparison of single Mie theory and GMT"""
 
 import numpy as np
+
 import miepy
-from tqdm import tqdm
 
 nm = 1e-9
 
@@ -50,7 +48,7 @@ for i, wavelength in enumerate(wavelengths):
 
 
 def test_scattering():
-    """compare scattering cross-section of GMT and single Mie theory"""
+    """Compare scattering cross-section of GMT and single Mie theory"""
     L2 = np.linalg.norm(scat - S) / scat.shape[0]
     avg = np.average(np.abs(S) + np.abs(scat)) / 2
 
@@ -58,7 +56,7 @@ def test_scattering():
 
 
 def test_absoprtion():
-    """compare absoprtion cross-section of GMT and single Mie theory"""
+    """Compare absoprtion cross-section of GMT and single Mie theory"""
     L2 = np.linalg.norm(absorb - A) / scat.shape[0]
     avg = np.average(np.abs(A) + np.abs(absorb)) / 2
 
@@ -66,7 +64,7 @@ def test_absoprtion():
 
 
 def test_force():
-    """compare radiation force of GMT and single Mie theory"""
+    """Compare radiation force of GMT and single Mie theory"""
     L2 = np.linalg.norm(force[2] - Fz) / Fz.shape[0]
     avg = np.average(np.abs(force[2]) + np.abs(Fz)) / 2
 

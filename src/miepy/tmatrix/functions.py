@@ -1,5 +1,6 @@
-import miepy
 import numpy as np
+
+import miepy
 
 
 def tmatrix_reduce_lmax(tmatrix, lmax):
@@ -12,12 +13,11 @@ def tmatrix_reduce_lmax(tmatrix, lmax):
     Returns:
         A new tmatrix[2,rmax',2,rmax']
     """
-
     rmax_original = tmatrix.shape[1]
     lmax_original = miepy.vsh.rmax_to_lmax(rmax_original)
 
     if lmax > lmax_original:
-        raise ValueError("cannot reduce tmatrix to lmax={lmax} since it is already smaller than this".format(lmax=lmax))
+        raise ValueError(f"cannot reduce tmatrix to lmax={lmax} since it is already smaller than this")
 
     rmax = miepy.vsh.lmax_to_rmax(lmax)
 

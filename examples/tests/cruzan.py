@@ -1,9 +1,10 @@
-import numpy as np
-import miepy
-from sympy.physics.wigner import wigner_3j, gaunt
-from scipy import special
-import math
 from functools import lru_cache
+
+import numpy as np
+from scipy import special
+from sympy.physics.wigner import gaunt
+
+import miepy
 
 # w = miepy.vsh.wigner_3j(1,1,1, 1,-1,0)
 # print(w)
@@ -14,8 +15,7 @@ from functools import lru_cache
 
 @lru_cache(None)
 def gaunt(m, n, u, v, p):
-    """gaunt coefficient"""
-
+    """Gaunt coefficient"""
     f = lambda n: special.gamma(n + 1)
     numerator = f(n + m) * f(v + u) * f(p - m - u)
     denominator = f(n - m) * f(v - u) * f(p + m + u)
@@ -29,8 +29,7 @@ def gaunt(m, n, u, v, p):
 
 @lru_cache(None)
 def b_func(m, n, u, v, p):
-    """b function"""
-
+    """B function"""
     f = lambda n: special.gamma(n + 1)
     numerator = f(n + m) * f(v + u) * f(p - m - u + 1)
     denominator = f(n - m) * f(v - u) * f(p + m + u + 1)

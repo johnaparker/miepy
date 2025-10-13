@@ -1,8 +1,7 @@
-"""
-Defines function to calculate scattering coefficients of a cluster
-"""
+"""Defines function to calculate scattering coefficients of a cluster"""
 
 import numpy as np
+
 import miepy.coordinates as coordinates
 from miepy import vsh
 
@@ -19,7 +18,6 @@ def cluster_coefficients(positions, p_scat, k, origin, lmax=None):
         origin           position around which to calculate the cluster coefficients
         lmax             (optional) compute scattering for up to lmax terms (default: lmax of input p/q)
     """
-
     Nparticles = positions.shape[0]
     rmax_in = p_scat.shape[-1]
     lmax_in = vsh.rmax_to_lmax(rmax_in)

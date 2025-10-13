@@ -1,10 +1,10 @@
-"""
-Example of how to make a dielectric material and plot scattering,
+"""Example of how to make a dielectric material and plot scattering,
 absorption, and scattering per multipole
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import miepy
 
 nm = 1e-9

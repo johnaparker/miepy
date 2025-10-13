@@ -1,6 +1,8 @@
-import miepy
-from .particle_base import particle
 import numpy as np
+
+import miepy
+
+from .particle_base import particle
 
 
 class regular_prism(particle):

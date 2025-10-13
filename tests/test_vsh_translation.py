@@ -1,10 +1,8 @@
-"""
-tests for the VSH translation functions
-"""
+"""tests for the VSH translation functions"""
 
 import numpy as np
+
 import miepy
-from math import factorial
 
 r_ji = 1
 theta_ji = 0.7

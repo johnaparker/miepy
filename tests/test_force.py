@@ -1,12 +1,9 @@
-"""
-Comapre analytic force and torque expressions to integrated Maxwell stress tensor
-"""
+"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor"""
 
 import numpy as np
-import miepy
-from math import factorial
 from tqdm import tqdm
-from scipy import constants
+
+import miepy
 
 nm = 1e-9
 
@@ -40,7 +37,7 @@ for i, separation in enumerate(tqdm(separations)):
 
 
 def test_force():
-    """comapre MST force to analytic force"""
+    """Comapre MST force to analytic force"""
     L2 = np.linalg.norm(analytic_force - mst_force, axis=1) / analytic_force.shape[1]
     avg = np.average(np.abs(analytic_force) + np.abs(mst_force), axis=1) / 2
 
@@ -48,7 +45,7 @@ def test_force():
 
 
 def test_torque():
-    """comapre MST torque to analytic torque"""
+    """Comapre MST torque to analytic torque"""
     L2 = np.linalg.norm(analytic_torque - mst_torque, axis=1) / analytic_torque.shape[1]
     avg = np.average(np.abs(analytic_torque) + np.abs(mst_torque), axis=1) / 2
 
@@ -63,14 +60,14 @@ if __name__ == "__main__":
     for i in range(3):
         comp = ["x", "y", "z"][i]
 
-        axes[0, i].plot(separations / nm, mst_force[i], "o", color="C{}".format(i), label="Numerical Stress Tensor")
-        axes[1, i].plot(separations / nm, mst_torque[i], "o", color="C{}".format(i), label="Numerical Stress Tensor")
+        axes[0, i].plot(separations / nm, mst_force[i], "o", color=f"C{i}", label="Numerical Stress Tensor")
+        axes[1, i].plot(separations / nm, mst_torque[i], "o", color=f"C{i}", label="Numerical Stress Tensor")
 
-        axes[0, i].plot(separations / nm, analytic_force[i], color="C{}".format(i), label="Analytic Equation")
-        axes[1, i].plot(separations / nm, analytic_torque[i], color="C{}".format(i), label="Analytic Equation")
+        axes[0, i].plot(separations / nm, analytic_force[i], color=f"C{i}", label="Analytic Equation")
+        axes[1, i].plot(separations / nm, analytic_torque[i], color=f"C{i}", label="Analytic Equation")
 
-        axes[0, i].set_title(label="F{comp}".format(comp=comp), weight="bold")
-        axes[1, i].set_title(label="T{comp}".format(comp=comp), weight="bold")
+        axes[0, i].set_title(label=f"F{comp}", weight="bold")
+        axes[1, i].set_title(label=f"T{comp}", weight="bold")
 
     for ax in axes.flatten():
         ax.axhline(y=0, color="black", linestyle="--")

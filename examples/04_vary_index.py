@@ -1,12 +1,10 @@
-"""
-Scattering intensity of a dielectric sphere for variable wavelength and dielectric constant
-"""
+"""Scattering intensity of a dielectric sphere for variable wavelength and dielectric constant"""
 
-import numpy as np
 import matplotlib.pyplot as plt
-import miepy
-import matplotlib.cm as cm
+import numpy as np
 from tqdm import tqdm
+
+import miepy
 
 # Variable wavelengths and core index of refraction
 N_index = 250

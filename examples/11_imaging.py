@@ -1,10 +1,11 @@
-import numpy as np
-import miepy
 import matplotlib.pyplot as plt
+import numpy as np
+
+import miepy
 
 
 def hexagonal_lattice_layers(L):
-    """return a hexagonal lattice with unit spacing and L layers"""
+    """Return a hexagonal lattice with unit spacing and L layers"""
     k1 = np.array([1, 0, 0], dtype=float)
     k2 = np.array([np.cos(np.pi / 3), np.sin(np.pi / 3), 0], dtype=float)
 

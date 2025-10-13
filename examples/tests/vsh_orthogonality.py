@@ -1,9 +1,9 @@
-import numpy as np
-import miepy
 import matplotlib.pyplot as plt
-from tqdm import tqdm
-from math import factorial
+import numpy as np
 from scipy.integrate import dblquad
+from tqdm import tqdm
+
+import miepy
 
 nm = 1e-9
 

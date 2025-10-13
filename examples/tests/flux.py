@@ -1,18 +1,18 @@
-"""
-Test to ensure that scattering cross-section computed via 2 different methods yields identical results:
+"""Test to ensure that scattering cross-section computed via 2 different methods yields identical results:
 
-    1. Numerical integration of Poynting vector over sphere
-    2. Sum over a,b coefficients of the cluster
+1. Numerical integration of Poynting vector over sphere
+2. Sum over a,b coefficients of the cluster
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from tqdm import tqdm
+
 import miepy
 
 
 def sph_to_cart(r, theta, phi, origin=[0, 0, 0]):
-    """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
     x = origin[0] + r * np.sin(theta) * np.cos(phi)
     y = origin[1] + r * np.sin(theta) * np.sin(phi)
     z = origin[2] + r * np.cos(theta)
@@ -21,15 +21,13 @@ def sph_to_cart(r, theta, phi, origin=[0, 0, 0]):
 
 
 def sphere_mesh(sampling):
-    """
-    Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
+    """Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
     with the format required by the project and decompose functions
     Returns (THETA,PHI) meshgrids
 
     Arguments:
         sampling   number of points to sample between 0 and pi
     """
-
     phi = np.linspace(0, 2 * np.pi, 2 * sampling)
     tau = np.linspace(-1, 1, sampling)
     theta = np.arccos(tau)

@@ -1,5 +1,5 @@
 import numpy as np
-import miepy
+
 from miepy.sources import beam
 
 
@@ -7,10 +7,9 @@ class phase_only_slm(beam):
     """Phase-modulate a beam with a given phase function"""
 
     def __init__(self, beam, slm):
-        """
-        Arguments:
-            beam      miepy.sources.beam object
-            slm       slm(theta,phi)->(phase) function for modulated phase
+        """Arguments:
+        beam      miepy.sources.beam object
+        slm       slm(theta,phi)->(phase) function for modulated phase
         """
         super().__init__(
             power=beam.power,

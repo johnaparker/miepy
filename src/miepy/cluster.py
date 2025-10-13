@@ -1,12 +1,10 @@
-"""
-The Generalized Mie Theory (GMT) for a collection of particles
-"""
+"""The Generalized Mie Theory (GMT) for a collection of particles"""
+
+from functools import partial
 
 import numpy as np
+
 import miepy
-from miepy.special_functions import riccati_1, riccati_2, vector_spherical_harmonics
-from miepy.utils import atleast
-from functools import partial
 
 
 # TODO: make several properties... such as wavelength, source, position, etc.
@@ -381,7 +379,6 @@ class cluster:
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (defult: self.lmax)
         """
-
         if lmax is None:
             lmax = self.lmax
 
@@ -392,7 +389,6 @@ class cluster:
 
     def cross_sections(self):
         """Compute the scattering, absorption, and extinction cross-section of the cluster"""
-
         Cscat = 0
         Cabs = 0
         Cext = 0
@@ -419,7 +415,6 @@ class cluster:
         Arguments:
             i    particle index
         """
-
         C = self.cross_sections_per_multipole_of_particle(i)
         return miepy.flux.cross_sections(*[np.sum(A) for A in C])
 
@@ -432,7 +427,6 @@ class cluster:
 
         Returns: F[3]
         """
-
         if source:
             p_inc = self.p_inc
         else:
@@ -457,7 +451,6 @@ class cluster:
 
         Returns: T[3]
         """
-
         if source:
             p_inc = self.p_inc
         else:
@@ -509,9 +502,7 @@ class cluster:
         """
         if type(self.source) != miepy.sources.point_dipole:
             raise ValueError(
-                "The source must be a single point dipole to compute the local density of states, not of type '{}'".format(
-                    type(self.source)
-                )
+                f"The source must be a single point dipole to compute the local density of states, not of type '{type(self.source)}'"
             )
 
         factor = -2 / np.pi * self.material_data.eps_b
@@ -582,11 +573,10 @@ class cluster:
     def update(self, position=None, orientation=None):
         """Update properties of the particles
 
-        Arguments
+        Arguments:
             position[N,3]     new particle positions
             orientation[N]    new particle orientations (array of quaternions)
         """
-
         if position is not None:
             self.position = np.asarray(np.atleast_2d(position), dtype=float)
 
@@ -614,7 +604,6 @@ class cluster:
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (default: self.lmax)
         """
-
         if lmax is None:
             lmax = self.lmax
 
@@ -623,7 +612,7 @@ class cluster:
         )
 
     def solve(self, wavelength=None, source=None):
-        """solve for the p,q incident and scattering coefficients
+        """Solve for the p,q incident and scattering coefficients
 
         Arguments:
             wavelength   wavelength to solve at (default: current wavelength)

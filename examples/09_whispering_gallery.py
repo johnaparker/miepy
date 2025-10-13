@@ -1,9 +1,8 @@
-"""
-demonstration of a whispering gallery mode in a single dielectric sphere excited by a point-dipole near-field
-"""
+"""demonstration of a whispering gallery mode in a single dielectric sphere excited by a point-dipole near-field"""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import miepy
 
 nm = 1e-9

@@ -1,8 +1,10 @@
-import miepy
-import numpy as np
-from timer import time_function
 from functools import partial
+
+import numpy as np
 from termcolor import colored
+from timer import time_function
+
+import miepy
 
 
 def display(name, Tcpp, Tpy):

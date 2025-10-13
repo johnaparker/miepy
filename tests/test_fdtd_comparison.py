@@ -1,5 +1,4 @@
-"""
-Comparison to FDTD for the following simulation:
+"""Comparison to FDTD for the following simulation:
 
     gold nanoparticle dimer
     radius: 75 nm
@@ -12,6 +11,7 @@ Compares cross-sections and forces
 """
 
 import numpy as np
+
 import miepy
 
 nm = 1e-9
@@ -316,7 +316,7 @@ for i, wavelength in enumerate(wavelengths):
 
 
 def test_fdtd_cross_sections(plot=False):
-    """compare cross-sections to fdtd"""
+    """Compare cross-sections to fdtd"""
     if not plot:
         L2 = np.linalg.norm(scat - gmtC[0]) / scat.shape[0]
         assert np.all(L2 < 8e-15)
@@ -342,7 +342,7 @@ def test_fdtd_cross_sections(plot=False):
 
 
 def test_fdtd_forces(plot=False):
-    """compare forces to fdtd"""
+    """Compare forces to fdtd"""
     if not plot:
         L2 = np.linalg.norm(Fx - gmtF[0]) / Fx.shape[0]
         assert np.all(L2 < 5e-27)

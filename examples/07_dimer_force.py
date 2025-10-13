@@ -1,11 +1,10 @@
-"""
-GMT for dimer, varying the separation distance between the dimer pair
-"""
+"""GMT for dimer, varying the separation distance between the dimer pair"""
 
-import numpy as np
 import matplotlib.pyplot as plt
-import miepy
+import numpy as np
 from tqdm import tqdm
+
+import miepy
 
 nm = 1e-9
 

@@ -1,6 +1,7 @@
-import miepy
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
+import miepy
 
 x = np.linspace(-2, 2, 70)
 y = np.linspace(-2, 2, 70)

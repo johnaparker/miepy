@@ -1,13 +1,11 @@
-"""
-Miscellaneous functions related to vsh
-"""
+"""Miscellaneous functions related to vsh"""
 
 import numpy as np
 from scipy import special
 from scipy.integrate import simpson
-from miepy.cpp.decomposition import trapz, trapz_2d
-import miepy
+
 from miepy.constants import Z0
+from miepy.cpp.decomposition import trapz_2d
 
 
 def simps_2d(xd, yd, fd):

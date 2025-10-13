@@ -1,16 +1,14 @@
-"""
-performance test
-"""
+"""performance test"""
 
-import numpy as np
-import matplotlib.pyplot as plt
-import miepy
-from tqdm import tqdm
 from functools import partial
-from scipy.sparse.linalg import bicg, bicgstab
-from miepy.interactions import solve_linear_system
-from topics.photonic_clusters.create_lattice import hexagonal_lattice_particles
+
+import matplotlib.pyplot as plt
+import numpy as np
 from timer import time_function
+from topics.photonic_clusters.create_lattice import hexagonal_lattice_particles
+
+import miepy
+from miepy.interactions import solve_linear_system
 
 nm = 1e-9
 

@@ -1,1 +1,1 @@
-from .microscope import microscope, cluster_microscope
+from .microscope import cluster_microscope, microscope

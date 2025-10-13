@@ -1,7 +1,8 @@
 import numpy as np
+from scipy.interpolate import RectBivariateSpline
+
 import miepy
 from miepy.sources import beam
-from scipy.interpolate import RectBivariateSpline
 
 
 def scalar_dft_beam(
@@ -17,8 +18,7 @@ def scalar_dft_beam(
     phi=0,
     standing=False,
 ):
-    """
-    Scalar-function version of the DFT beam
+    """Scalar-function version of the DFT beam
 
     Arguments:
         Ufunc    (x,y)->scalar function for the complex scalar field
@@ -47,9 +47,7 @@ def scalar_dft_beam(
 
 
 class dft_beam(beam):
-    """
-    Use DFT on fields in an xy-plane to produce a beam
-    """
+    """Use DFT on fields in an xy-plane to produce a beam"""
 
     def __init__(
         self,
@@ -64,11 +62,10 @@ class dft_beam(beam):
         phi=0,
         standing=False,
     ):
-        """
-        Arguments:
-            Efunc    (x,y)->[2] function for the complex (Ex,Ey) field
-            polarization[2]   (TM, TE) values representing the polarization
-            xmax     maximum x-value to integrate Ufunc over
+        """Arguments:
+        Efunc    (x,y)->[2] function for the complex (Ex,Ey) field
+        polarization[2]   (TM, TE) values representing the polarization
+        xmax     maximum x-value to integrate Ufunc over
         """
         super().__init__(
             power=power, theta_max=theta_max, phase=phase, center=center, theta=theta, phi=phi, standing=standing

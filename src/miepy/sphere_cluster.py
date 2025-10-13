@@ -1,12 +1,11 @@
-"""
-The Generalized Mie Theory (GMT) for a collection of spheres.
-"""
+"""The Generalized Mie Theory (GMT) for a collection of spheres."""
+
+from functools import partial
 
 import numpy as np
+
 import miepy
-from miepy.special_functions import riccati_1, riccati_2, vector_spherical_harmonics
 from miepy.utils import atleast
-from functools import partial
 
 
 # TODO: make several properties... such as wavelength, source, position, etc.
@@ -419,7 +418,6 @@ class sphere_cluster:
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (defult: self.lmax)
         """
-
         if lmax is None:
             lmax = self.lmax
 
@@ -430,7 +428,6 @@ class sphere_cluster:
 
     def cross_sections(self):
         """Compute the scattering, absorption, and extinction cross-section of the cluster"""
-
         Cscat = 0
         Cabs = 0
         Cext = 0
@@ -457,7 +454,6 @@ class sphere_cluster:
         Arguments:
             i    particle index
         """
-
         C = self.cross_sections_per_multipole_of_particle(i)
         return miepy.flux.cross_sections(*[np.sum(A) for A in C])
 
@@ -470,7 +466,6 @@ class sphere_cluster:
 
         Returns: F[3]
         """
-
         if source:
             p_inc = self.p_inc
         else:
@@ -495,7 +490,6 @@ class sphere_cluster:
 
         Returns: T[3]
         """
-
         if source:
             p_inc = self.p_inc
         else:
@@ -547,9 +541,7 @@ class sphere_cluster:
         """
         if type(self.source) != miepy.sources.point_dipole:
             raise ValueError(
-                "The source must be a single point dipole to compute the local density of states, not of type '{}'".format(
-                    type(self.source)
-                )
+                f"The source must be a single point dipole to compute the local density of states, not of type '{type(self.source)}'"
             )
 
         factor = -2 / np.pi * self.material_data.eps_b
@@ -620,7 +612,7 @@ class sphere_cluster:
     def update_position(self, position):
         """Update the positions of the spheres
 
-        Arguments
+        Arguments:
             position[N,3]       new particle positions
         """
         self.position = np.asarray(np.atleast_2d(position), dtype=float)
@@ -637,7 +629,6 @@ class sphere_cluster:
         Arguments:
             lmax    (optional) compute scattering for up to lmax terms (default: self.lmax)
         """
-
         if lmax is None:
             lmax = self.lmax
 
@@ -646,7 +637,7 @@ class sphere_cluster:
         )
 
     def solve(self, wavelength=None, source=None):
-        """solve for the p,q incident and scattering coefficients
+        """Solve for the p,q incident and scattering coefficients
 
         Arguments:
             wavelength   wavelength to solve at (default: current wavelength)

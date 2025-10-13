@@ -1,11 +1,10 @@
-"""
-mie_core_shell calculates the scattering coefficients of a core-shell structure using Mie theory
-"""
+"""mie_core_shell calculates the scattering coefficients of a core-shell structure using Mie theory"""
 
 import numpy as np
+
 import miepy
+from miepy.mie_single.scattering import interior_E, interior_H, scattered_E, scattered_H
 from miepy.special_functions import riccati_1_single, riccati_2_single, riccati_3_single
-from miepy.mie_single.scattering import scattered_E, scattered_H, interior_E, interior_H
 
 R1 = riccati_1_single
 R2 = riccati_2_single
@@ -29,7 +28,7 @@ def M_matrix(m1, m2, x, y, mu, mu1, mu2, n):
 
 
 def c_values(m2, y, mu2, n):
-    """c array in core_shell solver"""
+    """C array in core_shell solver"""
     z = np.zeros(len(m2))
     c = np.zeros([8, len(m2)], dtype=complex)
     c = np.array([z, z, z, z, -m2 * R1(n, y)[1], m2 * R1(n, y)[0], -mu2 * R1(n, y)[0], mu2 * R1(n, y)[1]])
@@ -47,7 +46,6 @@ class single_mie_core_shell:
         lmax             maximum number of orders to use in angular momentum expansion
         medium           material medium (must be non-absorbing; defaults to vacuum)
         """
-
         self.radius_in = radius_in
         self.radius_out = radius_out
         self.material_in = material_in
@@ -87,7 +85,7 @@ class single_mie_core_shell:
         self.computed = False
 
     def solve(self):
-        """solve the system"""
+        """Solve the system"""
         mat = self.material_data
 
         m1 = mat["n_in"] / mat["n_b"]
@@ -159,7 +157,6 @@ class single_mie_core_shell:
 
     def H_field(self, index=None, lmax=None):
         """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
-
         if lmax is None:
             lmax = self.lmax
         if index is None:

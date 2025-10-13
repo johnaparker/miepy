@@ -1,31 +1,29 @@
-"""
-special functions required by vsh calculations
-"""
+"""special functions required by vsh calculations"""
 
-import numpy as np
+from functools import cache, lru_cache
+from math import factorial
+
 import sympy
 from scipy import special
-from functools import lru_cache
-from math import factorial
 
 
 def spherical_hn(n, z, derivative=False):
-    """spherical hankel function of the first kind or its derivative
+    """Spherical hankel function of the first kind or its derivative
 
     n: int,array-like        order of the bessel function
     z: array[complex/float]  argument
-    derivative: bool         If True, compute the derivative instead"""
-
+    derivative: bool         If True, compute the derivative instead
+    """
     return special.spherical_jn(n, z, derivative) + 1j * special.spherical_yn(n, z, derivative)
 
 
 def spherical_hn_2(n, z, derivative=False):
-    """spherical hankel function of the second kind or its derivative
+    """Spherical hankel function of the second kind or its derivative
 
     n: int,array-like        order of the bessel function
     z: array[complex/float]  argument
-    derivative: bool         If True, compute the derivative instead"""
-
+    derivative: bool         If True, compute the derivative instead
+    """
     return special.spherical_jn(n, z, derivative) - 1j * special.spherical_yn(n, z, derivative)
 
 
@@ -51,16 +49,16 @@ def riccati_3(n, z, derivative=False):
     return riccati_2(n, z, derivative) - riccati_1(n, z, derivative)
 
 
-@lru_cache(maxsize=None)
+@cache
 def associated_legendre(n, m, deriv=0):
-    """associated legendre function of integer order and degree
+    """Associated legendre function of integer order and degree
 
         n: int         order
         m: int         degree
         deriv: int     derivative to take
 
-    returns lpmv(x) function"""
-
+    returns lpmv(x) function
+    """
     x = sympy.symbols("x")
     legfun_sym = (-1) ** abs(m) * sympy.functions.special.polynomials.assoc_legendre(n, m, x)
     legfunc_sym_deriv = sympy.diff(legfun_sym, x, deriv)
@@ -69,15 +67,15 @@ def associated_legendre(n, m, deriv=0):
     return legfun_num_deriv
 
 
-@lru_cache(maxsize=None)
+@cache
 def pi_func(n, m):
-    """pi special function that appears in the vector spherical harmonics (VSH)
+    """Pi special function that appears in the vector spherical harmonics (VSH)
 
          n: int         order
          m: int         degree
 
-    returns pi(theta)"""
-
+    returns pi(theta)
+    """
     x = sympy.symbols("x")
     legfunc_sym = m * (-1) ** abs(m) * sympy.functions.special.polynomials.assoc_legendre(n, m, x)
     legfunc_sym /= sympy.sqrt(1 - x**2)
@@ -88,15 +86,15 @@ def pi_func(n, m):
     return legfun_num
 
 
-@lru_cache(maxsize=None)
+@cache
 def tau_func(n, m):
-    """pi special function that appears in the vector spherical harmonics (VSH)
+    """Pi special function that appears in the vector spherical harmonics (VSH)
 
          n: int         order
          m: int         degree
 
-    returns tau(theta)"""
-
+    returns tau(theta)
+    """
     x = sympy.symbols("x")
     legfun_sym = (-1) ** abs(m) * sympy.functions.special.polynomials.assoc_legendre(n, m, x)
     legfunc_sym_deriv = sympy.diff(legfun_sym, x, 1)
@@ -138,8 +136,7 @@ def wigner_3j(j1, j2, j3, m1, m2, m3):
 
 @lru_cache(None)
 def a_func(m, n, u, v, p):
-    """gaunt coefficient"""
-
+    """Gaunt coefficient"""
     f = factorial
     numerator = f(n + m) * f(v + u) * f(p - m - u)
     denominator = f(n - m) * f(v - u) * f(p + m + u)
@@ -153,8 +150,7 @@ def a_func(m, n, u, v, p):
 
 @lru_cache(None)
 def b_func(m, n, u, v, p):
-    """b function"""
-
+    """B function"""
     f = factorial
     numerator = f(n + m) * f(v + u) * f(p - m - u + 1)
     denominator = f(n - m) * f(v - u) * f(p + m + u + 1)

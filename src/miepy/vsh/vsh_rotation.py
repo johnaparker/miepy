@@ -1,8 +1,7 @@
-"""
-VSH rotation functions
-"""
+"""VSH rotation functions"""
 
 import numpy as np
+
 import miepy
 
 

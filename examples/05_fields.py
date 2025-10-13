@@ -1,12 +1,10 @@
-"""
-Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)
-"""
+"""Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)"""
 
-import numpy as np
-import matplotlib.pyplot as plt
-import miepy
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import numpy as np
+
+import miepy
 
 Ag = miepy.materials.Ag()
 

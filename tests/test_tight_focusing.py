@@ -1,12 +1,12 @@
-"""
-Test tighly focused beams by comparing the E/H field from two methods:
-    (i) Directly integrating the far-field angular spectrum to obtain focal fields
-    (ii) Using the expansion coefficients around the center of the beam
+"""Test tighly focused beams by comparing the E/H field from two methods:
+(i) Directly integrating the far-field angular spectrum to obtain focal fields
+(ii) Using the expansion coefficients around the center of the beam
 """
 
 import numpy as np
-import miepy
 import pytest
+
+import miepy
 
 nm = 1e-9
 wav = 600 * nm

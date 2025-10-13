@@ -1,18 +1,18 @@
-"""
-Various functions to load materials and display metadata from the material database
-"""
+"""Various functions to load materials and display metadata from the material database"""
+
+import itertools
+import os
 
 import numpy as np
 import yaml
-import os
-import itertools
+
 import miepy
 
 
 def get_filepath(name, author):
-    """get the absolute filepath to the material data of name and author"""
+    """Get the absolute filepath to the material data of name and author"""
     root = miepy.__path__[0]
-    filepath = "{root}/materials/database/main/{name}/{author}.yml".format(root=root, name=name, author=author)
+    filepath = f"{root}/materials/database/main/{name}/{author}.yml"
     return filepath
 
 
@@ -21,10 +21,9 @@ def load_material(name, author):
     name         material name
     author       author of the experimental data
     """
-
     # return load_material(miepy.__path__[0] + "/materials/ag.npy")
     filepath = get_filepath(name, author)
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         docs = yaml.load(f, Loader=yaml.SafeLoader)
         str_data = docs["DATA"][0]["data"]
         list_data = str_data.splitlines()
@@ -52,7 +51,7 @@ def get_authors(material_name):
 
 
 def wavelength_filter(df, min_wav, max_wav):
-    """return a material dataframe for wavelengths between min and max"""
+    """Return a material dataframe for wavelengths between min and max"""
     mask = (df["wavelength"] > min_wav) & (df["wavelength"] < max_wav)
     return df[mask]
 
@@ -66,7 +65,7 @@ def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
     markers = itertools.cycle(("o", "v", "^", "<", ">", "s", "8", "p", "x"))
     markers = itertools.cycle(MarkerStyle.filled_markers)
-    colors = itertools.cycle(["C{}".format(i) for i in range(9)])
+    colors = itertools.cycle([f"C{i}" for i in range(9)])
     authors = get_authors(material_name)
 
     for author in authors:
@@ -91,22 +90,17 @@ def plot_material_by_author(material_name, wavelength_min=0, wavelength_max=np.i
 
 def material_info_by_author(material_name, wavelength_min=0, wavelength_max=np.inf):
     """Print info on all authors of material between a given wavelength range"""
-
     authors = get_authors(material_name)
 
-    print(
-        "Information of {material_name} by author between {wavelength_min} nm and {wavelength_max} nm:".format(
-            material_name=material_name, wavelength_min=wavelength_min * 1e9, wavelength_max=wavelength_max * 1e9
-        )
-    )
+    print(f"Information of {material_name} by author between {wavelength_min * 1e9} nm and {wavelength_max * 1e9} nm:")
     for author in authors:
         mat = load_material(material_name, author)
         data = wavelength_filter(mat.data, wavelength_min, wavelength_max)
         if not data.empty:
-            print("\t{author}:  {length} datapoints".format(author=author, length=len(data)))
+            print(f"\t{author}:  {len(data)} datapoints")
 
             filepath = get_filepath(name, author)
-            with open(filepath, "r") as f:
+            with open(filepath) as f:
                 docs = yaml.load(f, Loader=yaml.SafeLoader)
                 reference = docs["REFERENCES"]
                 try:

@@ -1,23 +1,21 @@
-"""
-VSH sources
-"""
+"""VSH sources"""
 
 import numpy as np
+
 import miepy
 from miepy.sources import source
 
 
 class vsh_source(source):
     def __init__(self, n, m, ftype="electric", center=None, mode=None, amplitude=1, phase=0):
-        """
-        Arguments:
-            n            n value of VSH mode
-            m            m value of VSH mode
-            ftype        'electric' or 'magnetic' dipole (default: electric)
-            center       center position of vsh_source
-            mode         type of vsh_mode (default: incident)
-            amplitude    amplitude of the source (default: 1)
-            phase        additional phase factor (default: 0)
+        """Arguments:
+        n            n value of VSH mode
+        m            m value of VSH mode
+        ftype        'electric' or 'magnetic' dipole (default: electric)
+        center       center position of vsh_source
+        mode         type of vsh_mode (default: incident)
+        amplitude    amplitude of the source (default: 1)
+        phase        additional phase factor (default: 0)
         """
         self.n = n
         self.m = m

@@ -1,13 +1,12 @@
-"""
-Scattering defines all functions that make use of the scattering coefficients an, bn
+"""Scattering defines all functions that make use of the scattering coefficients an, bn
 Calculations include scattering, absorbption, and electric and magnetic field computations
 Mie sphere and Mie core shell both contain an, bn as part of their solution
 """
 
 import numpy as np
+
 import miepy
-import scipy.constants as constants
-from miepy.special_functions import riccati_1, riccati_2, vector_spherical_harmonics
+from miepy.special_functions import vector_spherical_harmonics
 
 
 def scattering_per_multipole(an, bn, k):
@@ -71,7 +70,7 @@ def multipole_label(T, L):
     if L <= 3:
         last = ["D", "Q", "O", "H"][L]
     else:
-        last = " (L = {L})".format(L=L)
+        last = f" (L = {L})"
     return first + last
 
 

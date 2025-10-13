@@ -1,17 +1,16 @@
-"""
-test cluster scattering coefficients for a monomer and dimer
-"""
+"""test cluster scattering coefficients for a monomer and dimer"""
 
 import numpy as np
-import miepy
 from tqdm import tqdm
+
+import miepy
 
 nm = 1e-9
 wavelengths = np.linspace(300 * nm, 1000 * nm, 5)
 
 
 def test_cross_section_methods_monomer(plot=False):
-    """test two cross-section methods for a single particle (monomer)"""
+    """Test two cross-section methods for a single particle (monomer)"""
     C1 = np.zeros_like(wavelengths)
     C2 = np.zeros([len(wavelengths), 2, 2])
 
@@ -47,8 +46,7 @@ def test_cross_section_methods_monomer(plot=False):
 
 
 def test_cross_section_methods_dimer(plot=False):
-    """test two cross-section methods for a dimer"""
-
+    """Test two cross-section methods for a dimer"""
     C1 = np.zeros_like(wavelengths)
     C2 = np.zeros([len(wavelengths), 2, 4])
     separation = 200 * nm

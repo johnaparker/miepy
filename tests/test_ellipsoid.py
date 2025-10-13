@@ -1,9 +1,8 @@
-"""
-Compare the T-matrics of spheroids to ellipsoids
-"""
+"""Compare the T-matrics of spheroids to ellipsoids"""
+
+import numpy as np
 
 import miepy
-import numpy as np
 
 nm = 1e-9
 rx = ry = 40 * nm

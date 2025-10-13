@@ -1,17 +1,15 @@
-"""
-plane wave sources
-"""
+"""plane wave sources"""
 
 import numpy as np
+
 import miepy
-from miepy.vsh.special import pi_func, tau_func
 from miepy.sources import polarized_propagating_source
+from miepy.vsh.special import pi_func, tau_func
 
 
 class plane_wave(polarized_propagating_source):
     def __init__(self, polarization, amplitude=1, phase=0, theta=0, phi=0, standing=False):
-        """
-        Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave
+        """Create a plane-wave source. Default arguments provide a unit-amplitude, zero-propagating wave
 
         Arguments:
             polarization[2]      (TM, TE) values representing the polarization
@@ -64,9 +62,7 @@ class plane_wave(polarized_propagating_source):
             phi = 3 * np.pi / 2
         else:
             raise ValueError(
-                "'{direction}' is not a valid direction of propagation. Use one of ['x', 'y', 'z', '-x', '-y', '-z']".format(
-                    direction=direction
-                )
+                f"'{direction}' is not a valid direction of propagation. Use one of ['x', 'y', 'z', '-x', '-y', '-z']"
             )
 
         if polarization == direction[-1]:
@@ -89,11 +85,7 @@ class plane_wave(polarized_propagating_source):
         elif polarization == "lhc":
             pol = [1, -1j]
         else:
-            raise ValueError(
-                "'{polarization}' is not a valid polarization. Use one of ['x', 'y', 'z', 'rhc', 'lhc']".format(
-                    polarization=polarization
-                )
-            )
+            raise ValueError(f"'{polarization}' is not a valid polarization. Use one of ['x', 'y', 'z', 'rhc', 'lhc']")
 
         return cls(polarization=pol, theta=theta, phi=phi, amplitude=amplitude, phase=phase, standing=standing)
 

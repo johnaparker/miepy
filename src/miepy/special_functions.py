@@ -1,6 +1,4 @@
-"""
-special_functions defines any additional special functions needed by MiePy
-"""
+"""special_functions defines any additional special functions needed by MiePy"""
 
 import numpy as np
 from scipy import special
@@ -13,8 +11,8 @@ def spherical_hn(n, z, derivative=False):
 def riccati_1(nmax, x):
     """Riccati bessel function of the 1st kind
 
-    returns (r1, r1'), n=0,1,...,nmax"""
-
+    returns (r1, r1'), n=0,1,...,nmax
+    """
     x = np.asarray(x)
     result = np.zeros((2, nmax) + x.shape, dtype=complex)
 
@@ -30,8 +28,8 @@ def riccati_1(nmax, x):
 def riccati_3(nmax, x):
     """Riccati bessel function of the 3rd kind
 
-    returns (r3, r3'), n=0,1,...,nmax"""
-
+    returns (r3, r3'), n=0,1,...,nmax
+    """
     x = np.asarray(x)
     result = np.zeros((2, nmax) + x.shape, dtype=complex)
 
@@ -47,8 +45,8 @@ def riccati_3(nmax, x):
 def riccati_2(nmax, x):
     """Riccati bessel function of the 2nd kind
 
-    returns (r2, r2'), n=0,1,...,nmax"""
-
+    returns (r2, r2'), n=0,1,...,nmax
+    """
     return riccati_1(nmax, x) + 1j * riccati_3(nmax, x)
 
 

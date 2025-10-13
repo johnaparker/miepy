@@ -1,22 +1,22 @@
-import numpy as np
-from tqdm import tqdm
-import miepy
 from functools import partial
+
+import numpy as np
+
+import miepy
 
 
 def cluster_microscope(
     cluster, medium=None, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi / 2, sampling=30, source=False
 ):
-    """
-    Arguments:
-        cluster        miepy cluster
-        medium         the outer medium of the microscope (default: air)
-        orientation    orientation of the microscope (as a quaternion; default +z)
-        focal_img      focal length of the imaging lens (default: 100)
-        focal_obj      focal length of the objective lens (default: 100)
-        theta_obj      maximum collection angle of the objective lens
-        sampling       far-field sampling
-        source         (bool) include the angular source fields (default: False)
+    """Arguments:
+    cluster        miepy cluster
+    medium         the outer medium of the microscope (default: air)
+    orientation    orientation of the microscope (as a quaternion; default +z)
+    focal_img      focal length of the imaging lens (default: 100)
+    focal_obj      focal length of the objective lens (default: 100)
+    theta_obj      maximum collection angle of the objective lens
+    sampling       far-field sampling
+    source         (bool) include the angular source fields (default: False)
     """
     if medium is None:
         medium = miepy.materials.air()
@@ -54,18 +54,17 @@ class microscope:
         theta_obj=np.pi / 2,
         sampling=30,
     ):
-        """
-        Arguments:
-            E_angular      far-field angular function for E(theta, phi)
-            wavelength     wavelength of light
-            n1             refractive index at focal plane
-            n2             refractive index at image plane (default: 1)
-            orientation    orientation of the microscope (as a quaternion; default +z)
-            focal_img      focal length of the imaging lens (default: 100)
-            focal_obj      focal length of the objective lens (default: 100)
-            theta_obj      maximum collection angle of the objective lens
-            sampling       far-field sampling
-            source         (bool) include the angular source fields (default: False)
+        """Arguments:
+        E_angular      far-field angular function for E(theta, phi)
+        wavelength     wavelength of light
+        n1             refractive index at focal plane
+        n2             refractive index at image plane (default: 1)
+        orientation    orientation of the microscope (as a quaternion; default +z)
+        focal_img      focal length of the imaging lens (default: 100)
+        focal_obj      focal length of the objective lens (default: 100)
+        theta_obj      maximum collection angle of the objective lens
+        sampling       far-field sampling
+        source         (bool) include the angular source fields (default: False)
         """
         self.focal_img = focal_img
         self.focal_obj = focal_obj
@@ -95,8 +94,7 @@ class microscope:
         self.numerical_aperature = self.n1 * np.sin(theta_obj)
 
     def image(self, x, y, z_val=0, magnify=False):
-        """
-        Create an image
+        """Create an image
 
         Arguments:
             x_array    image x-values (array-like)

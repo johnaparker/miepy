@@ -1,17 +1,16 @@
-"""
-Test usage of the medium material
-"""
+"""Test usage of the medium material"""
 
 import numpy as np
+
 import miepy
 
 nm = 1e-9
 
 
 def test_medium_scaling_force(plot=False):
-    """ensure that the radiation pressure on a single sphere scales with
-    background index as n^6 for small, high-index sphere"""
-
+    """Ensure that the radiation pressure on a single sphere scales with
+    background index as n^6 for small, high-index sphere
+    """
     n_b = np.linspace(1, 5, 10)
     F = np.zeros_like(n_b)
     for i, n in enumerate(n_b):
@@ -45,7 +44,7 @@ def test_medium_scaling_force(plot=False):
 
 
 def test_medium_cross_sections(plot=False):
-    """verify cross-sections of an Au dimer in water by comparing with Poynting vector approach"""
+    """Verify cross-sections of an Au dimer in water by comparing with Poynting vector approach"""
     Nwav = 5
     Au = miepy.materials.Au()
     radius = 50 * nm

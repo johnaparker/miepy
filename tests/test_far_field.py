@@ -1,8 +1,7 @@
-"""
-tests for far-fields
-"""
+"""tests for far-fields"""
 
 import numpy as np
+
 import miepy
 
 nm = 1e-9

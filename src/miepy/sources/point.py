@@ -1,22 +1,21 @@
-"""
-point sources
-"""
+"""point sources"""
+
+from functools import partial
 
 import numpy as np
+
 import miepy
 from miepy.sources import source
-from functools import partial
 
 
 class point_dipole(source):
     def __init__(self, position, direction, amplitude=1, phase=0, mode="electric"):
-        """
-        Arguments:
-            position     (x,y,z) position of the dipole
-            direction    (Dx, Dy, Dz) direction the dipole points (can be complex)
-            amplitude    amplitude of the dipole (default: 1)
-            phase        additional phase factor (default: 0)
-            mode         'electric' or 'magnetic' dipole (default: electric)
+        """Arguments:
+        position     (x,y,z) position of the dipole
+        direction    (Dx, Dy, Dz) direction the dipole points (can be complex)
+        amplitude    amplitude of the dipole (default: 1)
+        phase        additional phase factor (default: 0)
+        mode         'electric' or 'magnetic' dipole (default: electric)
         """
         super().__init__(amplitude, phase, origin=position)
 

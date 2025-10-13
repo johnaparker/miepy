@@ -1,11 +1,10 @@
-"""
-Verify the direction of the Poynting vector in the near and far field case for sources
-"""
+"""Verify the direction of the Poynting vector in the near and far field case for sources"""
 
 import numpy as np
+import pytest
+
 import miepy
 from miepy.constants import Z0
-import pytest
 
 nm = 1e-9
 wav = 600 * nm
@@ -21,9 +20,7 @@ width = 400 * nm
     ],
 )
 def test_near_field_poytning_vector_direction_at_origin(source):
-    """
-    S should be in the +z direction at the origin
-    """
+    """S should be in the +z direction at the origin"""
     E = source.E_field(0, 0, 0, k)
     H = source.H_field(0, 0, 0, k)
     S = np.real(np.cross(E, np.conj(H)) / (2 * Z0))
@@ -32,9 +29,7 @@ def test_near_field_poytning_vector_direction_at_origin(source):
 
 
 def test_plane_wave_poynting_vector_non_normal_incidence():
-    """
-    S should be in the direction [1, 1, sqrt(2)] for (theta = pi/4, phi = pi/4) plane-wave
-    """
+    """S should be in the direction [1, 1, sqrt(2)] for (theta = pi/4, phi = pi/4) plane-wave"""
     source = miepy.sources.plane_wave(polarization=[1, 2], theta=np.pi / 4, phi=np.pi / 4)
     E = source.E_field(200 * nm, 50 * nm, 100 * nm, k)
     H = source.H_field(200 * nm, 50 * nm, 100 * nm, k)
@@ -45,9 +40,7 @@ def test_plane_wave_poynting_vector_non_normal_incidence():
 
 
 def test_gaussian_poynting_vector_far_field():
-    """
-    S should be in the direction of ±r_hat (+ for upper hemisphere, - for lower hemisphere) in the angular far fields
-    """
+    """S should be in the direction of ±r_hat (+ for upper hemisphere, - for lower hemisphere) in the angular far fields"""
     source = miepy.sources.gaussian_beam(width=width, polarization=[1, 2j])
 
     theta = np.linspace(0, np.pi, 6)
@@ -72,9 +65,7 @@ def test_gaussian_poynting_vector_far_field():
 
 
 def test_source_wavenumber_dependence_near_field():
-    """
-    verify the direction of propagation in the near field by measuring the phase dependence of E/H, assert that it's monotonically increasing
-    """
+    """Verify the direction of propagation in the near field by measuring the phase dependence of E/H, assert that it's monotonically increasing"""
     source = miepy.sources.gaussian_beam(width=width, polarization=[1, 1])
 
     z = np.linspace(-2 * wav, 2 * wav, 50)
@@ -99,9 +90,7 @@ def test_source_wavenumber_dependence_near_field():
 
 
 def test_source_wavenumber_dependence_far_field():
-    """
-    verify the direction of propagation in the far field by measuring the phase dependence of E/H, assert that it's monotonically increasing
-    """
+    """Verify the direction of propagation in the far field by measuring the phase dependence of E/H, assert that it's monotonically increasing"""
     source = miepy.sources.gaussian_beam(width=width, polarization=[1, 1])
 
     radius = np.linspace(1, 1 + 2 * wav, 50)

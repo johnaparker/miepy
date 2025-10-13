@@ -1,48 +1,47 @@
-"""
-MiePy
+"""MiePy
 =======
 Python module to calcuate scattering coefficients of a plane wave incident on a sphere or core-shell structure using Mie theory
 """
 
 # main submodules
-from . import cpp
-from . import vsh
-from . import sources
-from . import material_functions
-from . import interactions
-from . import tmatrix
-from . import particles
-from . import forces
-from . import flux
-from . import coordinates
-from . import utils
-from . import symmetry
-from . import constants
-from . import microscope
+import warnings
 
-from .material_functions.create import dielectric, constant_material, function_material, data_material
-from .materials.predefined import materials
-from .cluster import cluster
-from .sphere_cluster import sphere_cluster
-from .mie_single.scattering import (
-    scattering_per_multipole,
-    absorbption_per_multipole,
-    extinction_per_multipole,
-    cross_sections,
-    multipole_label,
+from . import (
+    constants,
+    coordinates,
+    cpp,
+    flux,
+    forces,
+    interactions,
+    material_functions,
+    microscope,
+    particles,
+    sources,
+    symmetry,
+    tmatrix,
+    utils,
+    vsh,
 )
-from .mie_single.mie_sphere import single_mie_sphere
-from .mie_single.mie_core_shell import single_mie_core_shell
-from .vsh import mode_indices, vsh_mode, VSH, expand_E, expand_E_far, expand_H, expand_H_far, cluster_coefficients
-from .particles import sphere, spheroid, cylinder, ellipsoid, regular_prism, cube, sphere_cluster_particle, core_shell
+from .cluster import cluster
 from .cpp.interactions import solver
 from .interface import interface
+from .material_functions.create import constant_material, data_material, dielectric, function_material
+from .materials.predefined import materials
+from .microscope import cluster_microscope, microscope
+from .mie_single.mie_core_shell import single_mie_core_shell
+from .mie_single.mie_sphere import single_mie_sphere
+from .mie_single.scattering import (
+    absorbption_per_multipole,
+    cross_sections,
+    extinction_per_multipole,
+    multipole_label,
+    scattering_per_multipole,
+)
+from .particles import core_shell, cube, cylinder, ellipsoid, regular_prism, sphere, sphere_cluster_particle, spheroid
+from .sphere_cluster import sphere_cluster
 from .visual.view3d import visualize
-from .microscope import microscope, cluster_microscope
-
+from .vsh import VSH, cluster_coefficients, expand_E, expand_E_far, expand_H, expand_H_far, mode_indices, vsh_mode
 from .vsh.mode_indices import reduced_index
-
-import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")

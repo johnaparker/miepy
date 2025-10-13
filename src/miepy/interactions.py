@@ -1,10 +1,8 @@
-"""
-functions for building interaction matrices and solving them
-"""
+"""functions for building interaction matrices and solving them"""
 
 import numpy as np
+
 import miepy
-from scipy.sparse.linalg import bicgstab
 from miepy.cpp.vsh_translation import vsh_translation_numpy as vsh_translation
 
 
@@ -90,7 +88,6 @@ def sphere_aggregate_tmatrix_periodic(positions, mie, k, symmetry, k_hat):
         symmetry            type of symmetry
         k_hat               unit k-vector
     """
-
     Nparticles = positions.shape[0]
     lmax = mie.shape[-1]
     rmax = miepy.vsh.lmax_to_rmax(lmax)
@@ -126,7 +123,6 @@ def particle_aggregate_tmatrix(positions, tmatrix, k):
         tmatrix[N,2,rmax,2,rmax]   single particle T-matrices
         k                   medium wavenumber
     """
-
     Nparticles = positions.shape[0]
     rmax = tmatrix.shape[-1]
     lmax = miepy.vsh.rmax_to_lmax(rmax)

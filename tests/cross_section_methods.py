@@ -1,11 +1,10 @@
-"""
-cluster cross-sections vs. particle cross-section when summing over particles
-"""
+"""cluster cross-sections vs. particle cross-section when summing over particles"""
 
-import numpy as np
-import miepy
 import matplotlib.pyplot as plt
+import numpy as np
 from tqdm import tqdm
+
+import miepy
 
 nm = 1e-9
 

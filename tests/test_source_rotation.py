@@ -1,8 +1,7 @@
-"""
-Tests for rotation of incident source expansion coefficients
-"""
+"""Tests for rotation of incident source expansion coefficients"""
 
 import numpy as np
+
 import miepy
 
 nm = 1e-9
@@ -10,9 +9,7 @@ um = 1e-6
 
 
 def test_plane_wave_rotation():
-    """
-    A rotated plane-wave: analytic compared to rotated expansion coefficients
-    """
+    """A rotated plane-wave: analytic compared to rotated expansion coefficients"""
     Nx = 6
     Ny = 6
     Nz = 6

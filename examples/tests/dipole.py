@@ -1,11 +1,9 @@
-"""
-Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)
-"""
+"""Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)"""
 
 import numpy as np
-import matplotlib.pyplot as plt
-from miepy.materials import material
+
 from miepy import sphere
+from miepy.materials import material
 
 # wavelength from 400nm to 1000nm
 wav = np.linspace(300, 1100, 1000)

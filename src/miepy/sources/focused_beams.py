@@ -1,15 +1,14 @@
-"""
-Focused vector beam sources that represent exact solutions to Maxwell's equations.
+"""Focused vector beam sources that represent exact solutions to Maxwell's equations.
 Includes lowest order Hermite-Gaussian and Laguerre-Gaussian modes.
 For paraxial approximate versions of these beams, see sources/paraxial_beams.
 """
 
 import numpy as np
-import scipy.special as special
 import scipy.integrate as integrate
-from scipy.optimize import curve_fit
+import scipy.special as special
+
 import miepy
-from miepy.sources import source, combined_source
+from miepy.sources import source
 
 j0 = special.j0
 j1 = special.j1

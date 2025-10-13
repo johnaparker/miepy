@@ -1,11 +1,10 @@
-import numpy as np
-from scipy import constants
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import matplotlib as mpl
 import meep
 import meep_ext
-from numpipe import scheduler, pbar
+import numpy as np
+from numpipe import pbar, scheduler
+from scipy import constants
+
 import miepy
 
 job = scheduler()
@@ -78,7 +77,7 @@ Nx, Ny, Nz = map(round, cell * resolution)
 
 @job.cache
 def force_norm():
-    """perform normalization simulation"""
+    """Perform normalization simulation"""
     norm = meep.Simulation(cell_size=cell, boundary_layers=[pml], geometry=[], resolution=resolution)
     norm.init_fields()
     source(norm)
@@ -98,8 +97,7 @@ def force_norm():
 
 @job.cache
 def force_sim():
-    """perform scattering simulation"""
-
+    """Perform scattering simulation"""
     sim = meep.Simulation(
         cell_size=cell, boundary_layers=[pml], geometry=geometry, default_material=medium, resolution=resolution
     )

@@ -1,5 +1,7 @@
-import miepy
 import numpy as np
+
+import miepy
+
 from .get_tmatrix import nfmds_solver, tmatrix_solvers
 
 

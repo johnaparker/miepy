@@ -1,10 +1,10 @@
-"""
-Example of how to make a core-shell and plot scattering,
+"""Example of how to make a core-shell and plot scattering,
 absorption, and scattering per multipole
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import miepy
 
 # wavelength from 400nm to 1000nm

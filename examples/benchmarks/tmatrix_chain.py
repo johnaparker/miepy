@@ -1,15 +1,13 @@
-"""
-performance test
-"""
+"""performance test"""
 
-import numpy as np
-import matplotlib.pyplot as plt
-import miepy
-from tqdm import tqdm
 from functools import partial
-from scipy.sparse.linalg import bicg, bicgstab
-from miepy.interactions import solve_linear_system
+
+import matplotlib.pyplot as plt
+import numpy as np
 from timer import time_function
+
+import miepy
+from miepy.interactions import solve_linear_system
 
 nm = 1e-9
 

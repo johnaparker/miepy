@@ -1,7 +1,10 @@
-import miepy
-import numpy as np
-from .particle_base import particle
 import uuid
+
+import numpy as np
+
+import miepy
+
+from .particle_base import particle
 
 
 class sphere_cluster_particle(particle):

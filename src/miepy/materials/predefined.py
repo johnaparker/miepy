@@ -1,5 +1,5 @@
-from miepy.material_functions.load import load_material
 from miepy.material_functions.create import constant_material
+from miepy.material_functions.load import load_material
 
 
 ### mediums

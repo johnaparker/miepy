@@ -1,21 +1,19 @@
-"""
-creation new materials
-"""
+"""creation new materials"""
+
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
-import miepy
 from scipy import constants
 from scipy.interpolate import interp1d
-from abc import ABCMeta, abstractmethod
 
 
 def wavelength_to_energy(wavelength):
-    """return the wavelength in energy units (eV)"""
+    """Return the wavelength in energy units (eV)"""
     return constants.h * constants.c / wavelength / constants.e
 
 
 def wavelength_to_wavenumber(wavelength):
-    """return the wavelength as a wavenumber"""
+    """Return the wavelength as a wavenumber"""
     return 2 * np.pi / wavelength
 
 
@@ -43,8 +41,7 @@ class material:
 
 
 def dielectric(index=None, eps=1.0, mu=1.0, name=None):
-    """
-    Create a dielectric material (constant index of refraction / permittivity)
+    """Create a dielectric material (constant index of refraction / permittivity)
 
     Arguments:
         index     index of refraction (if specified, material is not magnetic and eps/mu not declared)
@@ -52,7 +49,6 @@ def dielectric(index=None, eps=1.0, mu=1.0, name=None):
         mu        dielectric permeability
         name      name of material
     """
-
     if index is not None:
         return constant_material(index=index, name=name)
     else:
@@ -61,7 +57,7 @@ def dielectric(index=None, eps=1.0, mu=1.0, name=None):
 
 class constant_material(material):
     def __init__(self, eps=1.0, mu=1.0, index=None, name=None):
-        """create a material with a constant eps and mu"""
+        """Create a material with a constant eps and mu"""
         super().__init__(name)
 
         self.eps_value = eps
@@ -88,7 +84,7 @@ class constant_material(material):
 
 class function_material(material):
     def __init__(self, eps_function, mu_function=None, name=None):
-        """create a material with an eps and mu function"""
+        """Create a material with an eps and mu function"""
         super().__init__(name)
 
         self.eps_function = eps_function
@@ -116,7 +112,7 @@ class function_material(material):
 
 class data_material(material):
     def __init__(self, wavelength, eps, mu=None, name=None):
-        """create a material with raw wavelength, eps, and mu data"""
+        """Create a material with raw wavelength, eps, and mu data"""
         super().__init__(name)
 
         if np.isscalar(wavelength):

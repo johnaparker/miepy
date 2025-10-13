@@ -1,17 +1,15 @@
-"""
-Expressions for the force and torque given the expansion coefficients or the fields
-"""
+"""Expressions for the force and torque given the expansion coefficients or the fields"""
 
 import numpy as np
 from scipy import constants
+
 import miepy
-from miepy.vsh.misc import simps_2d
 from miepy.cpp.forces import force, torque
+from miepy.vsh.misc import simps_2d
 
 
 def levi_civita():
-    """return the levi-civita symbol"""
-
+    """Return the levi-civita symbol"""
     eijk = np.zeros((3, 3, 3))
     eijk[0, 1, 2] = eijk[1, 2, 0] = eijk[2, 0, 1] = 1
     eijk[0, 2, 1] = eijk[2, 1, 0] = eijk[1, 0, 2] = -1

@@ -1,14 +1,10 @@
-"""
-commonly defined sources
-"""
+"""commonly defined sources"""
 
 import numpy as np
-import miepy
-from miepy.sources import polarized_beam
-from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite, erfc
-from copy import deepcopy
+from scipy.special import erfc, eval_genlaguerre, eval_hermite
+
 from miepy.constants import Z0
+from miepy.sources import polarized_beam
 
 
 class gaussian_beam(polarized_beam):
@@ -184,7 +180,7 @@ class laguerre_gaussian_beam(polarized_beam):
 
 
 def azimuthal_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """azimuthally polarized beam"""
+    """Azimuthally polarized beam"""
     if power is None:
         power = 1.0
 
@@ -198,7 +194,7 @@ def azimuthal_beam(width, theta=0, phi=0, power=None, phase=0, center=None, thet
 
 
 def radial_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """radially polarized beam"""
+    """Radially polarized beam"""
     if power is None:
         power = 1.0
 
@@ -212,7 +208,7 @@ def radial_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_m
 
 
 def shear_beam(width, theta=0, phi=0, power=None, phase=0, center=None, theta_max=np.pi / 2):
-    """shear polarized beam"""
+    """Shear polarized beam"""
     if power is None:
         power = 1.0
 

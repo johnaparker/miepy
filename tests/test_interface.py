@@ -1,10 +1,9 @@
-"""
-Tests related to miepy.interface
-"""
+"""Tests related to miepy.interface"""
 
 import numpy as np
-import miepy
 import pytest
+
+import miepy
 
 nm = 1e-9
 wavelength = 600 * nm
@@ -35,9 +34,7 @@ zpos = 400 * nm
     ],
 )
 def test_interface_z_translation(s1, s2, rtol):
-    """
-    Moving the source and particle is identical to moving the interface (cross-section comparison)
-    """
+    """Moving the source and particle is identical to moving the interface (cross-section comparison)"""
     interface = miepy.interface(miepy.constant_material(index=1.7))
     cluster = miepy.sphere_cluster(
         position=[0, 0, -zpos],
@@ -75,9 +72,7 @@ def test_interface_z_translation(s1, s2, rtol):
     ],
 )
 def test_index_matched_interface(source, rtol):
-    """
-    An interface that is index-matched with the medium is identical to not having an interface (cross-section comparison)
-    """
+    """An interface that is index-matched with the medium is identical to not having an interface (cross-section comparison)"""
     interface = miepy.interface(medium, z=zpos)
     cluster = miepy.sphere_cluster(
         position=[0, 0, 0],

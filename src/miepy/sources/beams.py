@@ -1,18 +1,19 @@
-"""
-Base classes for beams. Defines:
+"""Base classes for beams. Defines:
 
-    beam________________base clase for beams
-    polarized_beam______beam with a global polarization state (TE, TM pair)
-    reflected_beam______beam reflected by an interface
-    transmitted_beam____beam transmitted by an interface
+beam________________base clase for beams
+polarized_beam______beam with a global polarization state (TE, TM pair)
+reflected_beam______beam reflected by an interface
+transmitted_beam____beam transmitted by an interface
 """
+
+from abc import ABCMeta
+from functools import partial
 
 import numpy as np
-from abc import ABCMeta, abstractmethod
+
 import miepy
-from miepy.sources import propagating_source, polarized_propagating_source
-from functools import partial
 from miepy.constants import Z0
+from miepy.sources import polarized_propagating_source, propagating_source
 
 
 class beam(propagating_source):
@@ -33,8 +34,7 @@ class beam(propagating_source):
         self.p_src_func = None
 
     def E0(self, k):
-        """
-        Compute the amplitude constant of the beam
+        """Compute the amplitude constant of the beam
 
         Arguments:
             k    medium wavenumber
@@ -51,8 +51,7 @@ class beam(propagating_source):
         return np.sqrt(self.power / P)
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
-        """
-        Compute the electric field
+        """Compute the electric field
 
         Arguments:
             x1          x/r position (array-like)
@@ -78,8 +77,7 @@ class beam(propagating_source):
         )
 
     def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
-        """
-        Compute the magnetic field
+        """Compute the magnetic field
 
         Arguments:
             x1          x/r position (array-like)
@@ -105,8 +103,7 @@ class beam(propagating_source):
         )
 
     def E_angular(self, theta, phi, k, radius=None, origin=None):
-        """
-        Obtain the far-field electric field in spherical coordinates
+        """Obtain the far-field electric field in spherical coordinates
 
         Arguments:
             theta    theta coordinates (array-like)
@@ -118,8 +115,7 @@ class beam(propagating_source):
         return self._angular(self.angular_spectrum, theta, phi, k, radius=radius, origin=origin)
 
     def H_angular(self, theta, phi, k, radius=None, origin=None):
-        """
-        Obtain the far-field magnetic field in spherical coordinates
+        """Obtain the far-field magnetic field in spherical coordinates
 
         Arguments:
             theta    theta coordinates (array-like)
@@ -131,8 +127,7 @@ class beam(propagating_source):
         return -1 * self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius, origin=origin)
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
-        """
-        Cutoff angle required for numerical intergration of the angular spectrum
+        """Cutoff angle required for numerical intergration of the angular spectrum
 
         Arguments:
             k        medium wavenumber
@@ -171,8 +166,7 @@ class beam(propagating_source):
         return theta
 
     def structure(self, position, k, lmax):
-        """
-        Obtain the structure coefficients of the beam
+        """Obtain the structure coefficients of the beam
 
         Arguments:
             position[N,3]     (x, y, z) positions of N particles
@@ -213,8 +207,7 @@ class beam(propagating_source):
 
     # TODO: Test dependence on center and orientation
     def _angular(self, angular_func, theta, phi, k, radius=None, origin=None):
-        """
-        Method to obtain E or H far field angular fields
+        """Method to obtain E or H far field angular fields
 
         Arguments:
             angular_func    function for the angular spectrum
@@ -250,8 +243,7 @@ class beam(propagating_source):
         return E0 * E_inf
 
     def _field(self, angular_func, far_func, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
-        """
-        Method to compute E or H field
+        """Method to compute E or H field
 
         Arguments:
             angular_func    function for the angular spectrum

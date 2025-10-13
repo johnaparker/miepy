@@ -1,5 +1,6 @@
-import miepy
 import numpy as np
+
+import miepy
 
 
 class interface:

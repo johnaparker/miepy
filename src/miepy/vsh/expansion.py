@@ -1,8 +1,7 @@
-"""
-Expansion of electric and magnetic fields given expansion coefficients
-"""
+"""Expansion of electric and magnetic fields given expansion coefficients"""
 
 import numpy as np
+
 from miepy import vsh
 
 
@@ -85,7 +84,6 @@ def expand_H(p, k, mode, eps, mu):
         eps     medium permitiviity
         mb      medium permeability
     """
-
     factor = -1j * np.sqrt(eps / mu)
     E_func = expand_E(p[::-1], k, mode)
     return lambda *args: factor * E_func(*args)

@@ -1,15 +1,15 @@
-"""
-Test weakly focused beams by comparing the E/H field from two methods:
-    (i) Directly integrating the far-field angular spectrum to obtain focal fields
-    (ii) Using the analytic paraxial expression for the beam
+"""Test weakly focused beams by comparing the E/H field from two methods:
+(i) Directly integrating the far-field angular spectrum to obtain focal fields
+(ii) Using the analytic paraxial expression for the beam
 """
 
+from math import factorial
+
 import numpy as np
+from scipy.special import eval_genlaguerre, eval_hermite
+
 import miepy
 from miepy.constants import Z0
-from math import factorial
-from scipy.special import eval_genlaguerre, eval_hermite
-import pytest
 
 nm = 1e-9
 wav = 600 * nm
@@ -112,7 +112,7 @@ def test_hermite_gaussian_beam_weak_focusing():
 
     def hermite_gaussian_paraxial(src, x, y, z, k):
         factor = 1 / src.width * np.sqrt(2 / (np.pi * 2**src.l * 2**src.m * factorial(src.l) * factorial(src.m)))
-        E0 = factor * np.sqrt((2 * Z0 * src.power))
+        E0 = factor * np.sqrt(2 * Z0 * src.power)
 
         rho_sq = x**2 + y**2
         wav = 2 * np.pi / k
@@ -138,7 +138,7 @@ def test_laguerre_gaussian_beam_weak_focusing():
     """Weak focus test for Laguerre-Gaussian beam"""
 
     def laguerre_gaussian_paraxial(src, x, y, z, k):
-        E0 = np.sqrt((2 * Z0 * src.power))
+        E0 = np.sqrt(2 * Z0 * src.power)
 
         rho_sq = x**2 + y**2
         phi = np.arctan2(y, x)
@@ -163,8 +163,7 @@ def test_laguerre_gaussian_beam_weak_focusing():
 
 
 def test_stiching_by_expansion_gaussian_beam():
-    """reconstruct the paraxial E-field by expanding over p_src in a 'stitched' together fashion"""
-
+    """Reconstruct the paraxial E-field by expanding over p_src in a 'stitched' together fashion"""
     source = miepy.sources.gaussian_beam(width=width, polarization=polarization, power=power)
     E1 = gaussian_paraxial(X, Y, Z, k)
 

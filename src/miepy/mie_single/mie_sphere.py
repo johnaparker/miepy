@@ -1,19 +1,16 @@
-"""
-mie_sphere calculates the scattering coefficients of a sphere using Mie theory
-"""
+"""mie_sphere calculates the scattering coefficients of a sphere using Mie theory"""
 
 import numpy as np
+from scipy import constants
+
 import miepy
+from miepy.mie_single.scattering import interior_E, interior_H, scattered_E, scattered_H
 from miepy.special_functions import (
     riccati_1,
-    riccati_2,
     riccati_1_single,
-    riccati_2_single,
+    riccati_2,
     riccati_3_single,
-    vector_spherical_harmonics,
 )
-from miepy.mie_single.scattering import scattered_E, scattered_H, interior_E, interior_H
-from scipy import constants
 
 
 def mie_sphere_scattering_coefficients(radius, n, eps, mu, eps_b, mu_b, k, conducting=False):
@@ -89,7 +86,6 @@ class single_mie_sphere:
         lmax             maximum number of orders to use in angular momentum expansion
         medium           material medium (must be non-absorbing; defaults to vacuum)
         """
-
         self.radius = radius
         self.material = material
         self.wavelength = np.asarray(np.atleast_1d(wavelength), dtype=float)
@@ -125,7 +121,7 @@ class single_mie_sphere:
         self.interior_computed = False
 
     def solve_exterior(self):
-        """solve for the exterior of the sphere, the an and bn coefficients"""
+        """Solve for the exterior of the sphere, the an and bn coefficients"""
         xvals = self.material_data["k"] * self.radius
         m = (self.material_data["eps"] / self.material_data["eps_b"]) ** 0.5
         mt = m * self.material_data["mu_b"] / self.material_data["mu"]
@@ -148,7 +144,7 @@ class single_mie_sphere:
         return self.an, self.bn
 
     def solve_interior(self):
-        """solve for the interior of the sphere, the cn and dn coefficients"""
+        """Solve for the interior of the sphere, the cn and dn coefficients"""
         # TODO shouldn't this be multiplied by self.radius?
         xvals = self.material_data["k"] * self.radius
         m = (self.material_data["eps"] / self.material_data["eps_b"]) ** 0.5
@@ -191,7 +187,6 @@ class single_mie_sphere:
     # TODO: moved to functions script
     def radiation_force(self):
         """Return the radiation force (Fz)"""
-
         Fz = np.zeros(self.Nfreq)
         nvals = np.arange(1, self.lmax + 1)
 
@@ -246,7 +241,6 @@ class single_mie_sphere:
 
     def H_field(self, index=None, lmax=None):
         """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
-
         if lmax is None:
             lmax = self.lmax
         if index is None:

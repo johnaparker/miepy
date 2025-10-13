@@ -1,21 +1,18 @@
-"""
-Sources that use interpolation on a grid to evaluate structure coefficients
-"""
+"""Sources that use interpolation on a grid to evaluate structure coefficients"""
 
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
-from miepy.sources import source
+
 import miepy
 from miepy.cpp.decomposition import grid_interpolate
-from functools import partial
+from miepy.sources import source
 
 
 class grid_interpolate_source(source):
     def __init__(self, source, grid):
-        """
-        Arguments:
-            source     miepy.source object
-            grid       [x, y, z] arrays representing the grid
+        """Arguments:
+        source     miepy.source object
+        grid       [x, y, z] arrays representing the grid
         """
         self.source = source
         self.grid = grid

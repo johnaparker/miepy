@@ -1,15 +1,12 @@
-"""
-performance test
-"""
+"""performance test"""
+
+from functools import partial
 
 import numpy as np
-import matplotlib.pyplot as plt
-import miepy
-from tqdm import tqdm
-from functools import partial
-from scipy.sparse.linalg import bicg, bicgstab
-from miepy.interactions import solve_linear_system
 from timer import time_function
+
+import miepy
+from miepy.interactions import solve_linear_system
 
 nm = 1e-9
 
@@ -42,8 +39,9 @@ def tests(Nmax, step=1):
     return ftimer, Nparticles
 
 
-import h5py
 import os
+
+import h5py
 
 OMP = os.environ["OMP_NUM_THREADS"]
 ftimer, Nparticles = tests(300, step=10)

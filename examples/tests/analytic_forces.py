@@ -1,13 +1,10 @@
-"""
-Comapre analytic force and torque expressions to integrated Maxwell stress tensor
-"""
+"""Comapre analytic force and torque expressions to integrated Maxwell stress tensor"""
 
-import numpy as np
 import matplotlib.pyplot as plt
-import miepy
-from math import factorial
+import numpy as np
 from tqdm import tqdm
-from scipy import constants
+
+import miepy
 
 nm = 1e-9
 

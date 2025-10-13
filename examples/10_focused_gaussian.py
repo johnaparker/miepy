@@ -1,8 +1,8 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import miepy
-from tqdm import tqdm
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+
+import miepy
 
 nm = 1e-9
 

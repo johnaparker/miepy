@@ -1,14 +1,15 @@
-"""
-Abstract base classes for sources. Defines:
+"""Abstract base classes for sources. Defines:
 
-    source__________________________interface for all sources
-    propagating_source______________sources that have a direction of propagation
-    polarized_propagating_source____propagating_source with a global polarization state (TE, TM pair)
-    combined_source_________________a suporposition of sources
+source__________________________interface for all sources
+propagating_source______________sources that have a direction of propagation
+polarized_propagating_source____propagating_source with a global polarization state (TE, TM pair)
+combined_source_________________a suporposition of sources
 """
+
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
-from abc import ABCMeta, abstractmethod
+
 import miepy
 
 
@@ -18,11 +19,10 @@ class source:
     __metaclass__ = ABCMeta
 
     def __init__(self, amplitude=1, phase=0, origin=None):
-        """
-        Arguments:
-            amplitude   global amplitude factor (default 1)
-            phase       global phase shift (default 0)
-            origin      a reference point for the center of the source (default: [0,0,0])
+        """Arguments:
+        amplitude   global amplitude factor (default 1)
+        phase       global phase shift (default 0)
+        origin      a reference point for the center of the source (default: [0,0,0])
         """
         self.amplitude = amplitude
         self.phase = phase
@@ -114,16 +114,12 @@ class source:
 
     @abstractmethod
     def reflect(self, interface, medium, wavelength):
-        """
-        Create a source reflected by an interface
-        """
+        """Create a source reflected by an interface"""
         pass
 
     @abstractmethod
     def transmit(self, interface, medium, wavelength):
-        """
-        Create a source transmitted by an interface
-        """
+        """Create a source transmitted by an interface"""
         pass
 
     def power_density(self, x1, x2, x3, k, far=False, spherical=False):
@@ -152,7 +148,7 @@ class source:
         elif isinstance(other, source):
             return combined_source(self, other)
         else:
-            raise ValueError("cannot add source with non-source of type {}".format(type(other)))
+            raise ValueError(f"cannot add source with non-source of type {type(other)}")
 
 
 class propagating_source(source):
@@ -210,23 +206,23 @@ class combined_source(source):
         return "combined_source({})".format(", ".join(source_types))
 
     def angular_spectrum(self, theta, phi, k):
-        return sum((source.angular_spectrum(theta, phi, k) for source in self.sources))
+        return sum(source.angular_spectrum(theta, phi, k) for source in self.sources)
 
     # TODO: alternatively, allow adding fields and performing structure only once
     def structure(self, position, k, lmax):
-        return sum((source.structure(position, k, lmax) for source in self.sources))
+        return sum(source.structure(position, k, lmax) for source in self.sources)
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False):
-        return sum((source.E_field(x1, x2, x3, k, far, spherical) for source in self.sources))
+        return sum(source.E_field(x1, x2, x3, k, far, spherical) for source in self.sources)
 
     def H_field(self, x1, x2, x3, k, far=False, spherical=False):
-        return sum((source.H_field(x1, x2, x3, k, far, spherical) for source in self.sources))
+        return sum(source.H_field(x1, x2, x3, k, far, spherical) for source in self.sources)
 
     def E_angular(self, theta, phi, k, radius=None, origin=None):
-        return sum((source.E_angular(theta, phi, k, radius, origin) for source in self.sources))
+        return sum(source.E_angular(theta, phi, k, radius, origin) for source in self.sources)
 
     def H_angular(self, theta, phi, k, radius=None, origin=None):
-        return sum((source.H_angular(theta, phi, k, radius, origin) for source in self.sources))
+        return sum(source.H_angular(theta, phi, k, radius, origin) for source in self.sources)
 
     def reflect(self, interface, medium, wavelength):
         return combined_source(*[src.reflect(interface, medium, wavelength) for src in self.sources])
@@ -240,4 +236,4 @@ class combined_source(source):
         elif isinstance(other, source):
             return combined_source(*self.sources, other)
         else:
-            raise ValueError("cannot add source with non-source of type {}".format(type(other)))
+            raise ValueError(f"cannot add source with non-source of type {type(other)}")

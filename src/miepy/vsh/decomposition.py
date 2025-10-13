@@ -1,11 +1,11 @@
-"""
-Decomposition of electric fields and sources into VSH coefficients using:
-    (1) A point matching method
-    (2) An integral projection method
+"""Decomposition of electric fields and sources into VSH coefficients using:
+(1) A point matching method
+(2) An integral projection method
 """
 
 import numpy as np
-from miepy import vsh, coordinates
+
+from miepy import coordinates, vsh
 from miepy.cpp.decomposition import integrate_phase
 
 
@@ -20,7 +20,7 @@ def sampling_from_lmax(lmax, method):
     elif method == "near":
         return 2 * N
     else:
-        raise ValueError("'{method}' is not a valid method. Use 'far' or 'near'".format(method=method))
+        raise ValueError(f"'{method}' is not a valid method. Use 'far' or 'near'")
 
 
 def sample_sphere_point_matching(position, radius, sampling):
@@ -193,7 +193,7 @@ def integral_project_fields_onto(E, r, k, ftype, n, m, mode=vsh.vsh_mode.outgoin
     elif mode in (vsh.vsh_mode.incident, vsh.vsh_mode.ingoing):
         factor = -1 / (1j * Emn_val)
     else:
-        raise ValueError("{mode} is not a valid type of mode".format(mode=mode))
+        raise ValueError(f"{mode} is not a valid type of mode")
 
     norm = vsh.vsh_normalization_values(mode, ftype, n, m, r, k)
 
@@ -216,7 +216,6 @@ def integral_project_source_onto(src, k, ftype, n, m, origin=[0, 0, 0], sampling
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
-
     r = 2 * np.pi / k  # choose radius to be a wavelength of the light
     r = 50e-9
 
@@ -239,7 +238,6 @@ def integral_project_fields(E, r, k, lmax, mode=vsh.vsh_mode.outgoing, spherical
         mode: vsh_mode     type of VSH (outgoing, incident) (default: outgoing)
         spherical          If true, E should be in spherical components (default: False (cartesian))
     """
-
     rmax = vsh.lmax_to_rmax(lmax)
     p = np.zeros([2, rmax], dtype=complex)
 
@@ -262,7 +260,6 @@ def integral_project_source(src, k, lmax, origin=[0, 0, 0], sampling=30, mode=vs
         sampling   number of points to sample between 0 and pi (default: 30)
         mode: vsh_mode       type of VSH (outgoing, incident) (default: incident)
     """
-
     rmax = vsh.lmax_to_rmax(lmax)
     p = np.zeros([2, rmax], dtype=complex)
 

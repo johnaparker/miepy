@@ -1,17 +1,15 @@
-"""
-Defines the vsh wave functions and related functions
-"""
+"""Defines the vsh wave functions and related functions"""
+
+from math import factorial
 
 import numpy as np
-from scipy import special
-import enum
-from math import factorial
+
 from miepy import vsh
-from miepy.cpp.vsh_functions import vsh_mode, Emn
+from miepy.cpp.vsh_functions import Emn, vsh_mode
 
 
 def get_zn(mode):
-    """determine the zn function for a given mode"""
+    """Determine the zn function for a given mode"""
     if mode is vsh_mode.outgoing:
         return vsh.special.spherical_hn
     elif mode is vsh_mode.ingoing:
@@ -19,11 +17,11 @@ def get_zn(mode):
     elif mode in (vsh_mode.incident, vsh_mode.interior):
         return vsh.special.spherical_jn
     else:
-        raise TypeError("{mode} is not a valid type of mode".format(mode=mode))
+        raise TypeError(f"{mode} is not a valid type of mode")
 
 
 def get_zn_far(mode):
-    """determine the zn function for a given mode, in the far-field limit"""
+    """Determine the zn function for a given mode, in the far-field limit"""
     if mode is vsh_mode.outgoing:
         return lambda n, z: np.exp(1j * (z - (n + 1) * np.pi / 2)) / z
     elif mode is vsh_mode.ingoing:
@@ -31,21 +29,21 @@ def get_zn_far(mode):
     elif mode in (vsh_mode.incident, vsh_mode.interior):
         return lambda n, z: np.cos(z - (n + 1) * np.pi / 2) / z
     else:
-        raise TypeError("{mode} is not a valid type of mode".format(mode=mode))
+        raise TypeError(f"{mode} is not a valid type of mode")
 
 
 # TODO: this whole interface could probably be nicer...
 # TODO: specify spherical flag (either in VSH or the N/M functions themselves)
 # TODO: expansion issues at origin (r=0) for incident modes
 def VSH(n, m, mode=vsh_mode.outgoing):
-    """electric and magnetic vector spherical harmonic function
+    """Electric and magnetic vector spherical harmonic function
 
          n: int           order
          m: int           degree
          mode: vsh_mode   type of VSH (outgoing, incident)
 
-    returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 spherical components"""
-
+    returns (N(r,θ,ϕ,k) -> [3,...], M(r,θ,ϕ,k) -> [3,...]), the 3 spherical components
+    """
     pi_f = vsh.special.pi_func
     tau_f = vsh.special.tau_func
     Pnm = vsh.special.associated_legendre
@@ -79,14 +77,14 @@ def VSH(n, m, mode=vsh_mode.outgoing):
 
 
 def VSH_far(n, m, mode=vsh_mode.outgoing):
-    """electric and magnetic vector spherical harmonic function in the far field
+    """Electric and magnetic vector spherical harmonic function in the far field
 
          n: int           order
          m: int           degree
          mode: vsh_mode   type of VSH (outgoing, incident)
 
-    returns (N(r,θ,ϕ,k) -> [2,...], M(r,θ,ϕ,k) -> [2,...]), the 2 theta/phi components"""
-
+    returns (N(r,θ,ϕ,k) -> [2,...], M(r,θ,ϕ,k) -> [2,...]), the 2 theta/phi components
+    """
     pi_f = vsh.special.pi_func
     tau_f = vsh.special.tau_func
     zn = get_zn_far(mode)
@@ -143,5 +141,4 @@ def vsh_normalization_values_far(n, m):
         n                 vsh order (1, 2, ...)
         m                 vsh orientation (-n, -n+1, ..., n)
     """
-
     return 4 * np.pi * n * (n + 1) * factorial(n + m) / ((2 * n + 1) * factorial(n - m))

@@ -1,11 +1,9 @@
-"""
-Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)
-"""
+"""Displaying the fields in an xy cross section of the sphere (x polarized light, z-propagating)"""
 
 import numpy as np
-import matplotlib.pyplot as plt
-from miepy.materials import material
+
 from miepy import sphere
+from miepy.materials import material
 
 # wavelength from 400nm to 1000nm
 wav = np.linspace(300, 1100, 1000)
@@ -78,7 +76,7 @@ from itertools import chain
 
 
 def get_args(A):
-    return list(chain.from_iterable(zip(np.abs(A), np.angle(A))))
+    return list(chain.from_iterable(zip(np.abs(A), np.angle(A), strict=False)))
 
 
 curlE = curl(E)
@@ -102,8 +100,8 @@ print("-iE     = ({:.2e} exp({:.2f}), {:.2e} exp({:.2f}), {:.2e} exp({:.2f}) )".
 print("")
 
 divE = div(E)
-print("div(E) = {:.2e} exp({:.2f})".format(np.abs(divE), np.angle(divE)))
+print(f"div(E) = {np.abs(divE):.2e} exp({np.angle(divE):.2f})")
 divH = div(H)
-print("div(H) = {:.2e} exp({:.2f})".format(np.abs(divH), np.angle(divH)))
+print(f"div(H) = {np.abs(divH):.2e} exp({np.angle(divH):.2f})")
 # plt.streamplot(np.squeeze(X), np.squeeze(Z), np.real(Ex), np.real(Ez), color='white', linewidth=2)k
 # plt.show()

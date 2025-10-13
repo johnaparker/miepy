@@ -1,13 +1,12 @@
-"""
-Defines functions used to construct basis vectors, convert between coordinate systems, build meshes, etc.
-"""
+"""Defines functions used to construct basis vectors, convert between coordinate systems, build meshes, etc."""
+
+import numpy as np
 
 import miepy
-import numpy as np
 
 
 def sph_to_cart(r, theta, phi, origin=None):
-    """convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
+    """Convert spherical coordinates (r, theta, phi) centered at origin to cartesian coordinates (x, y, z)"""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -19,7 +18,7 @@ def sph_to_cart(r, theta, phi, origin=None):
 
 
 def cart_to_sph(x, y, z, origin=None):
-    """convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
+    """Convert cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi) centered at origin"""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -32,7 +31,7 @@ def cart_to_sph(x, y, z, origin=None):
 
 
 def cyl_to_cart(r, phi, z, origin=None):
-    """convert cylindrical coordinates (r, phi, z) centered at origin to cartesian coordinates (x, y, z)"""
+    """Convert cylindrical coordinates (r, phi, z) centered at origin to cartesian coordinates (x, y, z)"""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -43,7 +42,7 @@ def cyl_to_cart(r, phi, z, origin=None):
 
 
 def cart_to_cyl(x, y, z, origin=None):
-    """convert cartesian coordinates (x, y, z) to cylindrical coordinates (r, phi, z) centered at origin"""
+    """Convert cartesian coordinates (x, y, z) to cylindrical coordinates (r, phi, z) centered at origin"""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -57,7 +56,7 @@ def cart_to_cyl(x, y, z, origin=None):
 # TODO: if theta is scalar, or phi is scalar... same with other functions here
 # TODO: implement origin
 def sph_basis_vectors(theta, phi, origin=None):
-    """obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
+    """Obtain the spherical basis vectors (r_hat, theta_hat, phi_hat) for given theta, phi"""
     if origin is None:
         origin = np.zeros(3, dtype=float)
 
@@ -70,7 +69,7 @@ def sph_basis_vectors(theta, phi, origin=None):
 
 # TODO: implement origin
 def vec_cart_to_sph(F, theta, phi, origin=None):
-    """convert a vector field F from cartesian to spherical coordinates
+    """Convert a vector field F from cartesian to spherical coordinates
 
     Arguments:
         F[3,...]     vector field values
@@ -91,7 +90,7 @@ def vec_cart_to_sph(F, theta, phi, origin=None):
 
 # TODO: implement origin
 def vec_sph_to_cart(F, theta, phi, origin=None):
-    """convert a vector field F from spherical to cartesian coordinates
+    """Convert a vector field F from spherical to cartesian coordinates
 
     Arguments:
         F[3,...]     vector field values
@@ -110,15 +109,13 @@ def vec_sph_to_cart(F, theta, phi, origin=None):
 
 
 def sphere_mesh(sampling):
-    """
-    Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
+    """Obtain a THETA,PHI mesh for discretizing the surface of the sphere, consistent
     with the format required by the project and decompose functions
     Returns (THETA,PHI) meshgrids
 
     Arguments:
         sampling   number of points to sample between 0 and pi
     """
-
     phi = np.linspace(0, 2 * np.pi, 2 * sampling)
     tau = np.linspace(-1, 1, sampling)
     theta = np.arccos(tau)
@@ -129,8 +126,8 @@ def sphere_mesh(sampling):
 
 def cart_sphere_mesh(radius, origin, sampling):
     """Given a radius, origin and sampling, return the
-    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere"""
-
+    X,Y,Z,THETA,PHI,tau,phi coordinates of a discretized sphere
+    """
     r = np.array([radius])
     tau = np.linspace(-1, 1, sampling)
     theta = np.arccos(tau)

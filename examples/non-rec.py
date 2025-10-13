@@ -1,12 +1,11 @@
-"""
-GMT for dimer, varying the separation distance between the dimer pair, with and without interactions
-"""
+"""GMT for dimer, varying the separation distance between the dimer pair, with and without interactions"""
 
-import numpy as np
 import matplotlib.pyplot as plt
-import miepy
-from tqdm import tqdm
+import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
+from tqdm import tqdm
+
+import miepy
 
 pdf = PdfPages("out.pdf")
 

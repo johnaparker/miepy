@@ -1,11 +1,10 @@
-"""
-Functions related to the flux: Poynting vector, cross-sections, etc.
-"""
+"""Functions related to the flux: Poynting vector, cross-sections, etc."""
+
+from functools import namedtuple
 
 import numpy as np
-from scipy import constants
+
 import miepy
-from functools import namedtuple
 
 cross_sections = namedtuple("cross_sections", ["scattering", "absorption", "extinction"])
 
@@ -63,7 +62,6 @@ def poynting_vector(E, H, eps=1, mu=1):
 
     Returns S[3,...]
     """
-
     S = np.cross(E, np.conj(H), axis=0)
     n_b = np.sqrt(eps * mu)
 

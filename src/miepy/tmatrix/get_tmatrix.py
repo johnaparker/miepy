@@ -1,16 +1,17 @@
 import os
 import subprocess
 import tempfile
+from functools import namedtuple
 
 import numpy as np
-import miepy
 import pandas
-from functools import namedtuple
-from .required_files import main_input_file, sct_input_file
+
+import miepy
+
 from .axisymmetric_file import axisymmetric_file
 from .non_axisymmetric_file import non_axisymmetric_file
+from .required_files import main_input_file, sct_input_file
 from .sphere_cluster_file import sphere_cluster_file
-
 
 tmatrix_input = namedtuple("TmatrixInput", "number, name, input_function")
 
@@ -38,29 +39,27 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
     ### create temporary directory tree
     with tempfile.TemporaryDirectory() as direc:
         ### create 4 sub-directories
-        input_files_dir = "{direc}/INPUTFILES".format(direc=direc)
+        input_files_dir = f"{direc}/INPUTFILES"
         os.makedirs(input_files_dir)
 
-        out_dir = "{direc}/OUTPUTFILES".format(direc=direc)
+        out_dir = f"{direc}/OUTPUTFILES"
         os.makedirs(out_dir)
 
-        tmatrix_output_dir = "{direc}/TMATFILES".format(direc=direc)
+        tmatrix_output_dir = f"{direc}/TMATFILES"
         os.makedirs(tmatrix_output_dir)
 
-        sources_dir = "{direc}/TMATSOURCES".format(direc=direc)
+        sources_dir = f"{direc}/TMATSOURCES"
         os.makedirs(sources_dir)
 
         ### write 3 input files
-        with open("{input_files_dir}/Input.dat".format(input_files_dir=input_files_dir), "w") as f:
+        with open(f"{input_files_dir}/Input.dat", "w") as f:
             f.write(main_input_file())
 
-        with open("{input_files_dir}/InputSCT.dat".format(input_files_dir=input_files_dir), "w") as f:
+        with open(f"{input_files_dir}/InputSCT.dat", "w") as f:
             f.write(sct_input_file())
 
-        with open(
-            "{input_files_dir}/Input{name}.dat".format(input_files_dir=input_files_dir, name=solver.name), "w"
-        ) as f:
-            f.write((solver.input_function(Nrank=lmax, **input_kwargs)))
+        with open(f"{input_files_dir}/Input{solver.name}.dat", "w") as f:
+            f.write(solver.input_function(Nrank=lmax, **input_kwargs))
 
         ### execute program and communicate
         # Search for tmatrix binary in all package paths (handles editable installs)
@@ -83,7 +82,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         proc.wait()
 
         ### read T-matrix dimensions
-        with open("{tmatrix_output_dir}/Infotmatrix.dat".format(tmatrix_output_dir=tmatrix_output_dir), "r") as f:
+        with open(f"{tmatrix_output_dir}/Infotmatrix.dat") as f:
             lines = f.readlines()
 
             ### last entries in the final two lines give Nrank, Mrank, respectively
@@ -95,7 +94,7 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
             n_rank = int(n_rank_str[:-1])
 
         ### read T-matrix output
-        tmatrix_file = "{tmatrix_output_dir}/tmatrix.dat".format(tmatrix_output_dir=tmatrix_output_dir)
+        tmatrix_file = f"{tmatrix_output_dir}/tmatrix.dat"
         data = pandas.read_csv(tmatrix_file, skiprows=3, sep=r"\s+", header=None).values.flatten()  # read as flat array
         data = data[~np.isnan(data)]  # throw out the NaNs
         data_real = data[::2]  # every other element is the real part

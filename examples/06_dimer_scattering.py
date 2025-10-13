@@ -1,10 +1,8 @@
-"""
-Scattering, absroption, and extinction cross-sections of an Au dimer
-"""
+"""Scattering, absroption, and extinction cross-sections of an Au dimer"""
 
-import numpy as np
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+import numpy as np
+
 import miepy
 
 nm = 1e-9

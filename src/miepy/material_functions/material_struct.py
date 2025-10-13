@@ -28,12 +28,12 @@ class material_struct:
 
     @property
     def wavelength(self):
-        """get the wavelength"""
+        """Get the wavelength"""
         return self._wavelength
 
     @wavelength.setter
     def wavelength(self, value):
-        """set the wavelength to some value, changing all eps and mu data with it"""
+        """Set the wavelength to some value, changing all eps and mu data with it"""
         self._wavelength = value
 
         if value is not None:

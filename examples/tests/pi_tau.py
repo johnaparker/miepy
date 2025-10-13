@@ -1,7 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import miepy
 from math import factorial
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import miepy
 
 eps = 1e-3
 theta = np.linspace(eps, np.pi - eps, 50)

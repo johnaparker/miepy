@@ -1,4 +1,5 @@
 import numpy as np
+
 import miepy
 
 
@@ -13,7 +14,6 @@ class particle:
             orientation   particle orientation
             material      particle material (miepy.material object)
         """
-
         self._position = np.asarray(position, dtype=float)
 
         if orientation is None:

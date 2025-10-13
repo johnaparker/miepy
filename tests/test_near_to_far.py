@@ -1,10 +1,9 @@
-"""
-Verify that the near fields, when evaluated far from the origin, approximate the expressions for the angular far fields
-"""
+"""Verify that the near fields, when evaluated far from the origin, approximate the expressions for the angular far fields"""
 
 import numpy as np
-import miepy
 import pytest
+
+import miepy
 
 ### parameters
 nm = 1e-9
@@ -30,8 +29,7 @@ X, Y, Z = miepy.coordinates.sph_to_cart(radius, THETA, PHI)
     ],
 )
 def test_source_electric_field_near_to_far(source, atol, rtol):
-    """
-    Compare E-field of source in far field using near and far field expressions
+    """Compare E-field of source in far field using near and far field expressions
     Expressions are expected to converge in the limit r -> infinity
     """
     E1 = source.E_field(X, Y, Z, k, sampling=300)
@@ -50,8 +48,7 @@ def test_source_electric_field_near_to_far(source, atol, rtol):
     ],
 )
 def test_source_magnetic_field_near_to_far(source, atol, rtol):
-    """
-    Compare H-field of source in far field using near and far field expressions
+    """Compare H-field of source in far field using near and far field expressions
     Expressions are expected to converge in the limit r -> infinity
     """
     H1 = source.H_field(X, Y, Z, k, sampling=300)
@@ -62,8 +59,7 @@ def test_source_magnetic_field_near_to_far(source, atol, rtol):
 
 
 def test_cluster_field_near_to_far():
-    """
-    Compare scattered E/H-field of a cluster in far field using near and far field expressions
+    """Compare scattered E/H-field of a cluster in far field using near and far field expressions
     Expressions are expected to converge in the limit r -> infinity
     """
     x = np.linspace(-600 * nm, 600 * nm, 3)

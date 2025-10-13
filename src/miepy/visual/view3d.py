@@ -1,8 +1,10 @@
-import miepy
 from collections import namedtuple
-import numpy as np
 from itertools import count
+
 import matplotlib.colors as cm
+import numpy as np
+
+import miepy
 
 nm = 1e-9
 
@@ -111,8 +113,7 @@ def draw_particle(particle, paint, **kwargs):
 # TODO: scale bar: auto-detect position and size
 # TODO: center: COM + FOV. Options: 'origin', 'auto', np.array
 def visualize(cluster, animation=False, transparent=False, scale=None, origin="auto"):
-    """
-    Create a 3D visualization of a particle cluster using VPython
+    """Create a 3D visualization of a particle cluster using VPython
 
     Arguments:
         cluster      sphere or particle cluster
@@ -179,11 +180,11 @@ def visualize(cluster, animation=False, transparent=False, scale=None, origin="a
 
         def setspeed(s):
             nonlocal T
-            wt.text = "f = {:1.2f} Hz".format(s.value)
+            wt.text = f"f = {s.value:1.2f} Hz"
             T = 30 / s.value
 
         sl = vpython.slider(min=0.01, max=0.3, value=0.1, length=180, bind=setspeed, right=15, top=7)
-        wt = vpython.wtext(text="f = {:1.2f} Hz".format(sl.value))
+        wt = vpython.wtext(text=f"f = {sl.value:1.2f} Hz")
 
         def transparency(b):
             if b.checked:

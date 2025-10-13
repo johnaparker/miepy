@@ -1,5 +1,7 @@
-import miepy
 import numpy as np
+
+import miepy
+
 from .particle_base import particle
 
 
