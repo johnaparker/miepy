@@ -5,6 +5,6 @@ authors:
   given-names: "John"
   orcid: "https://orcid.org/0000-0001-8157-2403"
 title: "MiePy"
-version: 0.6.0
+version: 1.0.0
 date-released: 2025-10-11
 url: "https://github.com/johnaparker/miepy"
