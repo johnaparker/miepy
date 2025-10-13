@@ -1,6 +1,18 @@
-def non_axisymmetric_file(geometry_type, geometry_parameters, Nrank, Mrank, 
-        wavelength, index, index_m, R_symmetry=0, kb=None, conducting=False,
-        Nparam=1, Nint_1=50, Nint_2=50):
+def non_axisymmetric_file(
+    geometry_type,
+    geometry_parameters,
+    Nrank,
+    Mrank,
+    wavelength,
+    index,
+    index_m,
+    R_symmetry=0,
+    kb=None,
+    conducting=False,
+    Nparam=1,
+    Nint_1=50,
+    Nint_2=50,
+):
     """Create input file for non-axisymmetric particles
 
     Arguments:
@@ -18,8 +30,8 @@ def non_axisymmetric_file(geometry_type, geometry_parameters, Nrank, Mrank,
         Nint_1 (int)                 number of points used in first integration (default: 200)
         Nint_2 (int)                 number of points used in second integration (default: 200)
     """
-    scaled_geometry_parameters = [p/wavelength for p in geometry_parameters]
-    geo_str = ''.join([str(p) + '\n' for p in scaled_geometry_parameters])[:-1]
+    scaled_geometry_parameters = [p / wavelength for p in geometry_parameters]
+    geo_str = "".join([str(p) + "\n" for p in scaled_geometry_parameters])[:-1]
     Nsurf = len(geometry_parameters)
     wavelength = 1
 
@@ -161,7 +173,20 @@ Variable:
 - PrnProgress - if PrnProgress = t, the progress of calculation is 
                 printed. 
 """
-    return file_str_template.format(geometry_type=geometry_type, geometry_parameters=geo_str,
-             Nsurf=Nsurf, Nrank=Nrank, Mrank=Mrank, wavelength=wavelength, index=index/index_m, 
-             index_m=index_m, chiral=str(chiral).lower(), R_symmetry=R_symmetry, kb=kb,
-             conducting=str(conducting).lower(), Nparam=Nparam, Nint_1=Nint_1, Nint_2=Nint_2)
+    return file_str_template.format(
+        geometry_type=geometry_type,
+        geometry_parameters=geo_str,
+        Nsurf=Nsurf,
+        Nrank=Nrank,
+        Mrank=Mrank,
+        wavelength=wavelength,
+        index=index / index_m,
+        index_m=index_m,
+        chiral=str(chiral).lower(),
+        R_symmetry=R_symmetry,
+        kb=kb,
+        conducting=str(conducting).lower(),
+        Nparam=Nparam,
+        Nint_1=Nint_1,
+        Nint_2=Nint_2,
+    )

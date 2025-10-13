@@ -6,8 +6,9 @@ import numpy as np
 import miepy
 from miepy.sources import source
 
+
 class vsh_source(source):
-    def __init__(self, n, m, ftype='electric', center=None, mode=None, amplitude=1, phase=0):
+    def __init__(self, n, m, ftype="electric", center=None, mode=None, amplitude=1, phase=0):
         """
         Arguments:
             n            n value of VSH mode
@@ -26,17 +27,17 @@ class vsh_source(source):
         if mode is None:
             self.mode = miepy.vsh_mode.incident
 
-        if self.ftype == 'electric':
+        if self.ftype == "electric":
             self.N, self.M = miepy.vsh.VSH(self.n, self.m, self.mode)
             self.N_far, self.M_far = miepy.vsh.VSH_far(self.n, self.m, self.mode)
-        elif self.ftype == 'magnetic':
+        elif self.ftype == "magnetic":
             self.M, self.N = miepy.vsh.VSH(self.n, self.m, self.mode)
             self.M_far, self.N_far = miepy.vsh.VSH_far(self.n, self.m, self.mode)
         else:
             raise ValueError("ftype must be either 'electric' or 'magnetic'")
 
         if center is None:
-            self.center = np.array([0,0,0], dtype=float)
+            self.center = np.array([0, 0, 0], dtype=float)
         else:
             self.center = np.asarray(center, dtype=float)
 
@@ -44,7 +45,7 @@ class vsh_source(source):
         self.phase = phase
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False):
-        factor = self.amplitude*np.exp(1j*self.phase)
+        factor = self.amplitude * np.exp(1j * self.phase)
 
         if not spherical:
             x1, x2, x3 = miepy.coordinates.cart_to_sph(x1, x2, x3, origin=self.center)
@@ -55,12 +56,12 @@ class vsh_source(source):
             E = self.N(x1, x2, x3, k)
 
         if not spherical:
-            return factor*miepy.coordinates.vec_sph_to_cart(E, x2, x3)
+            return factor * miepy.coordinates.vec_sph_to_cart(E, x2, x3)
         else:
-            return factor*E
+            return factor * E
 
     def H_field(self, x1, x2, x3, k, far=False, spherical=False):
-        factor = self.amplitude*np.exp(1j*self.phase)
+        factor = self.amplitude * np.exp(1j * self.phase)
 
         if not spherical:
             x1, x2, x3 = miepy.coordinates.cart_to_sph(x1, x2, x3, origin=self.center)
@@ -71,9 +72,9 @@ class vsh_source(source):
             E = self.M(x1, x2, x3, k)
 
         if not spherical:
-            return factor*miepy.coordinates.vec_sph_to_cart(E, x2, x3)
+            return factor * miepy.coordinates.vec_sph_to_cart(E, x2, x3)
         else:
-            return factor*E
+            return factor * E
 
     def structure(self, position, k, lmax):
         position = np.asarray(position)
@@ -81,39 +82,41 @@ class vsh_source(source):
 
         rmax = miepy.vsh.lmax_to_rmax(lmax)
         p_src = np.zeros([Nparticles, 2, rmax], dtype=complex)
-        factor = self.amplitude*np.exp(1j*self.phase)
+        factor = self.amplitude * np.exp(1j * self.phase)
 
         for i in range(Nparticles):
             dr = position[i] - self.center
 
             if not np.any(dr):
-                for r,n,m in miepy.mode_indices(lmax):
+                for r, n, m in miepy.mode_indices(lmax):
                     if n == self.n and m == self.m:
                         Emn = miepy.vsh.Emn(m, n)
-                        p_src[i,0,r] = 1/(-1j*Emn)
+                        p_src[i, 0, r] = 1 / (-1j * Emn)
             else:
                 rad, theta, phi = miepy.coordinates.cart_to_sph(*dr)
-                for r,n,m in miepy.mode_indices(lmax):
+                for r, n, m in miepy.mode_indices(lmax):
                     Emn = miepy.vsh.Emn(self.m, self.n)
                     Euv = miepy.vsh.Emn(m, n)
-                    A, B = miepy.cpp.vsh_translation.vsh_translation(m, n, self.m, self.n, rad, theta, phi, k, self.mode)
-                    p_src[i,0,r] = A/(-1j*Emn)
-                    p_src[i,1,r] = B/(-1j*Emn)
+                    A, B = miepy.cpp.vsh_translation.vsh_translation(
+                        m, n, self.m, self.n, rad, theta, phi, k, self.mode
+                    )
+                    p_src[i, 0, r] = A / (-1j * Emn)
+                    p_src[i, 1, r] = B / (-1j * Emn)
 
-        if self.ftype == 'magnetic':
+        if self.ftype == "magnetic":
             p_src = p_src[:, ::-1]
 
-        return factor*p_src
+        return factor * p_src
 
     def H_angular(self, theta, phi, k, radius=None, origin=None):
         if radius is None:
-            radius = 1e6*2*np.pi/k
+            radius = 1e6 * 2 * np.pi / k
 
         return self.H_field(radius, radius, theta, phi, far=True, spherical=True)[1:]
 
     def E_angular(self, theta, phi, k, radius=None, origin=None):
         if radius is None:
-            radius = 1e6*2*np.pi/k
+            radius = 1e6 * 2 * np.pi / k
 
         return self.E_field(radius, radius, theta, phi, far=True, spherical=True)[1:]
 

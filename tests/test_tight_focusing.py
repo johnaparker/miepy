@@ -9,24 +9,28 @@ import miepy
 import pytest
 
 nm = 1e-9
-wav = 600*nm
-k = 2*np.pi/wav
+wav = 600 * nm
+k = 2 * np.pi / wav
 
 ### grid points to evaluate field over
-x = np.linspace(-200*nm, 200*nm, 2)
-y = np.linspace(-200*nm, 200*nm, 2)
-z = np.linspace(-200*nm, 200*nm, 2)
+x = np.linspace(-200 * nm, 200 * nm, 2)
+y = np.linspace(-200 * nm, 200 * nm, 2)
+z = np.linspace(-200 * nm, 200 * nm, 2)
 X, Y, Z = np.meshgrid(x, y, z)
 
-width = 200*nm
-polarization = [1,0]
+width = 200 * nm
+polarization = [1, 0]
 
-@pytest.mark.parametrize("source,rtol", [
-    (miepy.sources.gaussian_beam(width=width, polarization=polarization), 3e-3),
-    (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization), 4e-4),
-    (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization), 9e-3),
-    (miepy.sources.bigaussian_beam(width_x=1.5*width, width_y=width/1.5, polarization=polarization), 3e-3),
-])
+
+@pytest.mark.parametrize(
+    "source,rtol",
+    [
+        (miepy.sources.gaussian_beam(width=width, polarization=polarization), 3e-3),
+        (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization), 4e-4),
+        (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization), 9e-3),
+        (miepy.sources.bigaussian_beam(width_x=1.5 * width, width_y=width / 1.5, polarization=polarization), 3e-3),
+    ],
+)
 def test_E_field_tight_focusing(source, rtol):
     E1 = source.E_field(X, Y, Z, k)
 
@@ -39,12 +43,16 @@ def test_E_field_tight_focusing(source, rtol):
 
     assert np.allclose(E1, E2, rtol=rtol, atol=1e-10)
 
-@pytest.mark.parametrize("source,rtol", [
-    (miepy.sources.gaussian_beam(width=width, polarization=polarization), 3e-3),
-    (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization), 4e-4),
-    (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization), 9e-3),
-    (miepy.sources.bigaussian_beam(width_x=1.5*width, width_y=width/1.5, polarization=polarization), 3e-3),
-])
+
+@pytest.mark.parametrize(
+    "source,rtol",
+    [
+        (miepy.sources.gaussian_beam(width=width, polarization=polarization), 3e-3),
+        (miepy.sources.hermite_gaussian_beam(1, 0, width=width, polarization=polarization), 4e-4),
+        (miepy.sources.laguerre_gaussian_beam(1, 1, width=width, polarization=polarization), 9e-3),
+        (miepy.sources.bigaussian_beam(width_x=1.5 * width, width_y=width / 1.5, polarization=polarization), 3e-3),
+    ],
+)
 def test_H_field_tight_focusing(source, rtol):
     H1 = source.H_field(X, Y, Z, k)
 

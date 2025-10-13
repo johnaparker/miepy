@@ -23,9 +23,7 @@ zpos = 400 * nm
     "s1,s2,rtol",
     [
         (
-            miepy.sources.gaussian_beam(
-                width=width, polarization=polarization, center=[0, 0, -zpos]
-            ),
+            miepy.sources.gaussian_beam(width=width, polarization=polarization, center=[0, 0, -zpos]),
             miepy.sources.gaussian_beam(width=width, polarization=polarization),
             1e-8,
         ),

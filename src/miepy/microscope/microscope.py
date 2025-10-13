@@ -3,7 +3,10 @@ from tqdm import tqdm
 import miepy
 from functools import partial
 
-def cluster_microscope(cluster, medium=None, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30, source=False):
+
+def cluster_microscope(
+    cluster, medium=None, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi / 2, sampling=30, source=False
+):
     """
     Arguments:
         cluster        miepy cluster
@@ -23,12 +26,34 @@ def cluster_microscope(cluster, medium=None, orientation=None, focal_img=100, fo
     n1 = cluster.medium.index(wavelength)
     n2 = medium.index(wavelength)
 
-    return microscope(E_angular, wavelength, n1, n2=n2, orientation=orientation, focal_img=focal_img, focal_obj=focal_obj, theta_obj=theta_obj, sampling=sampling)
+    return microscope(
+        E_angular,
+        wavelength,
+        n1,
+        n2=n2,
+        orientation=orientation,
+        focal_img=focal_img,
+        focal_obj=focal_obj,
+        theta_obj=theta_obj,
+        sampling=sampling,
+    )
 
 
 class microscope:
     """A microscope to produce images"""
-    def __init__(self, E_angular, wavelength, n1, n2=1, orientation=None, focal_img=100, focal_obj=1, theta_obj=np.pi/2, sampling=30):
+
+    def __init__(
+        self,
+        E_angular,
+        wavelength,
+        n1,
+        n2=1,
+        orientation=None,
+        focal_img=100,
+        focal_obj=1,
+        theta_obj=np.pi / 2,
+        sampling=30,
+    ):
         """
         Arguments:
             E_angular      far-field angular function for E(theta, phi)
@@ -47,13 +72,13 @@ class microscope:
         self.theta_obj = theta_obj
 
         self.theta = np.linspace(0, self.theta_obj, sampling)
-        self.phi   = np.linspace(0, 2*np.pi, 2*sampling)
-        self.THETA, self.PHI = np.meshgrid(self.theta, self.phi, indexing='ij')
+        self.phi = np.linspace(0, 2 * np.pi, 2 * sampling)
+        self.THETA, self.PHI = np.meshgrid(self.theta, self.phi, indexing="ij")
 
         self.n1 = n1
         self.n2 = n2
-        self.k1 = 2*np.pi*self.n1/wavelength
-        self.k2 = 2*np.pi*self.n2/wavelength
+        self.k1 = 2 * np.pi * self.n1 / wavelength
+        self.k2 = 2 * np.pi * self.n2 / wavelength
 
         if orientation is not None:
             THETA, PHI = miepy.coordinates.rotate_sph(self.THETA, self.PHI, orientation)
@@ -66,8 +91,8 @@ class microscope:
         if orientation is not None:
             self.E_far = miepy.coordinates.rotate_vec(self.E_far, orientation)
 
-        self.magnification = self.n1*self.focal_img/(self.n2*self.focal_obj)
-        self.numerical_aperature = self.n1*np.sin(theta_obj)
+        self.magnification = self.n1 * self.focal_img / (self.n2 * self.focal_obj)
+        self.numerical_aperature = self.n1 * np.sin(theta_obj)
 
     def image(self, x, y, z_val=0, magnify=False):
         """
@@ -81,21 +106,32 @@ class microscope:
         """
         if magnify:
             M = self.magnification
-            x, y = M*x, M*y
+            x, y = M * x, M * y
         k = self.k2
         f1 = self.focal_obj
         f2 = self.focal_img
-        factor = 1j*k*f2*np.exp(-1j*k*(f2+z_val))/(2*np.pi)*np.sqrt(self.n1/self.n2)*(f1/f2)**2 \
-                    *np.sin(self.THETA)*np.sqrt(np.cos(self.THETA)) \
-                    *np.exp(0.5j*k*z_val*(f1/f2)**2*np.sin(self.THETA)**2)
+        factor = (
+            1j
+            * k
+            * f2
+            * np.exp(-1j * k * (f2 + z_val))
+            / (2 * np.pi)
+            * np.sqrt(self.n1 / self.n2)
+            * (f1 / f2) ** 2
+            * np.sin(self.THETA)
+            * np.sqrt(np.cos(self.THETA))
+            * np.exp(0.5j * k * z_val * (f1 / f2) ** 2 * np.sin(self.THETA) ** 2)
+        )
 
         integrand = np.empty((2,) + self.THETA.shape, dtype=complex)
 
-        @partial(np.vectorize, signature='(),()->(n)')
+        @partial(np.vectorize, signature="(),()->(n)")
         def compute_pixel(x, y):
             rho = np.sqrt(x**2 + y**2)
             angle = np.arctan2(y, x)
-            integrand[...] = factor*self.E_far[:2]*np.exp(1j*k*f1/f2*rho*np.sin(self.THETA)*np.cos(self.PHI-angle))
+            integrand[...] = (
+                factor * self.E_far[:2] * np.exp(1j * k * f1 / f2 * rho * np.sin(self.THETA) * np.cos(self.PHI - angle))
+            )
             val = np.zeros(2, dtype=complex)
             for p in range(2):
                 val[p] = miepy.vsh.misc.trapz_2d(self.theta, self.phi, integrand[p])
@@ -104,5 +140,5 @@ class microscope:
 
         image = compute_pixel(x, y)
         image = np.moveaxis(image, -1, 0)
-        
+
         return image

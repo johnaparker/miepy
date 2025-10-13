@@ -11,48 +11,53 @@ import matplotlib.cm as cm
 Ag = miepy.materials.Ag()
 
 # calculate scattering coefficients, 800 nm illumination
-radius = 200e-9      # 200 nm radius
-lmax = 5             # Use up to 5 multipoles
+radius = 200e-9  # 200 nm radius
+lmax = 5  # Use up to 5 multipoles
 sphere = miepy.single_mie_sphere(radius, Ag, 800e-9, lmax)
 
 # create discretized xy plane
-x = np.linspace(-2*radius,2*radius,100)
-y = np.linspace(-2*radius,2*radius,100)
-z = np.array([radius*0.0])
+x = np.linspace(-2 * radius, 2 * radius, 100)
+y = np.linspace(-2 * radius, 2 * radius, 100)
+z = np.array([radius * 0.0])
 
-X,Y,Z = np.meshgrid(x,y,z, indexing='xy')
-R = (X**2 + Y**2 + Z**2)**0.5
-THETA = np.arccos(Z/R)
-PHI = np.arctan2(Y,X)
+X, Y, Z = np.meshgrid(x, y, z, indexing="xy")
+R = (X**2 + Y**2 + Z**2) ** 0.5
+THETA = np.arccos(Z / R)
+PHI = np.arctan2(Y, X)
 
 # electric and magnetic field functions
 E_func = sphere.E_field(index=0)
-E = E_func(R,THETA,PHI).squeeze()
-IE = np.sum(np.abs(E)**2, axis=0)
+E = E_func(R, THETA, PHI).squeeze()
+IE = np.sum(np.abs(E) ** 2, axis=0)
 H_func = sphere.H_field(index=0)
-H = H_func(R,THETA,PHI).squeeze()
-IH = np.sum(np.abs(H)**2, axis=0)
+H = H_func(R, THETA, PHI).squeeze()
+IH = np.sum(np.abs(H) ** 2, axis=0)
 
 # plot results
-fig,axes = plt.subplots(ncols=2, figsize=plt.figaspect(1/2.7))
-for i,ax in enumerate(axes):
+fig, axes = plt.subplots(ncols=2, figsize=plt.figaspect(1 / 2.7))
+for i, ax in enumerate(axes):
     plt.sca(ax)
     I = IE if i == 0 else IH
-    plt.pcolormesh(np.squeeze(X)*1e9,np.squeeze(Y)*1e9, I, shading="gouraud", cmap=cm.viridis)
-    plt.colorbar(label='field intensity')
+    plt.pcolormesh(np.squeeze(X) * 1e9, np.squeeze(Y) * 1e9, I, shading="gouraud", cmap=cm.viridis)
+    plt.colorbar(label="field intensity")
 
 THETA = np.squeeze(THETA)
 PHI = np.squeeze(PHI)
-for i,ax in enumerate(axes):
+for i, ax in enumerate(axes):
     F = E if i == 0 else H
-    Fx = F[0]*np.sin(THETA)*np.cos(PHI) + F[1]*np.cos(THETA)*np.cos(PHI) - F[2]*np.sin(PHI)
-    Fy = F[0]*np.sin(THETA)*np.sin(PHI) + F[1]*np.cos(THETA)*np.sin(PHI) + F[2]*np.cos(PHI)
-    step=10
-    ax.streamplot(np.squeeze(X)*1e9, np.squeeze(Y)*1e9, np.real(Fx), np.real(Fy), color='white', linewidth=1.0)
+    Fx = F[0] * np.sin(THETA) * np.cos(PHI) + F[1] * np.cos(THETA) * np.cos(PHI) - F[2] * np.sin(PHI)
+    Fy = F[0] * np.sin(THETA) * np.sin(PHI) + F[1] * np.cos(THETA) * np.sin(PHI) + F[2] * np.cos(PHI)
+    step = 10
+    ax.streamplot(np.squeeze(X) * 1e9, np.squeeze(Y) * 1e9, np.real(Fx), np.real(Fy), color="white", linewidth=1.0)
 
 for ax in axes:
-    ax.set(xlim=[-2*radius*1e9, 2*radius*1e9], ylim=[-2*radius*1e9, 2*radius*1e9],
-            aspect='equal', xlabel="X (nm)", ylabel="Y (nm)")
+    ax.set(
+        xlim=[-2 * radius * 1e9, 2 * radius * 1e9],
+        ylim=[-2 * radius * 1e9, 2 * radius * 1e9],
+        aspect="equal",
+        xlabel="X (nm)",
+        ylabel="Y (nm)",
+    )
 axes[0].set_title("Electric Field")
 axes[1].set_title("Magnetic Field")
 
@@ -84,8 +89,8 @@ plt.show()
 # C = np.zeros((shape[0], shape[1], 4))
 # cmap_3d = cm.viridis
 # for i in range(shape[0]):
-    # for j in range(shape[1]):
-        # C[i,j,:] = cmap_3d(I[i,j])
+# for j in range(shape[1]):
+# C[i,j,:] = cmap_3d(I[i,j])
 # surf = ax.plot_surface(X*1e9, Y*1e9, Z*1e9, rstride=1, cstride=1,shade=False, facecolors=C,linewidth=.0, edgecolors='#000000', antialiased=False)
 # m = cm.ScalarMappable(cmap=cmap_3d)
 # m.set_array(I)

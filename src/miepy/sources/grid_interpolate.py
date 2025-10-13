@@ -9,6 +9,7 @@ import miepy
 from miepy.cpp.decomposition import grid_interpolate
 from functools import partial
 
+
 class grid_interpolate_source(source):
     def __init__(self, source, grid):
         """
@@ -22,7 +23,7 @@ class grid_interpolate_source(source):
         self.lmax_stored = None
 
         if len(grid) != 3:
-            raise ValueError('grid must specify x, y, and z values')
+            raise ValueError("grid must specify x, y, and z values")
         if np.isscalar(grid[2]):
             self.ndim = 2
         else:
@@ -38,7 +39,7 @@ class grid_interpolate_source(source):
                 for j, y in enumerate(self.grid[1]):
                     for k, z in enumerate(self.grid[2]):
                         pos = (x, y, z)
-                        data[i,j,k] = self.source.structure([pos], self.k_stored, self.lmax_stored)
+                        data[i, j, k] = self.source.structure([pos], self.k_stored, self.lmax_stored)
 
             self.f_interp = RegularGridInterpolator(self.grid, data)
 
@@ -48,10 +49,11 @@ class grid_interpolate_source(source):
             for i, x in enumerate(self.grid[0]):
                 for j, y in enumerate(self.grid[1]):
                     pos = (x, y, self.grid[2])
-                    data[i,j] = self.source.structure([pos], self.k_stored, self.lmax_stored)
+                    data[i, j] = self.source.structure([pos], self.k_stored, self.lmax_stored)
 
             # self.f_interp = RegularGridInterpolator(self.grid[:2], data)
-            data=data.reshape([len(self.grid[0]), len(self.grid[1]), -1])
+            data = data.reshape([len(self.grid[0]), len(self.grid[1]), -1])
+
             def f_interp(pts):
                 vals = grid_interpolate(grid=self.grid[:2], data=data, pts=pts)
                 return vals.reshape([-1, 2, rmax])
@@ -86,4 +88,4 @@ class grid_interpolate_source(source):
 
             self.compute_functions()
 
-        return self.f_interp(position[:, :self.ndim])
+        return self.f_interp(position[:, : self.ndim])

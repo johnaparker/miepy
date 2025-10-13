@@ -4,44 +4,48 @@ mie_core_shell calculates the scattering coefficients of a core-shell structure 
 
 import numpy as np
 import miepy
-from miepy.special_functions import riccati_1_single,riccati_2_single,riccati_3_single
-from miepy.mie_single.scattering import scattered_E,scattered_H,interior_E,interior_H
+from miepy.special_functions import riccati_1_single, riccati_2_single, riccati_3_single
+from miepy.mie_single.scattering import scattered_E, scattered_H, interior_E, interior_H
+
 R1 = riccati_1_single
 R2 = riccati_2_single
 R3 = riccati_3_single
 
-def M_matrix(m1,m2,x,y,mu,mu1,mu2,n):
+
+def M_matrix(m1, m2, x, y, mu, mu1, mu2, n):
     """M matrix in core_shell solver"""
-    M = np.zeros([8,8,len(m1)], dtype=complex)
+    M = np.zeros([8, 8, len(m1)], dtype=complex)
     z = np.zeros(len(m1))
-    M[0] = np.array([z,z, -m2*R1(n,m1*x)[0],z, m1*R1(n,m2*x)[0],z, -m1*1j*R2(n,m2*x)[0],z])
-    M[1] = np.array([z,z,z, m2*R1(n,m1*x)[1],z, -m1*R1(n,m2*x)[1],z, m1*1j*R2(n,m2*x)[1]])
-    M[2] = np.array([z,z, mu2*R1(n,m1*x)[1],z, -mu1*R1(n,m2*x)[1],z, mu1*1j*R2(n,m2*x)[1],z])
-    M[3] = np.array([z,z,z, -mu2*R1(n,m1*x)[0],z, mu1*R1(n,m2*x)[0],z, -mu1*1j*R2(n,m2*x)[0]])
-    M[4] = np.array([-m2*R3(n,y)[1],z,z,z,z, -R1(n,m2*y)[1],z, 1j*R2(n,m2*y)[1]])
-    M[5] = np.array([z, m2*R3(n,y)[0],z,z, R1(n,m2*y)[0],z, -1j*R2(n,m2*y)[0],z])
-    M[6] = np.array([-mu2*R3(n,y)[0],z,z,z,z, -mu*R1(n,m2*y)[0],z, mu*1j*R2(n,m2*y)[0]])
-    M[7] = np.array([z, mu2*R3(n,y)[1],z,z, mu*R1(n,m2*y)[1],z, -mu*1j*R2(n,m2*y)[1],z])
+    M[0] = np.array([z, z, -m2 * R1(n, m1 * x)[0], z, m1 * R1(n, m2 * x)[0], z, -m1 * 1j * R2(n, m2 * x)[0], z])
+    M[1] = np.array([z, z, z, m2 * R1(n, m1 * x)[1], z, -m1 * R1(n, m2 * x)[1], z, m1 * 1j * R2(n, m2 * x)[1]])
+    M[2] = np.array([z, z, mu2 * R1(n, m1 * x)[1], z, -mu1 * R1(n, m2 * x)[1], z, mu1 * 1j * R2(n, m2 * x)[1], z])
+    M[3] = np.array([z, z, z, -mu2 * R1(n, m1 * x)[0], z, mu1 * R1(n, m2 * x)[0], z, -mu1 * 1j * R2(n, m2 * x)[0]])
+    M[4] = np.array([-m2 * R3(n, y)[1], z, z, z, z, -R1(n, m2 * y)[1], z, 1j * R2(n, m2 * y)[1]])
+    M[5] = np.array([z, m2 * R3(n, y)[0], z, z, R1(n, m2 * y)[0], z, -1j * R2(n, m2 * y)[0], z])
+    M[6] = np.array([-mu2 * R3(n, y)[0], z, z, z, z, -mu * R1(n, m2 * y)[0], z, mu * 1j * R2(n, m2 * y)[0]])
+    M[7] = np.array([z, mu2 * R3(n, y)[1], z, z, mu * R1(n, m2 * y)[1], z, -mu * 1j * R2(n, m2 * y)[1], z])
 
-    return np.transpose(M, (2,0,1))
+    return np.transpose(M, (2, 0, 1))
 
-def c_values(m2,y,mu2,n):
+
+def c_values(m2, y, mu2, n):
     """c array in core_shell solver"""
     z = np.zeros(len(m2))
-    c = np.zeros([8,len(m2)], dtype=complex)
-    c = np.array([z,z,z,z, -m2*R1(n,y)[1], m2*R1(n,y)[0], -mu2*R1(n,y)[0], mu2*R1(n,y)[1]])
+    c = np.zeros([8, len(m2)], dtype=complex)
+    c = np.array([z, z, z, z, -m2 * R1(n, y)[1], m2 * R1(n, y)[0], -mu2 * R1(n, y)[0], mu2 * R1(n, y)[1]])
     return np.transpose(c)
+
 
 class single_mie_core_shell:
     def __init__(self, radius_in, radius_out, material_in, material_out, wavelength, lmax, medium=None):
         """Solve traditional Mie theory: a single cores-shell in x-polarized plane wave illumination
-               radius_in        core radius
-               radius_out       core+shell radius
-               material_in      core material
-               material_out     shell material
-               wavelength[N]    wavelength(s) to solve the system at
-               lmax             maximum number of orders to use in angular momentum expansion
-               medium           material medium (must be non-absorbing; defaults to vacuum)
+        radius_in        core radius
+        radius_out       core+shell radius
+        material_in      core material
+        material_out     shell material
+        wavelength[N]    wavelength(s) to solve the system at
+        lmax             maximum number of orders to use in angular momentum expansion
+        medium           material medium (must be non-absorbing; defaults to vacuum)
         """
 
         self.radius_in = radius_in
@@ -55,53 +59,52 @@ class single_mie_core_shell:
             self.medium = miepy.constant_material(1.0, 1.0)
         else:
             self.medium = medium
-            if (self.medium.eps(self.wavelength).imag != 0).any()  \
-                         or (self.medium.mu(self.wavelength).imag != 0).any():
-                raise ValueError('medium must be non-absorbing')
+            if (self.medium.eps(self.wavelength).imag != 0).any() or (self.medium.mu(self.wavelength).imag != 0).any():
+                raise ValueError("medium must be non-absorbing")
 
         self.Nfreq = len(self.wavelength)
 
         self.material_data = {}
-        self.material_data['wavelength'] = self.wavelength
-        self.material_data['eps_in']     = self.material_in.eps(self.wavelength)
-        self.material_data['mu_in']      = self.material_in.mu(self.wavelength)
-        self.material_data['n_in']       = np.sqrt(self.material_data['eps_in']*self.material_data['mu_in'])
-        self.material_data['eps_out']    = self.material_out.eps(self.wavelength)
-        self.material_data['mu_out']     = self.material_out.mu(self.wavelength)
-        self.material_data['n_out']      = np.sqrt(self.material_data['eps_out']*self.material_data['mu_out'])
-        self.material_data['eps_b']      = self.medium.eps(self.wavelength)
-        self.material_data['mu_b']       = self.medium.mu(self.wavelength)
-        self.material_data['n_b']        = np.sqrt(self.material_data['eps_b']*self.material_data['mu_b'])
-        self.material_data['k']          = 2*np.pi*self.material_data['n_b']/self.wavelength
-               
+        self.material_data["wavelength"] = self.wavelength
+        self.material_data["eps_in"] = self.material_in.eps(self.wavelength)
+        self.material_data["mu_in"] = self.material_in.mu(self.wavelength)
+        self.material_data["n_in"] = np.sqrt(self.material_data["eps_in"] * self.material_data["mu_in"])
+        self.material_data["eps_out"] = self.material_out.eps(self.wavelength)
+        self.material_data["mu_out"] = self.material_out.mu(self.wavelength)
+        self.material_data["n_out"] = np.sqrt(self.material_data["eps_out"] * self.material_data["mu_out"])
+        self.material_data["eps_b"] = self.medium.eps(self.wavelength)
+        self.material_data["mu_b"] = self.medium.mu(self.wavelength)
+        self.material_data["n_b"] = np.sqrt(self.material_data["eps_b"] * self.material_data["mu_b"])
+        self.material_data["k"] = 2 * np.pi * self.material_data["n_b"] / self.wavelength
+
         self.an = np.zeros((self.Nfreq, self.lmax), dtype=complex)
         self.bn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
         self.cn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
         self.dn = np.zeros((self.Nfreq, self.lmax), dtype=complex)
 
-        self.scattering_properties = (self.an, self.bn, self.material_data['k'])
+        self.scattering_properties = (self.an, self.bn, self.material_data["k"])
 
         self.computed = False
-    
+
     def solve(self):
         """solve the system"""
         mat = self.material_data
 
-        m1 = mat['n_in']/mat['n_b']
-        m2 = mat['n_out']/mat['n_b']
-        xvals = mat['k']*self.radius_in
-        yvals = mat['k']*self.radius_out
+        m1 = mat["n_in"] / mat["n_b"]
+        m2 = mat["n_out"] / mat["n_b"]
+        xvals = mat["k"] * self.radius_in
+        yvals = mat["k"] * self.radius_out
 
         for n in range(self.lmax):
-            M = M_matrix(m1, m2, xvals, yvals, mat['mu_b'], mat['mu_in'], mat['mu_out'], n+1)
-            c = c_values(m2, yvals, mat['mu_out'], n+1)
+            M = M_matrix(m1, m2, xvals, yvals, mat["mu_b"], mat["mu_in"], mat["mu_out"], n + 1)
+            c = c_values(m2, yvals, mat["mu_out"], n + 1)
             # Solve for each wavelength
             sol = np.array([np.linalg.solve(M[i], c[i]) for i in range(self.Nfreq)])
-            self.an[:,n] = sol[:,0]
-            self.bn[:,n] = sol[:,1]
-            self.cn[:,n] = sol[:,2]
-            self.dn[:,n] = sol[:,3]
-        
+            self.an[:, n] = sol[:, 0]
+            self.bn[:, n] = sol[:, 1]
+            self.cn[:, n] = sol[:, 2]
+            self.dn[:, n] = sol[:, 3]
+
         self.an = np.nan_to_num(self.an)
         self.bn = np.nan_to_num(self.bn)
 
@@ -110,40 +113,46 @@ class single_mie_core_shell:
 
     def cross_sections(self):
         """Return the 3 cross-sections: (Scattering, Absorbption, Extinction)"""
-        if not self.computed: self.solve()
+        if not self.computed:
+            self.solve()
         return miepy.cross_sections(*self.scattering_properties)
 
     def cross_sections_per_multipole(self):
         """Return the 3 cross-sections per multipole: (Scattering, Absorbption, Extinction)"""
-        if not self.computed: self.solve()
-        return miepy.flux.cross_sections(miepy.scattering_per_multipole(*self.scattering_properties),
-                miepy.absorbption_per_multipole(*self.scattering_properties),
-                miepy.extinction_per_multipole(*self.scattering_properties))
+        if not self.computed:
+            self.solve()
+        return miepy.flux.cross_sections(
+            miepy.scattering_per_multipole(*self.scattering_properties),
+            miepy.absorbption_per_multipole(*self.scattering_properties),
+            miepy.extinction_per_multipole(*self.scattering_properties),
+        )
 
     def E_field(self, index=None, lmax=None):
         """Return an electric field function E(r,theta,phi) for a given wavenumber index"""
-        if lmax is None: lmax = self.lmax
+        if lmax is None:
+            lmax = self.lmax
         if index is None:
             index = np.s_[:]
 
-        if not self.computed: self.solve()
+        if not self.computed:
+            self.solve()
 
-        an = self.an[index, :lmax+1]
-        bn = self.bn[index, :lmax+1]
-        cn = self.cn[index, :lmax+1]
-        dn = self.dn[index, :lmax+1]
+        an = self.an[index, : lmax + 1]
+        bn = self.bn[index, : lmax + 1]
+        cn = self.cn[index, : lmax + 1]
+        dn = self.dn[index, : lmax + 1]
         mat = self.material_data
 
         def E_func(r, theta, phi):
-            E = np.zeros(shape = [3] + list(r.shape), dtype=complex)
+            E = np.zeros(shape=[3] + list(r.shape), dtype=complex)
             id_inside = r <= self.radius_in
             id_outside = r > self.radius_out
 
-            k = mat['k'][index]
-            E[:,id_outside] = scattered_E(an, bn, k)(r[id_outside], theta[id_outside], phi[id_outside])
+            k = mat["k"][index]
+            E[:, id_outside] = scattered_E(an, bn, k)(r[id_outside], theta[id_outside], phi[id_outside])
 
-            k = 2*np.pi*mat['n_in'][index]/self.wavelength[index]
-            E[:,id_inside] = interior_E(cn, dn, k)(r[id_inside], theta[id_inside], phi[id_inside])
+            k = 2 * np.pi * mat["n_in"][index] / self.wavelength[index]
+            E[:, id_inside] = interior_E(cn, dn, k)(r[id_inside], theta[id_inside], phi[id_inside])
             return E
 
         return E_func
@@ -151,32 +160,34 @@ class single_mie_core_shell:
     def H_field(self, index=None, lmax=None):
         """Return a magnetic field function H(r,theta,phi) for a given wavenumber index"""
 
-        if lmax is None: lmax = self.lmax
+        if lmax is None:
+            lmax = self.lmax
         if index is None:
             index = np.s_[:]
 
-        if not self.computed: self.solve()
+        if not self.computed:
+            self.solve()
 
-        an = self.an[index, :lmax+1]
-        bn = self.bn[index, :lmax+1]
-        cn = self.cn[index, :lmax+1]
-        dn = self.dn[index, :lmax+1]
+        an = self.an[index, : lmax + 1]
+        bn = self.bn[index, : lmax + 1]
+        cn = self.cn[index, : lmax + 1]
+        dn = self.dn[index, : lmax + 1]
         mat = self.material_data
 
         def H_func(r, theta, phi):
-            H = np.zeros(shape = [3] + list(r.shape), dtype=complex)
+            H = np.zeros(shape=[3] + list(r.shape), dtype=complex)
             id_inside = r <= self.radius_in
             id_outside = r > self.radius_out
 
-            k = mat['k'][index]
-            n = mat['n_b'][index]
-            mu = mat['mu_b'][index]
-            H[:,id_outside] = scattered_H(an, bn, k, n, mu)(r[id_outside], theta[id_outside], phi[id_outside])
+            k = mat["k"][index]
+            n = mat["n_b"][index]
+            mu = mat["mu_b"][index]
+            H[:, id_outside] = scattered_H(an, bn, k, n, mu)(r[id_outside], theta[id_outside], phi[id_outside])
 
-            k = 2*np.pi*mat['n_in'][index]/self.wavelength[index]
-            n = mat['n_in'][index]
-            mu = mat['mu_in'][index]
-            H[:,id_inside] = interior_H(cn, dn, k, n, mu)(r[id_inside], theta[id_inside], phi[id_inside])
+            k = 2 * np.pi * mat["n_in"][index] / self.wavelength[index]
+            n = mat["n_in"][index]
+            mu = mat["mu_in"][index]
+            H[:, id_inside] = interior_H(cn, dn, k, n, mu)(r[id_inside], theta[id_inside], phi[id_inside])
             return H
 
         return H_func

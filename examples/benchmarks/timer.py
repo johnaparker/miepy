@@ -1,5 +1,6 @@
 from timeit import default_timer as timer
 
+
 def time_function(func, runtime=0.1):
     """Time a function by running it repeatedly for at least 'runtime' seconds"""
     start = timer()
@@ -14,4 +15,4 @@ def time_function(func, runtime=0.1):
 
         count += 1
 
-    return t/count
+    return t / count

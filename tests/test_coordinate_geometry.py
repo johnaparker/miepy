@@ -15,11 +15,11 @@ class Test_spherical_coords_rotation:
         """
         Spherical rotation is identical to cartestion rotation after coordinate transformations
         """
-        theta = .5
+        theta = 0.5
         phi = 1.2
         r = 1
 
-        q_rot = miepy.quaternion.from_spherical_coords(.2, .1)
+        q_rot = miepy.quaternion.from_spherical_coords(0.2, 0.1)
 
         x, y, z = miepy.coordinates.sph_to_cart(r, theta, phi)
         xr, yr, zr = miepy.coordinates.rotate(x, y, z, q_rot)
@@ -27,8 +27,8 @@ class Test_spherical_coords_rotation:
 
         theta_r2, phi_r2 = miepy.coordinates.rotate_sph(theta, phi, q_rot)
 
-        assert np.allclose(theta_r1, theta_r2), 'theta components are equal'
-        assert np.allclose(phi_r1, phi_r2), 'phi components are equal'
+        assert np.allclose(theta_r1, theta_r2), "theta components are equal"
+        assert np.allclose(phi_r1, phi_r2), "phi components are equal"
 
     def test_theta_equal_to_zero(self):
         """
@@ -38,10 +38,10 @@ class Test_spherical_coords_rotation:
         theta = 0
         phi = 1.2
         r = 1
-        phi_rot = .4
+        phi_rot = 0.4
 
         q_rot = miepy.quaternion.from_spherical_coords(0, phi_rot)
         theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, q_rot)
 
-        assert np.allclose(theta, theta_r), 'theta components are equal'
-        assert np.allclose(phi + phi_rot, phi_r), 'phi components are rotated correctly'
+        assert np.allclose(theta, theta_r), "theta components are equal"
+        assert np.allclose(phi + phi_rot, phi_r), "phi components are rotated correctly"

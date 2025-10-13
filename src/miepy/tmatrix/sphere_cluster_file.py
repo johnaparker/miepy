@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def single_paricle_string(pos, radius, Nrank, index):
     return f"""
 TmatPart           
@@ -14,6 +15,7 @@ GeomPartProp
 {pos[2]}
 """.strip()
 
+
 def sphere_cluster_file(pos, radii, Nrank_particles, Nrank, wavelength, index, index_m):
     """Create input file for axisymmetric particles
 
@@ -23,18 +25,18 @@ def sphere_cluster_file(pos, radii, Nrank_particles, Nrank, wavelength, index, i
         index (complex)              index of refraction of the particle
         index_m (float)              index of refraction of the medium
     """
-    pos = pos/wavelength
-    radii = radii/wavelength
-    index = index/index_m
+    pos = pos / wavelength
+    radii = radii / wavelength
+    index = index / index_m
     wavelength = 1
 
     Nparticles = len(pos)
     radius_cluster = np.max(np.linalg.norm(pos, axis=-1))
     identical = str(np.all(radii == radii[0])).lower()
 
-    particle_string = ''
+    particle_string = ""
     for i in range(Nparticles):
-        particle_string += single_paricle_string(pos[i], radii[i], Nrank_particles[i], index[i]) + '\n\n'
+        particle_string += single_paricle_string(pos[i], radii[i], Nrank_particles[i], index[i]) + "\n\n"
 
     return f"""OptProp
 {wavelength}

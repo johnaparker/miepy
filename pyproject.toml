@@ -1,6 +1,6 @@
 [project]
 name = "miepy"
-version = "0.6.0"
+version = "0.6.1"
 description = "Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
 readme = "README.md"
 authors = [
@@ -46,4 +46,31 @@ cmake.source-dir = "."
 [dependency-groups]
 dev = [
     "pytest>=8.4.2",
+    "ruff>=0.14.0",
 ]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = [
+    "E", "F", "B", "UP",
+    "D", 
+    "I001",
+    "N",
+    "ARG",
+]
+ignore = [
+    "D107", # __init__ docstring
+    "N806", # lowercase variables
+    "N802", # ...
+    "N816", # ...
+    "N803" # ...
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D103", "D100"]
+"examples/**" = ["D100", "D103", "ARG001"]

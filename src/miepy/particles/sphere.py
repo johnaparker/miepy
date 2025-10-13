@@ -1,6 +1,7 @@
 import miepy
 from .particle_base import particle
 
+
 class sphere(particle):
     def __init__(self, position, radius, material):
         """A sphere object
@@ -14,17 +15,18 @@ class sphere(particle):
         self.radius = radius
 
     def __repr__(self):
-        return f'''{self.__class__.__name__}:
+        return f"""{self.__class__.__name__}:
     position = {self.position} m
     radius = {self.radius:.2e} m
-    material = {self.material}'''
+    material = {self.material}"""
 
     def is_inside(self, pos):
         pass
 
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
-        self.tmatrix = miepy.tmatrix.tmatrix_sphere(self.radius, wavelength, 
-                self.material.eps(wavelength), eps_m, lmax, conducting=self.conducting)
+        self.tmatrix = miepy.tmatrix.tmatrix_sphere(
+            self.radius, wavelength, self.material.eps(wavelength), eps_m, lmax, conducting=self.conducting
+        )
         self.tmatrix_fixed = self.tmatrix
 
         return self.tmatrix

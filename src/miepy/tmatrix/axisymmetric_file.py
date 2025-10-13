@@ -1,6 +1,18 @@
-def axisymmetric_file(geometry_type, geometry_parameters, Nrank, wavelength, 
-        index, index_m, kb=None, conducting=False, Nparam=1, 
-        use_ds=True, complex_plane=True, eps_z_re_im=0.95, Nint=200):
+def axisymmetric_file(
+    geometry_type,
+    geometry_parameters,
+    Nrank,
+    wavelength,
+    index,
+    index_m,
+    kb=None,
+    conducting=False,
+    Nparam=1,
+    use_ds=True,
+    complex_plane=True,
+    eps_z_re_im=0.95,
+    Nint=200,
+):
     """Create input file for axisymmetric particles
 
     Arguments:
@@ -18,8 +30,8 @@ def axisymmetric_file(geometry_type, geometry_parameters, Nrank, wavelength,
         eps_z_re_im (float)          parameter used to distribute discrete sources (default: 0.95)
         Nint (int)                   number of points used in integration (default: 200)
     """
-    geometry_xy = geometry_parameters[0]/wavelength
-    geometry_z = geometry_parameters[1]/wavelength
+    geometry_xy = geometry_parameters[0] / wavelength
+    geometry_z = geometry_parameters[1] / wavelength
     wavelength = 1
 
     if kb is None:
@@ -146,7 +158,20 @@ PrintProgress
  - PrnProgress - if PrnProgress = t, the progress of calculation 
                  is printed. 
 """
-    return file_str_template.format(geometry_type=geometry_type, geometry_xy=geometry_xy, geometry_z=geometry_z,
-             Nrank=Nrank, wavelength=wavelength, index=index/index_m, index_m=index_m, chiral=str(chiral).lower(), 
-             kb=kb, conducting=str(conducting).lower(), Nparam=Nparam, use_ds=str(use_ds).lower(), 
-             complex_plane=str(complex_plane).lower(), eps_z_re_im=eps_z_re_im, Nint=Nint)
+    return file_str_template.format(
+        geometry_type=geometry_type,
+        geometry_xy=geometry_xy,
+        geometry_z=geometry_z,
+        Nrank=Nrank,
+        wavelength=wavelength,
+        index=index / index_m,
+        index_m=index_m,
+        chiral=str(chiral).lower(),
+        kb=kb,
+        conducting=str(conducting).lower(),
+        Nparam=Nparam,
+        use_ds=str(use_ds).lower(),
+        complex_plane=str(complex_plane).lower(),
+        eps_z_re_im=eps_z_re_im,
+        Nint=Nint,
+    )

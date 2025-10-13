@@ -11,8 +11,10 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 import miepy
 
+
 class source:
     """abstract base class for source objects"""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, amplitude=1, phase=0, origin=None):
@@ -33,7 +35,7 @@ class source:
     @abstractmethod
     def angular_spectrum(self, theta, phi, k):
         """Return the angular spectrum representation of the far-field source
-        
+
         Arguments:
             theta    far-field theta angle
             phi      far-field phi angle
@@ -46,9 +48,9 @@ class source:
         """Compute the electric field of the source
 
         Arguments:
-            x1        x (or r) position (array-like) 
-            x2        y (or theta) position (array-like) 
-            x3        z (or phi) position (array-like) 
+            x1        x (or r) position (array-like)
+            x2        y (or theta) position (array-like)
+            x3        z (or phi) position (array-like)
             k         wavenumber (in medium)
             far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
             spherical (optional) input/output in spherical coordinates (bool, default=False)
@@ -62,9 +64,9 @@ class source:
         """Compute the magnetic field of the source
 
         Arguments:
-            x1        x (or r) position (array-like) 
-            x2        y (or theta) position (array-like) 
-            x3        z (or phi) position (array-like) 
+            x1        x (or r) position (array-like)
+            x2        y (or theta) position (array-like)
+            x3        z (or phi) position (array-like)
             k         wavenumber (in medium)
             far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
             spherical (optional) input/output in spherical coordinates (bool, default=False)
@@ -76,10 +78,10 @@ class source:
     @abstractmethod
     def E_angular(self, theta, phi, k, radius=None, origin=None):
         """Compute the electric field in the far-field in spherical coordinates
-             
+
         Arguments:
-            theta    theta position (array-like) 
-            phi      phi position (array-like) 
+            theta    theta position (array-like)
+            phi      phi position (array-like)
             k        wavenumber (in medium)
             radius   r position (default: large value)
             origin   origin around which to compute angular fields (default: self.origin)
@@ -89,10 +91,10 @@ class source:
     @abstractmethod
     def H_angular(self, theta, phi, k, radius=None, origin=None):
         """Compute the magnetic field in the far-field in spherical coordinates
-             
+
         Arguments:
-            theta    theta position (array-like) 
-            phi      phi position (array-like) 
+            theta    theta position (array-like)
+            phi      phi position (array-like)
             k        wavenumber (in medium)
             radius   r position (default: large value)
             origin   origin around which to compute angular fields (default: self.origin)
@@ -128,9 +130,9 @@ class source:
         """Compute the power density of the source
 
         Arguments:
-            x1        x (or r) position (array-like) 
-            x2        y (or theta) position (array-like) 
-            x3        z (or phi) position (array-like) 
+            x1        x (or r) position (array-like)
+            x2        y (or theta) position (array-like)
+            x3        z (or phi) position (array-like)
             far       (optional) use the angular sprectrum for far-field calculations (bool, default=False)
             spherical (optional) input/output in spherical coordinates (bool, default=False)
 
@@ -150,29 +152,35 @@ class source:
         elif isinstance(other, source):
             return combined_source(self, other)
         else:
-            raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
+            raise ValueError("cannot add source with non-source of type {}".format(type(other)))
+
 
 class propagating_source(source):
     """abstract base class for propagating sources"""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, amplitude=1, phase=0, origin=None, theta=0, phi=0, standing=False):
         source.__init__(self, amplitude=amplitude, phase=phase, origin=origin)
 
         self.theta = theta
-        self.phi   = phi
+        self.phi = phi
         self.orientation = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
         self.standing = standing
 
         ### TM and TE vectors
         self.k_hat, self.n_tm, self.n_te = miepy.coordinates.sph_basis_vectors(theta, phi)
 
+
 class polarized_propagating_source(propagating_source):
     """abstract base class for polarized, propagating sources"""
+
     __metaclass__ = ABCMeta
 
     def __init__(self, polarization, amplitude=1, phase=0, origin=None, theta=0, phi=0, standing=False):
-        propagating_source.__init__(self, amplitude=amplitude, phase=phase, origin=origin, theta=theta, phi=phi, standing=standing)
+        propagating_source.__init__(
+            self, amplitude=amplitude, phase=phase, origin=origin, theta=theta, phi=phi, standing=standing
+        )
 
         self.polarization = np.asarray(polarization, dtype=complex)
         self.polarization /= np.linalg.norm(self.polarization)
@@ -184,12 +192,12 @@ class polarized_propagating_source(propagating_source):
     def angular_spectrum(self, theta, phi, k):
         U = self.scalar_angular_spectrum(theta, phi, k)
 
-        Ex = U*self.polarization[0]
-        Ey = U*self.polarization[1]
-        Esph = np.array([-Ex*np.cos(phi) - Ey*np.sin(phi),
-                         -Ex*np.sin(phi) + Ey*np.cos(phi)], dtype=complex)
+        Ex = U * self.polarization[0]
+        Ey = U * self.polarization[1]
+        Esph = np.array([-Ex * np.cos(phi) - Ey * np.sin(phi), -Ex * np.sin(phi) + Ey * np.cos(phi)], dtype=complex)
 
         return Esph
+
 
 class combined_source(source):
     """sources added together"""
@@ -199,12 +207,12 @@ class combined_source(source):
 
     def __repr__(self):
         source_types = [type(s).__name__ for s in self.sources]
-        return 'combined_source({})'.format(', '.join(source_types))
+        return "combined_source({})".format(", ".join(source_types))
 
     def angular_spectrum(self, theta, phi, k):
         return sum((source.angular_spectrum(theta, phi, k) for source in self.sources))
 
-    #TODO: alternatively, allow adding fields and performing structure only once
+    # TODO: alternatively, allow adding fields and performing structure only once
     def structure(self, position, k, lmax):
         return sum((source.structure(position, k, lmax) for source in self.sources))
 
@@ -232,4 +240,4 @@ class combined_source(source):
         elif isinstance(other, source):
             return combined_source(*self.sources, other)
         else:
-            raise ValueError('cannot add source with non-source of type {}'.format(type(other)))
+            raise ValueError("cannot add source with non-source of type {}".format(type(other)))

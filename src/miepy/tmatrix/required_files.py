@@ -49,6 +49,7 @@ Variable:
 """
     return input_file_template
 
+
 def sct_input_file():
     input_sct_template = """OptProp       
  0.628318530717959                           

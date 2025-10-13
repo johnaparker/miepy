@@ -1,8 +1,9 @@
 import numpy as np
 import miepy
 
-#TODO: lmax per particle
-#TODO: position and orientation should be properties
+
+# TODO: lmax per particle
+# TODO: position and orientation should be properties
 class particle:
     def __init__(self, position, orientation, material):
         """A particle consists of a position, orientation, material, and a lazily evaluated T-matrix
@@ -24,7 +25,7 @@ class particle:
         self.tmatrix_fixed = None
         self.tmatrix = None
 
-        if self.material is not None and self.material.name == 'metal':
+        if self.material is not None and self.material.name == "metal":
             self.conducting = True
         else:
             self.conducting = False
@@ -56,7 +57,7 @@ class particle:
 
     def compute_tmatrix(self, lmax, wavelength, eps_m, **kwargs):
         """Compute the T-matrix of the particle
-        
+
         Arguments:
             lmax         maximum number of multipoles
             wavelength   incident wavelength
@@ -70,4 +71,4 @@ class particle:
             self.tmatrix = miepy.tmatrix.rotate_tmatrix(self.tmatrix_fixed, self.orientation)
 
     def _dict_key(self, wavelength):
-        raise NotImplementedError('particle must implement _dict_key')
+        raise NotImplementedError("particle must implement _dict_key")

@@ -14,12 +14,16 @@ from miepy.sources import propagating_source, polarized_propagating_source
 from functools import partial
 from miepy.constants import Z0
 
+
 class beam(propagating_source):
     """abstract base class for beam sources"""
+
     __metaclass__ = ABCMeta
 
-    def __init__(self, power=1, theta_max=np.pi/2, phase=0, center=None, theta=0, phi=0, standing=False):
-        propagating_source.__init__(self, amplitude=1, phase=phase, origin=center, theta=theta, phi=phi, standing=standing)
+    def __init__(self, power=1, theta_max=np.pi / 2, phase=0, center=None, theta=0, phi=0, standing=False):
+        propagating_source.__init__(
+            self, amplitude=1, phase=phase, origin=center, theta=theta, phi=phi, standing=standing
+        )
         self.power = power
         self.theta_max = theta_max
         self.center = self.origin
@@ -31,54 +35,74 @@ class beam(propagating_source):
     def E0(self, k):
         """
         Compute the amplitude constant of the beam
-        
+
         Arguments:
             k    medium wavenumber
         """
         theta_c = self.theta_cutoff(k)
 
         theta = np.linspace(0, theta_c, 20)
-        phi = np.linspace(0, 2*np.pi, 40)
+        phi = np.linspace(0, 2 * np.pi, 40)
         THETA, PHI = np.meshgrid(theta, phi)
 
         E = self.angular_spectrum(THETA, PHI, k)
-        S = 0.5/Z0*np.linalg.norm(E, axis=0)**2*np.sin(THETA)
+        S = 0.5 / Z0 * np.linalg.norm(E, axis=0) ** 2 * np.sin(THETA)
         P = miepy.vsh.misc.trapz_2d(theta, phi, S.T).real
-        return np.sqrt(self.power/P)
+        return np.sqrt(self.power / P)
 
     def E_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
         Compute the electric field
 
         Arguments:
-            x1          x/r position (array-like) 
-            x2          y/theta position (array-like) 
-            x3          z/phi position (array-like) 
+            x1          x/r position (array-like)
+            x2          y/theta position (array-like)
+            x3          z/phi position (array-like)
             k           medium wavenumber
             far         use expressions valid only for far-field (bool, default=False)
             spherical   input/output in spherical coordinates (bool, default=False)
             sampling    sampling to use in theta/phi integrals (default: 20)
             origin      origin for when spherical=True (default: self.center)
         """
-        return self._field(self.angular_spectrum, self.E_angular, x1, x2, x3, k,
-                far=far, spherical=spherical, sampling=sampling, origin=origin)
+        return self._field(
+            self.angular_spectrum,
+            self.E_angular,
+            x1,
+            x2,
+            x3,
+            k,
+            far=far,
+            spherical=spherical,
+            sampling=sampling,
+            origin=origin,
+        )
 
     def H_field(self, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
         Compute the magnetic field
 
         Arguments:
-            x1          x/r position (array-like) 
-            x2          y/theta position (array-like) 
-            x3          z/phi position (array-like) 
+            x1          x/r position (array-like)
+            x2          y/theta position (array-like)
+            x3          z/phi position (array-like)
             k           medium wavenumber
             far         use expressions valid only for far-field (bool, default=False)
             spherical   input/output in spherical coordinates (bool, default=False)
             sampling    sampling to use in theta/phi integrals (default: 20)
             origin      origin for when spherical=True (default: self.center)
         """
-        return -1*self._field(self.H_angular_spectrum, self.H_angular, x1, x2, x3, k,
-                    far=far, spherical=spherical, sampling=sampling, origin=origin)
+        return -1 * self._field(
+            self.H_angular_spectrum,
+            self.H_angular,
+            x1,
+            x2,
+            x3,
+            k,
+            far=far,
+            spherical=spherical,
+            sampling=sampling,
+            origin=origin,
+        )
 
     def E_angular(self, theta, phi, k, radius=None, origin=None):
         """
@@ -104,7 +128,7 @@ class beam(propagating_source):
             radius   radius coordinate (scalar or array-like)
             origin   origin around which to compute angular fields (default: self.center)
         """
-        return -1*self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius, origin=origin)
+        return -1 * self._angular(self.H_angular_spectrum, theta, phi, k, radius=radius, origin=origin)
 
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
         """
@@ -117,30 +141,30 @@ class beam(propagating_source):
         """
         Nphi = 60
         theta = np.linspace(0, self.theta_max, Nphi)
-        phi = np.linspace(0, 2*np.pi, Nphi)
+        phi = np.linspace(0, 2 * np.pi, Nphi)
         THETA, PHI = np.meshgrid(theta, phi)
         E = self.angular_spectrum(THETA, PHI, k)
-        I = np.sum(np.abs(E)**2, axis=0)
+        I = np.sum(np.abs(E) ** 2, axis=0)
         Imax = np.max(I)
 
         theta = self.theta_max
-        dtheta = 0.01*theta
+        dtheta = 0.01 * theta
 
         E = self.angular_spectrum(theta, phi, k)
-        I = np.sum(np.abs(E)**2, axis=0)
-        err = I/Imax - cutoff
+        I = np.sum(np.abs(E) ** 2, axis=0)
+        err = I / Imax - cutoff
         if np.any(err > 0):
             return self.theta_max
 
-        err = np.abs(I/Imax - cutoff)
+        err = np.abs(I / Imax - cutoff)
         while (err > tol).all():
             I = np.zeros_like(err)
-            while (I/Imax < cutoff).all():
+            while (I / Imax < cutoff).all():
                 theta -= dtheta
                 E = self.angular_spectrum(theta, phi, k)
-                I = np.sum(np.abs(E)**2, axis=0)
+                I = np.sum(np.abs(E) ** 2, axis=0)
 
-            err = np.abs(I/Imax - cutoff)
+            err = np.abs(I / Imax - cutoff)
             theta += dtheta
             dtheta /= 2
 
@@ -161,13 +185,13 @@ class beam(propagating_source):
             theta_c = self.theta_cutoff(k)
             self.k_stored = k
             self.lmax_stored = lmax
-            self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(self, 
-                               k, lmax, theta_0=np.pi - theta_c)
+            self.p_src_func = miepy.vsh.decomposition.integral_project_source_far(
+                self, k, lmax, theta_0=np.pi - theta_c
+            )
 
-            
         if self.orientation != miepy.quaternion.one:
             R = miepy.quaternion.as_rotation_matrix(self.orientation.inverse())
-            pos = np.einsum('ij,...j->...i', R, position - self.center)
+            pos = np.einsum("ij,...j->...i", R, position - self.center)
         else:
             pos = position - self.center
 
@@ -187,7 +211,7 @@ class beam(propagating_source):
     def transmit(self, interface, medium, wavelength):
         return transmitted_beam(self, interface, wavelength, medium)
 
-    #TODO: Test dependence on center and orientation
+    # TODO: Test dependence on center and orientation
     def _angular(self, angular_func, theta, phi, k, radius=None, origin=None):
         """
         Method to obtain E or H far field angular fields
@@ -201,30 +225,29 @@ class beam(propagating_source):
             origin   origin around which to compute angular fields (default: self.center)
         """
         if radius is None:
-            radius = 1e6*(2*np.pi/k)
+            radius = 1e6 * (2 * np.pi / k)
 
         theta_r, phi_r = miepy.coordinates.rotate_sph(theta, phi, self.orientation.inverse())
 
-        #TODO: can the lines below be reduced to some rotate_vec_sph function?
+        # TODO: can the lines below be reduced to some rotate_vec_sph function?
         E_inf = angular_func(theta_r, phi_r, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, theta_r, phi_r)
         E_inf = miepy.coordinates.rotate_vec(E_inf, self.orientation)
         E_inf = miepy.coordinates.vec_cart_to_sph(E_inf, theta, phi)[1:]
 
-        sign = np.sign(np.pi/2 - theta_r)
-        E0 = 1j*self.E0(k)*np.exp(1j*self.phase)*np.exp(sign*1j*k*radius)/radius
+        sign = np.sign(np.pi / 2 - theta_r)
+        E0 = 1j * self.E0(k) * np.exp(1j * self.phase) * np.exp(sign * 1j * k * radius) / radius
 
-        factor = -(2*((theta_r < np.pi/2)) - 1)
+        factor = -(2 * (theta_r < np.pi / 2) - 1)
         E_inf[1] *= factor
 
         if origin is not None:
             rhat, *_ = miepy.coordinates.sph_basis_vectors(theta, phi)
-            phase = k*np.einsum('i...,i', rhat, origin - self.center)
-            E_inf *= np.exp(1j*phase)
+            phase = k * np.einsum("i...,i", rhat, origin - self.center)
+            E_inf *= np.exp(1j * phase)
 
-        return E0*E_inf
-
+        return E0 * E_inf
 
     def _field(self, angular_func, far_func, x1, x2, x3, k, far=False, spherical=False, sampling=30, origin=None):
         """
@@ -233,9 +256,9 @@ class beam(propagating_source):
         Arguments:
             angular_func    function for the angular spectrum
             far_func        function for the far-fields (used when far=True)
-            x1          x/r position (array-like) 
-            x2          y/theta position (array-like) 
-            x3          z/phi position (array-like) 
+            x1          x/r position (array-like)
+            x2          y/theta position (array-like)
+            x3          z/phi position (array-like)
             far         use expressions valid only for far-field (bool, default=False)
             spherical   input/output in spherical coordinates (bool, default=False)
             sampling    sampling to use in theta/phi integrals (default: 20)
@@ -263,47 +286,63 @@ class beam(propagating_source):
 
         theta_c = self.theta_cutoff(k)
         theta = np.linspace(np.pi - theta_c, np.pi, sampling)
-        phi = np.linspace(0, 2*np.pi, 2*sampling)
-        THETA, PHI = np.meshgrid(theta, phi, indexing='ij')
+        phi = np.linspace(0, 2 * np.pi, 2 * sampling)
+        THETA, PHI = np.meshgrid(theta, phi, indexing="ij")
 
         E_inf = angular_func(THETA, PHI, k)
         E_inf = np.insert(E_inf, 0, 0, axis=0)
         E_inf = miepy.coordinates.vec_sph_to_cart(E_inf, THETA, PHI)
 
-        @partial(np.vectorize, signature='(),(),()->(n)')
+        @partial(np.vectorize, signature="(),(),()->(n)")
         def far_to_near(rho, angle, z):
-            integrand = np.exp(1j*k*(-z*np.cos(THETA) - rho*np.sin(THETA)*np.cos(PHI - angle))) \
-                        * E_inf*np.sin(THETA)
+            integrand = (
+                np.exp(1j * k * (-z * np.cos(THETA) - rho * np.sin(THETA) * np.cos(PHI - angle)))
+                * E_inf
+                * np.sin(THETA)
+            )
             return np.array([miepy.vsh.misc.trapz_2d(theta, phi, integrand[i]) for i in range(3)])
 
         E = far_to_near(rho, angle, z)
         E = np.moveaxis(E, source=-1, destination=0)
         E = miepy.coordinates.rotate_vec(E, self.orientation)
 
-        A = k*self.E0(k)*np.exp(1j*self.phase)/(2*np.pi)
+        A = k * self.E0(k) * np.exp(1j * self.phase) / (2 * np.pi)
         E *= A
 
         if spherical:
             E = miepy.coordinates.vec_cart_to_sph(E, x2, x3)
         return E
 
+
 class polarized_beam(beam, polarized_propagating_source):
     """abstract base class for polarized beam sources"""
+
     __metaclass__ = ABCMeta
 
-    def __init__(self, polarization, power=1, theta_max=np.pi/2, phase=0, center=None, theta=0, phi=0, standing=False):
+    def __init__(
+        self, polarization, power=1, theta_max=np.pi / 2, phase=0, center=None, theta=0, phi=0, standing=False
+    ):
         polarized_propagating_source.__init__(self, polarization=polarization)
-        beam.__init__(self, power=power, theta_max=theta_max, phase=phase, center=center,
-            theta=theta, phi=phi, standing=standing)
+        beam.__init__(
+            self, power=power, theta_max=theta_max, phase=phase, center=center, theta=theta, phi=phi, standing=standing
+        )
+
 
 class reflected_beam(beam):
     def __init__(self, incident_beam, interface, wavelength, medium):
         center = np.copy(incident_beam.center)
-        center[2] += 2*(interface.z - center[2])
+        center[2] += 2 * (interface.z - center[2])
         theta = np.pi - incident_beam.theta
         phi = incident_beam.phi
-        beam.__init__(self, power=incident_beam.power, theta_max=incident_beam.theta_max,
-                phase=incident_beam.phase, center=center, theta=theta, phi=phi)
+        beam.__init__(
+            self,
+            power=incident_beam.power,
+            theta_max=incident_beam.theta_max,
+            phase=incident_beam.phase,
+            center=center,
+            theta=theta,
+            phi=phi,
+        )
 
         self.incident_beam = incident_beam
         self.interface = interface
@@ -314,8 +353,10 @@ class reflected_beam(beam):
         q = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
         theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q)
 
-        theta[theta>np.pi/2] = np.pi - theta[theta>np.pi/2]
-        r_parallel, r_perp = self.interface.reflection_coefficients(theta, self.wavelength, self.medium)  #TODO: is this in the right place for the current theta, phi?
+        theta[theta > np.pi / 2] = np.pi - theta[theta > np.pi / 2]
+        r_parallel, r_perp = self.interface.reflection_coefficients(
+            theta, self.wavelength, self.medium
+        )  # TODO: is this in the right place for the current theta, phi?
         q = miepy.quaternion.from_spherical_coords(self.incident_beam.theta, self.incident_beam.phi)
         theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q.inverse())
 
@@ -331,12 +372,20 @@ class reflected_beam(beam):
     def theta_cutoff(self, k, cutoff=1e-6, tol=1e-9):
         return self.incident_beam.theta_cutoff(k, cutoff=cutoff, tol=tol)
 
+
 class transmitted_beam(beam):
     def __init__(self, incident_beam, interface, wavelength, medium):
         theta = interface.transmission_angle(incident_beam.theta, wavelength, medium)
         phi = incident_beam.phi
-        beam.__init__(self, power=incident_beam.power, theta_max=incident_beam.theta_max,
-                phase=incident_beam.phase, center=incident_beam.center, theta=theta, phi=phi)
+        beam.__init__(
+            self,
+            power=incident_beam.power,
+            theta_max=incident_beam.theta_max,
+            phase=incident_beam.phase,
+            center=incident_beam.center,
+            theta=theta,
+            phi=phi,
+        )
 
         self.incident_beam = incident_beam
         self.interface = interface
@@ -347,7 +396,7 @@ class transmitted_beam(beam):
         q = miepy.quaternion.from_spherical_coords(self.theta, self.phi)
         theta, phi = miepy.coordinates.rotate_sph(theta - np.pi, phi, q)
         m = self.interface.get_relative_index(self.wavelength, self.medium)
-        theta = np.arcsin(m*np.sin(theta)).real
+        theta = np.arcsin(m * np.sin(theta)).real
 
         t_parallel, t_perp = self.interface.transmission_coefficients(theta, self.wavelength, self.medium)
         q = miepy.quaternion.from_spherical_coords(self.incident_beam.theta, self.incident_beam.phi)
