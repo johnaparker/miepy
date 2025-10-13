@@ -51,6 +51,10 @@ dev = [
 
 [tool.ruff]
 line-length = 120
+exclude = ["vcpkg/**"]
+
+[tool.ruff.format]
+exclude = ["vpckg/**"]
 
 [tool.ruff.lint]
 extend-select = [
