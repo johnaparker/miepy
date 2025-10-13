@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import tempfile
 from functools import namedtuple
 
@@ -64,6 +65,9 @@ def nfmds_solver(lmax, input_kwargs, solver=tmatrix_solvers.axisymmetric, extend
         ### execute program and communicate
         # Search for tmatrix binary in all package paths (handles editable installs)
         binary_name = "tmatrix_extended" if extended_precision else "tmatrix"
+        # Windows requires .exe extension
+        if sys.platform == "win32":
+            binary_name += ".exe"
         command = None
         for path in miepy.__path__:
             candidate = os.path.join(path, "bin", binary_name)
