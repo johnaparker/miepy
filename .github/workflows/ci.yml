@@ -90,7 +90,7 @@ jobs:
         uses: pypa/cibuildwheel@v3.2
         env:
           CIBW_BUILD: cp311-* cp312-* cp313-*
-          CIBW_SKIP: "*-musllinux_*"
+          CIBW_SKIP: "*-musllinux_* *-win32"
           # Linux: Use manylinux_2_28 (AlmaLinux 8, modern toolchain)
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
