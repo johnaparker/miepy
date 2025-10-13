@@ -117,7 +117,7 @@ find_program(GFORTRAN_EXECUTABLE NAMES gfortran gfortran-14 gfortran-13 gfortran
 
 set(NFMDS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/miepy/tmatrix/nfmds)
 set(NFMDS_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/nfmds)
-set(NFMDS_EXECUTABLE ${NFMDS_BUILD_DIR}/tmatrix)
+set(NFMDS_EXECUTABLE ${NFMDS_BUILD_DIR}/tmatrix${CMAKE_EXECUTABLE_SUFFIX})
 
 # Create build directory for nfmds
 file(MAKE_DIRECTORY ${NFMDS_BUILD_DIR})
