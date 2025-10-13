@@ -32,6 +32,13 @@ Installation
 pip install miepy
 ```
 
+If using `uv`:
+```
+uv venv --python 3.13
+uv pip install miepy
+source .venv/bin/activate
+```
+
 Usage
 --------------
 
