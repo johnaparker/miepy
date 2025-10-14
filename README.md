@@ -42,7 +42,23 @@ source .venv/bin/activate
 Usage
 --------------
 
-For examples and use cases, see [examples](./examples) folder.
+See the [examples](src/miepy/examples) folder for how to use MiePy.
+
+Run any of the available [examples](src/miepy/examples) without explicit installation using `uv`:
+
+| Command | Description |
+|---------|-------------|
+| `uvx miepy dielectric_sphere` | Dielectric sphere scattering and cross-sections |
+| `uvx miepy ag_sphere` | Silver sphere scattering and absorption |
+| `uvx miepy ag_shell` | Core-shell particle scattering |
+| `uvx miepy vary_index` | Scattering intensity vs wavelength and refractive index |
+| `uvx miepy fields` | Electric and magnetic field visualization |
+| `uvx miepy dimer_scattering` | Au dimer cross-sections |
+| `uvx miepy dimer_force` | Force and torque on dimer particles |
+| `uvx miepy far_field` | Far-field radiation patterns |
+| `uvx miepy whispering_gallery` | Whispering gallery modes in dielectric sphere |
+| `uvx miepy focused_gaussian` | Focused Gaussian beam with orbital angular momentum |
+| `uvx miepy imaging` | Near-field, far-field, and microscope imaging |
 
 For an overview of the theory, see [docs](./docs) folder.
 

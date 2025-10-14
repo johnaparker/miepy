@@ -1,6 +1,6 @@
 [project]
 name = "miepy"
-version = "1.0.1"
+version = "1.0.2"
 description = "Solve Maxwell's equations for a cluster of particles using the generalized multiparticle Mie theory (GMMT)"
 readme = "README.md"
 authors = [
@@ -34,6 +34,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Intended Audience :: Science/Research",
 ]
+
+[project.scripts]
+miepy = "miepy.cli:main"
 
 [build-system]
 requires = ["scikit-build-core>=0.11.6", "pybind11>=3.0.1"]
@@ -78,3 +81,4 @@ convention = "google"
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D103", "D100"]
 "examples/**" = ["D100", "D103", "ARG001"]
+"src/miepy/examples/**" = ["D100", "D103", "ARG001"]
