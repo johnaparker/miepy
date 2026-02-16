@@ -28,7 +28,6 @@ find_package(GSL REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(pybind11 REQUIRED)
-
 include_directories(src)
 
 set(SOURCES ${SOURCES}
@@ -55,6 +54,18 @@ set(BINDINGS
 
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
+# Link optimized BLAS so Eigen dispatches matrix ops to hardware-tuned routines
+if(APPLE)
+    # macOS: use Accelerate framework directly (vcpkg toolchain hides it from FindBLAS)
+    target_compile_definitions(cpp PRIVATE EIGEN_USE_BLAS)
+    target_link_libraries(cpp PRIVATE "-framework Accelerate")
+else()
+    find_package(BLAS)
+    if(BLAS_FOUND)
+        target_compile_definitions(cpp PRIVATE EIGEN_USE_BLAS)
+        target_link_libraries(cpp PRIVATE ${BLAS_LIBRARIES})
+    endif()
+endif()
 # Windows with MinGW: use generated import library
 if(WIN32)
   # Depend on the custom target that generates the import library
