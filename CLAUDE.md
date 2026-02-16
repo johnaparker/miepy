@@ -185,6 +185,49 @@ cluster.update_position(new_positions)
 cluster.update(position=new_positions, orientation=new_orientations)
 ```
 
+## Benchmarking
+
+The benchmarking suite lives in `benchmarks/` at the project root and measures performance across four dimensions: N-particle scaling, lmax scaling, VSH translation costs, and solver convergence.
+
+### Running Benchmarks
+
+```bash
+# Quick smoke test (~15 sec)
+python -m benchmarks.run_all run --preset quick --skip-parallel
+
+# Standard suite (~2-5 min)
+python -m benchmarks.run_all run --preset standard
+
+# Thorough suite (~5-15 min)
+python -m benchmarks.run_all run --preset thorough
+
+# Compare two result files
+python -m benchmarks.run_all compare results_before.json results_after.json
+```
+
+Results are saved as JSON to `benchmarks/results/` (gitignored). Each result file includes system metadata (CPU, Python/numpy versions, OMP_NUM_THREADS) for reproducibility.
+
+### Benchmark Suites
+
+- **`bench_scaling`**: Times `aggregate_tmatrix`, `solve_linear_system`, `cross_sections`, and `E_field` across N-values and lmax-values. Reports theoretical matrix memory usage.
+- **`bench_translation`**: Micro-benchmarks individual VSH translation calls and cache map creation. Fits power-law scaling exponents.
+- **`bench_solver`**: Profiles BiCGSTAB convergence (iteration count, residual, time) at different particle separations using `miepy.cpp.interactions.bicgstab_profiled()`.
+- **`bench_parallel`**: Measures strong scaling by spawning subprocesses with different `OMP_NUM_THREADS` values.
+
+### C++ Profiling Bindings
+
+Two C++ bindings exist specifically for benchmarking:
+
+- `miepy.cpp.interactions.bicgstab_profiled(A, b)` — Returns `(solution, iterations, residual)` instead of just the solution. Uses the flat 2D matrix format (not the Python-level 6D reshaped format).
+- `miepy.cpp.vsh_translation.create_vsh_cache_map(lmax)` — Timing-only wrapper that calls the C++ function and discards the result (the cache map cannot be returned to Python).
+
+### Workflow for Performance Changes
+
+1. Capture baseline: `python -m benchmarks.run_all run --preset standard -o benchmarks/results/before.json`
+2. Make changes, rebuild: `uv pip install -e .`
+3. Capture current: `python -m benchmarks.run_all run --preset standard -o benchmarks/results/after.json`
+4. Compare: `python -m benchmarks.run_all compare benchmarks/results/before.json benchmarks/results/after.json`
+
 ## Important Implementation Details
 
 ### Coordinate Systems

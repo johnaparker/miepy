@@ -34,10 +34,12 @@ void bind_vsh_translation_numpy(py::module &);
 void bind_vsh_translation_eigen(py::module &);
 void bind_vsh_translation_lambda(py::module &);
 void bind_vsh_translation_lambda_py(py::module &);
+void bind_create_vsh_cache_map(py::module &);
 
 // interactions submodule
 void bind_enum_solver(py::module &);
 void bind_bicgstab(py::module &);
+void bind_bicgstab_profiled(py::module &);
 void bind_sphere_aggregate_tmatrix(py::module &);
 void bind_particle_aggregate_tmatrix(py::module &);
 void bind_reflection_matrix_nia(py::module &);
@@ -110,12 +112,14 @@ PYBIND11_MODULE(cpp, m) {
     bind_vsh_translation_eigen(vsh_translation_m);
     bind_vsh_translation_lambda(vsh_translation_m);
     bind_vsh_translation_lambda_py(vsh_translation_m);
+    bind_create_vsh_cache_map(vsh_translation_m);
 
     // interactions submodule
     py::module interactions_m = m.def_submodule("interactions", "interactions functions module");
 
     bind_enum_solver(interactions_m);
     bind_bicgstab(interactions_m);
+    bind_bicgstab_profiled(interactions_m);
     bind_sphere_aggregate_tmatrix(interactions_m);
     bind_reflection_matrix_nia(interactions_m);
     bind_particle_aggregate_tmatrix(interactions_m);

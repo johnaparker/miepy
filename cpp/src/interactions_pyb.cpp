@@ -43,6 +43,17 @@ void bind_bicgstab(py::module &m) {
     )pbdoc");
 }
 
+void bind_bicgstab_profiled(py::module &m) {
+    m.def("bicgstab_profiled", [](const Ref<const ComplexMatrix>& A,
+                const Ref<const ComplexVector>& b, int maxiter, double tolerance) {
+                auto result = bicgstab_profiled(A, b, maxiter, tolerance);
+                return py::make_tuple(result.solution, result.iterations, result.residual);
+            },
+        "A"_a, "b"_a, "maxiter"_a = 1000, "tolerance"_a = 1e-5, R"pbdoc(
+        BiCGSTAB linear solver with profiling. Returns (solution, iterations, residual).
+    )pbdoc");
+}
+
 void bind_solve_linear_system(py::module &m) {
     m.def("solve_linear_system", solve_linear_system, 
            "agg_tmatrix"_a, "p_src"_a, "method"_a, R"pbdoc(

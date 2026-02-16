@@ -99,6 +99,65 @@ ComplexVector bicgstab(const Ref<const ComplexMatrix> &A,
   }
 }
 
+bicgstab_result bicgstab_profiled(const Ref<const ComplexMatrix> &A,
+                       const Ref<const ComplexVector> &b, int maxiter,
+                       double tolerance) {
+
+  int size = b.size();
+
+  // step 1
+  ComplexVector x_prev = b;
+  ComplexVector r_prev = b - matrix_vector_product(A, x_prev);
+
+  double error = (r_prev).norm();
+  if (error < tolerance)
+    return {x_prev, 0, error};
+
+  // step 2
+  ComplexVector r_hat = r_prev;
+
+  // step 3
+  complex<double> rho_prev = 1;
+  complex<double> alpha = 1;
+  complex<double> w_prev = 1;
+
+  // step 4
+  ComplexVector v_prev = ComplexVector::Zero(size);
+  ComplexVector p_prev = ComplexVector::Zero(size);
+
+  // step 5
+  int current_iteration = 1;
+
+  while (true) {
+    complex<double> rho_i = dot_product(r_hat, r_prev);
+    complex<double> beta = (rho_i / rho_prev) * (alpha / w_prev);
+    ComplexVector pi = r_prev + beta * (p_prev - w_prev * v_prev);
+    ComplexVector vi = matrix_vector_product(A, pi);
+
+    alpha = rho_i / dot_product(r_hat, vi);
+    ComplexVector h = x_prev + alpha * pi;
+
+    ComplexVector s = r_prev - alpha * vi;
+    ComplexVector t = matrix_vector_product(A, s);
+    complex<double> w_i = dot_product(t, s) / dot_product(t, t);
+    ComplexVector xi = h + w_i * s;
+    ComplexVector ri = s - w_i * t;
+
+    error = ri.norm();
+    if (error < tolerance || current_iteration > maxiter)
+      return {xi, current_iteration, error};
+
+    x_prev = xi;
+    r_prev = ri;
+    rho_prev = rho_i;
+    v_prev = vi;
+    p_prev = pi;
+    w_prev = w_i;
+
+    current_iteration += 1;
+  }
+}
+
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix> &agg_tmatrix,
                                   const Ref<const ComplexVector> &p_src,
                                   solver method) {

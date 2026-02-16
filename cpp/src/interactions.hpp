@@ -14,6 +14,15 @@ enum class solver {
 ComplexVector bicgstab(const Ref<const ComplexMatrix>& A, const Ref<const ComplexVector>& b,
         int maxiter = 1000, double tolerance = 1e-5);
 
+struct bicgstab_result {
+    ComplexVector solution;
+    int iterations;
+    double residual;
+};
+
+bicgstab_result bicgstab_profiled(const Ref<const ComplexMatrix>& A,
+        const Ref<const ComplexVector>& b, int maxiter = 1000, double tolerance = 1e-5);
+
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
         const Ref<const ComplexVector>& p_src, solver method = solver::bicgstab);
 

@@ -81,5 +81,8 @@ miepy/bin/tmatrix_extended
 temp
 temp.py
 
+# benchmark results
+benchmarks/results/*.json
+
 # claude
 .claude

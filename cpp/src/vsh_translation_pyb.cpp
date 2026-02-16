@@ -52,6 +52,19 @@ void bind_vsh_translation_lambda_py(py::module &m) {
     )pbdoc");
 }
 
+void bind_create_vsh_cache_map(py::module &m) {
+    m.def("create_vsh_cache_map", [](int lmax) {
+        create_vsh_cache_map(lmax);
+    }, "lmax"_a, R"pbdoc(
+        Create VSH cache map for benchmarking purposes only.
+
+        This is a timing-only wrapper: it calls the C++ create_vsh_cache_map()
+        and discards the result. The returned cache map lives in C++ and cannot
+        be passed back to Python. Use this to measure cache construction cost,
+        not to obtain a usable cache object.
+    )pbdoc");
+}
+
 void bind_test3(py::module &m) {
     m.def("test3", test3,
             "size"_a, "cores"_a, R"pbdoc(
