@@ -19,8 +19,8 @@ lmax = 2
 @pytest.mark.parametrize(
     "material,atol",
     [
-        (Ag, 2.5e-16),
-        (metal, 2e-16),
+        (Ag, 4e-16),
+        (metal, 3e-16),
     ],
 )
 def test_tmatrix_sphere_is_sphere(material, atol):

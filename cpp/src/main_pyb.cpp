@@ -40,6 +40,7 @@ void bind_create_vsh_cache_map(py::module &);
 void bind_enum_solver(py::module &);
 void bind_bicgstab(py::module &);
 void bind_bicgstab_profiled(py::module &);
+void bind_bicgstab_preconditioned_profiled(py::module &);
 void bind_sphere_aggregate_tmatrix(py::module &);
 void bind_particle_aggregate_tmatrix(py::module &);
 void bind_reflection_matrix_nia(py::module &);
@@ -120,6 +121,7 @@ PYBIND11_MODULE(cpp, m) {
     bind_enum_solver(interactions_m);
     bind_bicgstab(interactions_m);
     bind_bicgstab_profiled(interactions_m);
+    bind_bicgstab_preconditioned_profiled(interactions_m);
     bind_sphere_aggregate_tmatrix(interactions_m);
     bind_reflection_matrix_nia(interactions_m);
     bind_particle_aggregate_tmatrix(interactions_m);

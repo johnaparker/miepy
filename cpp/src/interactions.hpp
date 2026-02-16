@@ -26,6 +26,24 @@ bicgstab_result bicgstab_profiled(const Ref<const ComplexMatrix>& A,
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
         const Ref<const ComplexVector>& p_src, solver method = solver::bicgstab);
 
+ComplexVector apply_block_preconditioner(const Ref<const ComplexMatrix>& M_inv_blocks,
+        const Ref<const ComplexVector>& x, int block_size);
+
+ComplexVector bicgstab_preconditioned(const Ref<const ComplexMatrix>& A,
+        const Ref<const ComplexVector>& b,
+        const Ref<const ComplexMatrix>& M_inv_blocks, int block_size,
+        int maxiter = 1000, double tolerance = 1e-5);
+
+bicgstab_result bicgstab_preconditioned_profiled(const Ref<const ComplexMatrix>& A,
+        const Ref<const ComplexVector>& b,
+        const Ref<const ComplexMatrix>& M_inv_blocks, int block_size,
+        int maxiter = 1000, double tolerance = 1e-5);
+
+ComplexVector solve_linear_system_preconditioned(const Ref<const ComplexMatrix>& agg_tmatrix,
+        const Ref<const ComplexVector>& p_src,
+        const Ref<const ComplexMatrix>& M_inv_blocks, int block_size,
+        solver method = solver::bicgstab);
+
 ComplexMatrix sphere_aggregate_tmatrix(const Ref<const position_t>& positions,
         const Ref<const ComplexMatrix>& mie, double k);
 

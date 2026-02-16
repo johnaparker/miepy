@@ -73,12 +73,28 @@ def _profile_solver(N, lmax, sep_factor, radius=75 * nm):
     # Flatten p_src for the solver
     p_src_flat = cluster.p_src.flatten()
 
-    # Profile with bicgstab_profiled
+    # Profile unpreconditioned
     t0 = timer()
     solution, iterations, residual = miepy.cpp.interactions.bicgstab_profiled(
         interaction_matrix, p_src_flat
     )
     solve_time = timer() - t0
+
+    # Build preconditioner
+    M_inv_blocks, block_size = miepy.interactions.build_block_preconditioner_sphere(
+        cluster.mie_scat, lmax
+    )
+
+    # Profile preconditioned
+    t0_p = timer()
+    solution_p, iterations_p, residual_p = miepy.cpp.interactions.bicgstab_preconditioned_profiled(
+        interaction_matrix, p_src_flat, M_inv_blocks, block_size
+    )
+    solve_time_p = timer() - t0_p
+
+    # Solution agreement
+    sol_norm = float(np.linalg.norm(solution))
+    solution_relative_diff = float(np.linalg.norm(solution - solution_p) / max(sol_norm, 1e-30))
 
     # Matrix properties
     matrix_size = interaction_matrix.shape[0]
@@ -94,6 +110,12 @@ def _profile_solver(N, lmax, sep_factor, radius=75 * nm):
         "residual": residual,
         "solve_time": solve_time,
         "time_per_iteration": solve_time / max(iterations, 1),
+        "iterations_preconditioned": iterations_p,
+        "residual_preconditioned": residual_p,
+        "solve_time_preconditioned": solve_time_p,
+        "iteration_reduction": float(iterations) / max(iterations_p, 1),
+        "speedup": solve_time / max(solve_time_p, 1e-30),
+        "solution_relative_diff": solution_relative_diff,
         "frobenius_norm": frobenius_norm,
     }
 
@@ -113,9 +135,11 @@ def run(preset="standard"):
             try:
                 entry = _profile_solver(N, lmax, sep_factor)
                 results.append(entry)
-                print(f"iters={entry['iterations']}, "
-                      f"residual={entry['residual']:.2e}, "
-                      f"time={entry['solve_time']*1e3:.1f}ms")
+                print(f"iters={entry['iterations']}/{entry['iterations_preconditioned']} (precond), "
+                      f"residual={entry['residual']:.2e}/{entry['residual_preconditioned']:.2e}, "
+                      f"time={entry['solve_time']*1e3:.1f}/{entry['solve_time_preconditioned']*1e3:.1f}ms, "
+                      f"speedup={entry['speedup']:.2f}x, "
+                      f"sol_diff={entry['solution_relative_diff']:.2e}")
             except Exception as e:
                 print(f"FAILED: {e}")
                 results.append({

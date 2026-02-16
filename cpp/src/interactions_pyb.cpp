@@ -54,10 +54,35 @@ void bind_bicgstab_profiled(py::module &m) {
     )pbdoc");
 }
 
+void bind_bicgstab_preconditioned_profiled(py::module &m) {
+    m.def("bicgstab_preconditioned_profiled", [](const Ref<const ComplexMatrix>& A,
+                const Ref<const ComplexVector>& b,
+                const Ref<const ComplexMatrix>& M_inv_blocks, int block_size,
+                int maxiter, double tolerance) {
+                auto result = bicgstab_preconditioned_profiled(A, b, M_inv_blocks, block_size, maxiter, tolerance);
+                return py::make_tuple(result.solution, result.iterations, result.residual);
+            },
+        "A"_a, "b"_a, "M_inv_blocks"_a, "block_size"_a,
+        "maxiter"_a = 1000, "tolerance"_a = 1e-5, R"pbdoc(
+        Preconditioned BiCGSTAB solver with profiling. Returns (solution, iterations, residual).
+    )pbdoc");
+}
+
 void bind_solve_linear_system(py::module &m) {
-    m.def("solve_linear_system", solve_linear_system, 
-           "agg_tmatrix"_a, "p_src"_a, "method"_a, R"pbdoc(
+    m.def("solve_linear_system", [](const Ref<const ComplexMatrix>& agg_tmatrix,
+                const Ref<const ComplexVector>& p_src, solver method,
+                py::object M_inv_blocks_obj, int block_size) {
+                if (M_inv_blocks_obj.is_none()) {
+                    return solve_linear_system(agg_tmatrix, p_src, method);
+                } else {
+                    auto M_inv_blocks = M_inv_blocks_obj.cast<Ref<const ComplexMatrix>>();
+                    return solve_linear_system_preconditioned(agg_tmatrix, p_src, M_inv_blocks, block_size, method);
+                }
+            },
+        "agg_tmatrix"_a, "p_src"_a, "method"_a,
+        "M_inv_blocks"_a = py::none(), "block_size"_a = 0, R"pbdoc(
         Solve the linear system:  p_inc = p_src - tmatrix*p_inc
+        Optionally accepts block-diagonal preconditioner M_inv_blocks.
     )pbdoc");
 }
 

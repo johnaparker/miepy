@@ -158,6 +158,167 @@ bicgstab_result bicgstab_profiled(const Ref<const ComplexMatrix> &A,
   }
 }
 
+ComplexVector apply_block_preconditioner(
+    const Ref<const ComplexMatrix> &M_inv_blocks,
+    const Ref<const ComplexVector> &x, int block_size) {
+
+  int size = x.size();
+  int N = size / block_size;
+  ComplexVector result(size);
+
+#pragma omp parallel for
+  for (int i = 0; i < N; i++) {
+    int offset = i * block_size;
+    result.segment(offset, block_size) =
+        M_inv_blocks.block(offset, 0, block_size, block_size) *
+        x.segment(offset, block_size);
+  }
+
+  return result;
+}
+
+ComplexVector bicgstab_preconditioned(const Ref<const ComplexMatrix> &A,
+                                      const Ref<const ComplexVector> &b,
+                                      const Ref<const ComplexMatrix> &M_inv_blocks,
+                                      int block_size, int maxiter,
+                                      double tolerance) {
+
+  int size = b.size();
+
+  ComplexVector x_prev = b;
+  ComplexVector r_prev = b - matrix_vector_product(A, x_prev);
+
+  double error = r_prev.norm();
+  if (error < tolerance)
+    return x_prev;
+
+  ComplexVector r_hat = r_prev;
+
+  complex<double> rho_prev = 1;
+  complex<double> alpha = 1;
+  complex<double> w_prev = 1;
+
+  ComplexVector v_prev = ComplexVector::Zero(size);
+  ComplexVector p_prev = ComplexVector::Zero(size);
+
+  int current_iteration = 1;
+
+  while (true) {
+    complex<double> rho_i = dot_product(r_hat, r_prev);
+    complex<double> beta = (rho_i / rho_prev) * (alpha / w_prev);
+    ComplexVector pi = r_prev + beta * (p_prev - w_prev * v_prev);
+
+    // Right preconditioning: p_hat = M^{-1} * p, then v = A * p_hat
+    ComplexVector p_hat = apply_block_preconditioner(M_inv_blocks, pi, block_size);
+    ComplexVector vi = matrix_vector_product(A, p_hat);
+
+    alpha = rho_i / dot_product(r_hat, vi);
+    ComplexVector h = x_prev + alpha * p_hat;
+
+    ComplexVector s = r_prev - alpha * vi;
+
+    // Right preconditioning: s_hat = M^{-1} * s, then t = A * s_hat
+    ComplexVector s_hat = apply_block_preconditioner(M_inv_blocks, s, block_size);
+    ComplexVector t = matrix_vector_product(A, s_hat);
+
+    complex<double> w_i = dot_product(t, s) / dot_product(t, t);
+    ComplexVector xi = h + w_i * s_hat;
+    ComplexVector ri = s - w_i * t;
+
+    error = ri.norm();
+    if (error < tolerance || current_iteration > maxiter)
+      return xi;
+
+    x_prev = xi;
+    r_prev = ri;
+    rho_prev = rho_i;
+    v_prev = vi;
+    p_prev = pi;
+    w_prev = w_i;
+
+    current_iteration += 1;
+  }
+}
+
+bicgstab_result bicgstab_preconditioned_profiled(
+    const Ref<const ComplexMatrix> &A, const Ref<const ComplexVector> &b,
+    const Ref<const ComplexMatrix> &M_inv_blocks, int block_size, int maxiter,
+    double tolerance) {
+
+  int size = b.size();
+
+  ComplexVector x_prev = b;
+  ComplexVector r_prev = b - matrix_vector_product(A, x_prev);
+
+  double error = r_prev.norm();
+  if (error < tolerance)
+    return {x_prev, 0, error};
+
+  ComplexVector r_hat = r_prev;
+
+  complex<double> rho_prev = 1;
+  complex<double> alpha = 1;
+  complex<double> w_prev = 1;
+
+  ComplexVector v_prev = ComplexVector::Zero(size);
+  ComplexVector p_prev = ComplexVector::Zero(size);
+
+  int current_iteration = 1;
+
+  while (true) {
+    complex<double> rho_i = dot_product(r_hat, r_prev);
+    complex<double> beta = (rho_i / rho_prev) * (alpha / w_prev);
+    ComplexVector pi = r_prev + beta * (p_prev - w_prev * v_prev);
+
+    ComplexVector p_hat = apply_block_preconditioner(M_inv_blocks, pi, block_size);
+    ComplexVector vi = matrix_vector_product(A, p_hat);
+
+    alpha = rho_i / dot_product(r_hat, vi);
+    ComplexVector h = x_prev + alpha * p_hat;
+
+    ComplexVector s = r_prev - alpha * vi;
+
+    ComplexVector s_hat = apply_block_preconditioner(M_inv_blocks, s, block_size);
+    ComplexVector t = matrix_vector_product(A, s_hat);
+
+    complex<double> w_i = dot_product(t, s) / dot_product(t, t);
+    ComplexVector xi = h + w_i * s_hat;
+    ComplexVector ri = s - w_i * t;
+
+    error = ri.norm();
+    if (error < tolerance || current_iteration > maxiter)
+      return {xi, current_iteration, error};
+
+    x_prev = xi;
+    r_prev = ri;
+    rho_prev = rho_i;
+    v_prev = vi;
+    p_prev = pi;
+    w_prev = w_i;
+
+    current_iteration += 1;
+  }
+}
+
+ComplexVector solve_linear_system_preconditioned(
+    const Ref<const ComplexMatrix> &agg_tmatrix,
+    const Ref<const ComplexVector> &p_src,
+    const Ref<const ComplexMatrix> &M_inv_blocks, int block_size,
+    solver method) {
+
+  ComplexMatrix interaction_matrix = agg_tmatrix;
+  for (int i = 0; i < interaction_matrix.cols(); i++)
+    interaction_matrix(i, i) += 1;
+
+  switch (method) {
+  case solver::exact:
+  default:
+  case solver::bicgstab:
+    return bicgstab_preconditioned(interaction_matrix, p_src, M_inv_blocks,
+                                   block_size);
+  }
+}
+
 ComplexVector solve_linear_system(const Ref<const ComplexMatrix> &agg_tmatrix,
                                   const Ref<const ComplexVector> &p_src,
                                   solver method) {
