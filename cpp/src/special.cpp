@@ -1,8 +1,13 @@
 #include "special.hpp"
 #include <cmath>
+#include <algorithm>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
+#ifdef MIEPY_VALIDATE_GAUNT
+#include <cassert>
+#include <iostream>
+#endif
 
 using std::complex;
 using namespace std::complex_literals;
@@ -288,6 +293,150 @@ double b_func(int m, int n, int u, int v, int p) {
     double w2 = wigner_3j(n, v, p+1, m, u, -m-u);
 
     return factor*w1*w2;
+}
+
+wigner_3j_batch_result wigner_3j_batch(int j2, int j3, int m1, int m2, int m3) {
+    wigner_3j_batch_result result;
+
+    if (m1 + m2 + m3 != 0) {
+        result.jmin = 0;
+        result.jmax = -1;
+        return result;
+    }
+
+    result.jmin = std::max(abs(j2 - j3), abs(m1));
+    result.jmax = j2 + j3;
+    int size = result.jmax - result.jmin + 1;
+
+    if (size <= 0) {
+        return result;
+    }
+
+    result.values.resize(size);
+
+    if (size <= 2) {
+        for (int i = 0; i < size; i++) {
+            result.values[i] = wigner_3j(result.jmin + i, j2, j3, m1, m2, m3);
+        }
+        return result;
+    }
+
+    // Seed with 2 GSL calls
+    result.values[0] = wigner_3j(result.jmin, j2, j3, m1, m2, m3);
+    result.values[1] = wigner_3j(result.jmin + 1, j2, j3, m1, m2, m3);
+
+    // Forward recursion via Schulten-Gordon three-term recurrence
+    // j*s(j+1)*f(j+1) + (2j+1)*t(j)*f(j) + (j+1)*s(j)*f(j-1) = 0
+    // where s(j) = sqrt[(j^2-(j2-j3)^2) * ((j2+j3+1)^2-j^2) * (j^2-m1^2)]
+    //       t(j) = -m1*(j2(j2+1)-j3(j3+1)) + (m3-m2)*j*(j+1)
+    // => f(j+1) = [-(j+1)*s(j)*f(j-1) - (2j+1)*t(j)*f(j)] / [j*s(j+1)]
+    int d23 = j2 - j3;
+    int s23p1 = j2 + j3 + 1;
+    double j2j3_term = double(j2) * (j2 + 1) - double(j3) * (j3 + 1);
+    double m_diff = m3 - m2;
+
+    for (int i = 1; i < size - 1; i++) {
+        int j = result.jmin + i;
+        double j_d = j;
+        double jp1_d = j + 1.0;
+
+        double sj_sq = (j_d * j_d - double(d23) * d23) * (double(s23p1) * s23p1 - j_d * j_d)
+                     * (j_d * j_d - double(m1) * m1);
+        double sj = sqrt(std::max(0.0, sj_sq));
+
+        double sjp1_sq = (jp1_d * jp1_d - double(d23) * d23) * (double(s23p1) * s23p1 - jp1_d * jp1_d)
+                       * (jp1_d * jp1_d - double(m1) * m1);
+        double sjp1 = sqrt(std::max(0.0, sjp1_sq));
+
+        double A_coeff = jp1_d * sj;
+        double B_coeff = (2.0 * j + 1) * (-double(m1) * j2j3_term + m_diff * j_d * jp1_d);
+        double C_coeff = j_d * sjp1;
+
+        if (std::abs(C_coeff) < 1e-30) {
+            result.values[i + 1] = wigner_3j(j + 1, j2, j3, m1, m2, m3);
+        } else {
+            result.values[i + 1] = (-A_coeff * result.values[i - 1] - B_coeff * result.values[i]) / C_coeff;
+        }
+    }
+
+    return result;
+}
+
+gaunt_result gaunt_batch(int m, int n, int u, int v) {
+    gaunt_result result;
+
+    int qmax_A = std::min({n, v, (n + v - abs(m + u)) / 2});
+    int qmax_B = std::min({n, v, (n + v + 1 - abs(m + u)) / 2});
+
+    result.a_vals.resize(qmax_A + 1);
+    result.b_vals.resize(qmax_B + 1);
+    result.b_vals[0] = 0.0;
+
+    // Batch compute the two Wigner 3j sequences using column permutation symmetry:
+    // W3j(n,v,p, 0,0,0) = W3j(p,n,v, 0,0,0) — batch over p as first argument
+    auto w3j_zero = wigner_3j_batch(n, v, 0, 0, 0);
+
+    // W3j(n,v,p, m,u,-(m+u)) = W3j(p,n,v, -(m+u),m,u) — batch over p as first argument
+    auto w3j_mu = wigner_3j_batch(n, v, -(m + u), m, u);
+
+    // Precompute shared factorial terms
+    double fac_nm = factorial(n + m);
+    double fac_n_m = factorial(n - m);
+    double fac_vu = factorial(v + u);
+    double fac_v_u = factorial(v - u);
+    double sign = pow(-1, m + u);
+
+    // Compute a_func values
+    for (int q = 0; q <= qmax_A; q++) {
+        int p = n + v - 2 * q;
+        double fac_ratio = fac_nm * fac_vu * factorial(p - m - u) / (fac_n_m * fac_v_u * factorial(p + m + u));
+        double factor = sign * (2 * p + 1) * sqrt(fac_ratio);
+
+        double w1 = w3j_zero.values[p - w3j_zero.jmin];
+        double w2 = w3j_mu.values[p - w3j_mu.jmin];
+
+        result.a_vals[q] = factor * w1 * w2;
+
+#ifdef MIEPY_VALIDATE_GAUNT
+        double ref = a_func(m, n, u, v, p);
+        double abs_err = std::abs(result.a_vals[q] - ref);
+        double max_mag = std::max(std::abs(ref), std::abs(result.a_vals[q]));
+        double rel_err = (max_mag > 1e-12) ? abs_err / max_mag : 0.0;
+        if (rel_err > 1e-8) {
+            std::cerr << "gaunt_batch a_vals mismatch: m=" << m << " n=" << n << " u=" << u << " v=" << v
+                      << " p=" << p << " batch=" << result.a_vals[q] << " ref=" << ref
+                      << " abs_err=" << abs_err << " rel_err=" << rel_err << "\n";
+            assert(false);
+        }
+#endif
+    }
+
+    // Compute b_func values
+    for (int q = 1; q <= qmax_B; q++) {
+        int p = n + v - 2 * q;
+        double fac_ratio = fac_nm * fac_vu * factorial(p - m - u + 1) / (fac_n_m * fac_v_u * factorial(p + m + u + 1));
+        double factor = sign * (2 * p + 3) * sqrt(fac_ratio);
+
+        double w1 = w3j_zero.values[p - w3j_zero.jmin];
+        double w2 = w3j_mu.values[(p + 1) - w3j_mu.jmin];
+
+        result.b_vals[q] = factor * w1 * w2;
+
+#ifdef MIEPY_VALIDATE_GAUNT
+        double ref = b_func(m, n, u, v, p);
+        double abs_err = std::abs(result.b_vals[q] - ref);
+        double max_mag = std::max(std::abs(ref), std::abs(result.b_vals[q]));
+        double rel_err = (max_mag > 1e-12) ? abs_err / max_mag : 0.0;
+        if (rel_err > 1e-8) {
+            std::cerr << "gaunt_batch b_vals mismatch: m=" << m << " n=" << n << " u=" << u << " v=" << v
+                      << " p=" << p << " batch=" << result.b_vals[q] << " ref=" << ref
+                      << " abs_err=" << abs_err << " rel_err=" << rel_err << "\n";
+            assert(false);
+        }
+#endif
+    }
+
+    return result;
 }
 
 

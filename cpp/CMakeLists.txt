@@ -52,7 +52,12 @@ set(BINDINGS
     src/decomposition_pyb.cpp
 )
 
+option(MIEPY_VALIDATE_GAUNT "Validate Gaunt recursion against direct Wigner 3j" OFF)
+
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
+if(MIEPY_VALIDATE_GAUNT)
+    target_compile_definitions(cpp PRIVATE MIEPY_VALIDATE_GAUNT)
+endif()
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
 # Link BLAS on macOS only: Accelerate benefits the LU direct solver.
 # On Linux, BLAS dispatch overhead hurts the iterative solver (many small matvecs)

@@ -17,16 +17,18 @@ vsh_cache::vsh_cache(int n, int m, int v, int u) {
     A = ComplexArray(qmax_A+1);
     B = ComplexArray(qmax_B+1);
 
+    auto gaunt = gaunt_batch(m, n, u, v);
+
     for (int q = 0; q < qmax_A+1; q++) {
         int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
+        double aq = gaunt.a_vals[q];
         A(q) = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
     }
 
     B(0) = 0;
     for (int q = 1; q < qmax_B+1; q++) {
         int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
+        double bq = gaunt.b_vals[q];
         B(q) = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
     }
 }
@@ -269,23 +271,23 @@ std::function<std::array<complex<double>, 2> (double, double, double, double)> v
     int qmax_A = std::min({n, v, (n + v - abs(m+u))/2});
     ComplexArray A(qmax_A+1);
 
-    for (int q = 0; q < qmax_A+1; q++) {
-        int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
-        A(q) = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
-    }
-
-
     int qmax_B = std::min({n, v, (n + v + 1 - abs(m+u))/2});
     ComplexArray B(qmax_B+1);
     B(0) = 0;
 
-    for (int q = 1; q < qmax_B+1; q++) {
+    auto gaunt = gaunt_batch(m, n, u, v);
+
+    for (int q = 0; q < qmax_A+1; q++) {
         int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
-        B(q) = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
+        double aq = gaunt.a_vals[q];
+        A(q) = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
     }
 
+    for (int q = 1; q < qmax_B+1; q++) {
+        int p = n + v - 2*q;
+        double bq = gaunt.b_vals[q];
+        B(q) = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
+    }
 
     return [m,n,u,v,zn,factor,qmax_A,qmax_B,A,B](double rad, double theta, double phi, double k) {
         double cos_theta = cos(theta);
@@ -324,15 +326,17 @@ AB_type vsh_translation_eigen(
 
     double factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
             /v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m));
-    
+
     ComplexArray exp_phi = exp(1i*double(u+m)*phi);
     Array cos_theta = cos(theta);
+
+    auto gaunt = gaunt_batch(m, n, u, v);
 
     int qmax = std::min({n, v, (n + v - abs(m+u))/2});
 
     for (int q = 0; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
+        double aq = gaunt.a_vals[q];
         complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
 
         for (size_t idx = 0; idx < size; idx++) {
@@ -346,7 +350,7 @@ AB_type vsh_translation_eigen(
 
     for (int q = 1; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
+        double bq = gaunt.b_vals[q];
         complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
 
         for (size_t idx = 0; idx < size; idx++) {
@@ -373,7 +377,7 @@ py::array_t<complex<double>> vsh_translation_numpy(
 
     double factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
             /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)));
-    
+
 
     py::array_t<complex<double>> exp_phi(buf_theta.shape(0));
     auto buf_exp_phi = exp_phi.mutable_unchecked<1>();
@@ -388,11 +392,13 @@ py::array_t<complex<double>> vsh_translation_numpy(
         buf(1,idx) = 0;
     }
 
+    auto gaunt = gaunt_batch(m, n, u, v);
+
     int qmax = std::min({n, v, (n + v - abs(m+u))/2});
 
     for (int q = 0; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
+        double aq = gaunt.a_vals[q];
         complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
 
         for (ssize_t idx = 0; idx < buf_theta.shape(0); idx++) {
@@ -406,7 +412,7 @@ py::array_t<complex<double>> vsh_translation_numpy(
 
     for (int q = 1; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
+        double bq = gaunt.b_vals[q];
         complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
 
         for (ssize_t idx = 0; idx < buf_theta.shape(0); idx++) {
@@ -449,18 +455,18 @@ std::array<complex<double>, 2> vsh_translation(
     m *= -1;
     auto zn = get_zn(mode);
 
-    //complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
-            ///(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(complex<double>(0, (u+m)*phi));
     complex<double> factor = 0.5*pow(-1, m)*sqrt((2*v+1)*(2*n+1)*factorial(v-u)*factorial(n-m)
             /(v*(v+1)*n*(n+1)*factorial(v+u)*factorial(n+m)))*exp(1i*double(u+m)*phi);
     double cos_theta = cos(theta);
+
+    auto gaunt = gaunt_batch(m, n, u, v);
 
     int qmax = std::min({n, v, (n + v - abs(m+u))/2});
     complex<double> sum_term = 0;
 
     for (int q = 0; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double aq = a_func(m, n, u, v, p);
+        double aq = gaunt.a_vals[q];
         complex<double> A = aq*pow(1i, p)*double(n*(n+1) + v*(v+1) - p*(p+1));
 
         double Pnm_val = associated_legendre(p, u+m, cos_theta);
@@ -474,7 +480,7 @@ std::array<complex<double>, 2> vsh_translation(
 
     for (int q = 1; q < qmax+1; q++) {
         int p = n + v - 2*q;
-        double bq = b_func(m, n, u, v, p);
+        double bq = gaunt.b_vals[q];
         complex<double> A = bq*pow(1i, p+1)*sqrt((pow(p+1,2) - pow(n-v,2))*(pow(n+v+1,2) - pow(p+1,2)));
 
         double Pnm_val = associated_legendre(p+1, u+m, cos_theta);

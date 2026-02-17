@@ -1,6 +1,7 @@
 #ifndef GUARD_special_h
 #define GUARD_special_h
 #include <complex>
+#include <vector>
 #include "vec.hpp"
 
 //separate into 3 files: radial functions, angular functions, and a/b coefficients
@@ -26,6 +27,21 @@ double pi_func(int n, int m, double theta);
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3);
 double a_func(int m, int n, int u, int v, int p);
 double b_func(int m, int n, int u, int v, int p);
+
+struct wigner_3j_batch_result {
+    std::vector<double> values;
+    int jmin;
+    int jmax;
+};
+
+wigner_3j_batch_result wigner_3j_batch(int j2, int j3, int m1, int m2, int m3);
+
+struct gaunt_result {
+    std::vector<double> a_vals;
+    std::vector<double> b_vals;
+};
+
+gaunt_result gaunt_batch(int m, int n, int u, int v);
 
 std::complex<double> test(int n, double z, bool derivative=false);
 double test2();
