@@ -3,7 +3,6 @@
 
 #include <complex>
 #include <eigen3/Eigen/Core>
-#include <vector>
 #include "vec.hpp"
 
 enum class solver {
@@ -28,11 +27,6 @@ ComplexVector solve_linear_system(const Ref<const ComplexMatrix>& agg_tmatrix,
 
 ComplexVector apply_block_preconditioner(const Ref<const ComplexMatrix>& M_inv_blocks,
         const Ref<const ComplexVector>& x, int block_size);
-
-ComplexVector bicgstab_preconditioned(const Ref<const ComplexMatrix>& A,
-        const Ref<const ComplexVector>& b,
-        const Ref<const ComplexMatrix>& M_inv_blocks, int block_size,
-        int maxiter = 1000, double tolerance = 1e-5);
 
 bicgstab_result bicgstab_preconditioned_profiled(const Ref<const ComplexMatrix>& A,
         const Ref<const ComplexVector>& b,

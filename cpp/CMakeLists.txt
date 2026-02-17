@@ -54,17 +54,12 @@ set(BINDINGS
 
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
-# Link optimized BLAS so Eigen dispatches matrix ops to hardware-tuned routines
+# Link BLAS on macOS only: Accelerate benefits the LU direct solver.
+# On Linux, BLAS dispatch overhead hurts the iterative solver (many small matvecs)
+# and Eigen's internal kernels are competitive, so BLAS is not linked.
 if(APPLE)
-    # macOS: use Accelerate framework directly (vcpkg toolchain hides it from FindBLAS)
     target_compile_definitions(cpp PRIVATE EIGEN_USE_BLAS)
     target_link_libraries(cpp PRIVATE "-framework Accelerate")
-else()
-    find_package(BLAS)
-    if(BLAS_FOUND)
-        target_compile_definitions(cpp PRIVATE EIGEN_USE_BLAS)
-        target_link_libraries(cpp PRIVATE ${BLAS_LIBRARIES})
-    endif()
 endif()
 # Windows with MinGW: use generated import library
 if(WIN32)

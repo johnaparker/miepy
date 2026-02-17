@@ -12,13 +12,95 @@ using namespace std::complex_literals;
 
 using Eigen::Vector3d;
 
+// Forward declaration for Eigen traits
+class ParallelDenseMatrix;
+
+namespace Eigen {
+namespace internal {
+  template<>
+  struct traits<ParallelDenseMatrix> : public traits<ComplexMatrix> {};
+}
+}
+
+// Wrapper that holds a reference to a ComplexMatrix and provides
+// OpenMP-parallel GEMV for Eigen's iterative solvers.
+class ParallelDenseMatrix : public Eigen::EigenBase<ParallelDenseMatrix> {
+public:
+  typedef std::complex<double> Scalar;
+  typedef double RealScalar;
+  typedef int StorageIndex;
+
+  enum {
+    ColsAtCompileTime = Eigen::Dynamic,
+    MaxColsAtCompileTime = Eigen::Dynamic,
+    IsRowMajor = false
+  };
+
+  explicit ParallelDenseMatrix(const ComplexMatrix& mat) : m_mat(mat) {}
+
+  Eigen::Index rows() const { return m_mat.rows(); }
+  Eigen::Index cols() const { return m_mat.cols(); }
+
+  // Allow Eigen's solver to access the underlying matrix for preconditioning
+  const ComplexMatrix& matrix() const { return m_mat; }
+
+  // Required for Eigen::BiCGSTAB to compute residual norms
+  template<typename Rhs>
+  Eigen::Product<ParallelDenseMatrix, Rhs, Eigen::AliasFreeProduct>
+  operator*(const Eigen::MatrixBase<Rhs>& x) const {
+    return Eigen::Product<ParallelDenseMatrix, Rhs, Eigen::AliasFreeProduct>(*this, x.derived());
+  }
+
+private:
+  const ComplexMatrix& m_mat;
+};
+
+// Specialize Eigen's product implementation for ParallelDenseMatrix * DenseVector
+namespace Eigen {
+namespace internal {
+
+  template<typename Rhs>
+  struct generic_product_impl<ParallelDenseMatrix, Rhs, DenseShape, DenseShape, GemvProduct>
+    : generic_product_impl_base<ParallelDenseMatrix, Rhs,
+        generic_product_impl<ParallelDenseMatrix, Rhs, DenseShape, DenseShape, GemvProduct>> {
+
+    typedef typename Product<ParallelDenseMatrix, Rhs>::Scalar Scalar;
+
+    template<typename Dest>
+    static void scaleAndAddTo(Dest& dst, const ParallelDenseMatrix& lhs,
+                              const Rhs& rhs, const Scalar& alpha) {
+      const auto& mat = lhs.matrix();
+      const Eigen::Index nrows = mat.rows();
+      const Eigen::Index ncols = mat.cols();
+
+      // Block-parallel GEMV: each thread gets a contiguous block of rows
+      // and uses Eigen's vectorized matrix-vector multiply internally.
+      // This preserves Eigen's optimized accumulation (better numerical
+      // precision and throughput than per-row dot products).
+      #pragma omp parallel
+      {
+        int nthreads = omp_get_num_threads();
+        int tid = omp_get_thread_num();
+        Eigen::Index chunk = (nrows + nthreads - 1) / nthreads;
+        Eigen::Index start = tid * chunk;
+        Eigen::Index end = std::min(start + chunk, nrows);
+        if (start < end) {
+          dst.segment(start, end - start).noalias() +=
+              alpha * mat.block(start, 0, end - start, ncols) * rhs;
+        }
+      }
+    }
+  };
+
+}
+}
+
 ComplexVector bicgstab(const Ref<const ComplexMatrix> &A,
                        const Ref<const ComplexVector> &b, int maxiter,
                        double tolerance) {
 
   int size = b.size();
 
-  // step 1
   ComplexVector x_prev = b;
   ComplexVector r_prev = b - A * x_prev;
 
@@ -26,19 +108,15 @@ ComplexVector bicgstab(const Ref<const ComplexMatrix> &A,
   if (error < tolerance)
     return x_prev;
 
-  // step 2
   ComplexVector r_hat = r_prev;
 
-  // step 3
   complex<double> rho_prev = 1;
   complex<double> alpha = 1;
   complex<double> w_prev = 1;
 
-  // step 4
   ComplexVector v_prev = ComplexVector::Zero(size);
   ComplexVector p_prev = ComplexVector::Zero(size);
 
-  // step 5
   int current_iteration = 1;
 
   while (true) {
@@ -149,69 +227,6 @@ ComplexVector apply_block_preconditioner(
   return result;
 }
 
-ComplexVector bicgstab_preconditioned(const Ref<const ComplexMatrix> &A,
-                                      const Ref<const ComplexVector> &b,
-                                      const Ref<const ComplexMatrix> &M_inv_blocks,
-                                      int block_size, int maxiter,
-                                      double tolerance) {
-
-  int size = b.size();
-
-  ComplexVector x_prev = b;
-  ComplexVector r_prev = b - A * x_prev;
-
-  double error = r_prev.norm();
-  if (error < tolerance)
-    return x_prev;
-
-  ComplexVector r_hat = r_prev;
-
-  complex<double> rho_prev = 1;
-  complex<double> alpha = 1;
-  complex<double> w_prev = 1;
-
-  ComplexVector v_prev = ComplexVector::Zero(size);
-  ComplexVector p_prev = ComplexVector::Zero(size);
-
-  int current_iteration = 1;
-
-  while (true) {
-    complex<double> rho_i = r_hat.dot(r_prev);
-    complex<double> beta = (rho_i / rho_prev) * (alpha / w_prev);
-    ComplexVector pi = r_prev + beta * (p_prev - w_prev * v_prev);
-
-    // Right preconditioning: p_hat = M^{-1} * p, then v = A * p_hat
-    ComplexVector p_hat = apply_block_preconditioner(M_inv_blocks, pi, block_size);
-    ComplexVector vi = A * p_hat;
-
-    alpha = rho_i / r_hat.dot(vi);
-    ComplexVector h = x_prev + alpha * p_hat;
-
-    ComplexVector s = r_prev - alpha * vi;
-
-    // Right preconditioning: s_hat = M^{-1} * s, then t = A * s_hat
-    ComplexVector s_hat = apply_block_preconditioner(M_inv_blocks, s, block_size);
-    ComplexVector t = A * s_hat;
-
-    complex<double> w_i = t.dot(s) / t.dot(t);
-    ComplexVector xi = h + w_i * s_hat;
-    ComplexVector ri = s - w_i * t;
-
-    error = ri.norm();
-    if (error < tolerance || current_iteration > maxiter)
-      return xi;
-
-    x_prev = xi;
-    r_prev = ri;
-    rho_prev = rho_i;
-    v_prev = vi;
-    p_prev = pi;
-    w_prev = w_i;
-
-    current_iteration += 1;
-  }
-}
-
 bicgstab_result bicgstab_preconditioned_profiled(
     const Ref<const ComplexMatrix> &A, const Ref<const ComplexVector> &b,
     const Ref<const ComplexMatrix> &M_inv_blocks, int block_size, int maxiter,
@@ -272,6 +287,36 @@ bicgstab_result bicgstab_preconditioned_profiled(
   }
 }
 
+// Custom Eigen preconditioner wrapping block-diagonal inverse
+struct BlockDiagonalPreconditioner {
+  const Ref<const ComplexMatrix>* M_inv_blocks_ptr;
+  int block_size;
+  int m_rows;
+
+  BlockDiagonalPreconditioner() : M_inv_blocks_ptr(nullptr), block_size(0), m_rows(0) {}
+
+  template <typename MatrixType>
+  BlockDiagonalPreconditioner& analyzePattern(const MatrixType&) { return *this; }
+
+  template <typename MatrixType>
+  BlockDiagonalPreconditioner& factorize(const MatrixType&) { return *this; }
+
+  template <typename MatrixType>
+  BlockDiagonalPreconditioner& compute(const MatrixType& mat) {
+    m_rows = mat.rows();
+    return *this;
+  }
+
+  Eigen::ComputationInfo info() const { return Eigen::Success; }
+
+  int rows() const { return m_rows; }
+  int cols() const { return m_rows; }
+
+  ComplexVector solve(const ComplexVector& x) const {
+    return apply_block_preconditioner(*M_inv_blocks_ptr, x, block_size);
+  }
+};
+
 ComplexVector solve_linear_system_preconditioned(
     const Ref<const ComplexMatrix> &agg_tmatrix,
     const Ref<const ComplexVector> &p_src,
@@ -286,9 +331,16 @@ ComplexVector solve_linear_system_preconditioned(
   case solver::exact:
     return interaction_matrix.partialPivLu().solve(p_src);
   default:
-  case solver::bicgstab:
-    return bicgstab_preconditioned(interaction_matrix, p_src, M_inv_blocks,
-                                   block_size);
+  case solver::bicgstab: {
+    ParallelDenseMatrix par_mat(interaction_matrix);
+    Eigen::BiCGSTAB<ParallelDenseMatrix, BlockDiagonalPreconditioner> solver;
+    solver.preconditioner().M_inv_blocks_ptr = &M_inv_blocks;
+    solver.preconditioner().block_size = block_size;
+    solver.setTolerance(1e-5);
+    solver.setMaxIterations(1000);
+    solver.compute(par_mat);
+    return solver.solve(p_src);
+  }
   }
 }
 
@@ -304,8 +356,14 @@ ComplexVector solve_linear_system(const Ref<const ComplexMatrix> &agg_tmatrix,
   case solver::exact:
     return interaction_matrix.partialPivLu().solve(p_src);
   default:
-  case solver::bicgstab:
-    return bicgstab(interaction_matrix, p_src);
+  case solver::bicgstab: {
+    ParallelDenseMatrix par_mat(interaction_matrix);
+    Eigen::BiCGSTAB<ParallelDenseMatrix, Eigen::IdentityPreconditioner> solver;
+    solver.setTolerance(1e-5);
+    solver.setMaxIterations(1000);
+    solver.compute(par_mat);
+    return solver.solve(p_src);
+  }
   }
 }
 
