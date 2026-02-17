@@ -15,7 +15,7 @@ from .bench_utils import NumpyEncoder, load_results, save_results, system_metada
 
 def run_benchmarks(preset="standard", skip_parallel=False, output=None):
     """Run all benchmark suites and save consolidated results."""
-    from . import bench_scaling, bench_solver, bench_translation
+    from . import bench_hexagonal, bench_scaling, bench_solver, bench_translation
 
     print(f"=== MiePy Benchmark Suite ({preset} preset) ===\n")
 
@@ -26,6 +26,10 @@ def run_benchmarks(preset="standard", skip_parallel=False, output=None):
 
     print("--- Scaling Benchmarks ---")
     results["scaling"] = bench_scaling.run(preset)
+    print()
+
+    print("--- Hexagonal Cluster Benchmarks ---")
+    results["hexagonal"] = bench_hexagonal.run(preset)
     print()
 
     print("--- Translation Benchmarks ---")
@@ -71,6 +75,9 @@ def compare_results(file_a, file_b):
     _compare_scaling(a, b, "n_sweep", "N")
     _compare_scaling(a, b, "lmax_sweep", "lmax")
 
+    # Compare hexagonal cluster benchmarks
+    _compare_hexagonal(a, b)
+
     # Compare solver benchmarks
     _compare_solver(a, b)
 
@@ -105,6 +112,38 @@ def _compare_scaling(a, b, sweep_key, param_key):
                 change = (b_t - a_t) / a_t * 100
                 sign = "+" if change > 0 else ""
                 print(f"{param:>8} {op:>20} {a_t*1e3:>10.2f} {b_t*1e3:>10.2f} {sign}{change:>8.1f}%")
+
+    print()
+
+
+def _compare_hexagonal(a, b):
+    """Compare hexagonal cluster benchmark results."""
+    a_data = a.get("hexagonal", {}).get("hexagonal", [])
+    b_data = b.get("hexagonal", {}).get("hexagonal", [])
+
+    if not a_data or not b_data:
+        return
+
+    print("=== Hexagonal Cluster ===")
+    print(f"{'N':>5} {'lmax':>5} {'Operation':>20} {'A (ms)':>10} {'B (ms)':>10} {'Change':>10}")
+    print("-" * 65)
+
+    def key(d):
+        return (d.get("N", 0), d.get("lmax", 0))
+
+    a_by_key = {key(d): d for d in a_data if "error" not in d}
+    b_by_key = {key(d): d for d in b_data if "error" not in d}
+
+    for k in sorted(set(a_by_key) & set(b_by_key)):
+        ad = a_by_key[k]
+        bd = b_by_key[k]
+        for op in ["aggregate_tmatrix", "solve_linear_system"]:
+            a_t = ad.get(op, {}).get("time")
+            b_t = bd.get(op, {}).get("time")
+            if a_t is not None and b_t is not None and a_t > 0:
+                change = (b_t - a_t) / a_t * 100
+                sign = "+" if change > 0 else ""
+                print(f"{k[0]:>5} {k[1]:>5} {op:>20} {a_t*1e3:>10.2f} {b_t*1e3:>10.2f} {sign}{change:>8.1f}%")
 
     print()
 
