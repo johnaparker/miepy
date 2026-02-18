@@ -78,6 +78,10 @@ def solve_linear_system(tmatrix, p_src, method, M_inv_blocks=None, block_size=0)
         M_inv_blocks   optional block-diagonal preconditioner (None for unpreconditioned)
         block_size     block size for preconditioner (ignored if M_inv_blocks is None)
     """
+    if miepy.backends.get_backend() == 'jax':
+        from miepy.backends.jax.interactions import solve_linear_system_jax
+        return solve_linear_system_jax(tmatrix, p_src, method)
+
     Nparticles = tmatrix.shape[0]
     rmax = p_src.shape[-1]
     size = Nparticles * 2 * rmax
@@ -134,6 +138,10 @@ def sphere_aggregate_tmatrix(positions, mie, k):
         mie[N,2,lmax]       mie scattering coefficients
         k                   medium wavenumber
     """
+    if miepy.backends.get_backend() == 'jax':
+        from miepy.backends.jax.interactions import sphere_aggregate_tmatrix_jax
+        return sphere_aggregate_tmatrix_jax(positions, mie, k)
+
     Nparticles = positions.shape[0]
     lmax = mie.shape[-1]
     rmax = miepy.vsh.lmax_to_rmax(lmax)

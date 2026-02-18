@@ -7,6 +7,7 @@ Python module to calcuate scattering coefficients of a plane wave incident on a 
 import warnings
 
 from . import (
+    backends,
     constants,
     coordinates,
     cpp,
