@@ -4,9 +4,39 @@ import numpy as np
 from scipy import constants
 
 import miepy
-from miepy.cpp.forces import force as force
-from miepy.cpp.forces import torque as torque
+from miepy.cpp.forces import force as _cpp_force
+from miepy.cpp.forces import torque as _cpp_torque
 from miepy.vsh.misc import simps_2d
+
+
+def force(p_scat, p_inc, k, eps_b, mu_b):
+    """Compute the optical force on a particle from expansion coefficients.
+
+    Arguments:
+        p_scat[2*rmax]  scattered field coefficients (flattened)
+        p_inc[2*rmax]   incident field coefficients (flattened)
+        k               wavenumber
+        eps_b           background permittivity
+        mu_b            background permeability
+
+    Returns: F[3]
+    """
+    return _cpp_force(p_scat, p_inc, k, eps_b, mu_b)
+
+
+def torque(p_scat, p_inc, k, eps_b, mu_b):
+    """Compute the optical torque on a particle from expansion coefficients.
+
+    Arguments:
+        p_scat[2*rmax]  scattered field coefficients (flattened)
+        p_inc[2*rmax]   incident field coefficients (flattened)
+        k               wavenumber
+        eps_b           background permittivity
+        mu_b            background permeability
+
+    Returns: T[3]
+    """
+    return _cpp_torque(p_scat, p_inc, k, eps_b, mu_b)
 
 
 def levi_civita():
