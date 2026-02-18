@@ -1,11 +1,21 @@
 """The Generalized Mie Theory (GMT) for a collection of spheres."""
 
-from functools import partial
+from functools import lru_cache, partial
 
 import numpy as np
 
 import miepy
 from miepy.utils import atleast
+
+
+@lru_cache(maxsize=16)
+def _build_n_index(lmax):
+    """Map mode index r -> Mie coefficient index n-1."""
+    rmax = lmax * (lmax + 2)
+    n_idx = np.empty(rmax, dtype=int)
+    for r, n, _m in miepy.mode_indices(lmax):
+        n_idx[r] = n - 1
+    return n_idx
 
 
 # TODO: make several properties... such as wavelength, source, position, etc.
@@ -662,9 +672,9 @@ class sphere_cluster:
     def _solve_without_interactions(self):
         self.p_inc[...] = self.p_src
 
-        for r, n, _m in miepy.mode_indices(self.lmax):
-            self.p_scat[..., r] = self.p_inc[..., r] * self.mie_scat[..., n - 1]
-            self.p_int[..., r] = self.p_inc[..., r] * self.mie_int[:, ::-1, n - 1]
+        n_idx = _build_n_index(self.lmax)
+        self.p_scat[...] = self.p_inc * self.mie_scat[:, :, n_idx]
+        self.p_int[...] = self.p_inc * self.mie_int[:, ::-1, n_idx]
 
     def _solve_interactions(self):
         if self.symmetry is None:
@@ -686,6 +696,6 @@ class sphere_cluster:
 
         self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
 
-        for r, n, _m in miepy.mode_indices(self.lmax):
-            self.p_scat[..., r] = self.p_inc[..., r] * self.mie_scat[..., n - 1]
-            self.p_int[..., r] = self.p_inc[..., r] * self.mie_int[:, ::-1, n - 1]
+        n_idx = _build_n_index(self.lmax)
+        self.p_scat[...] = self.p_inc * self.mie_scat[:, :, n_idx]
+        self.p_int[...] = self.p_inc * self.mie_int[:, ::-1, n_idx]

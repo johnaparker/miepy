@@ -129,22 +129,29 @@ class plane_wave(polarized_propagating_source):
         Nparticles = len(position)
         rmax = miepy.vsh.lmax_to_rmax(lmax)
 
+        # Precompute mode-dependent constants (rmax C++ calls, not N*rmax)
+        pi_vals = np.empty(rmax)
+        tau_vals = np.empty(rmax)
+        Emn_vals = np.empty(rmax)
+        m_vals = np.empty(rmax, dtype=int)
+
+        for i, n, m in miepy.mode_indices(lmax):
+            pi_vals[i] = pi_func(n, m, self.theta)
+            tau_vals[i] = tau_func(n, m, self.theta)
+            Emn_vals[i] = np.abs(miepy.vsh.Emn(m, n))
+            m_vals[i] = m
+
+        # Vectorize over all particles via broadcasting
+        phases = k * (position @ self.k_hat) + self.phase           # [N]
+        exp_factors = (self.amplitude
+            * np.exp(1j * (phases[:, None] - m_vals * self.phi))
+            * Emn_vals)                                              # [N, rmax]
+
         p_src = np.empty([Nparticles, 2, rmax], dtype=complex)
-
-        for j in range(Nparticles):
-            phase = (
-                k * (self.k_hat[0] * position[j, 0] + self.k_hat[1] * position[j, 1] + self.k_hat[2] * position[j, 2])
-                + self.phase
-            )
-
-            for i, n, m in miepy.mode_indices(lmax):
-                pi_value = pi_func(n, m, self.theta)
-                tau_value = tau_func(n, m, self.theta)
-                Emn = np.abs(miepy.vsh.Emn(m, n))
-                factor = self.amplitude * np.exp(1j * (phase - m * self.phi)) * Emn
-
-                p_src[j, 0, i] = factor * (tau_value * self.polarization[0] - 1j * pi_value * self.polarization[1])
-                p_src[j, 1, i] = factor * (pi_value * self.polarization[0] - 1j * tau_value * self.polarization[1])
+        p_src[:, 0, :] = exp_factors * (tau_vals * self.polarization[0]
+                                         - 1j * pi_vals * self.polarization[1])
+        p_src[:, 1, :] = exp_factors * (pi_vals * self.polarization[0]
+                                         - 1j * tau_vals * self.polarization[1])
 
         return p_src
 
