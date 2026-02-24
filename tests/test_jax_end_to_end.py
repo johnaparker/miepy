@@ -1,8 +1,8 @@
 """End-to-end tests comparing JAX backend against C++ backend for sphere_cluster.
 
 Runs representative sphere_cluster computations with both backends and verifies
-that all observables (cross-sections, forces, torques, expansion coefficients)
-agree to within solver tolerance.
+that all observables (cross-sections, forces, torques, expansion coefficients,
+E-fields, cluster coefficients) agree to within solver tolerance.
 """
 
 import numpy as np
@@ -21,7 +21,7 @@ source_x = miepy.sources.plane_wave.from_string(polarization="x")
 
 
 def _solve_both_backends(positions, radius, material, source, wavelength, lmax,
-                         interactions=True):
+                         interactions=True, method=None):
     """Solve the same problem with C++ and JAX backends, return both clusters."""
     # C++ backend (default)
     with miepy.backends.backend('cpu'):
@@ -33,6 +33,7 @@ def _solve_both_backends(positions, radius, material, source, wavelength, lmax,
             wavelength=wavelength,
             lmax=lmax,
             interactions=interactions,
+            method=method,
         )
 
     # JAX backend
@@ -45,6 +46,7 @@ def _solve_both_backends(positions, radius, material, source, wavelength, lmax,
             wavelength=wavelength,
             lmax=lmax,
             interactions=interactions,
+            method=method,
         )
 
     return cpp_cluster, jax_cluster
@@ -84,7 +86,8 @@ class TestTwoParticlesExact:
     def clusters(self):
         positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
         return _solve_both_backends(
-            positions, radius, Ag, source_rhc, 600*nm, lmax=2)
+            positions, radius, Ag, source_rhc, 600*nm, lmax=2,
+            method=miepy.solver.exact)
 
     def test_p_inc(self, clusters):
         cpp, jax_c = clusters
@@ -237,3 +240,88 @@ class TestInteractionsOff:
         _, _, E_single = sphere.cross_sections()
 
         np.testing.assert_allclose(E_cluster, 2 * E_single, rtol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# E-field parity — GPU vs CPU
+# ---------------------------------------------------------------------------
+
+class TestEFieldParity:
+    """E-field computation should match between GPU and CPU backends."""
+
+    @pytest.fixture(scope="class")
+    def clusters(self):
+        positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
+        return _solve_both_backends(
+            positions, radius, Ag, source_rhc, 600*nm, lmax=2,
+            method=miepy.solver.exact)
+
+    def test_scattered_field(self, clusters):
+        cpp, jax_c = clusters
+        E_cpp = cpp.E_field(0, 0, 500*nm, source=False)
+        E_jax = jax_c.E_field(0, 0, 500*nm, source=False)
+        np.testing.assert_allclose(E_jax, E_cpp, rtol=1e-8, atol=1e-15)
+
+    def test_total_field(self, clusters):
+        cpp, jax_c = clusters
+        E_cpp = cpp.E_field(0, 0, 500*nm, source=True)
+        E_jax = jax_c.E_field(0, 0, 500*nm, source=True)
+        np.testing.assert_allclose(E_jax, E_cpp, rtol=1e-8, atol=1e-15)
+
+
+# ---------------------------------------------------------------------------
+# Cluster coefficients (p_cluster)
+# ---------------------------------------------------------------------------
+
+class TestClusterCoefficients:
+    """Cluster scattering coefficients should match between backends."""
+
+    @pytest.fixture(scope="class")
+    def clusters(self):
+        positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
+        return _solve_both_backends(
+            positions, radius, Ag, source_rhc, 600*nm, lmax=2,
+            method=miepy.solver.exact)
+
+    def test_p_cluster(self, clusters):
+        cpp, jax_c = clusters
+        cpp.solve_cluster_coefficients()
+        jax_c.solve_cluster_coefficients()
+        np.testing.assert_allclose(jax_c.p_cluster, cpp.p_cluster, rtol=1e-8, atol=1e-15)
+
+
+# ---------------------------------------------------------------------------
+# Explicit solver method comparison — exact vs bicgstab
+# ---------------------------------------------------------------------------
+
+class TestSolverMethodParity:
+    """Verify that solver.exact and solver.bicgstab give consistent results across backends."""
+
+    def test_exact_gpu_vs_cpu(self):
+        positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
+        cpp, jax_c = _solve_both_backends(
+            positions, radius, Ag, source_x, 600*nm, lmax=2,
+            method=miepy.solver.exact)
+        np.testing.assert_allclose(jax_c.p_inc, cpp.p_inc, rtol=1e-10, atol=1e-15)
+
+    def test_bicgstab_gpu_vs_cpu(self):
+        positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
+        cpp, jax_c = _solve_both_backends(
+            positions, radius, Ag, source_x, 600*nm, lmax=2,
+            method=miepy.solver.bicgstab)
+        # BiCGSTAB implementations converge to different residuals
+        np.testing.assert_allclose(jax_c.p_inc, cpp.p_inc, rtol=1e-4, atol=1e-14)
+
+    def test_exact_vs_bicgstab_same_backend(self):
+        """Both solvers should give near-identical results for well-conditioned systems."""
+        positions = [[100*nm, 0, 0], [-100*nm, 0, 0]]
+        with miepy.backends.backend('cpu'):
+            c_exact = miepy.sphere_cluster(
+                position=positions, radius=radius, material=Ag,
+                source=source_x, wavelength=600*nm, lmax=2,
+                method=miepy.solver.exact)
+            c_bicgstab = miepy.sphere_cluster(
+                position=positions, radius=radius, material=Ag,
+                source=source_x, wavelength=600*nm, lmax=2,
+                method=miepy.solver.bicgstab)
+        np.testing.assert_allclose(c_exact.p_inc, c_bicgstab.p_inc, rtol=1e-6, atol=1e-15)

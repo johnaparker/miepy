@@ -25,6 +25,7 @@ class cluster:
         symmetry=None,
         interface=None,
         interactions=True,
+        method=None,
     ):
         """Arguments:
         particles[N]  list of particle objects
@@ -36,6 +37,7 @@ class cluster:
         symmetry      (optional) specify system symmetries (default: no symmetries)
         interface     (optional) include an infinite interface (default: no interface)
         interactions  (optional) If True, include particle interactions (bool, default=True).
+        method        (optional) solver method: miepy.solver.bicgstab or miepy.solver.exact (default: bicgstab)
         """
         self.interface = interface
         if interface is not None:
@@ -50,6 +52,7 @@ class cluster:
         self.lmax = lmax
         self.rmax = miepy.vsh.lmax_to_rmax(lmax)
         self.interactions = interactions
+        self.method = method
 
         ### set the medium
         if medium is None:
@@ -648,6 +651,7 @@ class cluster:
 
     def _solve_interactions(self):
         agg_tmatrix = miepy.interactions.particle_aggregate_tmatrix(self.position, self.tmatrix, self.material_data.k_b)
-        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
+        method = self.method if self.method is not None else miepy.solver.bicgstab
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=method)
 
         self.p_scat[...] = np.einsum("naibj,nbj->nai", self.tmatrix, self.p_inc)

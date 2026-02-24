@@ -38,6 +38,7 @@ class sphere_cluster:
         symmetry=None,
         interface=None,
         interactions=True,
+        method=None,
     ):
         """Arguments:
         position[N,3] or [3]    sphere positions
@@ -51,6 +52,7 @@ class sphere_cluster:
         symmetry      (optional) specify system symmetries (default: no symmetries)
         interface     (optional) include an infinite interface (default: no interface)
         interactions  (optional) If True, include particle interactions (bool, default=True).
+        method        (optional) solver method: miepy.solver.bicgstab or miepy.solver.exact (default: bicgstab)
         """
         ### sphere properties
         self.position = np.asarray(np.atleast_2d(position), dtype=float)
@@ -68,6 +70,7 @@ class sphere_cluster:
         self.lmax = lmax
         self.rmax = lmax * (lmax + 2)
         self.interactions = interactions
+        self.method = method
 
         ### set the origin
         self.auto_origin = False
@@ -706,7 +709,8 @@ class sphere_cluster:
             )
             agg_tmatrix -= R_matrix
 
-        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=miepy.solver.bicgstab)
+        method = self.method if self.method is not None else miepy.solver.bicgstab
+        self.p_inc[...] = miepy.interactions.solve_linear_system(agg_tmatrix, self.p_src, method=method)
 
         n_idx = _build_n_index(self.lmax)
         self.p_scat[...] = self.p_inc * self.mie_scat[:, :, n_idx]
