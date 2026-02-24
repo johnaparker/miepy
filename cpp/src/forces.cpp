@@ -136,6 +136,36 @@ vec3 torque(const Ref<const ComplexVector>& p_scat, const Ref<const ComplexVecto
     return T;
 }
 
+Matrix force_all(const Ref<const ComplexMatrix>& p_scat_all, const Ref<const ComplexMatrix>& p_inc_all,
+        double k, double eps_b, double mu_b) {
 
+    int N = p_scat_all.rows();
+    Matrix F(N, 3);
 
+    #pragma omp parallel for schedule(static)
+    for (int i = 0; i < N; i++) {
+        ComplexVector p_scat_i = p_scat_all.row(i).transpose();
+        ComplexVector p_inc_i = p_inc_all.row(i).transpose();
+        vec3 Fi = force(p_scat_i, p_inc_i, k, eps_b, mu_b);
+        F.row(i) = Fi.transpose();
+    }
 
+    return F;
+}
+
+Matrix torque_all(const Ref<const ComplexMatrix>& p_scat_all, const Ref<const ComplexMatrix>& p_inc_all,
+        double k, double eps_b, double mu_b) {
+
+    int N = p_scat_all.rows();
+    Matrix T(N, 3);
+
+    #pragma omp parallel for schedule(static)
+    for (int i = 0; i < N; i++) {
+        ComplexVector p_scat_i = p_scat_all.row(i).transpose();
+        ComplexVector p_inc_i = p_inc_all.row(i).transpose();
+        vec3 Ti = torque(p_scat_i, p_inc_i, k, eps_b, mu_b);
+        T.row(i) = Ti.transpose();
+    }
+
+    return T;
+}

@@ -472,13 +472,19 @@ class cluster:
         Arguments:
             source    Include the source field (bool, default=False)
 
-        Returns: F[3,Nparticles]
+        Returns: F[N,3]
         """
-        F = np.zeros([self.Nparticles, 3], dtype=float)
-        for i in range(self.Nparticles):
-            F[i] = self.force_on_particle(i, source=source)
+        if source:
+            p_inc = self.p_inc
+        else:
+            p_inc = self.p_inc - self.p_src
 
-        return F
+        return miepy.forces.force_all(
+            self.p_scat, p_inc,
+            self.material_data.k_b,
+            self.material_data.eps_b,
+            self.material_data.mu_b,
+        )
 
     def torque(self, source=True):
         """Determine the torque on every particle.
@@ -486,13 +492,19 @@ class cluster:
         Arguments:
             source    Include the source field (bool, default=False)
 
-        Returns: T[3,Nparticles]
+        Returns: T[N,3]
         """
-        T = np.zeros([self.Nparticles, 3], dtype=float)
-        for i in range(self.Nparticles):
-            T[i] = self.torque_on_particle(i, source=source)
+        if source:
+            p_inc = self.p_inc
+        else:
+            p_inc = self.p_inc - self.p_src
 
-        return T
+        return miepy.forces.torque_all(
+            self.p_scat, p_inc,
+            self.material_data.k_b,
+            self.material_data.eps_b,
+            self.material_data.mu_b,
+        )
 
     def local_density_of_states(self, enhancement=True):
         """Compute the local density of states (LDOS).

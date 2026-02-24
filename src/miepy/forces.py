@@ -6,6 +6,8 @@ from scipy import constants
 import miepy
 from miepy.cpp.forces import force as _cpp_force
 from miepy.cpp.forces import torque as _cpp_torque
+from miepy.cpp.forces import force_all as _cpp_force_all
+from miepy.cpp.forces import torque_all as _cpp_torque_all
 from miepy.vsh.misc import simps_2d
 
 
@@ -37,6 +39,46 @@ def torque(p_scat, p_inc, k, eps_b, mu_b):
     Returns: T[3]
     """
     return _cpp_torque(p_scat, p_inc, k, eps_b, mu_b)
+
+
+def force_all(p_scat, p_inc, k, eps_b, mu_b):
+    """Compute the optical force on all particles from expansion coefficients.
+
+    Arguments:
+        p_scat[N,2,rmax]  scattered field coefficients
+        p_inc[N,2,rmax]   incident field coefficients
+        k                 wavenumber
+        eps_b             background permittivity
+        mu_b              background permeability
+
+    Returns: F[N,3]
+    """
+    N = p_scat.shape[0]
+    return _cpp_force_all(
+        p_scat.reshape(N, -1),
+        p_inc.reshape(N, -1),
+        k, eps_b, mu_b,
+    )
+
+
+def torque_all(p_scat, p_inc, k, eps_b, mu_b):
+    """Compute the optical torque on all particles from expansion coefficients.
+
+    Arguments:
+        p_scat[N,2,rmax]  scattered field coefficients
+        p_inc[N,2,rmax]   incident field coefficients
+        k                 wavenumber
+        eps_b             background permittivity
+        mu_b              background permeability
+
+    Returns: T[N,3]
+    """
+    N = p_scat.shape[0]
+    return _cpp_torque_all(
+        p_scat.reshape(N, -1),
+        p_inc.reshape(N, -1),
+        k, eps_b, mu_b,
+    )
 
 
 def levi_civita():

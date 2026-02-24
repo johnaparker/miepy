@@ -49,6 +49,8 @@ void bind_solve_linear_system(py::module &);
 // forces submodule
 void bind_force(py::module &);
 void bind_torque(py::module &);
+void bind_force_all(py::module &);
+void bind_torque_all(py::module &);
 
 // flux submodule
 void bind_particle_cross_sections(py::module &);
@@ -132,6 +134,8 @@ PYBIND11_MODULE(cpp, m) {
 
     bind_force(forces_m);
     bind_torque(forces_m);
+    bind_force_all(forces_m);
+    bind_torque_all(forces_m);
 
     // flux submodule
     py::module flux_m = m.def_submodule("flux", "flux functions module");
