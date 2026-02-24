@@ -1674,8 +1674,6 @@ name = "miepy"
 version = "1.0.2"
 source = { editable = "." }
 dependencies = [
-    { name = "jax", extra = ["cuda12"] },
-    { name = "jaxopt" },
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "numpy-quaternion" },
@@ -1688,6 +1686,12 @@ dependencies = [
     { name = "vpython" },
 ]
 
+[package.optional-dependencies]
+gpu = [
+    { name = "jax", extra = ["cuda12"] },
+    { name = "jaxopt" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
@@ -1696,8 +1700,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "jax", extras = ["cuda12"], specifier = ">=0.9.0.1" },
-    { name = "jaxopt", specifier = ">=0.8.5" },
+    { name = "jax", extras = ["cuda12"], marker = "extra == 'gpu'", specifier = ">=0.9.0.1" },
+    { name = "jaxopt", marker = "extra == 'gpu'", specifier = ">=0.8.5" },
     { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "numpy-quaternion", specifier = ">=2024.0.12" },
@@ -1709,6 +1713,7 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.67.1" },
     { name = "vpython", specifier = ">=7.6.5" },
 ]
+provides-extras = ["gpu"]
 
 [package.metadata.requires-dev]
 dev = [
