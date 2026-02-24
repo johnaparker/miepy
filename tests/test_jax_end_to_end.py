@@ -24,7 +24,7 @@ def _solve_both_backends(positions, radius, material, source, wavelength, lmax,
                          interactions=True):
     """Solve the same problem with C++ and JAX backends, return both clusters."""
     # C++ backend (default)
-    with miepy.backends.backend('cpp'):
+    with miepy.backends.backend('cpu'):
         cpp_cluster = miepy.sphere_cluster(
             position=positions,
             radius=radius,
@@ -36,7 +36,7 @@ def _solve_both_backends(positions, radius, material, source, wavelength, lmax,
         )
 
     # JAX backend
-    with miepy.backends.backend('jax'):
+    with miepy.backends.backend('gpu'):
         jax_cluster = miepy.sphere_cluster(
             position=positions,
             radius=radius,
@@ -200,7 +200,7 @@ class TestDisplacedParticle:
         positions_origin = [0, 0, 0]
         positions_displaced = [40*nm, 50*nm, 60*nm]
 
-        with miepy.backends.backend('jax'):
+        with miepy.backends.backend('gpu'):
             c1 = miepy.sphere_cluster(
                 position=positions_origin, radius=radius, material=Ag,
                 source=source_x, wavelength=600*nm, lmax=2)
@@ -226,7 +226,7 @@ class TestInteractionsOff:
         sep = 200 * nm
         wavelength = 600 * nm
 
-        with miepy.backends.backend('jax'):
+        with miepy.backends.backend('gpu'):
             sol = miepy.sphere_cluster(
                 position=[[sep/2, 0, 0], [-sep/2, 0, 0]],
                 radius=radius, material=Ag, source=source_x,

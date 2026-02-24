@@ -14,6 +14,6 @@ except ImportError:
 
 if not HAS_JAX:
     raise ImportError(
-        "JAX is required for the 'jax' backend. "
-        "Install it with: pip install jax jaxlib"
+        "JAX is required for the 'gpu' backend. "
+        "Install it with: pip install miepy[gpu]"
     )

@@ -31,7 +31,7 @@ PRESETS = {
 }
 
 
-def _build_cluster(N, lmax, separation=250 * nm, backend='cpp'):
+def _build_cluster(N, lmax, separation=250 * nm, backend='cpu'):
     """Build a sphere_cluster with the specified backend."""
     Ag = miepy.materials.Ag()
     source = miepy.sources.plane_wave.from_string(polarization="rhc")
@@ -114,13 +114,13 @@ def bench_comparison(N_values=None, lmax_values=None, preset="standard"):
             print(f"  N={N}, lmax={lmax}...", end=" ", flush=True)
             try:
                 # Build cluster once (uses C++ to ensure correctness)
-                cluster = _build_cluster(N, lmax, backend='cpp')
+                cluster = _build_cluster(N, lmax, backend='cpu')
 
                 # Time C++ backend
-                cpp_timings = _time_backend_operations(cluster, 'cpp')
+                cpp_timings = _time_backend_operations(cluster, 'cpu')
 
                 # Time JAX backend
-                jax_timings = _time_backend_operations(cluster, 'jax')
+                jax_timings = _time_backend_operations(cluster, 'gpu')
 
                 entry = {
                     "N": N,

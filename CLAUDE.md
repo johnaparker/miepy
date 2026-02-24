@@ -151,17 +151,17 @@ Performance-critical operations in cpp/src/, exposed via pybind11 as `miepy.cpp`
 - **Special function evaluations**: Spherical Bessel/Hankel, associated Legendre, Wigner 3j.
 - **BLAS**: Linked via Accelerate on macOS. On Linux, BLAS dispatch overhead hurts the iterative solver, so Eigen's internal kernels are used instead. Configured in `cpp/CMakeLists.txt`.
 
-### JAX Backend (Optional)
+### GPU Backend (Optional)
 
-An optional JAX backend provides GPU-accelerated solving:
+An optional GPU backend (implemented via JAX) provides GPU-accelerated solving. Install with `pip install miepy[gpu]`.
 
-- **Backend switching**: `miepy.backends.set_backend('jax')` or context manager `with miepy.backends.backend('jax'):`
+- **Backend switching**: `miepy.backends.set_backend('gpu')` or context manager `with miepy.backends.backend('gpu'):`
 - **Dispatch**: Functions in `src/miepy/interactions.py` check `miepy.backends.get_backend()` and route to JAX or C++ implementations
 - **JAX implementations**: `src/miepy/backends/jax/` — interactions, forces, mie, special functions, vsh_translation, flux
 - **JIT compilation**: T-matrix assembly uses two-phase design: (A) precompute mode tuples and Gaunt coefficients via NumPy (cached per lmax), (B) JIT-compiled JAX core vectorized over particle pairs
 - **Solvers**: `jnp.linalg.solve` (exact) and `jax.scipy.sparse.linalg.bicgstab` (iterative)
 - **Force/torque**: Always routes through C++ (not JAX) — vectorized C++ with OpenMP is faster for the small per-particle arrays
-- **Requirement**: JAX is optional; tests skip gracefully via `pytest.importorskip('jax')`
+- **Requirement**: JAX is optional (`pip install miepy[gpu]`); tests skip gracefully via `pytest.importorskip('jax')`
 
 ## Common Development Patterns
 

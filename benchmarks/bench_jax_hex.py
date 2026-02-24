@@ -49,7 +49,7 @@ def time_fn(func, warmup=2, repeats=5):
     return np.mean(times)
 
 
-def build_cluster(L, lmax, backend='cpp', wavelength=600 * nm):
+def build_cluster(L, lmax, backend='cpu', wavelength=600 * nm):
     positions = hexagonal_lattice_layers(L) * wavelength
     Ag = miepy.materials.Ag()
     source = miepy.sources.plane_wave.from_string(polarization="rhc")
@@ -88,8 +88,8 @@ def bench(layers, lmax):
         dim = 2 * rmax * N
 
         # --- C++ backend ---
-        with miepy.backends.backend('cpp'):
-            cluster_cpp = build_cluster(L, lmax, backend='cpp')
+        with miepy.backends.backend('cpu'):
+            cluster_cpp = build_cluster(L, lmax, backend='cpu')
 
             # T-matrix assembly
             cpp_tmat = time_fn(
@@ -128,7 +128,7 @@ def bench(layers, lmax):
             cpp_total = time_fn(cpp_solve_and_force)
 
         # --- JAX backend ---
-        with miepy.backends.backend('jax'):
+        with miepy.backends.backend('gpu'):
             # JAX T-matrix assembly
             if N > 1:
                 # Warmup
@@ -173,7 +173,7 @@ def bench(layers, lmax):
                 jax_solve_iter = 0.0
 
             # Full solve + force (includes JAX T-matrix assembly)
-            cluster_jax = build_cluster(L, lmax, backend='jax')
+            cluster_jax = build_cluster(L, lmax, backend='gpu')
             # Warmup
             cluster_jax.solve()
             cluster_jax.force()

@@ -10,8 +10,6 @@ license = { text = "GPLv3" }
 keywords = ["electrodynamics", "mie", "scattering"]
 requires-python = ">=3.11"
 dependencies = [
-    "jax[cuda12]>=0.9.0.1",
-    "jaxopt>=0.8.5",
     "matplotlib>=3.10.7",
     "numpy>=2.3.3",
     "numpy-quaternion>=2024.0.12",
@@ -35,6 +33,12 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Topic :: Scientific/Engineering :: Physics",
     "Intended Audience :: Science/Research",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "jax[cuda12]>=0.9.0.1",
+    "jaxopt>=0.8.5",
 ]
 
 [project.scripts]

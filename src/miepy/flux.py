@@ -18,7 +18,7 @@ def particle_cross_sections(p_scat, p_inc, p_src, k):
         p_src[2,rmax]   source coefficients at particle
         k               wavenumber
     """
-    if miepy.backends.get_backend() == 'jax':
+    if miepy.backends.get_backend() == 'gpu':
         from miepy.backends.jax.flux import particle_cross_sections_jax
         Cscat, Cabs, Cext = particle_cross_sections_jax(p_scat, p_inc, p_src, k)
         return cross_sections(

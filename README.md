@@ -39,6 +39,19 @@ uv pip install miepy
 source .venv/bin/activate
 ```
 
+### GPU Backend (optional)
+
+To use the GPU-accelerated solver backend:
+```shell
+pip install miepy[gpu]
+```
+
+Then activate the GPU backend:
+```python
+import miepy
+miepy.backends.set_backend('gpu')
+```
+
 Usage
 --------------
 
