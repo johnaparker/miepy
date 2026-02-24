@@ -33,8 +33,6 @@ void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const tmatrix_t
 void vsh_translation_insert_pair(Ref<ComplexMatrix> agg_tmatrix, const Ref<const ComplexMatrix>& mie, int i, int j, 
         double rad, double theta, double phi, double k, const vsh_cache_map& vsh_precompute);
 
-py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b);
-
 std::array<std::complex<double>, 2> vsh_translation(
         int m, int n, int u, int v, double rad, double theta,
         double phi, double k, vsh_mode mode);
@@ -53,7 +51,5 @@ std::function<std::array<std::complex<double>, 2> (double, double, double, doubl
 py::array_t<std::complex<double>> vsh_translation_lambda_py(
         int m, int n, int u, int v, py::array_t<double> rad, py::array_t<double> theta,
         py::array_t<double> phi, double k, vsh_mode mode);
-
-double test3(int size, int cores);
 
 #endif

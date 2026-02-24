@@ -62,12 +62,6 @@ void bind_trapz_2d(py::module &);
 void bind_integrate_phase(py::module &);
 void bind_grid_interpolate(py::module &);
 
-// misc tests
-void bind_test(py::module &);
-void bind_test2(py::module &);
-void bind_test3(py::module &);
-void bind_combine_arrays(py::module &);
-
 PYBIND11_MODULE(cpp, m) {
     m.doc() = R"pbdoc(
         C++ submodule of MiePy
@@ -150,10 +144,4 @@ PYBIND11_MODULE(cpp, m) {
     bind_trapz_2d(decomposition_m);
     bind_integrate_phase(decomposition_m);
     bind_grid_interpolate(decomposition_m);
-
-    // misc tests
-    bind_test(special_m);
-    bind_test2(special_m);
-    bind_test3(vsh_translation_m);
-    bind_combine_arrays(vsh_translation_m);
 }

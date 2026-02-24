@@ -91,7 +91,11 @@ For multi-particle systems with `interactions=True`:
    - Solves: `p_inc = (I + T_agg)^(-1) * p_src` using BiCGSTAB iterative solver
    - T-matrix assembly happens in C++ for performance
 
-3. **Scattering coefficients**:
+3. **Solver methods**: `solver.bicgstab` (iterative, default) and `solver.exact` (LU direct solver via Eigen `partialPivLu`). Selected via `method` parameter in `solve_linear_system()`.
+
+4. **Block-diagonal preconditioner**: Optional `M_inv_blocks` argument. `build_block_preconditioner_sphere()` uses Mie coefficients (diagonal inverse); `build_block_preconditioner_particle()` inverts per-particle `(I + T_i)` blocks. Both in `src/miepy/interactions.py`.
+
+5. **Scattering coefficients**:
    - For spheres: `p_scat = p_inc * mie_scat` (element-wise)
    - For general particles: `p_scat = einsum('naibj,nbj->nai', tmatrix, p_inc)`
 
@@ -138,14 +142,26 @@ Materials (src/miepy/materials/ and src/miepy/material_functions/):
 
 ### C++ Backend
 
-Performance-critical operations in cpp/src/:
+Performance-critical operations in cpp/src/, exposed via pybind11 as `miepy.cpp` module:
 
-- VSH translations (particle-particle coupling)
-- Aggregate T-matrix assembly
-- Linear system solving
-- Special function evaluations
+- **VSH translations**: Particle-particle coupling via precomputed Gaunt coefficients. `vsh_cache` stores batch-computed `a_func`/`b_func` values using Schulten-Gordon Wigner 3j recursion (`wigner_3j_batch`), which computes all values for a j1-range in O(N) vs O(N^2) per-element.
+- **Aggregate T-matrix assembly**: Inserts VSH translation blocks for each particle pair.
+- **Linear system solving**: BiCGSTAB (with optional block-diagonal preconditioner) and LU direct solver. `ParallelDenseMatrix` wraps Eigen matrices for OpenMP-parallel GEMV in the iterative solver.
+- **Batched force/torque**: `force_all()` and `torque_all()` compute all N particles in a single C++ call with OpenMP parallelization.
+- **Special function evaluations**: Spherical Bessel/Hankel, associated Legendre, Wigner 3j.
+- **BLAS**: Linked via Accelerate on macOS. On Linux, BLAS dispatch overhead hurts the iterative solver, so Eigen's internal kernels are used instead. Configured in `cpp/CMakeLists.txt`.
 
-Exposed via pybind11 as `miepy.cpp` module.
+### JAX Backend (Optional)
+
+An optional JAX backend provides GPU-accelerated solving:
+
+- **Backend switching**: `miepy.backends.set_backend('jax')` or context manager `with miepy.backends.backend('jax'):`
+- **Dispatch**: Functions in `src/miepy/interactions.py` check `miepy.backends.get_backend()` and route to JAX or C++ implementations
+- **JAX implementations**: `src/miepy/backends/jax/` — interactions, forces, mie, special functions, vsh_translation, flux
+- **JIT compilation**: T-matrix assembly uses two-phase design: (A) precompute mode tuples and Gaunt coefficients via NumPy (cached per lmax), (B) JIT-compiled JAX core vectorized over particle pairs
+- **Solvers**: `jnp.linalg.solve` (exact) and `jax.scipy.sparse.linalg.bicgstab` (iterative)
+- **Force/torque**: Always routes through C++ (not JAX) — vectorized C++ with OpenMP is faster for the small per-particle arrays
+- **Requirement**: JAX is optional; tests skip gracefully via `pytest.importorskip('jax')`
 
 ## Common Development Patterns
 
@@ -216,9 +232,10 @@ Results are saved as JSON to `benchmarks/results/` (gitignored). Each result fil
 
 ### C++ Profiling Bindings
 
-Two C++ bindings exist specifically for benchmarking:
+C++ bindings exist specifically for benchmarking:
 
 - `miepy.cpp.interactions.bicgstab_profiled(A, b)` — Returns `(solution, iterations, residual)` instead of just the solution. Uses the flat 2D matrix format (not the Python-level 6D reshaped format).
+- `miepy.cpp.interactions.bicgstab_preconditioned_profiled(A, b, M_inv_blocks, block_size)` — Preconditioned variant, returns `(solution, iterations, residual)`.
 - `miepy.cpp.vsh_translation.create_vsh_cache_map(lmax)` — Timing-only wrapper that calls the C++ function and discards the result (the cache map cannot be returned to Python).
 
 ### Workflow for Performance Changes
@@ -250,3 +267,6 @@ Two C++ bindings exist specifically for benchmarking:
 - Identical particles share T-matrix via caching (based on `_dict_key()`)
 - C++ backend used for interaction matrix assembly and field evaluations
 - For large systems, BiCGSTAB convergence can be slow; consider reducing `lmax`
+- Block-diagonal preconditioning reduces BiCGSTAB iteration count for closely-spaced particles
+- Direct solver (`solver.exact`) is faster for small systems; iterative solver scales better for large N
+- Forces/torques computed in batch via C++ with OpenMP (`force_all`/`torque_all`)

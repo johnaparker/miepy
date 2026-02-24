@@ -65,13 +65,3 @@ void bind_create_vsh_cache_map(py::module &m) {
     )pbdoc");
 }
 
-void bind_test3(py::module &m) {
-    m.def("test3", test3,
-            "size"_a, "cores"_a, R"pbdoc(
-            Test3 function
-    )pbdoc");
-}
-
-void bind_combine_arrays(py::module &m) {
-    m.def("combine_arrays", &combine_arrays, "Combine two NumPy arrays");
-}

@@ -1,0 +1,1037 @@
+{
+  "metadata": {
+    "timestamp": "2026-02-23T22:53:10.176710",
+    "cpu": "x86_64",
+    "platform": "Linux-6.18.1-arch1-2-x86_64-with-glibc2.42",
+    "python_version": "3.13.3",
+    "numpy_version": "2.3.3",
+    "omp_num_threads": "not set",
+    "miepy_version": "unknown"
+  },
+  "preset": "standard",
+  "scaling": {
+    "n_sweep": {
+      "sweep": "N",
+      "fixed_lmax": 2,
+      "data": [
+        {
+          "N": 1,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 1.2340488984809405e-06,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 6.839393238654082e-06,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.00041146254067721423,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 16,
+            "matrix_bytes": 4096,
+            "matrix_mb": 0.00390625
+          }
+        },
+        {
+          "N": 2,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 8.767071725755124e-05,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 5.871837356634652e-05,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 1.3952918585378938e-05,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.0008082611414964401,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 32,
+            "matrix_bytes": 16384,
+            "matrix_mb": 0.015625
+          }
+        },
+        {
+          "N": 5,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.00018421062450929015,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.00011394491510949434,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 3.4257053032402614e-05,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.00199044103432885,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 80,
+            "matrix_bytes": 102400,
+            "matrix_mb": 0.09765625
+          }
+        },
+        {
+          "N": 10,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.00022583533447387188,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0001706743136893818,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 6.95868693026604e-05,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.004141062400303781,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 160,
+            "matrix_bytes": 409600,
+            "matrix_mb": 0.390625
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.00044267927554015696,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0009282688702956808,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00013362699019186725,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.007906419771293608,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 320,
+            "matrix_bytes": 1638400,
+            "matrix_mb": 1.5625
+          }
+        },
+        {
+          "N": 50,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.002086484613149272,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0018383894327350639,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00034308967687674376,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.019800958650497098,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 800,
+            "matrix_bytes": 10240000,
+            "matrix_mb": 9.765625
+          }
+        },
+        {
+          "N": 100,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.020345411612652242,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.030663841287605464,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.0006856506719088105,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.039281344351669155,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 1600,
+            "matrix_bytes": 40960000,
+            "matrix_mb": 39.0625
+          }
+        },
+        {
+          "N": 200,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.06730568205239251,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.3204993820982054,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.0013445340438435476,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.07852573198033497,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 3200,
+            "matrix_bytes": 163840000,
+            "matrix_mb": 156.25
+          }
+        }
+      ]
+    },
+    "lmax_sweep": {
+      "sweep": "lmax",
+      "fixed_N": 20,
+      "data": [
+        {
+          "N": 20,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.00044746229624641795,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0003599550817061296,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.0001377327157251096,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.007971708295651926,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 320,
+            "matrix_bytes": 1638400,
+            "matrix_mb": 1.5625
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 3,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.0014028983358811173,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.0009472900902729411,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00014232897685223376,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.014392535019266819,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 600,
+            "matrix_bytes": 5760000,
+            "matrix_mb": 5.4931640625
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.0032555515757731854,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.006801960128359497,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00014085627954558166,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.022343245800584555,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 960,
+            "matrix_bytes": 14745600,
+            "matrix_mb": 14.0625
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 5,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.008713522906570384,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.005360744721991451,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00014491452412294324,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.03264255847898312,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 1400,
+            "matrix_bytes": 31360000,
+            "matrix_mb": 29.9072265625
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 6,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.02776762525900267,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.04609519802033901,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00014451004374998411,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.04362647398374975,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 1920,
+            "matrix_bytes": 58982400,
+            "matrix_mb": 56.25
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 8,
+          "timings": {
+            "aggregate_tmatrix": {
+              "time": 0.07275524601573125,
+              "error": null
+            },
+            "solve_linear_system": {
+              "time": 0.16062642505858094,
+              "error": null
+            },
+            "cross_sections": {
+              "time": 0.00014994110956765723,
+              "error": null
+            },
+            "E_field": {
+              "time": 0.07209526695078239,
+              "error": null
+            }
+          },
+          "memory": {
+            "matrix_dim": 3200,
+            "matrix_bytes": 163840000,
+            "matrix_mb": 156.25
+          }
+        }
+      ]
+    }
+  },
+  "hexagonal": {
+    "hexagonal": [
+      {
+        "L": 1,
+        "N": 7,
+        "lmax": 2,
+        "aggregate_tmatrix": {
+          "time": 0.0001425092787471231,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 8.614562177474692e-05,
+          "error": null
+        }
+      },
+      {
+        "L": 2,
+        "N": 19,
+        "lmax": 2,
+        "aggregate_tmatrix": {
+          "time": 0.0004627346525763358,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.00024715598218464925,
+          "error": null
+        }
+      },
+      {
+        "L": 3,
+        "N": 37,
+        "lmax": 2,
+        "aggregate_tmatrix": {
+          "time": 0.0011570131360692367,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.0007530941332067202,
+          "error": null
+        }
+      },
+      {
+        "L": 4,
+        "N": 61,
+        "lmax": 2,
+        "aggregate_tmatrix": {
+          "time": 0.0027225032964771664,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.003586046116683504,
+          "error": null
+        }
+      },
+      {
+        "L": 5,
+        "N": 91,
+        "lmax": 2,
+        "aggregate_tmatrix": {
+          "time": 0.015664897143973837,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.004652312221217223,
+          "error": null
+        }
+      },
+      {
+        "L": 1,
+        "N": 7,
+        "lmax": 3,
+        "aggregate_tmatrix": {
+          "time": 0.00042940272655849675,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.00015911173529994032,
+          "error": null
+        }
+      },
+      {
+        "L": 2,
+        "N": 19,
+        "lmax": 3,
+        "aggregate_tmatrix": {
+          "time": 0.001282416201996593,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.0007024459887647649,
+          "error": null
+        }
+      },
+      {
+        "L": 3,
+        "N": 37,
+        "lmax": 3,
+        "aggregate_tmatrix": {
+          "time": 0.0037344486659599673,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.004188063738790031,
+          "error": null
+        }
+      },
+      {
+        "L": 4,
+        "N": 61,
+        "lmax": 3,
+        "aggregate_tmatrix": {
+          "time": 0.02226637143176049,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.027057147497544065,
+          "error": null
+        }
+      },
+      {
+        "L": 5,
+        "N": 91,
+        "lmax": 3,
+        "aggregate_tmatrix": {
+          "time": 0.0488217556461071,
+          "error": null
+        },
+        "solve_linear_system": {
+          "time": 0.08386596845230088,
+          "error": null
+        }
+      }
+    ]
+  },
+  "translation": {
+    "single_translation": {
+      "benchmark": "single_translation",
+      "data": [
+        {
+          "lmax": 2,
+          "rmax": 8,
+          "n_calls": 64,
+          "total_time": 6.205097800490467e-05,
+          "per_call_time": 9.695465313266355e-07,
+          "error": null
+        },
+        {
+          "lmax": 3,
+          "rmax": 15,
+          "n_calls": 225,
+          "total_time": 0.00026619277939081507,
+          "per_call_time": 1.1830790195147336e-06,
+          "error": null
+        },
+        {
+          "lmax": 4,
+          "rmax": 24,
+          "n_calls": 576,
+          "total_time": 0.0008314492421407924,
+          "per_call_time": 1.4434882676055423e-06,
+          "error": null
+        },
+        {
+          "lmax": 5,
+          "rmax": 35,
+          "n_calls": 1225,
+          "total_time": 0.0021440890850499272,
+          "per_call_time": 1.7502768041223896e-06,
+          "error": null
+        },
+        {
+          "lmax": 6,
+          "rmax": 48,
+          "n_calls": 2304,
+          "total_time": 0.004706341000697153,
+          "per_call_time": 2.042682725997028e-06,
+          "error": null
+        },
+        {
+          "lmax": 8,
+          "rmax": 80,
+          "n_calls": 6400,
+          "total_time": 0.017525721341371536,
+          "per_call_time": 2.7383939595893025e-06,
+          "error": null
+        }
+      ]
+    },
+    "cache_creation": {
+      "benchmark": "cache_creation",
+      "data": [
+        {
+          "lmax": 2,
+          "time": 2.994542895442622e-05,
+          "error": null
+        },
+        {
+          "lmax": 3,
+          "time": 0.00011908044412155592,
+          "error": null
+        },
+        {
+          "lmax": 4,
+          "time": 0.0003476443291421876,
+          "error": null
+        },
+        {
+          "lmax": 5,
+          "time": 0.0008651967308933622,
+          "error": null
+        },
+        {
+          "lmax": 6,
+          "time": 0.0018050473507693304,
+          "error": null
+        },
+        {
+          "lmax": 8,
+          "time": 0.005829209759314027,
+          "error": null
+        }
+      ]
+    },
+    "scaling_analysis": {
+      "exponent": 4.0697245914195195,
+      "theoretical": "O(lmax^4 to lmax^5)"
+    }
+  },
+  "solver": {
+    "benchmark": "solver",
+    "data": [
+      {
+        "N": 10,
+        "lmax": 2,
+        "sep_factor": 2,
+        "separation_nm": 300.0,
+        "matrix_size": 160,
+        "iterations": 6,
+        "residual": 1.5910837399113417e-06,
+        "solve_time": 9.087298531085253e-05,
+        "time_per_iteration": 1.5145497551808754e-05,
+        "iterations_preconditioned": 7,
+        "residual_preconditioned": 2.9467592869587034e-06,
+        "solve_time_preconditioned": 0.00015640794299542904,
+        "iteration_reduction": 0.8571428571428571,
+        "speedup": 0.5809998109463549,
+        "solution_relative_diff": 3.6542188102976335e-07,
+        "frobenius_norm": 13.404031164221669
+      },
+      {
+        "N": 10,
+        "lmax": 2,
+        "sep_factor": 3,
+        "separation_nm": 450.0,
+        "matrix_size": 160,
+        "iterations": 4,
+        "residual": 2.188793074625906e-06,
+        "solve_time": 6.550399120897055e-05,
+        "time_per_iteration": 1.6375997802242637e-05,
+        "iterations_preconditioned": 5,
+        "residual_preconditioned": 1.113938357154467e-06,
+        "solve_time_preconditioned": 0.0004819360328838229,
+        "iteration_reduction": 0.8,
+        "speedup": 0.13591843468728795,
+        "solution_relative_diff": 2.8495516768553306e-07,
+        "frobenius_norm": 12.944544394267455
+      },
+      {
+        "N": 10,
+        "lmax": 2,
+        "sep_factor": 5,
+        "separation_nm": 750.0000000000001,
+        "matrix_size": 160,
+        "iterations": 3,
+        "residual": 1.5018174482854284e-06,
+        "solve_time": 5.187897477298975e-05,
+        "time_per_iteration": 1.7292991590996582e-05,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 4.618291974273651e-07,
+        "solve_time_preconditioned": 9.36680007725954e-05,
+        "iteration_reduction": 0.75,
+        "speedup": 0.5538601693756665,
+        "solution_relative_diff": 1.7323561575599296e-07,
+        "frobenius_norm": 12.750097843921122
+      },
+      {
+        "N": 10,
+        "lmax": 2,
+        "sep_factor": 10,
+        "separation_nm": 1500.0000000000002,
+        "matrix_size": 160,
+        "iterations": 2,
+        "residual": 5.377265360464866e-06,
+        "solve_time": 3.957608714699745e-05,
+        "time_per_iteration": 1.9788043573498726e-05,
+        "iterations_preconditioned": 3,
+        "residual_preconditioned": 4.668802468834614e-06,
+        "solve_time_preconditioned": 7.493200246244669e-05,
+        "iteration_reduction": 0.6666666666666666,
+        "speedup": 0.5281600096945441,
+        "solution_relative_diff": 8.358690602667141e-07,
+        "frobenius_norm": 12.673876088139131
+      },
+      {
+        "N": 20,
+        "lmax": 2,
+        "sep_factor": 2,
+        "separation_nm": 300.0,
+        "matrix_size": 320,
+        "iterations": 7,
+        "residual": 9.654445600015612e-06,
+        "solve_time": 0.0004412579583004117,
+        "time_per_iteration": 6.30368511857731e-05,
+        "iterations_preconditioned": 8,
+        "residual_preconditioned": 3.832048474098759e-06,
+        "solve_time_preconditioned": 0.0005266310181468725,
+        "iteration_reduction": 0.875,
+        "speedup": 0.8378882805899385,
+        "solution_relative_diff": 9.793518258987502e-07,
+        "frobenius_norm": 19.073015908874137
+      },
+      {
+        "N": 20,
+        "lmax": 2,
+        "sep_factor": 3,
+        "separation_nm": 450.0,
+        "matrix_size": 320,
+        "iterations": 5,
+        "residual": 6.145476063751748e-07,
+        "solve_time": 0.0002964240266010165,
+        "time_per_iteration": 5.92848053202033e-05,
+        "iterations_preconditioned": 5,
+        "residual_preconditioned": 2.999756962060575e-06,
+        "solve_time_preconditioned": 0.04680328397080302,
+        "iteration_reduction": 1.0,
+        "speedup": 0.006333402305400893,
+        "solution_relative_diff": 3.3491907138495334e-07,
+        "frobenius_norm": 18.35637060830715
+      },
+      {
+        "N": 20,
+        "lmax": 2,
+        "sep_factor": 5,
+        "separation_nm": 750.0000000000001,
+        "matrix_size": 320,
+        "iterations": 3,
+        "residual": 9.915816501462981e-06,
+        "solve_time": 0.00019670405890792608,
+        "time_per_iteration": 6.556801963597536e-05,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 5.442395197408952e-06,
+        "solve_time_preconditioned": 0.0002774170134216547,
+        "iteration_reduction": 0.75,
+        "speedup": 0.7090554990906398,
+        "solution_relative_diff": 1.0749953882119586e-06,
+        "frobenius_norm": 18.049127283006847
+      },
+      {
+        "N": 20,
+        "lmax": 2,
+        "sep_factor": 10,
+        "separation_nm": 1500.0000000000002,
+        "matrix_size": 320,
+        "iterations": 3,
+        "residual": 2.3425910160836863e-07,
+        "solve_time": 0.0001915439497679472,
+        "time_per_iteration": 6.38479832559824e-05,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 2.386561574765634e-07,
+        "solve_time_preconditioned": 0.010930589982308447,
+        "iteration_reduction": 0.75,
+        "speedup": 0.017523660669549215,
+        "solution_relative_diff": 3.550927967536203e-08,
+        "frobenius_norm": 17.927988585055836
+      },
+      {
+        "N": 20,
+        "lmax": 4,
+        "sep_factor": 2,
+        "separation_nm": 300.0,
+        "matrix_size": 960,
+        "iterations": 8,
+        "residual": 7.4153192090507615e-06,
+        "solve_time": 0.003996193059720099,
+        "time_per_iteration": 0.0004995241324650124,
+        "iterations_preconditioned": 8,
+        "residual_preconditioned": 9.499759056353778e-06,
+        "solve_time_preconditioned": 0.018670907942578197,
+        "iteration_reduction": 1.0,
+        "speedup": 0.21403314032773701,
+        "solution_relative_diff": 5.199355613776212e-07,
+        "frobenius_norm": 37.16798661837143
+      },
+      {
+        "N": 20,
+        "lmax": 4,
+        "sep_factor": 3,
+        "separation_nm": 450.0,
+        "matrix_size": 960,
+        "iterations": 5,
+        "residual": 2.762098933109225e-06,
+        "solve_time": 0.0025267209857702255,
+        "time_per_iteration": 0.0005053441971540451,
+        "iterations_preconditioned": 5,
+        "residual_preconditioned": 8.218330083835285e-06,
+        "solve_time_preconditioned": 0.04795949999243021,
+        "iteration_reduction": 1.0,
+        "speedup": 0.0526844730693405,
+        "solution_relative_diff": 4.892961201966654e-07,
+        "frobenius_norm": 32.02887892872763
+      },
+      {
+        "N": 20,
+        "lmax": 4,
+        "sep_factor": 5,
+        "separation_nm": 750.0000000000001,
+        "matrix_size": 960,
+        "iterations": 3,
+        "residual": 7.812754492639985e-06,
+        "solve_time": 0.0019463479984551668,
+        "time_per_iteration": 0.0006487826661517223,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 4.808003250227482e-06,
+        "solve_time_preconditioned": 0.0019930769922211766,
+        "iteration_reduction": 0.75,
+        "speedup": 0.9765543458941178,
+        "solution_relative_diff": 4.6955844999838023e-07,
+        "frobenius_norm": 31.278688826964828
+      },
+      {
+        "N": 20,
+        "lmax": 4,
+        "sep_factor": 10,
+        "separation_nm": 1500.0000000000002,
+        "matrix_size": 960,
+        "iterations": 3,
+        "residual": 3.3547783108198083e-07,
+        "solve_time": 0.003222503000870347,
+        "time_per_iteration": 0.0010741676669567823,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 2.3248524078115428e-07,
+        "solve_time_preconditioned": 0.020600805059075356,
+        "iteration_reduction": 0.75,
+        "speedup": 0.15642607129330244,
+        "solution_relative_diff": 2.5580017951926328e-08,
+        "frobenius_norm": 31.053033537272224
+      },
+      {
+        "N": 50,
+        "lmax": 2,
+        "sep_factor": 3,
+        "separation_nm": 450.0,
+        "matrix_size": 800,
+        "iterations": 5,
+        "residual": 3.1089095051478937e-06,
+        "solve_time": 0.0017540230182930827,
+        "time_per_iteration": 0.00035080460365861655,
+        "iterations_preconditioned": 6,
+        "residual_preconditioned": 1.7858116009820143e-06,
+        "solve_time_preconditioned": 0.03735573100857437,
+        "iteration_reduction": 0.8333333333333334,
+        "speedup": 0.04695458958868927,
+        "solution_relative_diff": 1.63026033654141e-07,
+        "frobenius_norm": 29.0823184977929
+      },
+      {
+        "N": 50,
+        "lmax": 2,
+        "sep_factor": 5,
+        "separation_nm": 750.0000000000001,
+        "matrix_size": 800,
+        "iterations": 4,
+        "residual": 3.23990444994517e-07,
+        "solve_time": 0.0017095779767259955,
+        "time_per_iteration": 0.0004273944941814989,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 4.8386263631428425e-06,
+        "solve_time_preconditioned": 0.0014391449512913823,
+        "iteration_reduction": 1.0,
+        "speedup": 1.187912291386595,
+        "solution_relative_diff": 2.64760546578262e-07,
+        "frobenius_norm": 28.559047593512375
+      },
+      {
+        "N": 50,
+        "lmax": 2,
+        "sep_factor": 10,
+        "separation_nm": 1500.0000000000002,
+        "matrix_size": 800,
+        "iterations": 3,
+        "residual": 8.377463727923234e-07,
+        "solve_time": 0.0011734800646081567,
+        "time_per_iteration": 0.0003911600215360522,
+        "iterations_preconditioned": 4,
+        "residual_preconditioned": 8.133399140732693e-07,
+        "solve_time_preconditioned": 0.045490157906897366,
+        "iteration_reduction": 0.75,
+        "speedup": 0.025796350652593135,
+        "solution_relative_diff": 7.776050935624891e-08,
+        "frobenius_norm": 28.35184719562801
+      }
+    ]
+  },
+  "parallel": {
+    "benchmark": "parallel",
+    "thread_counts": [
+      1,
+      2,
+      4
+    ],
+    "configs": [
+      {
+        "N": 50,
+        "lmax": 2
+      },
+      {
+        "N": 20,
+        "lmax": 4
+      }
+    ],
+    "raw_results": {
+      "1": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": 0.007037137151928619,
+            "solve_linear_system": 0.004462591816533219,
+            "cross_sections": 0.000353426077724004
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "timings": {
+            "aggregate_tmatrix": 0.010412727071282765,
+            "solve_linear_system": 0.004753164570069029,
+            "cross_sections": 0.00013789974295516896
+          }
+        }
+      ],
+      "2": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": 0.004337392919696867,
+            "solve_linear_system": 0.0024546324275434017,
+            "cross_sections": 0.0003345630799885839
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "timings": {
+            "aggregate_tmatrix": 0.005157716464184757,
+            "solve_linear_system": 0.002618209445952541,
+            "cross_sections": 0.00013847692770477715
+          }
+        }
+      ],
+      "4": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "timings": {
+            "aggregate_tmatrix": 0.002007395849796012,
+            "solve_linear_system": 0.001385317522693764,
+            "cross_sections": 0.0003358470664880133
+          }
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "timings": {
+            "aggregate_tmatrix": 0.002960834095054971,
+            "solve_linear_system": 0.0016139382823894266,
+            "cross_sections": 0.0001365559202743197
+          }
+        }
+      ]
+    },
+    "speedups": {
+      "1": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "aggregate_tmatrix": 1.0,
+          "solve_linear_system": 1.0,
+          "cross_sections": 1.0
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "aggregate_tmatrix": 1.0,
+          "solve_linear_system": 1.0,
+          "cross_sections": 1.0
+        }
+      ],
+      "2": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "aggregate_tmatrix": 1.6224347856454822,
+          "solve_linear_system": 1.8180285432794452,
+          "cross_sections": 1.0563809902038914
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "aggregate_tmatrix": 2.0188638021474934,
+          "solve_linear_system": 1.8154256442000427,
+          "cross_sections": 0.9958319067358375
+        }
+      ],
+      "4": [
+        {
+          "N": 50,
+          "lmax": 2,
+          "aggregate_tmatrix": 3.505605111539769,
+          "solve_linear_system": 3.2213494332011794,
+          "cross_sections": 1.0523423099085432
+        },
+        {
+          "N": 20,
+          "lmax": 4,
+          "aggregate_tmatrix": 3.5168221984046832,
+          "solve_linear_system": 2.945072077373365,
+          "cross_sections": 1.0098408232916576
+        }
+      ]
+    }
+  }
+}

@@ -99,17 +99,4 @@ void bind_b_func(py::module &m) {
     )pbdoc");
 }
 
-void bind_test(py::module &m) {
-    m.def("test", test, 
-            py::arg(), py::arg(), py::arg("derivative") = false, R"pbdoc(
-            Test function
-    )pbdoc");
-}
-
-void bind_test2(py::module &m) {
-    m.def("test2", test2, 
-            R"pbdoc(
-            Test2 function
-    )pbdoc");
-}
 

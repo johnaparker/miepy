@@ -43,7 +43,4 @@ struct gaunt_result {
 
 gaunt_result gaunt_batch(int m, int n, int u, int v);
 
-std::complex<double> test(int n, double z, bool derivative=false);
-double test2();
-
 #endif

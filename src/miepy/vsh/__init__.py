@@ -1,4 +1,4 @@
-from . import old_special, special
+from . import special
 
 # Import these last to avoid circular import issues
 # (they import from miepy.vsh and use symbols defined above)

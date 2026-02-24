@@ -425,29 +425,6 @@ py::array_t<complex<double>> vsh_translation_numpy(
     return result;
 }
 
-py::array_t<double> combine_arrays(py::array_t<double> a, py::array_t<double> b) {
-    auto buf_a = a.request(), buf_b = b.request();
-
-    if (buf_a.ndim != 1 || buf_b.ndim != 1)
-        throw std::runtime_error("Number of dimensions must be one");
-
-    if (buf_a.size != buf_b.size)
-        throw std::runtime_error("Input shapes must match");
-
-    py::array_t<double, py::array::c_style> result({2, int(buf_a.size)});
-    auto buf = result.mutable_unchecked<2>();
-
-    double *ptr_a = (double *) buf_a.ptr,
-           *ptr_b = (double *) buf_b.ptr;
-
-    for (ssize_t idx = 0; idx < buf_a.shape[0]; idx++) {
-        buf(0,idx) = ptr_a[idx];
-        buf(1,idx) = ptr_b[idx];
-    }
-
-    return result;
-}
-
 std::array<complex<double>, 2> vsh_translation(
         int m, int n, int u, int v, double rad, double theta,
         double phi, double k, vsh_mode mode) {
@@ -490,38 +467,4 @@ std::array<complex<double>, 2> vsh_translation(
     complex<double> B_translation = -factor*sum_term;
 
     return std::array<complex<double>,2>{A_translation, B_translation};
-}
-
-double test3(int size, int cores) {
-    //double sum = 0;
-
-    //int n = 2, m = 2, u = 2, v = 2;
-    //Array rad   = Array::Constant(1500, 0.3);
-    //Array theta = Array::Constant(1500, 0.3);
-    //Array phi   = Array::Constant(1500, 0.3);
-    //double k = 1;
-    //auto mode = vsh_mode::outgoing;
-
-    //ComplexArray result = vsh_translation_eigen(m, n, u, v, rad, theta, phi, k, mode);
-    //return sum;
-
-    double sum = 0;
-
-    AB_type result = AB_type::Zero(2, size);
-
-    int n = 2, m = 2, u = 2, v = 2;
-    double rad = 0.3, theta = 0.3, phi = 0.3;
-    double k = 1;
-    auto mode = vsh_mode::outgoing;
-
-    auto fn = vsh_translation_lambda(m, n, u, v, mode);
-
-    #pragma omp parallel for num_threads(cores)
-    for (int i = 0; i <size; i++) {
-        auto AB = fn(rad, theta, phi, k);
-        result(0,i) = AB[0];
-        result(1,i) = AB[1];
-    }
-
-    return sum;
 }

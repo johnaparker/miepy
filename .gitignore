@@ -25,11 +25,8 @@ dist
 # material database
 src/miepy/materials/database
 
-# misc example folders
-examples/compare
-examples/temp
-examples/old
-examples/time
+# examples directory (development scripts, not part of the package)
+/examples/
 
 # misc tests folders
 examples/tests/fdtd_compare
