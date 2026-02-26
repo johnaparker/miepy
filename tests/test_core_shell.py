@@ -91,3 +91,110 @@ def test_core_shell_degenerate_to_sphere():
         f"Core-shell with uniform material differs from sphere:\n"
         f"max diff = {np.max(np.abs(T_cs - T_sp))}"
     )
+
+
+def test_degenerate_core_shell_single_particle():
+    """A single core-shell with uniform material must give the same cross-sections as a sphere."""
+    uniform_mat = miepy.constant_material(3.7**2 + 0.1j)
+    outer_radius = core_radius + shell_thickness
+    test_wavelengths = np.linspace(400 * nm, 800 * nm, 5)
+
+    cs_scat = np.zeros_like(test_wavelengths)
+    cs_abs = np.zeros_like(test_wavelengths)
+    cs_ext = np.zeros_like(test_wavelengths)
+    sp_scat = np.zeros_like(test_wavelengths)
+    sp_abs = np.zeros_like(test_wavelengths)
+    sp_ext = np.zeros_like(test_wavelengths)
+
+    for i, wl in enumerate(test_wavelengths):
+        cs_system = miepy.cluster(
+            particles=[
+                miepy.core_shell(
+                    position=[0, 0, 0],
+                    core_radius=core_radius,
+                    shell_thickness=shell_thickness,
+                    core_material=uniform_mat,
+                    shell_material=uniform_mat,
+                )
+            ],
+            source=source,
+            wavelength=wl,
+            lmax=lmax,
+            medium=medium,
+        )
+        cs_scat[i], cs_abs[i], cs_ext[i] = cs_system.cross_sections()
+
+        sp_system = miepy.sphere_cluster(
+            position=[0, 0, 0],
+            radius=outer_radius,
+            material=uniform_mat,
+            source=source,
+            wavelength=wl,
+            lmax=lmax,
+            medium=medium,
+        )
+        sp_scat[i], sp_abs[i], sp_ext[i] = sp_system.cross_sections()
+
+    for name, cs_val, sp_val in [
+        ("scattering", cs_scat, sp_scat),
+        ("absorption", cs_abs, sp_abs),
+        ("extinction", cs_ext, sp_ext),
+    ]:
+        L2 = np.linalg.norm(cs_val - sp_val) / len(test_wavelengths)
+        avg = np.average(np.abs(cs_val) + np.abs(sp_val)) / 2
+        assert L2 < 1e-13 * avg, f"{name} mismatch: L2={L2}, avg={avg}"
+
+
+def test_degenerate_core_shell_interacting_cluster():
+    """A cluster of interacting core-shells with uniform material must match a sphere_cluster."""
+    uniform_mat = miepy.constant_material(3.7**2 + 0.1j)
+    outer_radius = core_radius + shell_thickness
+    sep = 300 * nm
+    positions = [[sep / 2, 0, 0], [-sep / 2, 0, 0], [0, sep / 2, 0]]
+    test_wavelengths = np.linspace(400 * nm, 800 * nm, 5)
+
+    cs_scat = np.zeros_like(test_wavelengths)
+    cs_abs = np.zeros_like(test_wavelengths)
+    cs_ext = np.zeros_like(test_wavelengths)
+    sp_scat = np.zeros_like(test_wavelengths)
+    sp_abs = np.zeros_like(test_wavelengths)
+    sp_ext = np.zeros_like(test_wavelengths)
+
+    for i, wl in enumerate(test_wavelengths):
+        cs_system = miepy.cluster(
+            particles=[
+                miepy.core_shell(
+                    position=pos,
+                    core_radius=core_radius,
+                    shell_thickness=shell_thickness,
+                    core_material=uniform_mat,
+                    shell_material=uniform_mat,
+                )
+                for pos in positions
+            ],
+            source=source,
+            wavelength=wl,
+            lmax=lmax,
+            medium=medium,
+        )
+        cs_scat[i], cs_abs[i], cs_ext[i] = cs_system.cross_sections()
+
+        sp_system = miepy.sphere_cluster(
+            position=positions,
+            radius=outer_radius,
+            material=uniform_mat,
+            source=source,
+            wavelength=wl,
+            lmax=lmax,
+            medium=medium,
+        )
+        sp_scat[i], sp_abs[i], sp_ext[i] = sp_system.cross_sections()
+
+    for name, cs_val, sp_val in [
+        ("scattering", cs_scat, sp_scat),
+        ("absorption", cs_abs, sp_abs),
+        ("extinction", cs_ext, sp_ext),
+    ]:
+        L2 = np.linalg.norm(cs_val - sp_val) / len(test_wavelengths)
+        avg = np.average(np.abs(cs_val) + np.abs(sp_val)) / 2
+        assert L2 < 1e-13 * avg, f"{name} mismatch: L2={L2}, avg={avg}"
