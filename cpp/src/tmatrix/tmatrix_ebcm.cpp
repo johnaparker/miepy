@@ -336,8 +336,8 @@ static typename Types<Real>::Matrix tmatrix_m(
                                          m, Nrank, Nmax, Nint, mirror, false, zRe, zIm, conducting);
 
         // The negation is incorporated into the phase factor during mapping.
-        ::Eigen::PartialPivLU<Matrix> lu(Q31);
-        Matrix T_m = Q11 * lu.inverse();
+        ::Eigen::PartialPivLU<Matrix> lu(Q31.transpose());
+        Matrix T_m = lu.solve(Q11.transpose()).transpose();
         return T_m;
     }
 }
