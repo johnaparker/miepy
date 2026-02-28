@@ -33,7 +33,7 @@ class TestSphereDegenerate:
 
         T_mie = miepy.tmatrix.tmatrix_sphere(radius, wavelength, eps, eps_m, lmax)
         T_ebcm = miepy.tmatrix.tmatrix_spheroid(
-            radius, radius, wavelength, eps, eps_m, lmax
+            radius, radius, wavelength, eps, eps_m, lmax, use_ds=False
         )
 
         assert np.allclose(T_mie, T_ebcm, rtol=0, atol=1e-10), (
@@ -49,7 +49,7 @@ class TestSphereDegenerate:
             radius, wavelength, eps, eps_m, lmax, conducting=True
         )
         T_ebcm = miepy.tmatrix.tmatrix_spheroid(
-            radius, radius, wavelength, eps, eps_m, lmax, conducting=True
+            radius, radius, wavelength, eps, eps_m, lmax, conducting=True, use_ds=False
         )
 
         assert np.allclose(T_mie, T_ebcm, rtol=0, atol=5e-9), (
@@ -65,7 +65,7 @@ class TestTmatrixDiagonal:
         eps = Ag.eps(wavelength)
         eps_m = medium.eps(wavelength)
 
-        T = miepy.tmatrix.tmatrix_spheroid(radius, radius, wavelength, eps, eps_m, lmax)
+        T = miepy.tmatrix.tmatrix_spheroid(radius, radius, wavelength, eps, eps_m, lmax, use_ds=False)
 
         # Off-diagonal in polarization should be zero for sphere
         assert np.allclose(T[0, :, 1, :], 0, atol=1e-12)

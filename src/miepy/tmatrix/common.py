@@ -84,7 +84,7 @@ def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_pre
     complex_plane = axis_xy > axis_z
     Nint = kwargs.get('Nint', 200)
     eps_z = kwargs.get('eps_z_re_im', 0.95)
-    use_ds = kwargs.get('use_ds', False)
+    use_ds = kwargs.get('use_ds', True)
 
     return miepy.cpp.tmatrix.compute_spheroid(
         axis_z, axis_xy, k, n_rel, lmax, Nint,
@@ -117,7 +117,7 @@ def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False
     complex_plane = 2 * radius > height
     Nint = kwargs.get('Nint', 200)
     eps_z = kwargs.get('eps_z_re_im', 0.95)
-    use_ds = kwargs.get('use_ds', False)
+    use_ds = kwargs.get('use_ds', True)
 
     if rounded:
         return miepy.cpp.tmatrix.compute_rounded_cylinder(
