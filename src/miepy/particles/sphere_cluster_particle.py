@@ -58,7 +58,6 @@ class sphere_cluster_particle(particle):
             wavelength,
             eps,
             eps_m,
-            extended_precision=False,
         )
 
         self.tmatrix_fixed = miepy.tmatrix.tmatrix_reduce_lmax(self.tmatrix_fixed, lmax)
