@@ -46,12 +46,19 @@ static typename Types<Real>::Matrix assemble_Q_m(
     using Matrix = typename Types<Real>::Matrix;
 
     // Determine dimensions based on DS mode
-    // Both Q31 and Q11 use localized outer (NmaxL = Nmax).
-    // DS only changes the inner (column) basis to distributed sources.
-    // We truncate to the first Nmax DS sources so both matrices are square
-    // [2*Nmax, 2*Nmax]. The DS basis cancels out in T = Q11 * Q31^{-1}.
-    int NmaxL = Nmax;
-    int NmaxC = Nmax;
+    // In DS mode:
+    //   NmaxC = Nrank (inner always uses Nrank DS sources)
+    //   Q31 (index1=3): NmaxL = Nrank (outer also DS, Nrank sources)
+    //   Q11 (index1=1): NmaxL = Nmax  (outer localized, Nmax modes)
+    // In non-DS mode: NmaxL = NmaxC = Nmax
+    int NmaxL, NmaxC;
+    if (use_ds) {
+        NmaxC = Nrank;
+        NmaxL = (index1 == 3) ? Nrank : Nmax;
+    } else {
+        NmaxL = Nmax;
+        NmaxC = Nmax;
+    }
 
     Matrix A = Matrix::Zero(2 * NmaxL, 2 * NmaxC);
 
@@ -88,22 +95,21 @@ static typename Types<Real>::Matrix assemble_Q_m(
             int m_minus = -m;
 
             // Compute outer VSWFs (index1, m_minus, medium wavenumber)
-            // Always localized — DS only affects the inner (column) basis
-            svwf_localized<Real>(index1, zl, theta, m_minus, Nrank, NmaxL, mv3, nv3);
+            if (use_ds && index1 == 3) {
+                // Q31 DS: distributed outgoing for outer, medium wavenumber
+                complex_t kc(k_real, 0);
+                svwf_distributed<Real>(3, kc, r, theta, zRe, zIm, m_minus, Nrank, mv3, nv3);
+            } else {
+                // Q11 or non-DS: localized for outer
+                svwf_localized<Real>(index1, zl, theta, m_minus, Nrank, NmaxL, mv3, nv3);
+            }
 
             // Compute inner VSWFs (index2, m, interior wavenumber)
-            if (!use_ds) {
-                svwf_localized<Real>(index2, zc, theta, m, Nrank, NmaxC, mv1, nv1);
+            if (use_ds) {
+                // DS mode: inner basis uses distributed sources with interior wavenumber
+                svwf_distributed<Real>(1, k_int, r, theta, zRe, zIm, m, Nrank, mv1, nv1);
             } else {
-                // DS mode: inner uses distributed sources with interior wavenumber
-                if (index2 == 1 && index1 == 3) {
-                    svwf_distributed<Real>(1, k_int, r, theta, zRe, zIm, m, Nrank, mv1, nv1);
-                } else if (index2 == 1 && index1 == 1) {
-                    // Q11 with DS: outer=localized regular, inner=distributed regular
-                    svwf_distributed<Real>(1, k_int, r, theta, zRe, zIm, m, Nrank, mv1, nv1);
-                } else {
-                    svwf_localized<Real>(index2, zc, theta, m, Nrank, NmaxC, mv1, nv1);
-                }
+                svwf_localized<Real>(index2, zc, theta, m, Nrank, NmaxC, mv1, nv1);
             }
 
             complex_t fact = f * complex_t(dA * weight, 0);
@@ -180,8 +186,112 @@ static typename Types<Real>::Matrix assemble_Q_m(
 }
 
 // ============================================================================
+// Assemble incident matrix for a single azimuthal mode m
+// Maps localized basis -> DS outer basis. Used in DS T-matrix extraction.
+// Port of Proces1.f90::incident_matrix_m + MatrixQ.f90::matQinc_m
+//
+// Dimensions: [2*Nrank rows, 2*Nmax columns]
+// Rows: DS outgoing (Hankel), medium wavenumber, -m
+// Columns: localized regular (Bessel), medium wavenumber, +m
+//
+// Key differences from assemble_Q_m:
+//   - No n_rel multiplication (just v1 + v2)
+//   - No mirror symmetry
+//   - Inner uses medium wavenumber (not interior)
+//   - Outer always uses distributed outgoing (medium wavenumber)
+// ============================================================================
+template<typename Real>
+static typename Types<Real>::Matrix assemble_incident_m(
+    const AxialGeometry<Real>& geom,
+    Real k_real,
+    int m, int Nrank, int Nmax, int Nint,
+    const std::vector<Real>& zRe, const std::vector<Real>& zIm) {
+
+    using complex_t = std::complex<Real>;
+    using Matrix = typename Types<Real>::Matrix;
+
+    Matrix A = Matrix::Zero(2 * Nrank, 2 * Nmax);
+
+    // Pre-factor: -i * 2 * k^2 (same sign as Q31: sign = -1)
+    complex_t f = complex_t(Real(-1), 0) * complex_t(0, 1) * complex_t(Real(2), 0)
+                  * complex_t(k_real * k_real, 0);
+
+    // Get quadrature points (no mirror symmetry)
+    std::vector<std::vector<Real>> paramG, weightsG;
+    geom.quadrature_points(Nint, false, paramG, weightsG);
+
+    // Temporary SVWF storage
+    std::vector<std::vector<complex_t>> mv1, nv1, mv3, nv3;
+
+    int Nparam = geom.num_curves();
+    for (int iparam = 0; iparam < Nparam; iparam++) {
+        int Nintl = static_cast<int>(paramG[iparam].size());
+        for (int pint = 0; pint < Nintl; pint++) {
+            Real param = paramG[iparam][pint];
+            Real weight = weightsG[iparam][pint];
+
+            GeometryPoint<Real> pt = geom.evaluate(param, iparam);
+            Real r = pt.r;
+            Real theta = pt.theta;
+            Real dA = pt.dA;
+            Real nuv_r = pt.n_r;
+            Real nuv_theta = pt.n_theta;
+
+            complex_t zl(k_real * r, 0);  // k_medium * r
+
+            int m_minus = -m;
+
+            // Outer SVWFs (rows): DS outgoing Hankel, medium wavenumber, -m
+            complex_t kc(k_real, 0);
+            svwf_distributed<Real>(3, kc, r, theta, zRe, zIm, m_minus, Nrank, mv3, nv3);
+
+            // Inner SVWFs (cols): localized regular Bessel, medium wavenumber, +m
+            svwf_localized<Real>(1, zl, theta, m, Nrank, Nmax, mv1, nv1);
+
+            complex_t fact = f * complex_t(dA * weight, 0);
+
+            // Assemble via mixed products — NO n_rel, NO mirror
+            for (int i = 0; i < Nrank; i++) {
+                complex_t mvl[3] = {mv3[0][i], mv3[1][i], mv3[2][i]};
+                complex_t nvl[3] = {nv3[0][i], nv3[1][i], nv3[2][i]};
+
+                for (int j = 0; j < Nmax; j++) {
+                    complex_t mvc[3] = {mv1[0][j], mv1[1][j], mv1[2][j]};
+                    complex_t nvc[3] = {nv1[0][j], nv1[1][j], nv1[2][j]};
+
+                    // Block (0,0): magnetic-magnetic
+                    complex_t v1 = mixt_product<Real>(nuv_r, nuv_theta, mvc, nvl);
+                    complex_t v2 = mixt_product<Real>(nuv_r, nuv_theta, nvc, mvl);
+                    A(i, j) += (v1 + v2) * fact;
+
+                    if (m != 0) {
+                        // Block (0,1): magnetic-electric
+                        v1 = mixt_product<Real>(nuv_r, nuv_theta, nvc, nvl);
+                        v2 = mixt_product<Real>(nuv_r, nuv_theta, mvc, mvl);
+                        A(i, j + Nmax) += (v1 + v2) * fact;
+
+                        // Block (1,0): electric-magnetic
+                        v1 = mixt_product<Real>(nuv_r, nuv_theta, mvc, mvl);
+                        v2 = mixt_product<Real>(nuv_r, nuv_theta, nvc, nvl);
+                        A(i + Nrank, j) += (v1 + v2) * fact;
+                    }
+
+                    // Block (1,1): electric-electric
+                    v1 = mixt_product<Real>(nuv_r, nuv_theta, nvc, mvl);
+                    v2 = mixt_product<Real>(nuv_r, nuv_theta, mvc, nvl);
+                    A(i + Nrank, j + Nmax) += (v1 + v2) * fact;
+                }
+            }
+        }
+    }
+
+    return A;
+}
+
+// ============================================================================
 // Compute T-matrix for a single azimuthal mode m
-// T_m = -Q11_m * Q31_m^{-1}
+// Non-DS: T_m = Q11 * Q31^{-1}
+// DS:     T_m = Q11 * Q31^{-1} * Inc
 // ============================================================================
 template<typename Real>
 static typename Types<Real>::Matrix tmatrix_m(
@@ -195,21 +305,41 @@ static typename Types<Real>::Matrix tmatrix_m(
 
     using Matrix = typename Types<Real>::Matrix;
 
-    // Q31: outgoing(3) x regular(1) in interior medium
-    Matrix Q31 = assemble_Q_m<Real>(geom, 3, 1, k_real, k_int, n_rel,
-                                     m, Nrank, Nmax, Nint, mirror, use_ds, zRe, zIm, conducting);
+    if (use_ds) {
+        // DS mode: T_m = Q11 * Q31^{-1} * Inc
+        //
+        // Q31: [2*Nrank, 2*Nrank] (DS outer × DS inner)
+        Matrix Q31 = assemble_Q_m<Real>(geom, 3, 1, k_real, k_int, n_rel,
+                                         m, Nrank, Nmax, Nint, mirror, true, zRe, zIm, conducting);
 
-    // Q11: regular(1) x regular(1) in interior medium
-    Matrix Q11 = assemble_Q_m<Real>(geom, 1, 1, k_real, k_int, n_rel,
-                                     m, Nrank, Nmax, Nint, mirror, use_ds, zRe, zIm, conducting);
+        // Incident matrix: [2*Nrank, 2*Nmax] (DS outer × localized)
+        Matrix Inc = assemble_incident_m<Real>(geom, k_real, m, Nrank, Nmax, Nint, zRe, zIm);
 
-    // T_m = Q11 * Q31^{-1}
-    // The negation is incorporated into the phase factor during mapping.
-    // Both matrices are square [2*Nmax, 2*Nmax] (DS columns truncated to Nmax).
-    ::Eigen::PartialPivLU<Matrix> lu(Q31);
-    Matrix T_m = Q11 * lu.inverse();
+        // Solve Q31 * x = Inc → x = Q31^{-1} * Inc  [2*Nrank, 2*Nmax]
+        ::Eigen::PartialPivLU<Matrix> lu(Q31);
+        Matrix x = lu.solve(Inc);
 
-    return T_m;
+        // Q11: [2*Nmax, 2*Nrank] (localized outer × DS inner)
+        Matrix Q11 = assemble_Q_m<Real>(geom, 1, 1, k_real, k_int, n_rel,
+                                         m, Nrank, Nmax, Nint, mirror, true, zRe, zIm, conducting);
+
+        // T_m = Q11 * x = Q11 * Q31^{-1} * Inc  [2*Nmax, 2*Nmax]
+        Matrix T_m = Q11 * x;
+        return T_m;
+    } else {
+        // Non-DS mode: T_m = Q11 * Q31^{-1}
+        // Both matrices are square [2*Nmax, 2*Nmax]
+        Matrix Q31 = assemble_Q_m<Real>(geom, 3, 1, k_real, k_int, n_rel,
+                                         m, Nrank, Nmax, Nint, mirror, false, zRe, zIm, conducting);
+
+        Matrix Q11 = assemble_Q_m<Real>(geom, 1, 1, k_real, k_int, n_rel,
+                                         m, Nrank, Nmax, Nint, mirror, false, zRe, zIm, conducting);
+
+        // The negation is incorporated into the phase factor during mapping.
+        ::Eigen::PartialPivLU<Matrix> lu(Q31);
+        Matrix T_m = Q11 * lu.inverse();
+        return T_m;
+    }
 }
 
 // ============================================================================
@@ -357,13 +487,82 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
     return T;
 }
 
+// ============================================================================
+// Diagnostic: return Q31 and Q11 matrices for a single azimuthal mode m
+// Uses the same code path as compute_axisymmetric_tmatrix.
+// Returns pair of flattened row-major [2*Nmax, 2*Nmax] complex double arrays.
+// ============================================================================
+template<typename Real>
+std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>
+diagnostic_Q_matrices_m(
+    const AxialGeometry<Real>& geom,
+    double k_double, std::complex<double> n_rel_double,
+    int m, int lmax, int Nint,
+    bool use_ds, bool complex_plane, double eps_z_double,
+    bool conducting) {
+
+    using complex_t = std::complex<Real>;
+    using Matrix = typename Types<Real>::Matrix;
+
+    int Nrank = lmax;
+    bool mirror = geom.is_mirror_symmetric();
+
+    Real k_real = Real(k_double);
+    complex_t n_rel(Real(n_rel_double.real()), Real(n_rel_double.imag()));
+    complex_t k_int = complex_t(k_real, 0) * n_rel;
+    Real eps_z = Real(eps_z_double);
+
+    bool use_ds_internal = use_ds;
+    std::vector<Real> zRe, zIm;
+    if (use_ds_internal) {
+        geom.distributed_sources(Nrank, complex_plane, eps_z, zRe, zIm);
+        mirror = false;
+    }
+
+    int Nmax = (m == 0) ? Nrank : (Nrank - m + 1);
+    if (Nmax <= 0) {
+        return {{}, {}};
+    }
+
+    // Compute Q31 and Q11 using the same assemble_Q_m as the production code
+    Matrix Q31 = assemble_Q_m<Real>(geom, 3, 1, k_real, k_int, n_rel,
+                                     m, Nrank, Nmax, Nint, mirror, use_ds_internal, zRe, zIm, conducting);
+    Matrix Q11 = assemble_Q_m<Real>(geom, 1, 1, k_real, k_int, n_rel,
+                                     m, Nrank, Nmax, Nint, mirror, use_ds_internal, zRe, zIm, conducting);
+
+    // Flatten to std::vector<complex<double>> in row-major order
+    // Q31 and Q11 may have different dimensions in DS mode
+    int rows31 = Q31.rows(), cols31 = Q31.cols();
+    int rows11 = Q11.rows(), cols11 = Q11.cols();
+    std::vector<std::complex<double>> Q31_flat(rows31 * cols31);
+    std::vector<std::complex<double>> Q11_flat(rows11 * cols11);
+    for (int i = 0; i < rows31; i++)
+        for (int j = 0; j < cols31; j++)
+            Q31_flat[i * cols31 + j] = std::complex<double>(
+                double(Q31(i, j).real()), double(Q31(i, j).imag()));
+    for (int i = 0; i < rows11; i++)
+        for (int j = 0; j < cols11; j++)
+            Q11_flat[i * cols11 + j] = std::complex<double>(
+                double(Q11(i, j).real()), double(Q11(i, j).imag()));
+
+    return {Q31_flat, Q11_flat};
+}
+
 // Explicit instantiations
 template std::vector<std::complex<double>> compute_axisymmetric_tmatrix<double>(
     const AxialGeometry<double>&, double, std::complex<double>, int, int, bool, bool, double, bool);
 
+template std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>
+diagnostic_Q_matrices_m<double>(
+    const AxialGeometry<double>&, double, std::complex<double>, int, int, int, bool, bool, double, bool);
+
 #if MIEPY_HAS_QUAD
 template std::vector<std::complex<double>> compute_axisymmetric_tmatrix<__float128>(
     const AxialGeometry<__float128>&, double, std::complex<double>, int, int, bool, bool, double, bool);
+
+template std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>
+diagnostic_Q_matrices_m<__float128>(
+    const AxialGeometry<__float128>&, double, std::complex<double>, int, int, int, bool, bool, double, bool);
 #endif
 
 } // namespace tmatrix

@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/complex.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include "tmatrix/tmatrix_ebcm.hpp"
 
 namespace py = pybind11;
@@ -165,6 +166,89 @@ void bind_tmatrix_submodule(py::module &m) {
             Returns
             -------
             T : ndarray, shape [2, rmax, 2, rmax]
+        )pbdoc"
+    );
+
+    // ---- Diagnostic Q-matrix functions ----
+    tmatrix_m.def("diagnostic_Q_matrices_spheroid",
+        [](double axis_z, double axis_xy,
+           double k, std::complex<double> n_rel,
+           int m, int lmax, int Nint,
+           bool use_ds, bool complex_plane, double eps_z,
+           bool extended_precision, bool conducting)
+           -> std::pair<py::array_t<std::complex<double>>, py::array_t<std::complex<double>>> {
+
+            int Nrank = lmax;
+            int Nmax = (m == 0) ? Nrank : (Nrank - m + 1);
+            if (Nmax <= 0) {
+                throw std::runtime_error("m must be <= lmax; got m=" + std::to_string(m)
+                                         + ", lmax=" + std::to_string(lmax));
+            }
+            int dim = 2 * Nmax;
+
+            std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>> result;
+
+#if MIEPY_HAS_QUAD
+            if (extended_precision) {
+                tmatrix::SpheroidGeometry<__float128> geom(
+                    static_cast<__float128>(axis_z), static_cast<__float128>(axis_xy));
+                result = tmatrix::diagnostic_Q_matrices_m<__float128>(
+                    geom, k, n_rel, m, lmax, Nint, use_ds, complex_plane, eps_z, conducting);
+            } else
+#endif
+            {
+                if (extended_precision) {
+                    throw std::runtime_error(
+                        "Extended precision (__float128) not available on this platform");
+                }
+                tmatrix::SpheroidGeometry<double> geom(axis_z, axis_xy);
+                result = tmatrix::diagnostic_Q_matrices_m<double>(
+                    geom, k, n_rel, m, lmax, Nint, use_ds, complex_plane, eps_z, conducting);
+            }
+
+            // Determine Q31 and Q11 dimensions
+            // DS mode: Q31 is [2*Nrank, 2*Nrank], Q11 is [2*Nmax, 2*Nrank]
+            // Non-DS: both are [2*Nmax, 2*Nmax]
+            int rows31, cols31, rows11, cols11;
+            if (use_ds) {
+                rows31 = 2 * Nrank; cols31 = 2 * Nrank;
+                rows11 = 2 * Nmax;  cols11 = 2 * Nrank;
+            } else {
+                rows31 = 2 * Nmax; cols31 = 2 * Nmax;
+                rows11 = 2 * Nmax; cols11 = 2 * Nmax;
+            }
+
+            py::array_t<std::complex<double>> Q31({rows31, cols31});
+            py::array_t<std::complex<double>> Q11({rows11, cols11});
+            auto buf31 = Q31.mutable_unchecked<2>();
+            auto buf11 = Q11.mutable_unchecked<2>();
+            int idx31 = 0;
+            for (int i = 0; i < rows31; i++)
+                for (int j = 0; j < cols31; j++)
+                    buf31(i, j) = result.first[idx31++];
+            int idx11 = 0;
+            for (int i = 0; i < rows11; i++)
+                for (int j = 0; j < cols11; j++)
+                    buf11(i, j) = result.second[idx11++];
+
+            return {Q31, Q11};
+        },
+        py::arg("axis_z"), py::arg("axis_xy"),
+        py::arg("k"), py::arg("n_rel"),
+        py::arg("m"), py::arg("lmax"), py::arg("Nint") = 200,
+        py::arg("use_ds") = true, py::arg("complex_plane") = false,
+        py::arg("eps_z") = 0.95, py::arg("extended_precision") = false,
+        py::arg("conducting") = false,
+        R"pbdoc(
+            Diagnostic: return Q31 and Q11 matrices for a spheroid at azimuthal mode m.
+
+            Uses the same code path as compute_spheroid but returns the intermediate
+            Q matrices instead of the final T-matrix.
+
+            Returns
+            -------
+            Q31, Q11 : tuple of ndarray, each shape [2*Nmax, 2*Nmax]
+                Raw Q matrices for the given azimuthal mode.
         )pbdoc"
     );
 

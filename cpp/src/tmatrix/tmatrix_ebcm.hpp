@@ -34,6 +34,19 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
     bool use_ds, bool complex_plane, double eps_z,
     bool conducting = false);
 
+// Diagnostic: return Q31 and Q11 matrices for a single azimuthal mode m.
+// Same code path as compute_axisymmetric_tmatrix, but returns raw Q matrices
+// instead of the final T-matrix.
+// Each matrix is flattened row-major [2*Nmax, 2*Nmax] where Nmax = Nrank-m+1 (or Nrank for m=0).
+template<typename Real>
+std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>
+diagnostic_Q_matrices_m(
+    const AxialGeometry<Real>& geom,
+    double k, std::complex<double> n_rel,
+    int m, int lmax, int Nint,
+    bool use_ds, bool complex_plane, double eps_z,
+    bool conducting = false);
+
 } // namespace tmatrix
 
 #endif
