@@ -9,6 +9,13 @@ namespace py = pybind11;
 void bind_tmatrix_submodule(py::module &m) {
     auto tmatrix_m = m.def_submodule("tmatrix", "EBCM T-matrix computation module");
 
+    tmatrix_m.attr("has_extended_precision") =
+#if MIEPY_HAS_QUAD
+        true;
+#else
+        false;
+#endif
+
     tmatrix_m.def("compute_spheroid",
         [](double axis_z, double axis_xy,
            double k, std::complex<double> n_rel,

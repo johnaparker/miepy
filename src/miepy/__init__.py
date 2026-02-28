@@ -47,3 +47,8 @@ from .vsh.mode_indices import reduced_index
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import quaternion
+
+
+def has_extended_precision():
+    """Return True if the C++ backend was compiled with __float128 support."""
+    return cpp.tmatrix.has_extended_precision

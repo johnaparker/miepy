@@ -80,6 +80,7 @@ class cylinder(particle):
             self.radius,
             self.height,
             self.rounded,
+            self.extended_precision,
             self.material.eps(wavelength).item(),
             self.material.mu(wavelength).item(),
         )

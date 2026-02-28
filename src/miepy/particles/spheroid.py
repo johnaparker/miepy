@@ -4,7 +4,7 @@ from .particle_base import particle
 
 
 class spheroid(particle):
-    def __init__(self, position, axis_xy, axis_z, material, orientation=None, tmatrix_lmax=0):
+    def __init__(self, position, axis_xy, axis_z, material, orientation=None, extended_precision=False, tmatrix_lmax=0):
         """A spheroid object.
 
         Arguments:
@@ -13,10 +13,12 @@ class spheroid(particle):
             axis_z        length of semiaxis along axis of symmetry
             material      particle material (miepy.material object)
             orientation   particle orientation
+            extended_precision  use __float128 precision for T-matrix computation
         """
         super().__init__(position, orientation, material)
         self.axis_xy = axis_xy
         self.axis_z = axis_z
+        self.extended_precision = extended_precision
 
         self.tmatrix_lmax = tmatrix_lmax
 
@@ -41,7 +43,7 @@ class spheroid(particle):
             self.material.eps(wavelength),
             eps_m,
             calc_lmax,
-            extended_precision=False,
+            extended_precision=self.extended_precision,
             conducting=self.conducting,
         )
 
@@ -59,6 +61,7 @@ class spheroid(particle):
             spheroid,
             self.axis_xy,
             self.axis_z,
+            self.extended_precision,
             self.material.eps(wavelength).item(),
             self.material.mu(wavelength).item(),
         )

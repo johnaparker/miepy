@@ -289,3 +289,161 @@ class TestDistributedSources:
         assert abs(C.extinction - C.scattering - C.absorption) < 1e-12, (
             "Optical theorem violated"
         )
+
+
+has_quad = miepy.cpp.tmatrix.has_extended_precision
+
+
+class TestExtendedPrecisionAvailability:
+    """Verify the has_extended_precision attribute is exposed correctly."""
+
+    def test_cpp_attribute_is_bool(self):
+        assert isinstance(miepy.cpp.tmatrix.has_extended_precision, bool)
+
+    def test_python_function_matches(self):
+        assert miepy.has_extended_precision() == miepy.cpp.tmatrix.has_extended_precision
+
+
+@pytest.mark.skipif(has_quad, reason="Platform has quad — test fallback on platforms without it")
+class TestExtendedPrecisionFallback:
+    """On platforms without __float128, extended_precision=True should raise."""
+
+    def test_spheroid_raises(self):
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+        with pytest.raises(RuntimeError, match="not available"):
+            miepy.tmatrix.tmatrix_spheroid(
+                radius, 2 * radius, wavelength, eps, eps_m, 2, extended_precision=True
+            )
+
+    def test_cylinder_raises(self):
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+        with pytest.raises(RuntimeError, match="not available"):
+            miepy.tmatrix.tmatrix_cylinder(
+                radius, 2 * radius, wavelength, eps, eps_m, 2, extended_precision=True
+            )
+
+
+@pytest.mark.skipif(not has_quad, reason="__float128 not available")
+class TestExtendedPrecision:
+    """Verify quad produces valid T-matrices and matches double for easy cases."""
+
+    def test_spheroid_valid(self):
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_spheroid(
+            radius, 2 * radius, wavelength, eps, eps_m, 3, extended_precision=True
+        )
+
+        assert not np.any(np.isnan(T)), "T-matrix contains NaN"
+        assert not np.any(np.isinf(T)), "T-matrix contains Inf"
+        assert np.max(np.abs(T)) > 0, "T-matrix is all zeros"
+
+    def test_cylinder_valid(self):
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_cylinder(
+            radius, 2 * radius, wavelength, eps, eps_m, 3, extended_precision=True
+        )
+
+        assert not np.any(np.isnan(T)), "T-matrix contains NaN"
+        assert not np.any(np.isinf(T)), "T-matrix contains Inf"
+        assert np.max(np.abs(T)) > 0, "T-matrix is all zeros"
+
+    def test_quad_matches_double_easy_case(self):
+        """For a well-conditioned case, quad and double should agree closely."""
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T_double = miepy.tmatrix.tmatrix_spheroid(
+            radius, 1.5 * radius, wavelength, eps, eps_m, 2, extended_precision=False
+        )
+        T_quad = miepy.tmatrix.tmatrix_spheroid(
+            radius, 1.5 * radius, wavelength, eps, eps_m, 2, extended_precision=True
+        )
+
+        assert np.allclose(T_double, T_quad, rtol=1e-10), (
+            f"max relative error = {np.max(np.abs(T_double - T_quad) / np.abs(T_quad).clip(1e-30))}"
+        )
+
+
+@pytest.mark.skipif(not has_quad, reason="__float128 not available")
+class TestExtendedPrecisionChallengingCase:
+    """High-aspect-ratio metallic spheroid — quad should satisfy optical theorem."""
+
+    def test_high_aspect_ratio_metal_optical_theorem(self):
+        """Quad should give non-negative absorption for a challenging case."""
+        lmax = 4
+        source = miepy.sources.plane_wave([1, 0])
+
+        # 5:1 prolate metallic spheroid — a challenging case for double
+        cluster = miepy.cluster(
+            particles=miepy.spheroid(
+                [0, 0, 0], radius / 2, 5 * radius / 2, Ag,
+                extended_precision=True,
+            ),
+            source=source,
+            wavelength=wavelength,
+            lmax=lmax,
+            medium=medium,
+        )
+
+        C = cluster.cross_sections()
+        assert not np.isnan(C.extinction), "Extinction is NaN"
+        assert not np.isnan(C.scattering), "Scattering is NaN"
+        assert not np.isnan(C.absorption), "Absorption is NaN"
+        assert C.absorption >= -1e-12, f"Absorption is negative: {C.absorption}"
+        assert abs(C.extinction - C.scattering - C.absorption) < 1e-12, (
+            "Optical theorem violated"
+        )
+
+
+@pytest.mark.skipif(not has_quad, reason="__float128 not available")
+class TestExtendedPrecisionParticleAPI:
+    """Verify extended_precision flows through particle constructors correctly."""
+
+    def test_spheroid_default_false(self):
+        p = miepy.spheroid([0, 0, 0], radius, 2 * radius, Ag)
+        assert p.extended_precision is False
+
+    def test_spheroid_accepts_true(self):
+        p = miepy.spheroid([0, 0, 0], radius, 2 * radius, Ag, extended_precision=True)
+        assert p.extended_precision is True
+
+    def test_cylinder_default_false(self):
+        p = miepy.cylinder([0, 0, 0], radius, 2 * radius, Ag)
+        assert p.extended_precision is False
+
+    def test_cylinder_accepts_true(self):
+        p = miepy.cylinder([0, 0, 0], radius, 2 * radius, Ag, extended_precision=True)
+        assert p.extended_precision is True
+
+    def test_spheroid_dict_key_differs(self):
+        p1 = miepy.spheroid([0, 0, 0], radius, 2 * radius, Ag, extended_precision=False)
+        p2 = miepy.spheroid([0, 0, 0], radius, 2 * radius, Ag, extended_precision=True)
+        assert p1._dict_key(wavelength) != p2._dict_key(wavelength)
+
+    def test_cylinder_dict_key_differs(self):
+        p1 = miepy.cylinder([0, 0, 0], radius, 2 * radius, Ag, extended_precision=False)
+        p2 = miepy.cylinder([0, 0, 0], radius, 2 * radius, Ag, extended_precision=True)
+        assert p1._dict_key(wavelength) != p2._dict_key(wavelength)
+
+    def test_spheroid_cluster_computation(self):
+        """Extended precision spheroid should work in a full cluster computation."""
+        source = miepy.sources.plane_wave([1, 0])
+        cluster = miepy.cluster(
+            particles=miepy.spheroid(
+                [0, 0, 0], radius, 2 * radius, Ag, extended_precision=True
+            ),
+            source=source,
+            wavelength=wavelength,
+            lmax=2,
+            medium=medium,
+        )
+
+        C = cluster.cross_sections()
+        assert C.scattering > 0
+        assert C.extinction > 0
