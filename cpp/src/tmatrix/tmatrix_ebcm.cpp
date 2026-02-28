@@ -1,6 +1,7 @@
 #include "tmatrix/tmatrix_ebcm.hpp"
 #include "tmatrix/tmatrix_special.hpp"
 #include "tmatrix/tmatrix_svwf.hpp"
+#include "tmatrix/tmatrix_linalg.hpp"
 #include <vector>
 #include <cmath>
 
@@ -318,9 +319,8 @@ static std::pair<typename Types<Real>::Matrix, double> tmatrix_m(
         Matrix Inc = assemble_incident_m<Real>(geom, k_real, m, Nrank, Nmax, Nint, zRe, zIm);
 
         // Solve Q31 * x = Inc → x = Q31^{-1} * Inc  [2*Nrank, 2*Nmax]
-        ::Eigen::PartialPivLU<Matrix> lu(Q31);
-        double rcond = static_cast<double>(lu.rcond());
-        Matrix x = lu.solve(Inc);
+        double rcond;
+        Matrix x = equilibrated_lu_solve<Real>(Q31, Inc, rcond);
 
         // Q11: [2*Nmax, 2*Nrank] (localized outer × DS inner)
         Matrix Q11 = assemble_Q_m<Real>(geom, 1, 1, k_real, k_int, n_rel,
@@ -339,9 +339,10 @@ static std::pair<typename Types<Real>::Matrix, double> tmatrix_m(
                                          m, Nrank, Nmax, Nint, mirror, false, zRe, zIm, conducting);
 
         // The negation is incorporated into the phase factor during mapping.
-        ::Eigen::PartialPivLU<Matrix> lu(Q31.transpose());
-        double rcond = static_cast<double>(lu.rcond());
-        Matrix T_m = lu.solve(Q11.transpose()).transpose();
+        // T_m = Q11 * Q31^{-1} via: lu(Q31^T).solve(Q11^T)^T
+        double rcond;
+        Matrix T_m = equilibrated_lu_solve<Real>(
+            Matrix(Q31.transpose()), Matrix(Q11.transpose()), rcond).transpose();
         return {T_m, rcond};
     }
 }

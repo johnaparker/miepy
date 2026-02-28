@@ -127,6 +127,13 @@ inline std::complex<Real> tm_sin(std::complex<Real> z) { return std::sin(z); }
 template<typename Real>
 inline std::complex<Real> tm_cos(std::complex<Real> z) { return std::cos(z); }
 
+// Machine epsilon and smallest positive normal
+template<typename Real>
+inline Real machine_eps() { return std::numeric_limits<Real>::epsilon(); }
+
+template<typename Real>
+inline Real smallest_pos() { return std::numeric_limits<Real>::min(); }
+
 #if MIEPY_HAS_QUAD
 
 // Specialize math for __float128
@@ -172,6 +179,10 @@ inline std::complex<__float128> tm_cos(std::complex<__float128> z) {
         -sinq(z.real()) * sinhq(z.imag())
     );
 }
+
+// Machine epsilon and smallest positive for __float128
+template<> inline __float128 machine_eps<__float128>() { return FLT128_EPSILON; }
+template<> inline __float128 smallest_pos<__float128>() { return FLT128_MIN; }
 
 using QuadTypes = Types<__float128>;
 

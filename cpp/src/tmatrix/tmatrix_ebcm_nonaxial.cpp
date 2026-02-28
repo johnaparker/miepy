@@ -1,6 +1,7 @@
 #include "tmatrix/tmatrix_ebcm_nonaxial.hpp"
 #include "tmatrix/tmatrix_special.hpp"
 #include "tmatrix/tmatrix_svwf.hpp"
+#include "tmatrix/tmatrix_linalg.hpp"
 #include <vector>
 #include <cmath>
 
@@ -315,12 +316,11 @@ TmatrixResult compute_nonaxisymmetric_tmatrix(
                                             Mrank, Nrank, Nmax, Nint1, Nint2,
                                             mirror, conducting);
 
-    // T_nfmds = Q11 * Q31^{-1} via LU decomposition
-    // Same technique as axisymmetric non-DS path:
+    // T_nfmds = Q11 * Q31^{-1} via equilibrated LU with iterative refinement
     // lu(Q31^T).solve(Q11^T).transpose() = Q11 * Q31^{-1}
-    ::Eigen::PartialPivLU<Matrix> lu(Q31.transpose());
-    double rcond = static_cast<double>(lu.rcond());
-    Matrix T_nfmds = lu.solve(Q11.transpose()).transpose();
+    double rcond;
+    Matrix T_nfmds = equilibrated_lu_solve<Real>(
+        Matrix(Q31.transpose()), Matrix(Q11.transpose()), rcond).transpose();
 
     // ========================================================================
     // Convention mapping: NFMDS -> MiePy [2, rmax, 2, rmax]
