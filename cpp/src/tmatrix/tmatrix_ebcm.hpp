@@ -8,6 +8,13 @@
 
 namespace tmatrix {
 
+// Result of T-matrix computation, including conditioning diagnostics.
+struct TmatrixResult {
+    std::vector<std::complex<double>> T;  // T-matrix data [2, rmax, 2, rmax] flattened
+    double worst_rcond;    // smallest reciprocal condition number across all m
+    int worst_m;           // azimuthal mode with worst conditioning
+};
+
 // Compute the T-matrix for an axisymmetric particle using the EBCM method.
 //
 // Arguments:
@@ -21,13 +28,14 @@ namespace tmatrix {
 //   eps_z       - controls distributed source extent (fraction of particle extent)
 //
 // Returns:
+//   TmatrixResult containing T-matrix data and conditioning diagnostics.
 //   T-matrix in MiePy convention: complex double array [2, rmax, 2, rmax]
 //   where rmax = lmax*(lmax+2), first index [2] = electric(0)/magnetic(1)
 //
 // Internal precision controlled by Real template parameter.
 // Output is always in double precision (downcast if Real = __float128).
 template<typename Real>
-std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
+TmatrixResult compute_axisymmetric_tmatrix(
     const AxialGeometry<Real>& geom,
     double k, std::complex<double> n_rel,
     int lmax, int Nint,

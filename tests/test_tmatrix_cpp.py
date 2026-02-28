@@ -5,7 +5,10 @@ Verifies correctness of:
 - Cylinder geometry
 - PEC (conducting) particles
 - Non-degenerate spheroids
+- Q31 conditioning diagnostics
 """
+
+import warnings
 
 import numpy as np
 import pytest
@@ -447,3 +450,187 @@ class TestExtendedPrecisionParticleAPI:
         C = cluster.cross_sections()
         assert C.scattering > 0
         assert C.extinction > 0
+
+
+class TestConditioningWarning:
+    """Tests for Q31 conditioning diagnostics in EBCM T-matrix."""
+
+    def test_well_conditioned_no_warning(self):
+        """A moderate dielectric sphere should not trigger a conditioning warning."""
+        eps_diel = complex(4.0)
+        eps_m = medium.eps(wavelength)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", RuntimeWarning)
+            T = miepy.tmatrix.tmatrix_spheroid(
+                radius, radius, wavelength, eps_diel, eps_m, 2, use_ds=False
+            )
+            assert not np.any(np.isnan(T))
+
+    def test_ill_conditioned_warning(self):
+        """A very high aspect ratio metallic spheroid at high lmax without DS
+        should trigger a RuntimeWarning about Q31 conditioning."""
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        # 200:1 aspect ratio at lmax=6 without distributed sources
+        axis_xy = radius / 10
+        axis_z = axis_xy * 200
+        with pytest.warns(RuntimeWarning, match="ill-conditioned"):
+            miepy.tmatrix.tmatrix_spheroid(
+                axis_z, axis_xy, wavelength, eps, eps_m, 6, use_ds=False
+            )
+
+
+# ============================================================================
+# Non-axisymmetric T-matrix tests
+# ============================================================================
+
+
+class TestEllipsoidDegenerate:
+    """Ellipsoid with rx=ry should match axisymmetric spheroid solver."""
+
+    @pytest.mark.parametrize("lmax", [1, 2, 3])
+    def test_ellipsoid_matches_spheroid(self, lmax):
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T_sph = miepy.tmatrix.tmatrix_spheroid(
+            radius, 2 * radius, wavelength, eps, eps_m, lmax, use_ds=False
+        )
+        T_ell = miepy.tmatrix.tmatrix_ellipsoid(
+            radius, radius, 2 * radius, wavelength, eps, eps_m, lmax,
+            Nint1=100, Nint2=100,
+        )
+
+        assert np.allclose(T_sph, T_ell, rtol=0, atol=1e-10), (
+            f"lmax={lmax}: max error = {np.max(np.abs(T_sph - T_ell))}"
+        )
+
+    def test_ellipsoid_matches_sphere(self):
+        """Ellipsoid with rx=ry=rz should match Mie theory."""
+        lmax = 2
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T_mie = miepy.tmatrix.tmatrix_sphere(radius, wavelength, eps, eps_m, lmax)
+        T_ell = miepy.tmatrix.tmatrix_ellipsoid(
+            radius, radius, radius, wavelength, eps, eps_m, lmax,
+            Nint1=100, Nint2=100,
+        )
+
+        assert np.allclose(T_mie, T_ell, rtol=0, atol=1e-10), (
+            f"max error = {np.max(np.abs(T_mie - T_ell))}"
+        )
+
+
+class TestEllipsoidNonDegenerate:
+    """True 3-axis ellipsoid (rx != ry != rz) should produce valid results."""
+
+    def test_ellipsoid_valid(self):
+        lmax = 2
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_ellipsoid(
+            60 * nm, 80 * nm, 100 * nm, wavelength, eps, eps_m, lmax,
+        )
+
+        assert not np.any(np.isnan(T)), "T-matrix contains NaN"
+        assert not np.any(np.isinf(T)), "T-matrix contains Inf"
+        assert np.max(np.abs(T)) > 0, "T-matrix is all zeros"
+
+    def test_ellipsoid_off_diagonal(self):
+        """True ellipsoid should have cross-polarization elements."""
+        lmax = 3
+        eps = complex(4.0)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_ellipsoid(
+            60 * nm, 80 * nm, 100 * nm, wavelength, eps, eps_m, lmax,
+            Nint1=80, Nint2=80,
+        )
+
+        # Cross-polarization should be nonzero for a true ellipsoid
+        cross_pol = np.max(np.abs(T[0, :, 1, :]))
+        assert cross_pol > 1e-10, (
+            f"Cross-polarization is too small: {cross_pol}"
+        )
+
+
+class TestRegularPrismBasic:
+    """Basic validity tests for regular prism T-matrices."""
+
+    def test_hexagonal_prism_valid(self):
+        lmax = 2
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_regular_prism(
+            6, 100 * nm, 150 * nm, wavelength, eps, eps_m, lmax,
+        )
+
+        assert not np.any(np.isnan(T)), "T-matrix contains NaN"
+        assert not np.any(np.isinf(T)), "T-matrix contains Inf"
+        assert np.max(np.abs(T)) > 0, "T-matrix is all zeros"
+
+    def test_cube_valid(self):
+        lmax = 2
+        eps = Ag.eps(wavelength)
+        eps_m = medium.eps(wavelength)
+
+        T = miepy.tmatrix.tmatrix_square_prism(
+            100 * nm, 100 * nm, wavelength, eps, eps_m, lmax,
+        )
+
+        assert not np.any(np.isnan(T)), "T-matrix contains NaN"
+        assert not np.any(np.isinf(T)), "T-matrix contains Inf"
+        assert np.max(np.abs(T)) > 0, "T-matrix is all zeros"
+
+
+class TestNonaxialOpticalTheorem:
+    """Optical theorem checks for non-axisymmetric particles."""
+
+    def test_ellipsoid_optical_theorem(self):
+        """Extinction = scattering + absorption for a dielectric ellipsoid."""
+        lmax = 3
+        source = miepy.sources.plane_wave([1, 0])
+
+        cluster = miepy.cluster(
+            particles=miepy.ellipsoid(
+                [0, 0, 0], 60 * nm, 80 * nm, 100 * nm,
+                miepy.constant_material(index=2.0),
+            ),
+            source=source,
+            wavelength=wavelength,
+            lmax=lmax,
+            medium=medium,
+        )
+
+        C = cluster.cross_sections()
+        assert C.absorption >= -1e-12, f"Absorption is negative: {C.absorption}"
+        assert abs(C.extinction - C.scattering - C.absorption) < 1e-12, (
+            "Optical theorem violated"
+        )
+
+    def test_cube_optical_theorem(self):
+        """Optical theorem for a dielectric cube."""
+        lmax = 2
+        source = miepy.sources.plane_wave([1, 0])
+
+        cluster = miepy.cluster(
+            particles=miepy.cube(
+                [0, 0, 0], 100 * nm,
+                miepy.constant_material(index=2.0),
+            ),
+            source=source,
+            wavelength=wavelength,
+            lmax=lmax,
+            medium=medium,
+        )
+
+        C = cluster.cross_sections()
+        assert C.absorption >= -1e-12, f"Absorption is negative: {C.absorption}"
+        assert abs(C.extinction - C.scattering - C.absorption) < 1e-12, (
+            "Optical theorem violated"
+        )

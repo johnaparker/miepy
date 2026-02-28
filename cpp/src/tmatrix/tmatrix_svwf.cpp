@@ -148,11 +148,111 @@ void svwf_distributed(int index, std::complex<Real> k, Real r, Real theta,
     }
 }
 
+// ============================================================================
+// svwf_complete: Complete VSWFs for all m = 0..Mrank
+// Port of SVWF.f90::MN_complete (lines 774-869)
+// ============================================================================
+template<typename Real>
+void svwf_complete(int index, std::complex<Real> z, Real theta, Real phi,
+                   int Mrank, int Nrank, int Nmax, bool plus, bool sym,
+                   std::vector<std::vector<std::complex<Real>>>& MV,
+                   std::vector<std::vector<std::complex<Real>>>& NV) {
+    using complex_t = std::complex<Real>;
+    const complex_t zero(0, 0);
+    const complex_t im_unit(0, 1);
+    const Real MachEps = std::is_same<Real, double>::value ? Real(1e-15) : Real(1e-30);
+
+    MV.assign(3, std::vector<complex_t>(Nmax, zero));
+    NV.assign(3, std::vector<complex_t>(Nmax, zero));
+
+    complex_t zc = z;
+    if (tm_abs<Real>(zc) < MachEps)
+        zc = complex_t(MachEps, MachEps);
+
+    // Compute radial functions (shared across all m)
+    std::vector<complex_t> jh(Nrank + 1), jhd(Nrank + 1);
+    if (index == 1) {
+        bessel_j<Real>(zc, Nrank, jh, jhd);
+    } else {
+        bessel_h<Real>(zc, Nrank, jh, jhd);
+    }
+
+    for (int m = 0; m <= Mrank; m++) {
+        // Compute angular functions for this m
+        std::vector<Real> Pnm, dPnm, pinm, taunm;
+        legendre_normalized<Real>(theta, m, Nrank, Pnm, dPnm, pinm, taunm);
+
+        if (m == 0) {
+            // m=0: indices 0..Nrank-1
+            for (int k = 0; k < Nrank; k++) {
+                int n = k + 1;
+                Real nr = Real(n * (n + 1));
+                Real nm = Real(1) / tm_sqrt(Real(2) * nr);
+
+                Real ft = taunm[n] * nm;
+                Real fl = nr * Pnm[n] * nm;
+
+                MV[0][k] = zero;
+                MV[1][k] = zero;
+                MV[2][k] = -jh[n] * complex_t(ft, 0);
+
+                NV[0][k] = jh[n] * complex_t(fl, 0) / zc;
+                NV[1][k] = jhd[n] * complex_t(ft, 0) / zc;
+                NV[2][k] = zero;
+            }
+        } else {
+            // m > 0: two sub-blocks for +m and -m
+            int N0 = Nrank + (m - 1) * (2 * Nrank - m + 2);
+            int ml = plus ? m : -m;  // first sub-block m-value
+
+            for (int l = 0; l < 2; l++) {
+                Real mlr = Real(ml);
+
+                // Azimuthal phase factor
+                complex_t fact;
+                if (sym) {
+                    fact = complex_t(Real(1), 0);
+                } else {
+                    Real arg = mlr * phi;
+                    fact = tm_exp<Real>(im_unit * complex_t(arg, 0));
+                }
+
+                int block_size = Nrank - m + 1;
+                for (int k = 0; k < block_size; k++) {
+                    int n = m + k;
+                    Real nr = Real(n * (n + 1));
+                    Real nm = Real(1) / tm_sqrt(Real(2) * nr);
+
+                    complex_t factp = im_unit * complex_t(mlr, 0)
+                                    * complex_t(pinm[n] * nm, 0) * fact;
+                    complex_t factt = complex_t(taunm[n] * nm, 0) * fact;
+                    complex_t factl = complex_t(nr * Pnm[n] * nm, 0) * fact;
+
+                    int idx = N0 + k;
+                    MV[0][idx] = zero;
+                    MV[1][idx] = jh[n] * factp;
+                    MV[2][idx] = -jh[n] * factt;
+
+                    NV[0][idx] = jh[n] * factl / zc;
+                    NV[1][idx] = jhd[n] * factt / zc;
+                    NV[2][idx] = jhd[n] * factp / zc;
+                }
+
+                N0 += block_size;
+                ml = -ml;
+            }
+        }
+    }
+}
+
 // Explicit instantiations
 template void svwf_localized<double>(int, std::complex<double>, double, int, int, int,
     std::vector<std::vector<std::complex<double>>>&, std::vector<std::vector<std::complex<double>>>&);
 template void svwf_distributed<double>(int, std::complex<double>, double, double,
     const std::vector<double>&, const std::vector<double>&, int, int,
+    std::vector<std::vector<std::complex<double>>>&, std::vector<std::vector<std::complex<double>>>&);
+template void svwf_complete<double>(int, std::complex<double>, double, double,
+    int, int, int, bool, bool,
     std::vector<std::vector<std::complex<double>>>&, std::vector<std::vector<std::complex<double>>>&);
 
 #if MIEPY_HAS_QUAD
@@ -160,6 +260,9 @@ template void svwf_localized<__float128>(int, std::complex<__float128>, __float1
     std::vector<std::vector<std::complex<__float128>>>&, std::vector<std::vector<std::complex<__float128>>>&);
 template void svwf_distributed<__float128>(int, std::complex<__float128>, __float128, __float128,
     const std::vector<__float128>&, const std::vector<__float128>&, int, int,
+    std::vector<std::vector<std::complex<__float128>>>&, std::vector<std::vector<std::complex<__float128>>>&);
+template void svwf_complete<__float128>(int, std::complex<__float128>, __float128, __float128,
+    int, int, int, bool, bool,
     std::vector<std::vector<std::complex<__float128>>>&, std::vector<std::vector<std::complex<__float128>>>&);
 #endif
 

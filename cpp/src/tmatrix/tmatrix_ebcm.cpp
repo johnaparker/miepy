@@ -292,9 +292,11 @@ static typename Types<Real>::Matrix assemble_incident_m(
 // Compute T-matrix for a single azimuthal mode m
 // Non-DS: T_m = Q11 * Q31^{-1}
 // DS:     T_m = Q11 * Q31^{-1} * Inc
+//
+// Returns pair of (T-matrix block, rcond of Q31)
 // ============================================================================
 template<typename Real>
-static typename Types<Real>::Matrix tmatrix_m(
+static std::pair<typename Types<Real>::Matrix, double> tmatrix_m(
     const AxialGeometry<Real>& geom,
     Real k_real, std::complex<Real> k_int,
     std::complex<Real> n_rel,
@@ -317,6 +319,7 @@ static typename Types<Real>::Matrix tmatrix_m(
 
         // Solve Q31 * x = Inc → x = Q31^{-1} * Inc  [2*Nrank, 2*Nmax]
         ::Eigen::PartialPivLU<Matrix> lu(Q31);
+        double rcond = static_cast<double>(lu.rcond());
         Matrix x = lu.solve(Inc);
 
         // Q11: [2*Nmax, 2*Nrank] (localized outer × DS inner)
@@ -325,7 +328,7 @@ static typename Types<Real>::Matrix tmatrix_m(
 
         // T_m = Q11 * x = Q11 * Q31^{-1} * Inc  [2*Nmax, 2*Nmax]
         Matrix T_m = Q11 * x;
-        return T_m;
+        return {T_m, rcond};
     } else {
         // Non-DS mode: T_m = Q11 * Q31^{-1}
         // Both matrices are square [2*Nmax, 2*Nmax]
@@ -337,8 +340,9 @@ static typename Types<Real>::Matrix tmatrix_m(
 
         // The negation is incorporated into the phase factor during mapping.
         ::Eigen::PartialPivLU<Matrix> lu(Q31.transpose());
+        double rcond = static_cast<double>(lu.rcond());
         Matrix T_m = lu.solve(Q11.transpose()).transpose();
-        return T_m;
+        return {T_m, rcond};
     }
 }
 
@@ -346,7 +350,7 @@ static typename Types<Real>::Matrix tmatrix_m(
 // Main entry point: compute full [2, rmax, 2, rmax] T-matrix
 // ============================================================================
 template<typename Real>
-std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
+TmatrixResult compute_axisymmetric_tmatrix(
     const AxialGeometry<Real>& geom,
     double k_double, std::complex<double> n_rel_double,
     int lmax, int Nint,
@@ -376,6 +380,9 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
 
     // Output T-matrix: [2, rmax, 2, rmax] flattened in row-major
     std::vector<std::complex<double>> T(2 * rmax * 2 * rmax, std::complex<double>(0, 0));
+
+    // Per-m reciprocal condition numbers (each m writes to its own index)
+    std::vector<double> rconds(lmax + 1, 1.0);
 
     // Helper to index into [2, rmax, 2, rmax]
     auto Tidx = [rmax](int a1, int r1, int a2, int r2) -> int {
@@ -410,9 +417,10 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
         if (Nmax <= 0) continue;
 
         // Compute T-matrix for this m
-        auto T_m = tmatrix_m<Real>(geom, k_real, k_int, n_rel,
+        auto [T_m, rcond] = tmatrix_m<Real>(geom, k_real, k_int, n_rel,
                                     m, Nrank, Nmax, Nint, mirror, use_ds_internal, zRe, zIm,
                                     conducting);
+        rconds[m] = rcond;
 
         // Map per-m block into full [2, rmax, 2, rmax] T-matrix
         // T_m is always [2*Nmax, 2*Nmax] (pseudo-inverse collapses DS columns)
@@ -485,7 +493,17 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
         }
     }
 
-    return T;
+    // Find worst (minimum) rcond across all m
+    double worst_rcond = 1.0;
+    int worst_m = 0;
+    for (int m = 0; m <= lmax; m++) {
+        if (rconds[m] < worst_rcond) {
+            worst_rcond = rconds[m];
+            worst_m = m;
+        }
+    }
+
+    return {std::move(T), worst_rcond, worst_m};
 }
 
 // ============================================================================
@@ -550,7 +568,7 @@ diagnostic_Q_matrices_m(
 }
 
 // Explicit instantiations
-template std::vector<std::complex<double>> compute_axisymmetric_tmatrix<double>(
+template TmatrixResult compute_axisymmetric_tmatrix<double>(
     const AxialGeometry<double>&, double, std::complex<double>, int, int, bool, bool, double, bool);
 
 template std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>
@@ -558,7 +576,7 @@ diagnostic_Q_matrices_m<double>(
     const AxialGeometry<double>&, double, std::complex<double>, int, int, int, bool, bool, double, bool);
 
 #if MIEPY_HAS_QUAD
-template std::vector<std::complex<double>> compute_axisymmetric_tmatrix<__float128>(
+template TmatrixResult compute_axisymmetric_tmatrix<__float128>(
     const AxialGeometry<__float128>&, double, std::complex<double>, int, int, bool, bool, double, bool);
 
 template std::pair<std::vector<std::complex<double>>, std::vector<std::complex<double>>>

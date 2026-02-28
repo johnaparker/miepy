@@ -130,7 +130,7 @@ def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False
 
 
 def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid.
+    """Compute the T-matrix of an ellipsoid.
 
     Arguments:
         rx,ry,rz    radii of the 3 axes
@@ -139,111 +139,63 @@ def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precisi
         eps_m       medium permittivity
         lmax        maximum number of multipoles
         extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to axisymmetric_file function
+        kwargs      additional keywords passed to C++ solver
     """
-    parameters = dict(
-        geometry_type=1,
-        geometry_parameters=[rx, ry, rz],
-        wavelength=wavelength,
-        index=eps**0.5,
-        index_m=eps_m**0.5,
-        Nparam=1,
-        Mrank=lmax,
-        R_symmetry=0,
-    )
-    parameters.update(kwargs)
+    conducting = kwargs.get('conducting', False)
+    k = 2 * np.pi * eps_m**0.5 / wavelength
+    if conducting:
+        n_rel = complex(1.0 / eps_m**0.5)
+    else:
+        n_rel = complex((eps / eps_m) ** 0.5)
+    Nint1 = kwargs.get('Nint1', 50)
+    Nint2 = kwargs.get('Nint2', 50)
 
-    return nfmds_solver(
-        lmax, parameters, solver=tmatrix_solvers.non_axisymmetric, extended_precision=extended_precision
-    )
-
-
-def tmatrix_ellipsoid(rx, ry, rz, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid.
-
-    Arguments:
-        rx,ry,rz    radii of the 3 axes
-        wavelength  incident wavelength
-        eps         particle permittivity
-        eps_m       medium permittivity
-        lmax        maximum number of multipoles
-        extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to axisymmetric_file function
-    """
-    parameters = dict(
-        geometry_type=1,
-        geometry_parameters=[rx, ry, rz],
-        wavelength=wavelength,
-        index=eps**0.5,
-        index_m=eps_m**0.5,
-        Nparam=1,
-        Mrank=lmax,
-        R_symmetry=0,
-    )
-    parameters.update(kwargs)
-
-    return nfmds_solver(
-        lmax, parameters, solver=tmatrix_solvers.non_axisymmetric, extended_precision=extended_precision
-    )
+    return miepy.cpp.tmatrix.compute_ellipsoid(
+        rx, ry, rz, k, n_rel, lmax, Nint1, Nint2,
+        extended_precision, conducting)
 
 
 def tmatrix_square_prism(side, height, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid.
+    """Compute the T-matrix of a square prism (cube when side==height).
 
     Arguments:
-        width       side width of the prism
+        side        side width of the prism
         height      height of the prism
         eps         particle permittivity
         eps_m       medium permittivity
         lmax        maximum number of multipoles
         extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to axisymmetric_file function
+        kwargs      additional keywords passed to C++ solver
     """
-    parameters = dict(
-        geometry_type=2,
-        geometry_parameters=[side / 2, height / 2],
-        wavelength=wavelength,
-        index=eps**0.5,
-        index_m=eps_m**0.5,
-        Nparam=6,
-        Mrank=lmax,
-        R_symmetry=0,
-    )
-    parameters.update(kwargs)
-
-    return nfmds_solver(
-        lmax, parameters, solver=tmatrix_solvers.non_axisymmetric, extended_precision=extended_precision
-    )
+    return tmatrix_regular_prism(4, side, height, wavelength, eps, eps_m, lmax,
+                                 extended_precision=extended_precision, **kwargs)
 
 
 def tmatrix_regular_prism(N, side, height, wavelength, eps, eps_m, lmax, extended_precision=False, **kwargs):
-    """Compute the T-matrix of a spheroid.
+    """Compute the T-matrix of a regular N-hedral prism.
 
     Arguments:
         N           number of vertices
-        width       side width of the prism
+        side        side width of the prism
         height      height of the prism
         eps         particle permittivity
         eps_m       medium permittivity
         lmax        maximum number of multipoles
         extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to axisymmetric_file function
+        kwargs      additional keywords passed to C++ solver
     """
-    parameters = dict(
-        geometry_type=3,
-        geometry_parameters=[side / 2, height / 2],
-        wavelength=wavelength,
-        index=eps**0.5,
-        index_m=eps_m**0.5,
-        Nparam=2,
-        Mrank=lmax,
-        R_symmetry=N,
-    )
-    parameters.update(kwargs)
+    conducting = kwargs.get('conducting', False)
+    k = 2 * np.pi * eps_m**0.5 / wavelength
+    if conducting:
+        n_rel = complex(1.0 / eps_m**0.5)
+    else:
+        n_rel = complex((eps / eps_m) ** 0.5)
+    Nint1 = kwargs.get('Nint1', 50)
+    Nint2 = kwargs.get('Nint2', 50)
 
-    return nfmds_solver(
-        lmax, parameters, solver=tmatrix_solvers.non_axisymmetric, extended_precision=extended_precision
-    )
+    return miepy.cpp.tmatrix.compute_regular_prism(
+        N, side / 2, height / 2, k, n_rel, lmax, Nint1, Nint2,
+        extended_precision, conducting)
 
 
 def tmatrix_sphere_cluster(pos, radii, lmax, lmax_cluster, wavelength, eps, eps_m, extended_precision=False, **kwargs):

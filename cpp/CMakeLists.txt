@@ -42,6 +42,7 @@ set(SOURCES ${SOURCES}
     src/tmatrix/tmatrix_special.cpp
     src/tmatrix/tmatrix_svwf.cpp
     src/tmatrix/tmatrix_ebcm.cpp
+    src/tmatrix/tmatrix_ebcm_nonaxial.cpp
 )
 
 set(BINDINGS

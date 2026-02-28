@@ -42,6 +42,25 @@ void svwf_distributed(int index, std::complex<Real> k, Real r, Real theta,
                       std::vector<std::vector<std::complex<Real>>>& MV,
                       std::vector<std::vector<std::complex<Real>>>& NV);
 
+// Complete vector spherical wave functions for ALL azimuthal modes m = 0..Mrank
+// Port of SVWF.f90::MN_complete (lines 774-869)
+//
+// index: 1 = regular (Bessel j), 3 = radiating (Hankel h)
+// z = k*r (complex wavenumber * radial distance)
+// theta, phi: polar angles
+// Mrank: maximum azimuthal order
+// Nrank: maximum expansion order
+// Nmax: total number of modes = Nrank + Mrank*(2*Nrank - Mrank + 1)
+// plus: if true, m ordering is 0,+1,-1,+2,-2,...; if false, 0,-1,+1,-2,+2,...
+// sym: if true, omit exp(i*m*phi); if false, include it
+//
+// Output: MV[3][Nmax], NV[3][Nmax] (3 = r,theta,phi components)
+template<typename Real>
+void svwf_complete(int index, std::complex<Real> z, Real theta, Real phi,
+                   int Mrank, int Nrank, int Nmax, bool plus, bool sym,
+                   std::vector<std::vector<std::complex<Real>>>& MV,
+                   std::vector<std::vector<std::complex<Real>>>& NV);
+
 } // namespace tmatrix
 
 #endif
