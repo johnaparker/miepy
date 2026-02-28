@@ -404,6 +404,7 @@ std::vector<std::complex<double>> compute_axisymmetric_tmatrix(
     };
 
     // Loop over azimuthal modes m = 0, 1, ..., lmax
+    #pragma omp parallel for schedule(dynamic, 1)
     for (int m = 0; m <= lmax; m++) {
         int Nmax = (m == 0) ? Nrank : (Nrank - m + 1);
         if (Nmax <= 0) continue;
