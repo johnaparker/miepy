@@ -96,7 +96,7 @@ jobs:
           CIBW_MANYLINUX_AARCH64_IMAGE: manylinux_2_28
           # Before build: install system dependencies in the container
           CIBW_BEFORE_BUILD_LINUX: |
-            dnf install -y cmake gcc-c++ curl tar unzip zip ninja-build
+            dnf install -y cmake gcc-c++ curl tar unzip zip ninja-build libquadmath-devel
             cd {project}/vcpkg && ./bootstrap-vcpkg.sh
           # macOS: Bootstrap vcpkg
           CIBW_BEFORE_BUILD_MACOS: cd {project}/vcpkg && ./bootstrap-vcpkg.sh
@@ -121,6 +121,9 @@ jobs:
           # Test the wheels
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/tests
+          # Skip tests on macOS Intel: llvmlite (transitive dep via numba) has no
+          # pre-built x86_64 macOS wheel and fails to build from source
+          CIBW_TEST_SKIP: "*-macosx_x86_64"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
