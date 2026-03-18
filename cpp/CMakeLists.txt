@@ -75,11 +75,11 @@ if(MIEPY_VALIDATE_GAUNT)
 endif()
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
 # Link libquadmath for extended-precision T-matrix support (Linux/GCC only)
-if(NOT APPLE AND NOT WIN32)
-    find_library(QUADMATH_LIBRARY quadmath)
-    if(QUADMATH_LIBRARY)
-        target_link_libraries(cpp PRIVATE ${QUADMATH_LIBRARY})
-    endif()
+# MIEPY_HAS_QUAD compile definition controls whether C++ code uses __float128;
+# only set when the library is actually found, to avoid undefined symbols at runtime.
+if(HAVE_QUADMATH AND QUADMATH_LIBRARY)
+    target_compile_definitions(cpp PRIVATE MIEPY_HAS_QUAD=1)
+    target_link_libraries(cpp PRIVATE ${QUADMATH_LIBRARY})
 endif()
 # Link BLAS on macOS only: Accelerate benefits the LU direct solver.
 # On Linux, BLAS dispatch overhead hurts the iterative solver (many small matvecs)

@@ -1,10 +1,9 @@
 #ifndef GUARD_tmatrix_types_h
 #define GUARD_tmatrix_types_h
 
-// Detect __float128 support (GCC on x86_64 Linux)
-#if defined(__GNUC__) && !defined(__clang__) && defined(__x86_64__) && !defined(_WIN32)
-    #define MIEPY_HAS_QUAD 1
-#else
+// MIEPY_HAS_QUAD is set by CMake when libquadmath is found and linked.
+// Do not auto-detect here to avoid compiling quadmath calls without linking the library.
+#ifndef MIEPY_HAS_QUAD
     #define MIEPY_HAS_QUAD 0
 #endif
 
