@@ -2,8 +2,6 @@ import numpy as np
 
 import miepy
 
-from .get_tmatrix import nfmds_solver, tmatrix_solvers
-
 
 def tmatrix_sphere(radius, wavelength, eps, eps_m, lmax, conducting=False):
     """Compute the T-matrix of a sphere, using regular Mie theory.
@@ -73,7 +71,7 @@ def tmatrix_spheroid(axis_xy, axis_z, wavelength, eps, eps_m, lmax, extended_pre
         eps_m       medium permittivity
         lmax        maximum number of multipoles
         extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to C++ or Fortran solver
+        kwargs      additional keywords passed to C++ solver
     """
     conducting = kwargs.get('conducting', False)
     k = 2 * np.pi * eps_m**0.5 / wavelength
@@ -103,7 +101,7 @@ def tmatrix_cylinder(radius, height, wavelength, eps, eps_m, lmax, rounded=False
         lmax        maximum number of multipoles
         rounded (bool)    if True, and cylinder is oblate, the cylinder's edges are rounded (default: False)
         extended_precision (bool)    whether to use extended precision (default: False)
-        kwargs      additional keywords passed to C++ or Fortran solver
+        kwargs      additional keywords passed to C++ solver
     """
     if height >= 2 * radius and rounded:
         raise ValueError("prolate cylinders (height >= diameter) cannot be rounded")
@@ -301,7 +299,7 @@ def tmatrix_sphere_cluster(pos, radii, lmax, lmax_cluster, wavelength, eps, eps_
     """Compute the T-matrix of a rigid sphere cluster.
 
     Uses Mie theory, VSH translations, and the aggregate T-matrix formulation
-    to compute the cluster T-matrix without external Fortran code.
+    to compute the cluster T-matrix purely in Python/C++.
 
     The T-matrix maps incident VSH modes at the cluster origin to scattered
     VSH modes: T = R @ M @ solve(I + T_agg, S)

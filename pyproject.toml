@@ -25,7 +25,6 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python",
     "Programming Language :: C++",
-    "Programming Language :: Fortran",
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Operating System :: MacOS",

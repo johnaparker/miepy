@@ -12,11 +12,6 @@ todo.txt
 *.npy
 *.mp4
 
-# nfmds
-src/miepy/tmatrix/nfmds/fem
-src/miepy/tmatrix/nfmds/input
-src/miepy/tmatrix/nfmds/tmatrix
-
 # setup files
 build
 dist
@@ -56,15 +51,6 @@ tags
 # compiled files
 *.o
 *.mod
-
-# tmatrix objects
-miepy/tmatrix/nfmds/fem
-miepy/tmatrix/nfmds/input
-miepy/tmatrix/nfmds/old
-miepy/tmatrix/nfmds/tmatrix
-miepy/tmatrix/nfmds/tmatrix_extended
-miepy/bin/tmatrix
-miepy/bin/tmatrix_extended
 
 # c++ code
 *.so

@@ -246,8 +246,8 @@ class TestDistributedSources:
         """Sphere with DS enabled should approximately match Mie theory.
 
         DS is designed for non-spherical particles; for spheres it introduces
-        small numerical errors from the distributed source basis. Both C++ and
-        Fortran DS implementations show ~1e-2 max error vs Mie for this case.
+        small numerical errors from the distributed source basis. The DS
+        implementation shows ~1e-2 max error vs Mie for this case.
         """
         lmax = 3
         eps = Ag.eps(wavelength)
