@@ -11,7 +11,7 @@ The project uses `uv` for package management and `scikit-build-core` for buildin
 # Install in development mode
 uv pip install -e .
 
-# Build the project (compiles C++ extensions and Fortran executable)
+# Build the project (compiles C++ extensions)
 uv build
 
 # Run all tests
@@ -25,17 +25,16 @@ pytest tests/test_cluster.py::test_off_center_particle
 ```
 
 ### Build System Details
-- **Multi-language build**: Python + C++ (via pybind11) + Fortran (NFM-DS T-matrix)
-- CMake orchestrates building C++ extensions and Fortran executable
+- **Multi-language build**: Python + C++ (via pybind11)
+- CMake orchestrates building C++ extensions
 - Material database is automatically extracted from `src/miepy/materials/database.zip` during build
-- Fortran executable (`tmatrix`) is built from `src/miepy/tmatrix/nfmds/` and installed to `miepy/bin/`
 
 ### Dependencies
 Required for building from source:
 - CMake (C++ build system)
 - Eigen (C++ linear algebra library)
 - GNU Scientific Library (GSL)
-- GCC and GFORTRAN
+- GCC
 - Python 3.11+
 
 ## Code Architecture
@@ -104,16 +103,15 @@ For multi-particle systems with `interactions=True`:
 All particles inherit from `particle_base` (src/miepy/particles/particle_base.py):
 
 - **Spherical particles**: Use analytical Mie theory (fast)
-- **Non-spherical particles**: Compute T-matrix via NFM-DS Fortran code
-  - Creates input files in temporary directory
-  - Calls external `tmatrix` executable
-  - Parses output files for T-matrix data
+- **Non-spherical particles**: Compute T-matrix via C++ EBCM solver
+  - Axisymmetric particles (spheroids, cylinders) use `cpp/src/tmatrix/tmatrix_ebcm.cpp`
+  - Non-axisymmetric particles (ellipsoids, prisms) use `cpp/src/tmatrix/tmatrix_ebcm_nonaxial.cpp`
   - Caching via `_dict_key()` prevents redundant calculations
 
 Available particle types (src/miepy/particles/):
 - `sphere`, `core_shell`: Analytical Mie solution
-- `spheroid`, `cylinder`, `ellipsoid`: Axisymmetric NFM-DS
-- `regular_prism`, `cube`: Non-axisymmetric NFM-DS
+- `spheroid`, `cylinder`, `ellipsoid`: C++ EBCM solver
+- `regular_prism`, `cube`: C++ EBCM solver (non-axisymmetric)
 - `sphere_cluster_particle`: Cluster treated as single particle
 
 ### Source System
@@ -263,7 +261,7 @@ C++ bindings exist specifically for benchmarking:
 - Interface (planar substrate) partially implemented but marked as not fully supported in `cluster`
 
 ### Performance Considerations
-- T-matrix calculations for non-spherical particles are expensive (Fortran executable call)
+- T-matrix calculations for non-spherical particles are expensive (C++ EBCM solver)
 - Identical particles share T-matrix via caching (based on `_dict_key()`)
 - C++ backend used for interaction matrix assembly and field evaluations
 - For large systems, BiCGSTAB convergence can be slow; consider reducing `lmax`

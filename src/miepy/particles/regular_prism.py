@@ -6,7 +6,7 @@ from .particle_base import particle
 
 
 class regular_prism(particle):
-    def __init__(self, position, N, height, material, width=None, radius=None, orientation=None, tmatrix_lmax=0):
+    def __init__(self, position, N, height, material, width=None, radius=None, orientation=None, extended_precision=False, tmatrix_lmax=0):
         """A regular prism object (an extruded regular polygon). By convention, the initial orientation is such that
         the bottom edge is parallel to the x-axis.
 
@@ -18,6 +18,7 @@ class regular_prism(particle):
             width         width (side length) of prism (specifiy width or radius)
             radius        radius of prism, from center to vertex (specifiy radius or width)
             orientation   particle orientation
+            extended_precision  use __float128 precision for T-matrix computation
         """
         if width is None and radius is None:
             raise ValueError("A width or a radius must be specified")
@@ -25,6 +26,7 @@ class regular_prism(particle):
         super().__init__(position, orientation, material)
         self.N = N
         self.height = height
+        self.extended_precision = extended_precision
 
         factor = np.sqrt(2 * (1 - np.cos(2 * np.pi / N)))
         if width is None:
@@ -59,7 +61,7 @@ class regular_prism(particle):
             self.material.eps(wavelength),
             eps_m,
             calc_lmax,
-            extended_precision=False,
+            extended_precision=self.extended_precision,
             conducting=self.conducting,
         )
 
@@ -78,12 +80,13 @@ class regular_prism(particle):
             self.N,
             self.width,
             self.height,
+            self.extended_precision,
             self.material.eps(wavelength).item(),
             self.material.mu(wavelength).item(),
         )
 
 
-def cube(position, width, material, orientation=None, tmatrix_lmax=0):
+def cube(position, width, material, orientation=None, extended_precision=False, tmatrix_lmax=0):
     """A cube is a type of regular prism.
 
     Arguments:
@@ -91,7 +94,9 @@ def cube(position, width, material, orientation=None, tmatrix_lmax=0):
         width         width (side length) of cube
         material      particle material (miepy.material object)
         orientation   particle orientation
+        extended_precision  use __float128 precision for T-matrix computation
     """
     return regular_prism(
-        position, N=4, width=width, height=width, material=material, orientation=orientation, tmatrix_lmax=tmatrix_lmax
+        position, N=4, width=width, height=width, material=material, orientation=orientation,
+        extended_precision=extended_precision, tmatrix_lmax=tmatrix_lmax,
     )

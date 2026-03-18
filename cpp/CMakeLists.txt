@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -pedantic -Werror")
 
 # Set architecture-appropriate optimization flags
@@ -39,6 +39,10 @@ set(SOURCES ${SOURCES}
     src/flux.cpp
     src/indices.cpp
     src/decomposition.cpp
+    src/tmatrix/tmatrix_special.cpp
+    src/tmatrix/tmatrix_svwf.cpp
+    src/tmatrix/tmatrix_ebcm.cpp
+    src/tmatrix/tmatrix_ebcm_nonaxial.cpp
 )
 
 set(BINDINGS
@@ -50,15 +54,33 @@ set(BINDINGS
     src/flux_pyb.cpp
     src/vsh_functions_pyb.cpp
     src/decomposition_pyb.cpp
+    src/tmatrix/tmatrix_pyb.cpp
 )
 
 option(MIEPY_VALIDATE_GAUNT "Validate Gaunt recursion against direct Wigner 3j" OFF)
+
+# Detect __float128 / libquadmath support for extended-precision T-matrix
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+    #include <quadmath.h>
+    int main() { __float128 x = 1.0Q; x = sqrtq(x); return 0; }
+" HAVE_QUADMATH)
+if(HAVE_QUADMATH)
+    find_library(QUADMATH_LIBRARY quadmath)
+endif()
 
 add_library(cpp MODULE "${SOURCES}" "${BINDINGS}")
 if(MIEPY_VALIDATE_GAUNT)
     target_compile_definitions(cpp PRIVATE MIEPY_VALIDATE_GAUNT)
 endif()
 target_link_libraries(cpp PRIVATE pybind11::module GSL::gsl OpenMP::OpenMP_CXX Eigen3::Eigen)
+# Link libquadmath for extended-precision T-matrix support (Linux/GCC only)
+if(NOT APPLE AND NOT WIN32)
+    find_library(QUADMATH_LIBRARY quadmath)
+    if(QUADMATH_LIBRARY)
+        target_link_libraries(cpp PRIVATE ${QUADMATH_LIBRARY})
+    endif()
+endif()
 # Link BLAS on macOS only: Accelerate benefits the LU direct solver.
 # On Linux, BLAS dispatch overhead hurts the iterative solver (many small matvecs)
 # and Eigen's internal kernels are competitive, so BLAS is not linked.

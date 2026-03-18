@@ -14,9 +14,5 @@ include cpp/CMakeLists.txt
 recursive-include cpp/pybind11 *
 recursive-include cpp/src *
 
-# Include Fortran source and build files
-include src/miepy/tmatrix/nfmds/*.f90
-include src/miepy/tmatrix/nfmds/makefile
-
 # Include tests
 include tests/*.py

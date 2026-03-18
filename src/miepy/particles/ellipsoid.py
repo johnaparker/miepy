@@ -4,7 +4,7 @@ from .particle_base import particle
 
 
 class ellipsoid(particle):
-    def __init__(self, position, rx, ry, rz, material, orientation=None, tmatrix_lmax=0):
+    def __init__(self, position, rx, ry, rz, material, orientation=None, extended_precision=False, tmatrix_lmax=0):
         """An ellipsoid object.
 
         Arguments:
@@ -12,11 +12,13 @@ class ellipsoid(particle):
             rx,ry,rz      radii of the 3 axes
             material      particle material (miepy.material object)
             orientation   particle orientation
+            extended_precision  use __float128 precision for T-matrix computation
         """
         super().__init__(position, orientation, material)
         self.rx = rx
         self.ry = ry
         self.rz = rz
+        self.extended_precision = extended_precision
 
         self.tmatrix_lmax = tmatrix_lmax
 
@@ -43,7 +45,7 @@ class ellipsoid(particle):
             self.material.eps(wavelength),
             eps_m,
             calc_lmax,
-            extended_precision=False,
+            extended_precision=self.extended_precision,
             conducting=self.conducting,
         )
 
@@ -62,6 +64,7 @@ class ellipsoid(particle):
             self.rx,
             self.ry,
             self.rz,
+            self.extended_precision,
             self.material.eps(wavelength).item(),
             self.material.mu(wavelength).item(),
         )

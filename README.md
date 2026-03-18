@@ -17,7 +17,7 @@ MiePy solves the electrodynamics of a collection of spherical or non-spherical s
 
 Features
 --------------
-+ **Non-spherical particles** using the T-matrix formulation via the null-field method with discrete sources (NFM-DS). Includes cylinders, spheroids, ellipsoids, cubes and polygonal prisms
++ **Non-spherical particles** using the T-matrix formulation via the extended boundary condition method (EBCM). Includes cylinders, spheroids, ellipsoids, cubes and polygonal prisms
 + **Arbitrary incident sources** (plane waves, Gaussian beams, HG and LG beams, point dipoles)
 + Evaluation of cluster **cross-sections** and **optical force and torque** on individual particles
 + **Periodic boundary conditions** with various lattice types (square, hexagonal, etc.) and **mirror and discrete rotational symmetries** for faster calculations
@@ -80,7 +80,7 @@ Install from source
 MiePy uses [vcpkg](https://vcpkg.io/) for C++ dependency management and uv for Python management, which simplifies building across platforms.
 
 **Prerequisites:**
-+ GCC and GFORTRAN
++ GCC
 + uv
 
 **Build steps:**

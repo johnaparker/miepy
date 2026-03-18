@@ -62,6 +62,9 @@ void bind_trapz_2d(py::module &);
 void bind_integrate_phase(py::module &);
 void bind_grid_interpolate(py::module &);
 
+// tmatrix submodule
+void bind_tmatrix_submodule(py::module &);
+
 PYBIND11_MODULE(cpp, m) {
     m.doc() = R"pbdoc(
         C++ submodule of MiePy
@@ -144,4 +147,7 @@ PYBIND11_MODULE(cpp, m) {
     bind_trapz_2d(decomposition_m);
     bind_integrate_phase(decomposition_m);
     bind_grid_interpolate(decomposition_m);
+
+    // tmatrix submodule
+    bind_tmatrix_submodule(m);
 }

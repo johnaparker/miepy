@@ -110,48 +110,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Build the C++ extension
 add_subdirectory(cpp)
 
-# Build the Fortran tmatrix executable
-# This uses the existing Makefile in src/miepy/tmatrix/nfmds
-find_program(MAKE_EXECUTABLE NAMES gmake make REQUIRED)
-find_program(GFORTRAN_EXECUTABLE NAMES gfortran gfortran-14 gfortran-13 gfortran-12 gfortran-11 REQUIRED)
-
-set(NFMDS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/miepy/tmatrix/nfmds)
-set(NFMDS_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/nfmds)
-set(NFMDS_EXECUTABLE ${NFMDS_BUILD_DIR}/tmatrix${CMAKE_EXECUTABLE_SUFFIX})
-
-# Create build directory for nfmds
-file(MAKE_DIRECTORY ${NFMDS_BUILD_DIR})
-
-# Custom command to build the Fortran executable
-add_custom_command(
-    OUTPUT ${NFMDS_EXECUTABLE}
-    COMMAND ${MAKE_EXECUTABLE} -j1
-        FC=${GFORTRAN_EXECUTABLE}
-        objdir=${NFMDS_BUILD_DIR}
-        exedir=${NFMDS_BUILD_DIR}
-        compilemode=release
-    WORKING_DIRECTORY ${NFMDS_SOURCE_DIR}
-    COMMENT "Building Fortran tmatrix executable"
-    VERBATIM
-)
-
-# Custom target to ensure the Fortran build happens
-add_custom_target(nfmds ALL DEPENDS ${NFMDS_EXECUTABLE})
-
-# Install the Fortran executable to miepy/bin
-install(
-    PROGRAMS ${NFMDS_EXECUTABLE}
-    DESTINATION miepy/bin
-    COMPONENT fortran
-)
-
-# Ensure miepy/bin directory exists in the installation
-install(
-    DIRECTORY
-    DESTINATION miepy/bin
-    COMPONENT fortran
-)
-
 # Unzip material database during build
 set(MATERIALS_ZIP ${CMAKE_CURRENT_SOURCE_DIR}/src/miepy/materials/database.zip)
 set(MATERIALS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/miepy/materials/database)
